@@ -1,0 +1,17 @@
+info:
+  name: Get Vendors
+  type: http
+  seq: 14
+
+http:
+  method: GET
+  url: "{{baseurl}}:{{hb_backend}}/vendors"
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

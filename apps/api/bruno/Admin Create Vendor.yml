@@ -1,0 +1,28 @@
+info:
+  name: Admin Create Vendor
+  type: http
+  seq: 18
+
+http:
+  method: POST
+  url: "{{baseurl}}:{{hb_backend}}/vendors/admin"
+  body:
+    type: json
+    data: |-
+      {
+        "businessName": "Cape Biltong Masters",
+        "tradingName": "Cape Biltong Co.",
+        "registrationNumber": "2023/123456/07",
+        "website": "https://www.capebiltong.co.za",
+        "description": "Family-owned biltong producer from the Western Cape, using traditional recipes and premium cuts.",
+        "status": "approved"
+      }
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

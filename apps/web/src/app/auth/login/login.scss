@@ -1,0 +1,16 @@
+.login-page .brand-panel::before {
+  background: rgba(46, 125, 50, 0.1);
+}
+
+.login-page .brand-panel::after {
+  background: rgba(245, 124, 0, 0.14);
+}
+
+.login-page .brand-leaf {
+  background: var(--hb-auth-green);
+  box-shadow: 0 18px 34px rgba(46, 125, 50, 0.18);
+}
+
+.login-page .brand-badges span {
+  border-color: rgba(245, 124, 0, 0.26);
+}

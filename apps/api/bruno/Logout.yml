@@ -1,0 +1,33 @@
+info:
+  name: Logout
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseurl}}:{{hb_backend}}/auth/logout"
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("Successful POST request", function () {
+            expect(res.getStatus()).to.be.oneOf([200, 201]);
+        });
+
+        // Parse JSON response
+        const jsonData = res.getBody();
+
+        // Save access token and refresh token to environment variables
+        bru.deleteEnvVar("accessToken")
+
+        console.log("Saved accessToken and refreshToken to environment variables");
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

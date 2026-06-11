@@ -1,0 +1,41 @@
+info:
+  name: Register
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseurl}}:{{hb_backend}}/auth/register"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "daniel@gmail.com",
+        "password": "SecurePass123!",
+        "firstName": "Daniel",
+        "lastName": "Hammond",
+        "role": "admin"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("Successful POST request", function () {
+            expect(res.getStatus()).to.be.oneOf([200, 201]);
+        });
+
+        // Parse JSON response
+        const jsonData = res.getBody();
+
+        // Save access token and refresh token to environment variables
+        bru.setEnvVar("accessToken", jsonData.access_token);
+
+        console.log("Saved accessToken and refreshToken to environment variables");
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

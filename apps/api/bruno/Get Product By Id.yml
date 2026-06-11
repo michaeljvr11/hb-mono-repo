@@ -1,0 +1,15 @@
+info:
+  name: Get Product By Id
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: "{{baseurl}}:{{hb_backend}}/products/91d9003b-632b-4973-aa5a-e3f048efbee1"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

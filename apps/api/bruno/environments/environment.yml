@@ -1,0 +1,10 @@
+name: environment
+variables:
+  - secret: true
+    name: refreshToken
+  - name: baseurl
+    value: http://localhost
+  - name: hb_backend
+    value: 3000/api
+  - secret: true
+    name: accessToken

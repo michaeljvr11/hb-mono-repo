@@ -1,0 +1,10 @@
+node_modules/
+dist/
+out-tsc/
+coverage/
+.angular/
+*.log
+.env
+uploads/
+.DS_Store
+Thumbs.db

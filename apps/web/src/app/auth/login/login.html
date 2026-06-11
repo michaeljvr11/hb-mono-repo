@@ -1,0 +1,82 @@
+<main class="auth-page login-page">
+  <section class="brand-panel" aria-labelledby="login-title">
+    <a class="brand-mark" routerLink="/login" aria-label="H&B home">
+      <span class="brand-leaf" aria-hidden="true">H&amp;B</span>
+      <span>E-commerce</span>
+    </a>
+
+    <div class="hero-copy">
+      <p class="eyebrow">Bringing your favorite products to Namibia</p>
+      <h1 id="login-title">Welcome back.</h1>
+      <p>
+        Sign in to pick up where you left off. Browse your favorites, track orders,
+        and discover new products tailored to your tastes. Your next great find is just a click away.
+      </p>
+    </div>
+
+    <div class="brand-badges" aria-label="H&B highlights">
+      <span>Various categories</span>
+      <span>Exciting products</span>
+      <span>Secure checkout</span>
+    </div>
+  </section>
+
+  <section class="form-panel" aria-label="Login form">
+    <div class="form-shell">
+      <p class="section-kicker">Customer login</p>
+      <h2>Sign in</h2>
+      <p class="form-intro">Use the email and password linked to your H&amp;B account.</p>
+
+      <form [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
+        <label class="field">
+          <span>Email address</span>
+          <input
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            [class.invalid]="emailControl.invalid && emailControl.touched"
+          />
+          @if (emailControl.hasError('required') && emailControl.touched) {
+            <small>Email is required.</small>
+          } @else if (emailControl.hasError('email') && emailControl.touched) {
+            <small>Enter a valid email address.</small>
+          }
+        </label>
+
+        <label class="field">
+          <span>Password</span>
+          <input
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+            placeholder="Your password"
+            [class.invalid]="passwordControl.invalid && passwordControl.touched"
+          />
+          @if (passwordControl.hasError('required') && passwordControl.touched) {
+            <small>Password is required.</small>
+          } @else if (passwordControl.hasError('minlength') && passwordControl.touched) {
+            <small>Password must be at least 8 characters.</small>
+          }
+        </label>
+
+        <div class="form-row">
+          <label class="check-field">
+            <input type="checkbox" formControlName="rememberMe" />
+            <span>Keep me signed in</span>
+          </label>
+          <a routerLink="/register">Create account</a>
+        </div>
+
+        @if (errorMessage()) {
+          <p class="status status-error" role="alert">{{ errorMessage() }}</p>
+        }
+
+        <button class="primary-action" type="submit" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Signing in...' : 'Sign in' }}
+        </button>
+      </form>
+    </div>
+  </section>
+</main>
+

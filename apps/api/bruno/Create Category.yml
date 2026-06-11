@@ -1,0 +1,27 @@
+info:
+  name: Create Category
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: "{{baseurl}}:{{hb_backend}}/categories"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Rooibos & Teas",
+        "slug": "rooibos-teas",
+        "description": "Traditional South African rooibos, honeybush and other teas",
+        "displayOrder": 3,
+        "parentId": null
+      }
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

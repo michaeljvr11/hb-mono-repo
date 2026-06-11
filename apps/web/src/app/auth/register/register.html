@@ -1,0 +1,117 @@
+<main class="auth-page register-page">
+  <section class="brand-panel" aria-labelledby="register-title">
+    <a class="brand-mark" routerLink="/login" aria-label="H&B home">
+      <span class="brand-leaf" aria-hidden="true">H&amp;B</span>
+      <span>E-commerce</span>
+    </a>
+
+    <div class="hero-copy">
+      <p class="eyebrow">Start something new</p>
+      <h1 id="register-title">Create your account</h1>
+      <p>
+        Create a customer account for easy ordering, saved details, and a
+        brighter path back to the products you love.
+      </p>
+    </div>
+
+    <div class="brand-badges" aria-label="H&B highlights">
+      <span>Customer account</span>
+      <span>Local favorites</span>
+      <span>Quick ordering</span>
+    </div>
+  </section>
+
+  <section class="form-panel" aria-label="Registration form">
+    <div class="form-shell">
+      <p class="section-kicker">Join H&amp;B</p>
+      <h2>Create account</h2>
+      <p class="form-intro">A few details and you can start shopping the H&amp;B marketplace.</p>
+
+      <form [formGroup]="registerForm" (ngSubmit)="submit()" novalidate>
+        <div class="name-grid">
+          <label class="field">
+            <span>First name</span>
+            <input
+              type="text"
+              formControlName="firstName"
+              autocomplete="given-name"
+              placeholder="Avery"
+              [class.invalid]="firstNameControl.invalid && firstNameControl.touched"
+            />
+            @if (firstNameControl.hasError('required') && firstNameControl.touched) {
+              <small>First name is required.</small>
+            }
+          </label>
+
+          <label class="field">
+            <span>Last name</span>
+            <input
+              type="text"
+              formControlName="lastName"
+              autocomplete="family-name"
+              placeholder="Mokoena"
+              [class.invalid]="lastNameControl.invalid && lastNameControl.touched"
+            />
+            @if (lastNameControl.hasError('required') && lastNameControl.touched) {
+              <small>Last name is required.</small>
+            }
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Email address</span>
+          <input
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            [class.invalid]="emailControl.invalid && emailControl.touched"
+          />
+          @if (emailControl.hasError('required') && emailControl.touched) {
+            <small>Email is required.</small>
+          } @else if (emailControl.hasError('email') && emailControl.touched) {
+            <small>Enter a valid email address.</small>
+          }
+        </label>
+
+        <label class="field">
+          <span>Password</span>
+          <input
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+            placeholder="At least 8 characters"
+            [class.invalid]="passwordControl.invalid && passwordControl.touched"
+          />
+          @if (passwordControl.hasError('required') && passwordControl.touched) {
+            <small>Password is required.</small>
+          } @else if (passwordControl.hasError('minlength') && passwordControl.touched) {
+            <small>Password must be at least 8 characters.</small>
+          }
+        </label>
+
+        <label class="check-field terms-field">
+          <input type="checkbox" formControlName="acceptsTerms" />
+          <span>I agree to the Terms of Service and Privacy Policy.</span>
+        </label>
+        @if (acceptsTermsControl.invalid && acceptsTermsControl.touched) {
+          <small>Confirm this before creating your account.</small>
+        }
+
+        @if (errorMessage()) {
+          <p class="status status-error" role="alert">{{ errorMessage() }}</p>
+        }
+
+        <button class="primary-action" type="submit" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Creating account...' : 'Create account' }}
+        </button>
+
+        <p class="switch-auth">
+          Already have an account?
+          <a routerLink="/login">Sign in</a>
+        </p>
+      </form>
+    </div>
+  </section>
+</main>
+

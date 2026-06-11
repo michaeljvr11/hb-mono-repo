@@ -1,0 +1,26 @@
+info:
+  name: Create Product
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{baseurl}}:{{hb_backend}}/products"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Peri-Peri Biltong (250g)",
+        "description": "Spicy peri-peri marinated beef biltong – a Namibian favourite with South African soul.",
+        "price": 120.50,
+        "stockQuantity": 32
+      }
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

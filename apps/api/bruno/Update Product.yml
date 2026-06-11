@@ -1,0 +1,23 @@
+info:
+  name: Update Product
+  type: http
+  seq: 10
+
+http:
+  method: PATCH
+  url: "{{baseurl}}:{{hb_backend}}/products/ee004568-020e-4d62-be54-b76439da03fd"
+  body:
+    type: json
+    data: |-
+      {
+        "categoryIds": ["c6ffc390-7a34-4b82-b669-ebdde83abab2"]
+      }
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,17 @@
+info:
+  name: Get Categories
+  type: http
+  seq: 15
+
+http:
+  method: GET
+  url: "{{baseurl}}:{{hb_backend}}/categories"
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
