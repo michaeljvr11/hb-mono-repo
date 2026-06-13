@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login - H&amp;B Marketplace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#eae7e7",
+                        "secondary-container": "#fe9b53",
+                        "on-tertiary-fixed-variant": "#015300",
+                        "on-primary-fixed": "#002200",
+                        "on-secondary-fixed": "#311300",
+                        "on-surface": "#1c1b1b",
+                        "surface-variant": "#e5e2e1",
+                        "background": "#fcf9f8",
+                        "tertiary": "#015300",
+                        "on-primary-fixed-variant": "#015300",
+                        "surface-container-low": "#f6f3f2",
+                        "surface-tint": "#036e00",
+                        "secondary": "#964900",
+                        "on-tertiary-fixed": "#002200",
+                        "on-primary-container": "#8eee78",
+                        "secondary-fixed": "#ffdcc7",
+                        "on-tertiary-container": "#33f925",
+                        "surface-dim": "#dcd9d9",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f3f0ef",
+                        "outline-variant": "#bfcab7",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#03e600",
+                        "tertiary-container": "#026e00",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#fcf9f8",
+                        "tertiary-fixed": "#77ff61",
+                        "outline": "#707a6a",
+                        "on-surface-variant": "#404a3b",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e5e2e1",
+                        "inverse-primary": "#7ddc69",
+                        "surface": "#fcf9f8",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#703500",
+                        "primary-container": "#026e00",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#98f982",
+                        "secondary-fixed-dim": "#ffb787",
+                        "primary": "#015300",
+                        "inverse-surface": "#313030",
+                        "surface-container": "#f0eded",
+                        "primary-fixed-dim": "#7ddc69",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#1c1b1b",
+                        "on-secondary-fixed-variant": "#723600"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "unit": "8px",
+                        "margin-mobile": "16px",
+                        "stack-sm": "8px",
+                        "margin-desktop": "40px",
+                        "stack-xs": "4px",
+                        "stack-lg": "24px",
+                        "stack-xl": "48px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-lg": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fcf9f8;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .input-focus-ring:focus {
+            outline: none;
+            border-color: #015300;
+            box-shadow: 0 0 0 2px rgba(1, 83, 0, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col">
+<!-- Header Navigation (Simplified) -->
+<header class="w-full top-0 sticky z-50 bg-surface border-b border-outline-variant px-margin-mobile md:px-margin-desktop py-stack-md flex justify-between items-center max-w-container-max mx-auto">
+<div class="flex items-center gap-2">
+<span class="text-headline-md font-headline-md font-bold text-primary">H&amp;B</span>
+<span class="hidden md:block text-label-sm text-on-surface-variant tracking-widest uppercase ml-2 border-l border-outline-variant pl-4">Marketplace</span>
+</div>
+<a class="text-body-md font-label-lg text-primary hover:underline transition-all" href="#">
+            Support
+        </a>
+</header>
+<main class="flex-grow flex items-center justify-center px-margin-mobile py-stack-xl relative overflow-hidden">
+<!-- Atmospheric Background Element -->
+<div class="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="w-full max-w-md z-10">
+<!-- Form Container -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-lg md:p-stack-xl shadow-sm">
+<div class="mb-stack-lg text-center md:text-left">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-stack-xs">Welcome Back</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Log in to access SADC's leading cross-border trade bridge.</p>
+</div>
+<form class="space-y-stack-md" onsubmit="event.preventDefault();">
+<!-- Email Field -->
+<div class="space-y-stack-xs">
+<label class="block font-label-lg text-label-lg text-on-surface-variant" for="email">Email Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">mail</span>
+<input class="w-full pl-10 pr-4 py-3 rounded-lg border border-outline bg-surface text-body-md input-focus-ring transition-all placeholder:text-on-surface-variant/50" id="email" name="email" placeholder="name@company.com" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-stack-xs">
+<label class="block font-label-lg text-label-lg text-on-surface-variant" for="password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">lock</span>
+<input class="w-full pl-10 pr-4 py-3 rounded-lg border border-outline bg-surface text-body-md input-focus-ring transition-all placeholder:text-on-surface-variant/50" id="password" name="password" placeholder="••••••••" type="password"/>
+</div>
+<div class="flex justify-end">
+<a class="text-label-sm font-label-sm text-primary hover:underline transition-colors" href="#">Forgot Password?</a>
+</div>
+</div>
+<!-- Primary Action -->
+<button class="w-full bg-primary hover:bg-primary/90 text-on-primary font-label-lg py-4 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-stack-lg" type="submit">
+                        Log In
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</form>
+<!-- Divider -->
+<div class="relative my-stack-lg">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant"></div>
+</div>
+<div class="relative flex justify-center text-label-sm uppercase">
+<span class="bg-surface-container-lowest px-2 text-on-surface-variant tracking-widest">OR LOG IN WITH</span>
+</div>
+</div>
+<!-- Social Login -->
+<button class="w-full border border-outline hover:bg-surface-container-low text-on-surface font-label-lg py-3 rounded-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98]">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0iaY1AVLmqeeRVXvfVEzPGO1PzaHJtCqpXVEomdA5XbbbrtQ3CT7vXvLQWheGgS_B0HGUOfK5M5zUTjAdrneiWjaweda-1aHCSkY0ca_u0lwGRyyhf6YqQugpu7B3YIa3HJ7V82AWMLJ5weQYE3qkvcvD5ZEgoDNUExs3p6XCIVSS7DaSTbYiiNPek4QgG3XpoXtZCpAcWjwrVrwhAVbu4-j6rd7l8OR3bJqACpWXt7o3U-40CLN1CToEyjAMGuDd2w_zXvzfNjCC"/>
+                    Sign in with Google
+                </button>
+<!-- Footer Link -->
+<div class="mt-stack-lg text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                        Don't have an account? 
+                        <a class="text-primary font-label-lg hover:underline ml-1" href="#">Sign Up</a>
+</p>
+</div>
+</div>
+<!-- Trust Badges -->
+<div class="mt-stack-xl flex flex-col md:flex-row items-center justify-center gap-stack-lg opacity-80">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="text-label-sm font-label-sm uppercase tracking-widest">SECURE &amp; ENCRYPTED</span>
+</div>
+<div class="hidden md:block w-1 h-1 bg-outline rounded-full"></div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">public</span>
+<span class="text-label-sm font-label-sm uppercase tracking-widest">SADC REGIONAL TRADE PARTNER</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Simple Footer -->
+<footer class="w-full py-stack-md px-margin-mobile md:px-margin-desktop bg-surface border-t border-outline-variant">
+<div class="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-stack-sm">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                © 2024 H&amp;B Cross-Border Marketplace. Empowering Regional Trade.
+            </p>
+<div class="flex gap-stack-md">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Trade</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interaction for input floating effects (optional)
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('scale-[1.01]');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.classList.remove('scale-[1.01]');
+            });
+        });
+    </script>
+</body></html>

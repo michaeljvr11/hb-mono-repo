@@ -1,10 +1,10 @@
-﻿import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
-import { RegisterRequest } from '@hb/shared';
+import { RegisterRequest, UserRole } from '@hb/shared';
 
 @Component({
   selector: 'app-register',
@@ -21,22 +21,20 @@ export class Register {
 
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal('');
+  readonly showPassword = signal(false);
   readonly returnUrl = computed(() => this.route.snapshot.queryParamMap.get('returnUrl') ?? '');
+  readonly loginLinkParams = computed(() =>
+    this.returnUrl() ? { returnUrl: this.returnUrl() } : {},
+  );
 
   readonly registerForm = this.formBuilder.nonNullable.group({
-    firstName: ['', [Validators.required, Validators.maxLength(60)]],
-    lastName: ['', [Validators.required, Validators.maxLength(60)]],
+    fullName: ['', [Validators.required, Validators.maxLength(120)]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
-    acceptsTerms: [false, [Validators.requiredTrue]],
   });
 
-  get firstNameControl() {
-    return this.registerForm.controls.firstName;
-  }
-
-  get lastNameControl() {
-    return this.registerForm.controls.lastName;
+  get fullNameControl() {
+    return this.registerForm.controls.fullName;
   }
 
   get emailControl() {
@@ -47,8 +45,8 @@ export class Register {
     return this.registerForm.controls.password;
   }
 
-  get acceptsTermsControl() {
-    return this.registerForm.controls.acceptsTerms;
+  togglePassword(): void {
+    this.showPassword.update((shown) => !shown);
   }
 
   submit(): void {
@@ -60,24 +58,47 @@ export class Register {
     }
 
     const data: RegisterRequest = {
-      firstName: this.registerForm.controls.firstName.value.trim(),
-      lastName: this.registerForm.controls.lastName.value.trim(),
+      ...this.splitFullName(this.registerForm.controls.fullName.value),
       email: this.registerForm.controls.email.value,
       password: this.registerForm.controls.password.value,
-      role: 'customer',
+      role: UserRole.CUSTOMER,
     };
 
     this.isSubmitting.set(true);
 
-    this.authService.register(data).pipe(
-      finalize(() => this.isSubmitting.set(false)),
-    ).subscribe({
-      next: () => {
-        this.showSuccessMessage('Your H&B account is ready. Welcome in.');
-        void this.router.navigateByUrl(this.returnUrl() || '/shop');
-      },
-      error: error => this.errorMessage.set(this.getErrorMessage(error, 'We could not create your account yet. Please try again.')),
+    this.authService
+      .register(data)
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .subscribe({
+        next: () => {
+          this.showSuccessMessage('Your H&B account is ready. Welcome in.');
+          void this.router.navigateByUrl(this.returnUrl() || '/shop');
+        },
+        error: (error) =>
+          this.errorMessage.set(
+            this.getErrorMessage(error, 'We could not create your account yet. Please try again.'),
+          ),
+      });
+  }
+
+  // Google sign-up is not built yet (see Auth & Roles note) — surface an honest
+  // "coming soon" message instead of wiring a fake provider flow.
+  notifyComingSoon(feature: string): void {
+    this.snackBar.open(`${feature} is coming soon.`, 'Close', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      panelClass: ['hb-info-snackbar'],
+      verticalPosition: 'top',
     });
+  }
+
+  // The design captures a single "Full Name"; the API contract keeps optional
+  // firstName/lastName. Split on the first space so both stay populated.
+  private splitFullName(fullName: string): Pick<RegisterRequest, 'firstName' | 'lastName'> {
+    const parts = fullName.trim().split(/\s+/).filter(Boolean);
+    const [firstName, ...rest] = parts;
+    const lastName = rest.join(' ');
+    return lastName ? { firstName, lastName } : { firstName };
   }
 
   private showSuccessMessage(message: string): void {
@@ -90,20 +111,22 @@ export class Register {
   }
 
   private getErrorMessage(error: unknown, fallback: string): string {
-    if (this.hasMessage(error)) {
-      return error.error.message;
+    // NestJS returns `message` as a string (e.g. 400/409) or a string[] for
+    // DTO validation failures — normalise both to the first useful line.
+    const message = this.extractMessage(error);
+    if (Array.isArray(message)) {
+      return message[0] ?? fallback;
     }
-
-    return fallback;
+    return message ?? fallback;
   }
 
-  private hasMessage(error: unknown): error is { error: { message: string } } {
-    return typeof error === 'object'
-      && error !== null
-      && 'error' in error
-      && typeof (error as { error?: { message?: unknown } }).error?.message === 'string';
+  private extractMessage(error: unknown): string | string[] | undefined {
+    if (typeof error === 'object' && error !== null && 'error' in error) {
+      const inner = (error as { error?: { message?: unknown } }).error;
+      if (inner && (typeof inner.message === 'string' || Array.isArray(inner.message))) {
+        return inner.message as string | string[];
+      }
+    }
+    return undefined;
   }
 }
-
-
-
