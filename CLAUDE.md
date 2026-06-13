@@ -10,7 +10,7 @@ Architecture details and key decisions: see `README.md` (current truth).
 
 ## Source of truth
 - **Business rules & domain model:** Obsidian vault (use `obsidian` MCP tools).
-- **Designs & tokens:** `docs/design/DESIGN.md` + `docs/design/<screen>/`.
+- **Designs & tokens:** Stitch MCP (`stitch` tools) is the live source — fetch the screen before implementing it. `docs/design/DESIGN.md` holds token overrides; `docs/design/<screen>/` holds the saved HTML export + screenshot for traceability.
 - **Work items:** Trello board (use `trello` MCP tools).
 - **API contract:** `libs/shared` (`@hb/shared`) — interfaces + enums only.
 

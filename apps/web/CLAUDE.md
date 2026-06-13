@@ -6,9 +6,13 @@
 - Consume API types from `@hb/shared` (aliased to lib **source** via tsconfig paths —
   no rebuild needed during dev). Never hand-duplicate models.
 - Keep components small and presentational; data access lives in services under `core/api`.
-- Styling follows `docs/design/DESIGN.md` tokens (colors, spacing, type scale). When
-  implementing a screen, read `docs/design/<screen>/` (exported HTML + screenshot) and
-  build idiomatic Angular components that match — never paste raw exported markup.
+- Styling follows `docs/design/DESIGN.md` tokens (colors, spacing, type scale).
+- **When implementing a screen:** use the `stitch` MCP tools to fetch the current design
+  for that screen first (list projects → get screen). Save the HTML+Tailwind output to
+  `docs/design/<screen>/export.html` and a screenshot to `docs/design/<screen>/reference.png`,
+  then build idiomatic Angular standalone components that match — never paste raw exported
+  markup directly into the app. If the Stitch MCP is unavailable, read the saved
+  `docs/design/<screen>/` files as fallback.
 - Angular Material 21 is available; prefer it for standard controls, themed via tokens.
 - Frontend env files hold only `apiBaseUrl` + flags. No secrets, no provider keys.
 
