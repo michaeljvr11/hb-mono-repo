@@ -8,10 +8,12 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes } from 'crypto';
 import * as bcrypt from 'bcryptjs';
+import { UserRole } from '@hb/shared';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { GoogleProfile } from './strategies/google.strategy';
 import { User } from '../users/entities/user.entity';
 
 // Refresh-session longevity (see Auth & Roles note): "remember me" → 30 days,
@@ -87,6 +89,33 @@ export class AuthService {
     // Rotation: issue new pair, invalidate old. Preserve the original
     // remember-me choice so the session length carries across refreshes.
     return this.getTokensAndUpdateRefresh(user, rememberMe);
+  }
+
+  async validateOAuthLogin(profile: GoogleProfile) {
+    if (!profile.email) {
+      throw new UnauthorizedException('Google did not return an email address.');
+    }
+
+    let user = await this.usersService.findByEmail(profile.email);
+    if (!user) {
+      // First Google sign-in creates a verified account. The password is random
+      // and unused (the user authenticates via Google) but satisfies NOT NULL;
+      // they can set a real one later via the password-reset flow.
+      user = await this.usersService.create({
+        email: profile.email,
+        password: randomBytes(32).toString('hex'),
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        role: UserRole.CUSTOMER,
+        isVerified: true,
+      });
+    } else if (!user.isVerified) {
+      // Google has verified ownership of the address — reflect it locally.
+      await this.usersService.markEmailVerified(user.id);
+      user.isVerified = true;
+    }
+
+    return this.getTokensAndUpdateRefresh(user, false);
   }
 
   async forgotPassword(email: string) {

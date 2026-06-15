@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
@@ -161,6 +161,42 @@ describe('AuthService', () => {
 
       expect(usersService.setPassword).toHaveBeenCalledWith('u1', 'new-hash');
       expect(result.message).toContain('reset');
+    });
+  });
+
+  describe('validateOAuthLogin (Google)', () => {
+    it('rejects a profile without an email', async () => {
+      await expect(service.validateOAuthLogin({})).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('creates a verified account on first Google sign-in', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue({ ...activeUser, isVerified: true });
+
+      await service.validateOAuthLogin({
+        email: 'a@b.com',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+      });
+
+      expect(usersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: 'a@b.com',
+          firstName: 'Ada',
+          lastName: 'Lovelace',
+          isVerified: true,
+        }),
+      );
+      expect(usersService.updateRefreshToken).toHaveBeenCalled();
+    });
+
+    it('verifies an existing-but-unverified local account', async () => {
+      usersService.findByEmail.mockResolvedValue({ ...activeUser, isVerified: false });
+
+      await service.validateOAuthLogin({ email: 'a@b.com' });
+
+      expect(usersService.markEmailVerified).toHaveBeenCalledWith('u1');
+      expect(usersService.create).not.toHaveBeenCalled();
     });
   });
 

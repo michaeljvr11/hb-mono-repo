@@ -4,6 +4,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { environment } from '../../../environments/environment';
 import { RegisterRequest, UserRole } from '@hb/shared';
 
 @Component({
@@ -22,6 +23,8 @@ export class Register {
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal('');
   readonly showPassword = signal(false);
+  // Full-page redirect into the server-side Google OAuth flow.
+  readonly googleAuthUrl = `${environment.apiBaseUrl}/auth/google`;
   readonly returnUrl = computed(() => this.route.snapshot.queryParamMap.get('returnUrl') ?? '');
   readonly loginLinkParams = computed(() =>
     this.returnUrl() ? { returnUrl: this.returnUrl() } : {},
@@ -81,17 +84,6 @@ export class Register {
             this.getErrorMessage(error, 'We could not create your account yet. Please try again.'),
           ),
       });
-  }
-
-  // Google sign-up is not built yet (see Auth & Roles note) — surface an honest
-  // "coming soon" message instead of wiring a fake provider flow.
-  notifyComingSoon(feature: string): void {
-    this.snackBar.open(`${feature} is coming soon.`, 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
-    });
   }
 
   // The design captures a single "Full Name"; the API contract keeps optional

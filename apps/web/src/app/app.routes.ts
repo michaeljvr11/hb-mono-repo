@@ -25,6 +25,10 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/verify-email/verify-email').then(m => m.VerifyEmail)
   },
   {
+    path: 'auth/callback',
+    loadComponent: () => import('./auth/callback/auth-callback').then(m => m.AuthCallback)
+  },
+  {
     path: '',
     redirectTo: 'shop',
     pathMatch: 'full'

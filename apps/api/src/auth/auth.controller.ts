@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
@@ -8,6 +9,7 @@ import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import type { GoogleProfile } from './strategies/google.strategy';
 import { Public } from '../common/decorators/public.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { User } from '../users/entities/user.entity';
@@ -26,6 +28,7 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private usersService: UsersService,
+    private config: ConfigService,
   ) {}
 
   @Public()
@@ -58,6 +61,25 @@ export class AuthController {
     const tokens = await this.authService.refreshTokens(sub, refreshToken, !!rememberMe);
     this.setRefreshCookie(res, tokens.refresh_token, tokens.refresh_max_age_ms);
     return { access_token: tokens.access_token, user: tokens.user };
+  }
+
+  @Public()
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleAuth(): void {
+    // The guard redirects to Google's consent screen; nothing to do here.
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(@GetUser() profile: GoogleProfile, @Res() res: Response) {
+    const tokens = await this.authService.validateOAuthLogin(profile);
+    this.setRefreshCookie(res, tokens.refresh_token, tokens.refresh_max_age_ms);
+    // Tokens never travel in the URL: the refresh cookie is set above, and the
+    // web /auth/callback page exchanges it for an access token via /auth/refresh.
+    const webUrl = this.config.get<string>('APP_WEB_URL') || 'http://localhost:4200';
+    res.redirect(`${webUrl}/auth/callback`);
   }
 
   @Public()

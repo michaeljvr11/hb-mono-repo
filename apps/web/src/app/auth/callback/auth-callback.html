@@ -1,0 +1,19 @@
+<div class="auth-screen auth-centered">
+  <div class="auth-panel">
+    <a class="panel-brand" routerLink="/login" aria-label="H&B Marketplace home">
+      <span class="material-symbols-outlined" aria-hidden="true">hub</span>
+      <span>H&amp;B</span>
+    </a>
+
+    @if (failed()) {
+      <span class="material-symbols-outlined state-icon bad" aria-hidden="true">error</span>
+      <h1>Sign-in failed</h1>
+      <p class="panel-sub">We couldn't complete your Google sign-in. Please try again.</p>
+      <a class="primary-action" routerLink="/login">Back to log in</a>
+    } @else {
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_top</span>
+      <h1>Signing you in…</h1>
+      <p class="panel-sub">Completing your Google sign-in.</p>
+    }
+  </div>
+</div>
