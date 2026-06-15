@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
@@ -23,6 +23,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         'http://localhost:3000/api/auth/google/callback',
       scope: ['email', 'profile'],
     });
+
+    if (!config.get<string>('GOOGLE_CLIENT_ID')) {
+      new Logger(GoogleStrategy.name).warn(
+        'GOOGLE_CLIENT_ID is not set — /auth/google will not complete a real sign-in.',
+      );
+    }
   }
 
   validate(

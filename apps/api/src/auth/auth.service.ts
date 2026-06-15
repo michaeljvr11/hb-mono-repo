@@ -132,7 +132,7 @@ export class AuthService {
 
   async resetPassword(rawToken: string, newPassword: string) {
     const user = await this.usersService.findByPasswordResetTokenHash(this.hashToken(rawToken));
-    if (!user || !this.isUnexpired(user.passwordResetExpires)) {
+    if (!user || !user.isActive || !this.isUnexpired(user.passwordResetExpires)) {
       throw new BadRequestException('This password reset link is invalid or has expired.');
     }
 

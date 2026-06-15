@@ -150,9 +150,21 @@ describe('AuthService', () => {
       );
     });
 
+    it('rejects a reset for a deactivated account', async () => {
+      usersService.findByPasswordResetTokenHash.mockResolvedValue({
+        id: 'u1',
+        isActive: false,
+        passwordResetExpires: new Date(Date.now() + 60_000),
+      });
+      await expect(service.resetPassword('tok', 'newpassword')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
     it('stores a freshly hashed password for a valid token', async () => {
       usersService.findByPasswordResetTokenHash.mockResolvedValue({
         id: 'u1',
+        isActive: true,
         passwordResetExpires: new Date(Date.now() + 60_000),
       });
       (bcrypt.hash as jest.Mock).mockResolvedValue('new-hash');
