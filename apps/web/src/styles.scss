@@ -117,6 +117,7 @@ body {
   font: inherit;
   font-size: 14px;
   font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
   transition: background 160ms ease, transform 120ms ease;
 }
@@ -196,6 +197,123 @@ body {
 
 .auth-screen .trust-item .filled {
   font-variation-settings: 'FILL' 1;
+}
+
+/* Centered single-card layout shared by the focused auth flows
+   (forgot / reset password, email verification). Lives in global styles so the
+   three small components stay free of duplicated layout SCSS. */
+.auth-screen.auth-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 28rem;
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  padding: 32px 24px;
+  box-shadow: 0 1px 2px rgba(28, 27, 27, 0.06);
+  text-align: center;
+}
+
+.auth-panel .panel-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  text-decoration: none;
+  color: var(--hb-primary);
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.auth-panel .panel-brand .material-symbols-outlined {
+  font-size: 32px;
+}
+
+.auth-panel h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--hb-on-surface);
+}
+
+.auth-panel .panel-sub {
+  margin: 0 0 24px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--hb-on-surface-variant);
+}
+
+.auth-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
+
+.auth-panel .input-wrap {
+  border: 1px solid var(--hb-outline);
+}
+
+.auth-panel .input-wrap > .material-symbols-outlined {
+  margin-left: 12px;
+}
+
+.auth-panel .input-wrap input {
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.auth-panel .primary-action {
+  margin-top: 8px;
+  border-radius: 8px;
+}
+
+.auth-panel .status-ok {
+  margin: 0 0 16px;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #e6f4e1;
+  color: #0c4a00;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.auth-panel .panel-foot {
+  margin-top: 24px;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+.auth-panel .panel-foot a {
+  color: var(--hb-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-panel .panel-foot a:hover {
+  text-decoration: underline;
+}
+
+.auth-panel .state-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.auth-panel .state-icon.ok {
+  color: var(--hb-primary);
+}
+
+.auth-panel .state-icon.bad {
+  color: var(--hb-error);
 }
 
 /* Snackbar themes (rendered at the overlay root, so they must be global) */

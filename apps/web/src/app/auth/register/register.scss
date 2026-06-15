@@ -99,6 +99,24 @@ form {
   color: var(--hb-primary);
 }
 
+.remember-me {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 4px;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+  cursor: pointer;
+  user-select: none;
+}
+
+.remember-me input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--hb-primary);
+  cursor: pointer;
+}
+
 .primary-action {
   margin-top: 8px;
   border-radius: 12px;

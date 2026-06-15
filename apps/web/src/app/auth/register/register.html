@@ -8,7 +8,7 @@
       <h1>Create Your Account</h1>
       <p>
         Join the ZA-NA trade bridge. Connect, trade, and grow across borders with
-        SADC's leading marketplace.
+        Namibia's leading marketplace.
       </p>
     </header>
 
@@ -79,6 +79,11 @@
         }
       </div>
 
+      <label class="remember-me">
+        <input type="checkbox" formControlName="rememberMe" />
+        <span>Keep me signed in for 30 days</span>
+      </label>
+
       @if (errorMessage()) {
         <p class="status-error" role="alert">{{ errorMessage() }}</p>
       }
@@ -120,7 +125,7 @@
         </span>
         <span class="trust-item">
           <span class="material-symbols-outlined secondary" aria-hidden="true">public</span>
-          SADC Regional Trade Partner
+          Your Trusted Trade Partner
         </span>
       </div>
     </footer>

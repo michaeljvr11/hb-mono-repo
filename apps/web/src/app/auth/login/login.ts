@@ -30,6 +30,7 @@ export class Login {
   readonly loginForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
+    rememberMe: [false],
   });
 
   get emailControl() {
@@ -51,6 +52,7 @@ export class Login {
     const credentials: LoginRequest = {
       email: this.loginForm.controls.email.value,
       password: this.loginForm.controls.password.value,
+      rememberMe: this.loginForm.controls.rememberMe.value,
     };
 
     this.isSubmitting.set(true);

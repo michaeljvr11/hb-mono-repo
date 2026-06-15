@@ -11,7 +11,7 @@
     <div class="auth-card">
       <div class="card-head">
         <h1>Welcome Back</h1>
-        <p>Log in to access SADC's leading cross-border trade bridge.</p>
+        <p>Log in to access Namibia's leading cross-border trade bridge.</p>
       </div>
 
       <form [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
@@ -46,18 +46,19 @@
               placeholder="••••••••"
             />
           </div>
-          <div class="field-row">
-            @if (passwordControl.hasError('required') && passwordControl.touched) {
-              <small>Password is required.</small>
-            } @else if (passwordControl.hasError('minlength') && passwordControl.touched) {
-              <small>Password must be at least 8 characters.</small>
-            } @else {
-              <span></span>
-            }
-            <button type="button" class="link-inline" (click)="notifyComingSoon('Password reset')">
-              Forgot Password?
-            </button>
-          </div>
+          @if (passwordControl.hasError('required') && passwordControl.touched) {
+            <small>Password is required.</small>
+          } @else if (passwordControl.hasError('minlength') && passwordControl.touched) {
+            <small>Password must be at least 8 characters.</small>
+          }
+        </div>
+
+        <div class="options-row">
+          <label class="remember-me">
+            <input type="checkbox" formControlName="rememberMe" />
+            <span>Remember me</span>
+          </label>
+          <a class="link-inline" routerLink="/forgot-password">Forgot Password?</a>
         </div>
 
         @if (errorMessage()) {
@@ -102,7 +103,7 @@
       <span class="dot" aria-hidden="true"></span>
       <span class="trust-item">
         <span class="material-symbols-outlined filled" aria-hidden="true">public</span>
-        SADC Regional Trade Partner
+        Your Trusted Trade Partner
       </span>
     </div>
   </main>

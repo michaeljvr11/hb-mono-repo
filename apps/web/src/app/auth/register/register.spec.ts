@@ -55,6 +55,7 @@ describe('Register', () => {
       fullName: 'Avery Mokoena Smith',
       email: 'a@b.com',
       password: 'password1',
+      rememberMe: true,
     });
     component.submit();
 
@@ -64,6 +65,7 @@ describe('Register', () => {
       email: 'a@b.com',
       password: 'password1',
       role: 'customer',
+      rememberMe: true,
     });
   });
 
@@ -78,6 +80,7 @@ describe('Register', () => {
       fullName: 'Cher',
       email: 'a@b.com',
       password: 'password1',
+      rememberMe: false,
     });
     component.submit();
 
@@ -86,6 +89,7 @@ describe('Register', () => {
       email: 'a@b.com',
       password: 'password1',
       role: 'customer',
+      rememberMe: false,
     });
   });
 });

@@ -45,11 +45,31 @@ describe('Login', () => {
     const router = TestBed.inject(Router);
     const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
 
-    component.loginForm.setValue({ email: 'a@b.com', password: 'password1' });
+    component.loginForm.setValue({ email: 'a@b.com', password: 'password1', rememberMe: false });
     component.submit();
 
-    expect(authService.login).toHaveBeenCalledWith({ email: 'a@b.com', password: 'password1' });
+    expect(authService.login).toHaveBeenCalledWith({
+      email: 'a@b.com',
+      password: 'password1',
+      rememberMe: false,
+    });
     expect(navigate).toHaveBeenCalledWith('/shop');
+  });
+
+  it('passes the remember-me choice through to the API', () => {
+    authService.login.mockReturnValue(
+      of({ access_token: 'token', user: { id: '1', email: 'a@b.com', role: 'customer' } }),
+    );
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    component.loginForm.setValue({ email: 'a@b.com', password: 'password1', rememberMe: true });
+    component.submit();
+
+    expect(authService.login).toHaveBeenCalledWith({
+      email: 'a@b.com',
+      password: 'password1',
+      rememberMe: true,
+    });
   });
 
   it('surfaces a server error message on failure', () => {
@@ -57,7 +77,7 @@ describe('Login', () => {
       throwError(() => ({ error: { message: 'Invalid credentials' } })),
     );
 
-    component.loginForm.setValue({ email: 'a@b.com', password: 'password1' });
+    component.loginForm.setValue({ email: 'a@b.com', password: 'password1', rememberMe: false });
     component.submit();
 
     expect(component.errorMessage()).toBe('Invalid credentials');

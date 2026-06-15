@@ -31,6 +31,7 @@ export class Register {
     fullName: ['', [Validators.required, Validators.maxLength(120)]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
+    rememberMe: [false],
   });
 
   get fullNameControl() {
@@ -62,6 +63,7 @@ export class Register {
       email: this.registerForm.controls.email.value,
       password: this.registerForm.controls.password.value,
       role: UserRole.CUSTOMER,
+      rememberMe: this.registerForm.controls.rememberMe.value,
     };
 
     this.isSubmitting.set(true);
