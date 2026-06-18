@@ -27,8 +27,12 @@ an Agent Team; for a single-layer card one subagent is enough — don't over-orc
    - Run code-reviewer on the diff. Address every FAIL. Re-run affected tests.
 
 6. DELIVER
-   - Commit (Conventional Commits), push the feature branch.
+   - Commit (Conventional Commits). End every commit body with the AI-authorship trailer
+     `Co-Authored-By: Claude <noreply@anthropic.com>` — this is the auditable record of AI
+     authorship (see `docs/ai-evidence/`). Push the feature branch.
    - Open a PR using the template — link the Trello card and the Obsidian note.
    - Comment the PR link on the card and move it to "In Review".
    - Dispatch docs-writer to append Implementation Notes to the Obsidian note.
+   - EVIDENCE: run `npm run evidence` to recompile `docs/ai-evidence/REPORT.md`, and have
+     docs-writer refresh the headline figures in the Obsidian note **AI Factory — Evidence Log**.
    - STOP. Do not merge. A human owns prod.

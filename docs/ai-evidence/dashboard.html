@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HB — AI Factory Evidence</title>
+  <!-- Data is emitted by `npm run evidence` as report.js (window.EVIDENCE). -->
+  <script src="report.js"></script>
+  <style>
+    :root {
+      --bg: #0b0f17; --panel: #131a26; --panel2: #1b2535; --line: #25324a;
+      --ink: #e8eef7; --muted: #8ea0bd; --accent: #5b9cff; --good: #34d399;
+      --warn: #fbbf24; --bad: #f87171; --bar: #3b6fd4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 24px 64px; }
+    header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    h1 { font-size: 24px; margin: 0; letter-spacing: -0.01em; }
+    h1 .bot { color: var(--accent); }
+    .sub { color: var(--muted); font-size: 13px; }
+    h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 36px 0 14px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+    .card .n { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
+    .card .l { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+    .card .accent { color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+    th { color: var(--muted); font-weight: 600; background: var(--panel2); }
+    tr:last-child td { border-bottom: none; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .bartrack { background: var(--panel2); border-radius: 6px; height: 9px; overflow: hidden; min-width: 90px; }
+    .barfill { background: var(--bar); height: 100%; }
+    .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .pill.good { background: rgba(52,211,153,.15); color: var(--good); }
+    .pill.warn { background: rgba(251,191,36,.15); color: var(--warn); }
+    a { color: var(--accent); }
+    .note { color: var(--muted); font-size: 12.5px; margin-top: 10px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+    code { background: var(--panel2); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app"><p class="sub">Loading… run <code>npm run evidence</code> if this stays empty.</p></div>
+  <script>
+    const E = window.EVIDENCE;
+    const $ = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstChild; };
+    const n = (x) => (x ?? 0).toLocaleString();
+    const app = document.getElementById('app');
+
+    if (!E) {
+      app.innerHTML = '<h1>No evidence data</h1><p class="sub">Generate it with <code>npm run evidence</code>, then reopen this file.</p>';
+    } else {
+      const g = E.git || {};
+      const t = E.telemetry || {};
+      const tests = E.tests || {};
+      const when = new Date(E.generatedAt).toLocaleString();
+      let html = '';
+
+      html += `<header>
+        <h1><span class="bot">🤖</span> HB — AI Factory Evidence</h1>
+        <div class="sub">generated ${when} · <code>npm run evidence</code></div>
+      </header>`;
+
+      // Headline cards
+      html += '<h2>Headline</h2><div class="cards">';
+      html += card(n(g.totalCommits), 'commits' + (g.firstDate ? ` · ${g.firstDate} → ${g.lastDate}` : ''));
+      html += card(`${g.aiPct ?? 0}%`, `AI-tagged (${g.aiCommits ?? 0} of ${g.totalCommits ?? 0})`, true);
+      html += card('+' + n(g.ins), `authored lines · −${n(g.del)}`);
+      html += card(n(tests.total), `test specs · API ${tests.api ?? 0} / Web ${tests.web ?? 0}`);
+      html += card(n(t.prodBlocks), 'prod-fence blocks logged');
+      html += '</div>';
+
+      // Lifecycle
+      html += '<h2>Lifecycle coverage — an AI agent per phase</h2>';
+      const appCommits = g.appCommits ?? 0;
+      const docCommits = (g.areaRows || []).find((r) => r.name === 'Docs')?.commits ?? 0;
+      const phases = [
+        ['Requirements', 'Obsidian MCP + business-rule notes'],
+        ['Planning', `/ship-card plan + Trello · ${E.branches?.length ?? 0} traced branch(es)`],
+        ['Design', `Stitch → design-to-code · ${E.design?.files ?? 0} export file(s)`],
+        ['Implementation', `backend/frontend (sonnet) · ${appCommits} app commit(s)`],
+        ['Testing', `test-engineer + PR gate · ${tests.total ?? 0} specs`],
+        ['Review', 'code-reviewer (opus) on every diff'],
+        ['Docs', `docs-writer (haiku) · ${docCommits} docs commit(s)`],
+        ['Safety', `enforced hooks · ${t.prodBlocks ?? 0} block(s) logged`],
+      ];
+      html += '<table><tr><th>Phase</th><th>AI driver &amp; evidence</th></tr>' +
+        phases.map(([p, e]) => `<tr><td><strong>${p}</strong></td><td>${e}</td></tr>`).join('') + '</table>';
+
+      html += '<div class="grid2">';
+
+      // Churn by area (bars)
+      const rows = (g.areaRows || []).slice();
+      const max = Math.max(1, ...rows.map((r) => r.ins + r.del));
+      html += '<div><h2>Authored churn by area</h2><table><tr><th>Area</th><th class="num">+/−</th><th></th></tr>' +
+        rows.map((r) => `<tr><td>${r.name}</td><td class="num">+${n(r.ins)} / −${n(r.del)}</td>
+          <td><div class="bartrack"><div class="barfill" style="width:${Math.round(((r.ins + r.del) / max) * 100)}%"></div></div></td></tr>`).join('') +
+        '</table></div>';
+
+      // Guardrail telemetry
+      html += '<div><h2>Guardrail telemetry</h2><table><tr><th>Guardrail</th><th class="num">Fired</th></tr>';
+      const reasons = Object.entries(t.blockReasons || {}).map(([k, v]) => `${k} ×${v}`).join('; ') || '—';
+      html += `<tr><td>Prod fence<div class="note">${reasons}</div></td><td class="num">${t.prodBlocks ?? 0}</td></tr>`;
+      html += `<tr><td>PR gate (tests before PR)</td><td class="num">${(t.gatePass ?? 0) + (t.gateFail ?? 0)}</td></tr>`;
+      html += `<tr><td>Lint-on-edit</td><td class="num">${t.edits ?? 0}</td></tr>`;
+      html += '</table><p class="note">Zero unreviewed prod merges — enforced by <code>block-prod-git.js</code>, not promised.</p></div>';
+
+      html += '</div>'; // grid2
+
+      // Traceability
+      if (E.branches?.length) {
+        html += '<h2>Traceability — card → branch → PR</h2><table><tr><th>Card</th><th>Branch</th><th>PR</th></tr>';
+        for (const b of E.branches) {
+          const pr = (E.prs || []).find((p) => p.headRefName === b.branch);
+          html += `<tr><td><code>${b.cardId}</code></td><td><code>${b.branch}</code></td>
+            <td>${pr ? `<a href="${pr.url}">#${pr.number}</a> <span class="pill ${pr.state === 'MERGED' ? 'good' : 'warn'}">${pr.state}</span>` : '—'}</td></tr>`;
+        }
+        html += '</table>';
+      }
+
+      // Trello flow
+      if (E.trello?.length) {
+        html += '<h2>Trello — work moved through the board</h2><div class="cards">';
+        for (const l of E.trello) html += card(n(l.cards), l.name);
+        html += '</div>';
+      }
+
+      html += `<p class="note">Methodology: <code>docs/ai-evidence/README.md</code>. This page renders <code>report.js</code> — re-run the generator to refresh.</p>`;
+      app.innerHTML = html;
+    }
+
+    function card(num, label, accent) {
+      return `<div class="card"><div class="n ${accent ? 'accent' : ''}">${num}</div><div class="l">${label}</div></div>`;
+    }
+  </script>
+</body>
+</html>

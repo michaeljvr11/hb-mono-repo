@@ -27,7 +27,8 @@ describe('AppController (e2e)', () => {
       .get('/api/health')
       .expect(200)
       .expect((res) => {
-        if (res.body.status !== 'ok') throw new Error('health status not ok');
+        if ((res.body as { status: string }).status !== 'ok')
+          throw new Error('health status not ok');
       });
   });
 });

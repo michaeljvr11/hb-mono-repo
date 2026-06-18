@@ -41,11 +41,11 @@ export class AuthController {
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @GetUser() user: any,
+    @GetUser() user: { sub: string; refreshToken: string },
   ) {
-    const { refreshToken } = user;
+    const { sub, refreshToken } = user;
 
-    const tokens = await this.authService.refreshTokens(user.sub, refreshToken);
+    const tokens = await this.authService.refreshTokens(sub, refreshToken);
     this.setRefreshCookie(res, tokens.refresh_token);
     return { access_token: tokens.access_token, user: tokens.user };
   }

@@ -10,15 +10,19 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refresh') 
   constructor(config: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: Request) => request?.cookies?.RefreshToken || null,
+        (request: Request): string | null =>
+          (request?.cookies as Record<string, string> | undefined)?.['RefreshToken'] ?? null,
       ]),
       secretOrKey: getRequiredConfig(config, 'JWT_REFRESH_SECRET'),
       passReqToCallback: true,
     });
   }
 
-  async validate(req: Request, payload: any) {
-    const refreshToken = req.cookies?.RefreshToken;
+  validate(
+    req: Request,
+    payload: { sub: string; email: string; role: string },
+  ): { sub: string; email: string; role: string; refreshToken: string } {
+    const refreshToken = (req.cookies as Record<string, string> | undefined)?.['RefreshToken'];
     if (!refreshToken) throw new UnauthorizedException('Refresh token missing');
 
     return { ...payload, refreshToken };

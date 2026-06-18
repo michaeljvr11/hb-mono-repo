@@ -2,6 +2,7 @@
 // PreToolUse hook: no green, no PR. Runs the API test suite before allowing
 // `gh pr create`. Exit 2 = block with the failure output fed back to the agent.
 const { execSync } = require('child_process');
+const { logEvent } = require('./_log');
 
 let input = '';
 process.stdin.on('data', (d) => (input += d));
@@ -26,9 +27,11 @@ process.stdin.on('end', () => {
       .trim();
   } catch {}
 
+  const started = Date.now();
   try {
     execSync('npm run test:api', { cwd: root, stdio: 'pipe', timeout: 540000 });
   } catch (e) {
+    logEvent('pr_gate', { result: 'fail', durationMs: Date.now() - started });
     const out = (
       (e.stdout ? e.stdout.toString() : '') +
       '\n' +
@@ -37,5 +40,6 @@ process.stdin.on('end', () => {
     console.error('PR gate: API test suite failed — fix tests before opening a PR.\n' + out);
     process.exit(2);
   }
+  logEvent('pr_gate', { result: 'pass', durationMs: Date.now() - started });
   process.exit(0);
 });

@@ -1,0 +1,56 @@
+name: Claude PR Review
+
+# Optional: an automated Claude review on every PR, inline on GitHub. It is a
+# no-op (green) until you add an ANTHROPIC_API_KEY repo secret — the guard step
+# below skips the review cleanly when the key is absent, so CI never goes red.
+#
+# NOTE: verify the action version/inputs against the current Claude Code GitHub
+# Action docs before relying on it — that action evolves faster than this file.
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    name: Claude review (skipped without key)
+    runs-on: ubuntu-latest
+    steps:
+      - id: guard
+        env:
+          KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$KEY" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::ANTHROPIC_API_KEY not set — skipping Claude review. Add the secret to enable."
+          fi
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.enabled == 'true'
+        with:
+          fetch-depth: 0
+      - name: Claude review
+        if: steps.guard.outputs.enabled == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            Review this PR's diff as a strict senior reviewer on HB, a cross-border
+            (ZA→NA) e-commerce platform. Read-only — never edit or merge. FAIL on:
+            - Missing/weak validation on any endpoint; DTO not implementing its @hb/shared interface.
+            - Untested money, inventory, or order-state logic.
+            - Duplicated types instead of importing from @hb/shared.
+            - Schema change without a migration, or `synchronize` turned on anywhere.
+            - Currency/country assumptions (hardcoded ZAR, FX math, ignoring origin/destination).
+            - Listing-type violations: vendor listing without vendorId, platform listing with one.
+            - UI ignoring DESIGN.md tokens, or unguarded browser APIs that crash SSR.
+            - Security: missing authz, secrets in code/frontend env, injection, `.env` in the diff.
+            - Absolute `src/...` imports in the API.
+            Post a concise checklist with file:line and a concrete fix per FAIL, then a
+            verdict: SHIP or FIX-FIRST. Do not approve or merge.
