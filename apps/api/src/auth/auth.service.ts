@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  ConflictException,
   ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -13,6 +14,7 @@ import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { BootstrapAdminDto } from './dto/bootstrap-admin.dto';
 import { GoogleProfile } from './strategies/google.strategy';
 import { User } from '../users/entities/user.entity';
 
@@ -114,6 +116,34 @@ export class AuthService {
       await this.usersService.markEmailVerified(user.id);
       user.isVerified = true;
     }
+
+    return this.getTokensAndUpdateRefresh(user, false);
+  }
+
+  // One-time setup endpoint: seeds the first admin account.
+  // Self-sealing: once any admin exists this method always throws ConflictException,
+  // so it cannot be exploited after initial deployment.
+  async bootstrapAdmin(dto: BootstrapAdminDto) {
+    const adminCount = await this.usersService.countByRole(UserRole.ADMIN);
+    if (adminCount > 0) {
+      throw new ConflictException('An admin account already exists.');
+    }
+
+    const existing = await this.usersService.findByEmail(dto.email);
+    if (existing) {
+      throw new BadRequestException('Email already exists');
+    }
+
+    // Decision: the bootstrap admin is created isVerified: true — it is a trusted
+    // one-time setup action and the admin is not subject to the order-gating
+    // email-verification rule. The password is hashed by the User entity's
+    // @BeforeInsert hook (same as register), so we pass the raw password here.
+    const user = await this.usersService.create({
+      email: dto.email,
+      password: dto.password,
+      role: UserRole.ADMIN,
+      isVerified: true,
+    });
 
     return this.getTokensAndUpdateRefresh(user, false);
   }

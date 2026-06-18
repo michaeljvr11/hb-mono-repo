@@ -4,3 +4,11 @@
 {"ts":"2026-06-18T13:05:22.058Z","type":"edit_lint","file":"apps/api/src/auth/auth.controller.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-06-18T13:05:32.115Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-06-18T13:06:03.568Z","type":"prod_fence_block","reason":"push names a protected branch","command":"cd \"C:\\Users\\michael.jvanrensburg\\vscode\\hb-mono-repo\" && git commit -m \"$(cat <<'EOF'\nchore: merge main into feat/mMFxZIKE-login-registration-pages\n\nConflicts resolved:\n- auth.controller.ts: kept HEAD (RefreshPayload type, rememberMe, maxAgeMs)\n- auth.service.ts: kept main (typed payload: { sub: st"}
+{"ts":"2026-06-18T20:42:39.332Z","type":"edit_lint","file":"apps/api/src/auth/dto/bootstrap-admin.dto.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-18T20:42:48.272Z","type":"edit_lint","file":"apps/api/src/users/users.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-18T20:42:57.720Z","type":"edit_lint","file":"apps/api/src/users/users.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-18T20:43:05.679Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-18T20:43:22.243Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-18T20:44:08.571Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-18T20:44:37.609Z","type":"edit_lint","file":"apps/api/src/auth/auth.controller.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-18T20:45:31.491Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.spec.ts","autofixed":true,"tool":"Write"}

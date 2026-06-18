@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
@@ -34,6 +34,7 @@ describe('AuthService', () => {
       findByEmailVerificationTokenHash: jest.fn(),
       setPassword: jest.fn(),
       markEmailVerified: jest.fn(),
+      countByRole: jest.fn(),
     };
     jwtService = { sign: jest.fn().mockReturnValue('signed.jwt') };
     mailService = { sendPasswordReset: jest.fn(), sendEmailVerification: jest.fn() };
@@ -103,6 +104,50 @@ describe('AuthService', () => {
 
       expect(usersService.setEmailVerificationToken).toHaveBeenCalled();
       expect(mailService.sendEmailVerification).toHaveBeenCalledWith('a@b.com', expect.any(String));
+    });
+  });
+
+  describe('bootstrapAdmin', () => {
+    const adminDto = { email: 'admin@hb-ecommerce.com', password: 'SecurePass123!' };
+    const adminUser = {
+      id: 'a1',
+      email: 'admin@hb-ecommerce.com',
+      role: UserRole.ADMIN,
+      isActive: true,
+      isVerified: true,
+    };
+
+    it('A: throws ConflictException when an admin already exists and does not create a user', async () => {
+      usersService.countByRole.mockResolvedValue(1);
+
+      await expect(service.bootstrapAdmin(adminDto)).rejects.toThrow(ConflictException);
+      expect(usersService.create).not.toHaveBeenCalled();
+    });
+
+    it('B: creates an ADMIN user with isVerified true and returns an access_token when no admin exists', async () => {
+      usersService.countByRole.mockResolvedValue(0);
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue(adminUser);
+
+      const result = await service.bootstrapAdmin(adminDto);
+
+      expect(usersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: 'admin@hb-ecommerce.com',
+          password: 'SecurePass123!',
+          role: UserRole.ADMIN,
+          isVerified: true,
+        }),
+      );
+      expect(result.access_token).toBe('signed.jwt');
+    });
+
+    it('C: throws BadRequestException when the email is already taken', async () => {
+      usersService.countByRole.mockResolvedValue(0);
+      usersService.findByEmail.mockResolvedValue(activeUser);
+
+      await expect(service.bootstrapAdmin(adminDto)).rejects.toThrow(BadRequestException);
+      expect(usersService.create).not.toHaveBeenCalled();
     });
   });
 

@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { BootstrapAdminDto } from './dto/bootstrap-admin.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
@@ -45,6 +46,14 @@ export class AuthController {
   @HttpCode(200)
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const tokens = await this.authService.login(dto);
+    this.setRefreshCookie(res, tokens.refresh_token, tokens.refresh_max_age_ms);
+    return { access_token: tokens.access_token, user: tokens.user };
+  }
+
+  @Public()
+  @Post('bootstrap-admin')
+  async bootstrapAdmin(@Body() dto: BootstrapAdminDto, @Res({ passthrough: true }) res: Response) {
+    const tokens = await this.authService.bootstrapAdmin(dto);
     this.setRefreshCookie(res, tokens.refresh_token, tokens.refresh_max_age_ms);
     return { access_token: tokens.access_token, user: tokens.user };
   }

@@ -1,0 +1,38 @@
+info:
+  name: Bootstrap Admin
+  type: http
+  seq: 19
+
+http:
+  method: POST
+  url: "{{baseurl}}:{{hb_backend}}/auth/bootstrap-admin"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "admin@hb-ecommerce.com",
+        "password": "SecurePass123!"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("Successful POST request", function () {
+            expect(res.getStatus()).to.be.oneOf([200, 201]);
+        });
+
+        // Parse JSON response
+        const jsonData = res.getBody();
+
+        // Save access token to environment variables
+        bru.setEnvVar("accessToken", jsonData.access_token);
+
+        console.log("Saved accessToken to environment variables");
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
