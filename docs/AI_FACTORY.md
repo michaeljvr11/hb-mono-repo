@@ -50,7 +50,10 @@ tool + the `/design-sync` skill. The design system and all seven screens live in
 `docs/design/claude-design/` sync bundle (DESIGN.md + foundations + screen `@dsCard` cards),
 mirrored per-screen under `docs/design/<screen>/`.
 
-**Live project ID:** `79b1b10c-28fd-496f-9956-6f71670c11d1`
+**Live project:** the **"HB — Trans-Frontier Commerce System"** design system on
+claude.ai/design. Projects are **per-account** — each dev owns a copy under a different id, so
+resolve yours by name (`DesignSync list_projects`); per-device setup lives in
+`.design-sync/NOTES.md`. Don't hard-code a project UUID.
 
 > **Login required:** `DesignSync` needs an interactive claude.ai login. A
 > `CLAUDE_CODE_OAUTH_TOKEN` session can't be granted design scopes — run `/login` before

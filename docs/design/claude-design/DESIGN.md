@@ -1,7 +1,7 @@
 ---
 name: Trans-Frontier Commerce System
 source: migrated from Stitch project 18341348034117446938 (2026-06-18)
-claude-design-project-id: 79b1b10c-28fd-496f-9956-6f71670c11d1
+claude-design-project: HB — Trans-Frontier Commerce System (per-account — resolve id by name; see .design-sync/NOTES.md)
 canonical-tokens: docs/design/DESIGN.md
 ---
 
