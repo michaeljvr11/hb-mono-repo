@@ -77,6 +77,23 @@ export const routes: Routes = [
   //   loadComponent: () => import('./features/vendor/vendor.component').then(m => m.VendorComponent)
   // },
 
+  // Admin Portal (protected + role-based)
+  {
+    path: 'admin',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin'] },
+    loadComponent: () => import('./features/admin/admin-shell/admin-shell').then(m => m.AdminShell),
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', loadComponent: () => import('./features/admin/pages/admin-dashboard/admin-dashboard').then(m => m.AdminDashboard) },
+      { path: 'vendors',   loadComponent: () => import('./features/admin/pages/admin-vendors/admin-vendors').then(m => m.AdminVendors) },
+      { path: 'catalog',   loadComponent: () => import('./features/admin/pages/admin-catalog/admin-catalog').then(m => m.AdminCatalog) },
+      { path: 'users',     loadComponent: () => import('./features/admin/pages/admin-users/admin-users').then(m => m.AdminUsers) },
+      { path: 'orders',    loadComponent: () => import('./features/admin/pages/admin-orders/admin-orders').then(m => m.AdminOrders) },
+      { path: 'logs',      loadComponent: () => import('./features/admin/pages/admin-logs/admin-logs').then(m => m.AdminLogs) },
+    ],
+  },
+
   // Catch-all route
   {
     path: '**',
