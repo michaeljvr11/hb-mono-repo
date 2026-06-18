@@ -26,3 +26,12 @@
 {"ts":"2026-06-18T21:00:54.798Z","type":"prod_fence_block","reason":"push names a protected branch","command":"cd /c/Users/michael.jvanrensburg/vscode/hb-vault && git add \"Vendor & Admin Portals.md\" \"History/Michael/session-1.md\" && git status --short && git commit -q -m \"$(cat <<'EOF'\ndocs(admin-portal): impl notes + Michael session-1 for AP-6\n\nRecord the admin portal foundation work (card Z1ADCLQm): self-s"}
 {"ts":"2026-06-18T21:01:30.925Z","type":"prod_fence_block","reason":"push names a protected branch","command":"git -C /c/Users/michael.jvanrensburg/vscode/hb-vault push 2>&1 | tail -6 && echo \"---verify---\" && git -C /c/Users/michael.jvanrensburg/vscode/hb-vault log origin/main..HEAD --oneline"}
 {"ts":"2026-06-18T21:02:44.573Z","type":"pr_gate","result":"pass","durationMs":6565}
+{"ts":"2026-06-18T21:55:50.195Z","type":"prod_fence_block","reason":"push names a protected branch","command":"git stash push -u -m \"stale evidence regen (pre-AP-7)\" docs/ai-evidence/ && echo \"---PULL---\" && git pull --ff-only origin main && echo \"---STATUS---\" && git status -sb"}
+{"ts":"2026-06-18T22:00:23.380Z","type":"edit_lint","file":"apps/api/src/vendors/dto/admin-vendor-response.dto.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-18T22:00:35.179Z","type":"edit_lint","file":"apps/api/src/vendors/vendors.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-18T22:00:48.544Z","type":"edit_lint","file":"apps/api/src/vendors/vendors.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-18T22:01:07.159Z","type":"edit_lint","file":"apps/api/src/vendors/vendors.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-18T22:01:27.633Z","type":"edit_lint","file":"apps/api/src/vendors/vendors.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-18T22:12:05.637Z","type":"edit_lint","file":"apps/api/src/vendors/vendors.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-18T22:12:17.808Z","type":"edit_lint","file":"apps/api/src/vendors/vendors.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-18T22:16:30.768Z","type":"pr_gate","result":"pass","durationMs":3611}

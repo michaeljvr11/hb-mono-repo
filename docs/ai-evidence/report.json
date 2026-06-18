@@ -1,34 +1,34 @@
 {
-  "generatedAt": "2026-06-18T21:20:03.016Z",
+  "generatedAt": "2026-06-18T22:16:58.961Z",
   "git": {
-    "totalCommits": 23,
-    "aiCommits": 18,
-    "aiPct": 78,
-    "appCommits": 16,
-    "ins": 21059,
-    "del": 996,
-    "net": 20063,
-    "aiIns": 8682,
-    "aiDel": 940,
-    "filesTouched": 302,
+    "totalCommits": 27,
+    "aiCommits": 22,
+    "aiPct": 81,
+    "appCommits": 19,
+    "ins": 22277,
+    "del": 1029,
+    "net": 21248,
+    "aiIns": 9900,
+    "aiDel": 973,
+    "filesTouched": 309,
     "areaRows": [
       {
         "name": "Docs",
-        "commits": 11,
-        "ins": 8233,
-        "del": 270
+        "commits": 12,
+        "ins": 8247,
+        "del": 278
       },
       {
         "name": "Web (Angular)",
-        "commits": 12,
-        "ins": 6122,
-        "del": 626
+        "commits": 14,
+        "ins": 7192,
+        "del": 635
       },
       {
         "name": "API (NestJS)",
-        "commits": 9,
-        "ins": 5052,
-        "del": 77
+        "commits": 11,
+        "ins": 5131,
+        "del": 89
       },
       {
         "name": "AI Factory config",
@@ -38,15 +38,15 @@
       },
       {
         "name": "Shared contracts",
-        "commits": 3,
-        "ins": 405,
+        "commits": 4,
+        "ins": 413,
         "del": 1
       },
       {
         "name": "Root & config",
-        "commits": 8,
-        "ins": 355,
-        "del": 4
+        "commits": 9,
+        "ins": 402,
+        "del": 8
       },
       {
         "name": "CI / templates",
@@ -56,8 +56,28 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-06-18",
+    "lastDate": "2026-06-19",
     "recent": [
+      {
+        "hash": "90e4019",
+        "subject": "refactor(vendors): address code review on AP-7",
+        "ai": true
+      },
+      {
+        "hash": "ad1ea82",
+        "subject": "feat(admin): vendor approvals page — approve/reject/suspend",
+        "ai": true
+      },
+      {
+        "hash": "1e808ff",
+        "subject": "feat(vendors): expose admin-only vendor shape on GET /vendors",
+        "ai": true
+      },
+      {
+        "hash": "c491778",
+        "subject": "chore(design-sync): make Claude Design config per-device for multi-dev sync",
+        "ai": true
+      },
       {
         "hash": "c446a17",
         "subject": "chore(evidence): recompile AI evidence report for AP-6",
@@ -97,30 +117,15 @@
         "hash": "25e582b",
         "subject": "chore(design): pull admin-dashboard screen from Claude Design + create sync anchor",
         "ai": true
-      },
-      {
-        "hash": "ea63f3b",
-        "subject": "feat(web): build storefront page with nav bar and footer",
-        "ai": true
-      },
-      {
-        "hash": "feb475d",
-        "subject": "feat(vendors): add public vendor directory endpoint + catalog seed",
-        "ai": true
-      },
-      {
-        "hash": "a07120c",
-        "subject": "chore(factory): add Obsidian pull/commit + session-history to ship-card loop",
-        "ai": true
-      },
-      {
-        "hash": "130586b",
-        "subject": "migration from stitch to claude design system",
-        "ai": false
       }
     ]
   },
   "branches": [
+    {
+      "branch": "feat/DD6Z0NUW-admin-vendor-approvals",
+      "cardId": "DD6Z0NUW",
+      "slug": "admin-vendor-approvals"
+    },
     {
       "branch": "feat/Z1ADCLQm-admin-portal-shell",
       "cardId": "Z1ADCLQm",
@@ -143,9 +148,9 @@
     }
   ],
   "tests": {
-    "total": 20,
+    "total": 21,
     "api": 5,
-    "web": 15
+    "web": 16
   },
   "design": {
     "files": 27,
@@ -162,24 +167,45 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 8,
+    "prodBlocks": 9,
     "blockReasons": {
-      "push names a protected branch": 6,
+      "push names a protected branch": 7,
       "force push": 1,
       "gh pr merge is human-only": 1
     },
-    "gatePass": 3,
+    "gatePass": 4,
     "gateFail": 1,
-    "edits": 16,
-    "editsUnfixable": 4,
+    "edits": 23,
+    "editsUnfixable": 5,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-18T21:02:44.573Z"
+    "lastTs": "2026-06-18T22:16:30.768Z"
   },
   "prs": [
     {
+      "headRefName": "feat/DD6Z0NUW-admin-vendor-approvals",
+      "number": 8,
+      "state": "OPEN",
+      "title": "feat(admin): vendor approvals — approve/reject/suspend (AP-7)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/8"
+    },
+    {
+      "headRefName": "feat/EXPtZCJL-vendor-portal-shell",
+      "number": 7,
+      "state": "OPEN",
+      "title": "feat(web): vendor portal route area + layout shell (VP-1)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/7"
+    },
+    {
+      "headRefName": "chore/design-sync-per-device-config",
+      "number": 6,
+      "state": "MERGED",
+      "title": "chore(design-sync): make Claude Design config per-device for multi-dev sync",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/6"
+    },
+    {
       "headRefName": "feat/Z1ADCLQm-admin-portal-shell",
       "number": 5,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(admin): admin portal shell + self-sealing bootstrap-admin endpoint (AP-6)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/5"
     },
@@ -219,7 +245,7 @@
     },
     {
       "name": "To Do",
-      "cards": 16
+      "cards": 14
     },
     {
       "name": "In Progress",
@@ -231,7 +257,7 @@
     },
     {
       "name": "Done",
-      "cards": 1
+      "cards": 3
     }
   ],
   "notes": []
