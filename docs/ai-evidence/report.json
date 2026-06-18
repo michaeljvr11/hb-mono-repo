@@ -1,28 +1,28 @@
 {
-  "generatedAt": "2026-06-18T21:20:03.016Z",
+  "generatedAt": "2026-06-18T22:03:39.873Z",
   "git": {
-    "totalCommits": 23,
-    "aiCommits": 18,
+    "totalCommits": 27,
+    "aiCommits": 21,
     "aiPct": 78,
-    "appCommits": 16,
-    "ins": 21059,
-    "del": 996,
-    "net": 20063,
-    "aiIns": 8682,
-    "aiDel": 940,
-    "filesTouched": 302,
+    "appCommits": 17,
+    "ins": 21743,
+    "del": 1014,
+    "net": 20729,
+    "aiIns": 9366,
+    "aiDel": 958,
+    "filesTouched": 313,
     "areaRows": [
       {
         "name": "Docs",
-        "commits": 11,
-        "ins": 8233,
-        "del": 270
+        "commits": 12,
+        "ins": 8247,
+        "del": 278
       },
       {
         "name": "Web (Angular)",
-        "commits": 12,
-        "ins": 6122,
-        "del": 626
+        "commits": 13,
+        "ins": 6594,
+        "del": 632
       },
       {
         "name": "API (NestJS)",
@@ -32,21 +32,21 @@
       },
       {
         "name": "AI Factory config",
-        "commits": 9,
-        "ins": 692,
+        "commits": 10,
+        "ins": 843,
         "del": 16
+      },
+      {
+        "name": "Root & config",
+        "commits": 9,
+        "ins": 402,
+        "del": 8
       },
       {
         "name": "Shared contracts",
         "commits": 3,
         "ins": 405,
         "del": 1
-      },
-      {
-        "name": "Root & config",
-        "commits": 8,
-        "ins": 355,
-        "del": 4
       },
       {
         "name": "CI / templates",
@@ -58,6 +58,21 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-06-18",
     "recent": [
+      {
+        "hash": "e996ffc",
+        "subject": "feat(web): add vendor portal route area + layout shell (VP-1)",
+        "ai": true
+      },
+      {
+        "hash": "c491778",
+        "subject": "chore(design-sync): make Claude Design config per-device for multi-dev sync",
+        "ai": true
+      },
+      {
+        "hash": "f437778",
+        "subject": "chore(hooks): pull the Obsidian vault on session start",
+        "ai": true
+      },
       {
         "hash": "c446a17",
         "subject": "chore(evidence): recompile AI evidence report for AP-6",
@@ -102,25 +117,20 @@
         "hash": "ea63f3b",
         "subject": "feat(web): build storefront page with nav bar and footer",
         "ai": true
-      },
-      {
-        "hash": "feb475d",
-        "subject": "feat(vendors): add public vendor directory endpoint + catalog seed",
-        "ai": true
-      },
-      {
-        "hash": "a07120c",
-        "subject": "chore(factory): add Obsidian pull/commit + session-history to ship-card loop",
-        "ai": true
-      },
-      {
-        "hash": "130586b",
-        "subject": "migration from stitch to claude design system",
-        "ai": false
       }
     ]
   },
   "branches": [
+    {
+      "branch": "feat/EXPtZCJL-vendor-portal-shell",
+      "cardId": "EXPtZCJL",
+      "slug": "vendor-portal-shell"
+    },
+    {
+      "branch": "feat/L9fM1Gu7-storefront",
+      "cardId": "L9fM1Gu7",
+      "slug": "storefront"
+    },
     {
       "branch": "feat/Z1ADCLQm-admin-portal-shell",
       "cardId": "Z1ADCLQm",
@@ -135,17 +145,12 @@
       "branch": "feat/mMFxZIKE-login-registration-pages",
       "cardId": "mMFxZIKE",
       "slug": "login-registration-pages"
-    },
-    {
-      "branch": "feat/L9fM1Gu7-storefront",
-      "cardId": "L9fM1Gu7",
-      "slug": "storefront"
     }
   ],
   "tests": {
-    "total": 20,
+    "total": 21,
     "api": 5,
-    "web": 15
+    "web": 16
   },
   "design": {
     "files": 27,
@@ -168,18 +173,25 @@
       "force push": 1,
       "gh pr merge is human-only": 1
     },
-    "gatePass": 3,
+    "gatePass": 4,
     "gateFail": 1,
     "edits": 16,
     "editsUnfixable": 4,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-18T21:02:44.573Z"
+    "lastTs": "2026-06-18T21:50:28.765Z"
   },
   "prs": [
     {
+      "headRefName": "chore/design-sync-per-device-config",
+      "number": 6,
+      "state": "MERGED",
+      "title": "chore(design-sync): make Claude Design config per-device for multi-dev sync",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/6"
+    },
+    {
       "headRefName": "feat/Z1ADCLQm-admin-portal-shell",
       "number": 5,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(admin): admin portal shell + self-sealing bootstrap-admin endpoint (AP-6)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/5"
     },
@@ -219,19 +231,19 @@
     },
     {
       "name": "To Do",
-      "cards": 16
+      "cards": 14
     },
     {
       "name": "In Progress",
-      "cards": 0
+      "cards": 2
     },
     {
       "name": "In Review",
-      "cards": 3
+      "cards": 1
     },
     {
       "name": "Done",
-      "cards": 1
+      "cards": 3
     }
   ],
   "notes": []
