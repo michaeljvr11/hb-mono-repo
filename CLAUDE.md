@@ -10,7 +10,7 @@ Architecture details and key decisions: see `README.md` (current truth).
 
 ## Source of truth
 - **Business rules & domain model:** Obsidian vault (use `obsidian` MCP tools).
-- **Designs & tokens:** `docs/design/DESIGN.md` + `docs/design/<screen>/`.
+- **Designs & tokens:** Stitch MCP (`stitch` tools) is the live source — fetch the screen before implementing it. `docs/design/DESIGN.md` holds token overrides; `docs/design/<screen>/` holds the saved HTML export + screenshot for traceability.
 - **Work items:** Trello board (use `trello` MCP tools).
 - **API contract:** `libs/shared` (`@hb/shared`) — interfaces + enums only.
 
@@ -33,12 +33,21 @@ Architecture details and key decisions: see `README.md` (current truth).
 - Schema changes go through TypeORM migrations. `synchronize` stays off. Always.
 - Money: `numeric(12,2)` + explicit currency column. ZAR/NAD peg is data, never an assumption.
 - Conventional Commits. One card == one branch == one PR. Branch: `feat/<card-id>-<slug>`.
+- **Every AI-produced commit ends with `Co-Authored-By: Claude <noreply@anthropic.com>`** — the
+  auditable record of AI authorship. The guardrail hooks log to `.claude/factory-log.jsonl`
+  automatically; run `npm run evidence` to recompile `docs/ai-evidence/REPORT.md`.
 - **NEVER merge to `main`. Open the PR and stop. A human owns prod.** (Enforced by hooks.)
 - Never read or print `.env` files. Use `.env.example` as the reference.
 
 ## The golden path
+`/spec-feature <request>` — front of the funnel: research business rules → write the Obsidian
+spec → create well-formed Trello cards with acceptance criteria (no code). Then:
 `/ship-card <card-id>` — pull card → gather context (Obsidian + design) → plan →
-implement → test → review → open PR → move card to "In Review". See `.claude/commands/ship-card.md`.
+implement → test → review → open PR → move card to "In Review". See `.claude/commands/`.
+
+Evidence of AI use compiles automatically (hooks log to `.claude/factory-log.jsonl`); run
+`npm run evidence` for the report (`docs/ai-evidence/`), and see `docs/ai-evidence/PITCH.md`
+for the judge-facing summary.
 
 ## Orchestration modes
 - Single card, one layer → single session or one subagent.

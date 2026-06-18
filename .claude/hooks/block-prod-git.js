@@ -3,6 +3,7 @@
 // push, merge, or force anything into main/master/prod. Exit 2 = block, stderr
 // goes back to the agent. The fence must not rely on the model "remembering".
 const { execSync } = require('child_process');
+const { logEvent } = require('./_log');
 
 let input = '';
 process.stdin.on('data', (d) => (input += d));
@@ -20,6 +21,7 @@ process.stdin.on('end', () => {
   const PROTECTED = /\b(main|master|prod)\b/;
 
   const block = (reason) => {
+    logEvent('prod_fence_block', { reason, command: cmd.slice(0, 300) });
     console.error(
       `BLOCKED by prod fence (${reason}). Push only feature branches and open a PR — a human owns the merge to main.`
     );

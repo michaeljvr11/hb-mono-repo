@@ -218,9 +218,8 @@ export class AuthService {
   }
 
   // Helper for strategies/guards
-  async validateUser(payload: any): Promise<User> {
-    const sub = (payload as { sub: string }).sub;
-    const user = await this.usersService.findOneFull(sub);
+  async validateUser(payload: { sub: string }): Promise<User> {
+    const user = await this.usersService.findOneFull(payload.sub);
     if (!user || !user.isActive) {
       throw new UnauthorizedException();
     }
