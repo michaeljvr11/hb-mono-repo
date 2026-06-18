@@ -46,6 +46,10 @@ export class VendorsService {
     return this.http.patch<Vendor>(`${this.API_URL}/${id}/status`, data);
   }
 
+  directory(): Observable<Vendor[]> {
+    return this.http.get<Vendor[]>(`${this.API_URL}/directory`);
+  }
+
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }

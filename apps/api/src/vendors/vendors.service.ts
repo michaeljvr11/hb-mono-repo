@@ -79,6 +79,14 @@ export class VendorsService {
     return vendors.map((v) => this.toResponseDto(v));
   }
 
+  async findDirectory(): Promise<VendorResponseDto[]> {
+    const vendors = await this.vendorRepository.find({
+      where: { status: VendorStatus.APPROVED },
+      order: { businessName: 'ASC' },
+    });
+    return vendors.map((v) => this.toResponseDto(v));
+  }
+
   async findOne(id: string): Promise<VendorResponseDto> {
     const vendor = await this.vendorRepository.findOne({ where: { id } });
     if (!vendor) throw new NotFoundException('Vendor not found');

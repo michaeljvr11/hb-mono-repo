@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-06-18T21:03:08.389Z",
+  "generatedAt": "2026-06-18T21:20:03.016Z",
   "git": {
-    "totalCommits": 22,
-    "aiCommits": 17,
-    "aiPct": 77,
+    "totalCommits": 23,
+    "aiCommits": 18,
+    "aiPct": 78,
     "appCommits": 16,
-    "ins": 20876,
-    "del": 889,
-    "net": 19987,
-    "aiIns": 8499,
-    "aiDel": 833,
+    "ins": 21059,
+    "del": 996,
+    "net": 20063,
+    "aiIns": 8682,
+    "aiDel": 940,
     "filesTouched": 302,
     "areaRows": [
       {
         "name": "Docs",
-        "commits": 10,
-        "ins": 8053,
-        "del": 163
+        "commits": 11,
+        "ins": 8233,
+        "del": 270
       },
       {
         "name": "Web (Angular)",
@@ -32,8 +32,8 @@
       },
       {
         "name": "AI Factory config",
-        "commits": 8,
-        "ins": 689,
+        "commits": 9,
+        "ins": 692,
         "del": 16
       },
       {
@@ -58,6 +58,11 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-06-18",
     "recent": [
+      {
+        "hash": "c446a17",
+        "subject": "chore(evidence): recompile AI evidence report for AP-6",
+        "ai": true
+      },
       {
         "hash": "d1198da",
         "subject": "style(web): register admin-shell colors as design tokens",
@@ -112,11 +117,6 @@
         "hash": "130586b",
         "subject": "migration from stitch to claude design system",
         "ai": false
-      },
-      {
-        "hash": "f8836df",
-        "subject": "fix(api): resolve pre-existing lint tech debt surfaced by CI",
-        "ai": true
       }
     ]
   },
@@ -143,9 +143,9 @@
     }
   ],
   "tests": {
-    "total": 17,
-    "api": 4,
-    "web": 13
+    "total": 20,
+    "api": 5,
+    "web": 15
   },
   "design": {
     "files": 27,
@@ -162,16 +162,16 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 6,
+    "prodBlocks": 8,
     "blockReasons": {
-      "push names a protected branch": 4,
+      "push names a protected branch": 6,
       "force push": 1,
       "gh pr merge is human-only": 1
     },
-    "gatePass": 1,
-    "gateFail": 0,
-    "edits": 10,
-    "editsUnfixable": 3,
+    "gatePass": 3,
+    "gateFail": 1,
+    "edits": 16,
+    "editsUnfixable": 4,
     "firstTs": "2026-06-18T12:14:47.925Z",
     "lastTs": "2026-06-18T21:02:44.573Z"
   },
@@ -186,7 +186,7 @@
     {
       "headRefName": "feat/L9fM1Gu7-storefront",
       "number": 4,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat: storefront page — nav bar, footer, products/categories/vendors [L9fM1Gu7]",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/4"
     },
