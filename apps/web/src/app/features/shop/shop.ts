@@ -9,8 +9,26 @@ import { NavBar } from '../../layout/nav-bar/nav-bar';
 
 type LoadState = 'loading' | 'loaded' | 'empty' | 'error';
 
-interface CategoryWithCount extends CategoryDto {
+export interface CategoryWithCount extends CategoryDto {
   productCount: number;
+}
+
+/**
+ * Pure derivation of per-category product counts from the loaded product list.
+ * Extracted so it can be unit-tested directly (a product may span several
+ * categories, so each of its category ids is counted).
+ */
+export function deriveCategoryCounts(
+  categories: CategoryWithCount[],
+  products: ProductDto[],
+): CategoryWithCount[] {
+  const counts = new Map<string, number>();
+  for (const product of products) {
+    for (const cat of product.categories ?? []) {
+      counts.set(cat.id, (counts.get(cat.id) ?? 0) + 1);
+    }
+  }
+  return categories.map((c) => ({ ...c, productCount: counts.get(c.id) ?? 0 }));
 }
 
 @Component({
@@ -36,9 +54,6 @@ export class Shop implements OnInit {
   // Vendors
   readonly vendors = signal<VendorDto[]>([]);
   readonly vendorsState = signal<LoadState>('loading');
-
-  // Newsletter
-  readonly newsletterEmail = signal('');
 
   ngOnInit(): void {
     this.loadProducts();
@@ -189,18 +204,7 @@ export class Shop implements OnInit {
    */
   private rebuildCategoryCounts(): void {
     const cats = this.categories();
-    const prods = this.products();
     if (!cats.length) return;
-
-    const counts = new Map<string, number>();
-    for (const product of prods) {
-      for (const cat of product.categories ?? []) {
-        counts.set(cat.id, (counts.get(cat.id) ?? 0) + 1);
-      }
-    }
-
-    this.categories.set(
-      cats.map(c => ({ ...c, productCount: counts.get(c.id) ?? 0 })),
-    );
+    this.categories.set(deriveCategoryCounts(cats, this.products()));
   }
 }

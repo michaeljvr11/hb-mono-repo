@@ -4,7 +4,8 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 
-import { Shop } from './shop';
+import { Shop, deriveCategoryCounts, CategoryWithCount } from './shop';
+import { ProductDto } from '@hb/shared';
 
 describe('Shop', () => {
   let component: Shop;
@@ -84,5 +85,32 @@ describe('Shop', () => {
 
   it('derives vendor initials from business name', () => {
     expect(component.getVendorInitials('Roots Shoots')).toBe('RS');
+  });
+});
+
+describe('deriveCategoryCounts', () => {
+  const categories = [
+    { id: 'c1', name: 'Agriculture', displayOrder: 0, productCount: 0 },
+    { id: 'c2', name: 'Handicrafts', displayOrder: 1, productCount: 0 },
+    { id: 'c3', name: 'Textiles', displayOrder: 2, productCount: 0 },
+  ] as CategoryWithCount[];
+
+  it('counts each category, including products that span multiple categories', () => {
+    const products = [
+      { id: 'p1', categories: [{ id: 'c1' }, { id: 'c2' }] },
+      { id: 'p2', categories: [{ id: 'c1' }] },
+    ] as unknown as ProductDto[];
+
+    const result = deriveCategoryCounts(categories, products);
+
+    expect(result.find((c) => c.id === 'c1')?.productCount).toBe(2);
+    expect(result.find((c) => c.id === 'c2')?.productCount).toBe(1);
+    // c3 has no products → 0, never undefined
+    expect(result.find((c) => c.id === 'c3')?.productCount).toBe(0);
+  });
+
+  it('returns zero counts when there are no products', () => {
+    const result = deriveCategoryCounts(categories, []);
+    expect(result.every((c) => c.productCount === 0)).toBe(true);
   });
 });
