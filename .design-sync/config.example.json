@@ -1,0 +1,6 @@
+{
+  "_comment": "Per-device template. Copy to .design-sync/config.json (git-ignored) and fill projectId by resolving projectName via `DesignSync list_projects` — claude.ai/design projects are per-account, so never commit a projectId. See .design-sync/NOTES.md.",
+  "projectId": "",
+  "projectName": "HB — Trans-Frontier Commerce System",
+  "localDir": "docs/design/claude-design"
+}

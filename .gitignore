@@ -8,5 +8,6 @@ coverage/
 uploads/
 .claude/settings.local.json
 .mcp.json
+.design-sync/config.json
 .DS_Store
 Thumbs.db

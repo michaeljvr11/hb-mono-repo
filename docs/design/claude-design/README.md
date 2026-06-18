@@ -4,8 +4,10 @@ This directory is the **upload artifact** for the project's Claude Design
 (claude.ai/design) design system. It was migrated from the Stitch project
 *"Remix of Product Discovery – H&B Marketplace"* (`18341348034117446938`) on 2026-06-18.
 
-**Live project:** `79b1b10c-28fd-496f-9956-6f71670c11d1`  
-Direct link: https://claude.ai/design (open the "HB — Trans-Frontier Commerce System" project)
+**Live project:** the **"HB — Trans-Frontier Commerce System"** design system on
+https://claude.ai/design. The project is **per-account** — each dev owns their own copy under a
+different id — so resolve yours by name rather than hard-coding a UUID. Per-device setup lives in
+[`.design-sync/NOTES.md`](../../../.design-sync/NOTES.md).
 
 ## Layout
 
@@ -52,10 +54,11 @@ design scopes, so run `/login` first.
 
 Manual push flow (what the agent runs once logged in):
 
-1. `DesignSync get_project` — verify `projectId: 79b1b10c-28fd-496f-9956-6f71670c11d1` is
-   still reachable (type must be `PROJECT_TYPE_DESIGN_SYSTEM`).
-2. `DesignSync finalize_plan` — `projectId: 79b1b10c-28fd-496f-9956-6f71670c11d1`,
-   `localDir: docs/design/claude-design`,
+1. Resolve **your** project id (per-device — see `.design-sync/NOTES.md`): read it from your
+   local `.design-sync/config.json`, or `DesignSync list_projects` and pick the
+   "HB — Trans-Frontier Commerce System" project you own. `DesignSync get_project` to confirm
+   it's reachable (type must be `PROJECT_TYPE_DESIGN_SYSTEM`).
+2. `DesignSync finalize_plan` — `projectId: <your id>`, `localDir: docs/design/claude-design`,
    `writes: ["DESIGN.md", "foundations/**/*.html", "screens/**/*.html"]`.
 3. `DesignSync write_files` with the returned `planId` (uploads read from disk; contents
    never enter the model context).
