@@ -13,6 +13,7 @@ import type { GoogleProfile } from './strategies/google.strategy';
 import { Public } from '../common/decorators/public.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { User } from '../users/entities/user.entity';
+import { resolveRefreshCookieSecurity } from './refresh-cookie';
 
 const REFRESH_COOKIE = 'RefreshToken';
 
@@ -128,9 +129,13 @@ export class AuthController {
 
   private setRefreshCookie(res: Response, refreshToken: string, maxAgeMs: number): void {
     res.cookie(REFRESH_COOKIE, refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      // httpOnly + secure + sameSite are topology-driven (defaults to 'strict');
+      // see resolveRefreshCookieSecurity and the "Auth & Roles" note. Affects
+      // every refresh flow — login/register/refresh and Google callback alike.
+      ...resolveRefreshCookieSecurity(
+        this.config.get<string>('REFRESH_COOKIE_SAMESITE'),
+        process.env.NODE_ENV,
+      ),
       maxAge: maxAgeMs, // mirrors the refresh JWT expiry (remember-me: 30d, else 24h)
     });
   }

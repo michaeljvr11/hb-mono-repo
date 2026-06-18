@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "db (postgres)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "db:up"],
+      "port": 5432
+    },
+    {
+      "name": "api (NestJS, watch mode)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:api"],
+      "port": 3000
+    },
+    {
+      "name": "web (Angular SSR dev server)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:web"],
+      "port": 4200
+    }
+  ]
+}
