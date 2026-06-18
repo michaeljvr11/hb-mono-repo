@@ -70,12 +70,19 @@ export const routes: Routes = [
   // },
 
   // Vendor Portal (protected + role-based)
-  // {
-  //   path: 'vendor',
-  //   canActivate: [authGuard, roleGuard],
-  //   data: { roles: ['vendor'] },
-  //   loadComponent: () => import('./features/vendor/vendor.component').then(m => m.VendorComponent)
-  // },
+  {
+    path: 'vendor',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['vendor'] },
+    loadComponent: () => import('./features/vendor/vendor-shell/vendor-shell').then(m => m.VendorShell),
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', loadComponent: () => import('./features/vendor/pages/vendor-dashboard/vendor-dashboard').then(m => m.VendorDashboard) },
+      { path: 'products',  loadComponent: () => import('./features/vendor/pages/vendor-products/vendor-products').then(m => m.VendorProducts) },
+      { path: 'orders',    loadComponent: () => import('./features/vendor/pages/vendor-orders/vendor-orders').then(m => m.VendorOrders) },
+      { path: 'profile',   loadComponent: () => import('./features/vendor/pages/vendor-profile/vendor-profile').then(m => m.VendorProfile) },
+    ],
+  },
 
   // Admin Portal (protected + role-based)
   {
