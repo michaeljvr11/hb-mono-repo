@@ -35,6 +35,8 @@ Tokens in this file are **canonical** — exported HTML is reference material, n
 | `--hb-primary-container` | `#026e00` | Lighter primary / hover accents |
 | `--hb-on-primary` | `#ffffff` | Text/icons on primary |
 | `--hb-secondary` | `#964900` | Accent (earth-tone), auxiliary icons |
+| `--hb-secondary-fixed` | `#ffdcc7` | Soft accent fill (badges, status pills) |
+| `--hb-on-secondary-container` | `#703500` | Text/icons on secondary-fixed |
 | `--hb-background` | `#fcf9f8` | Page background |
 | `--hb-surface` | `#fcf9f8` | App surface |
 | `--hb-surface-container-lowest` | `#ffffff` | Cards, inputs |
@@ -45,6 +47,7 @@ Tokens in this file are **canonical** — exported HTML is reference material, n
 | `--hb-outline` | `#707a6a` | Strong input borders |
 | `--hb-outline-variant` | `#bfcab7` | Card + subtle borders, dividers |
 | `--hb-error` | `#ba1a1a` | Validation / error text |
+| `--hb-scrim` | `rgba(0,0,0,0.35)` | Modal / drawer overlay scrim |
 
 Focus ring: border `#015300` + `box-shadow: 0 0 0 2px rgba(1,83,0,0.1)`.
 

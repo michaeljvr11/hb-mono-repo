@@ -83,8 +83,8 @@
   align-items: center;
   gap: 4px;
   padding: 3px 10px;
-  background: #ffdcc7; /* secondary-fixed from design token */
-  color: #703500;      /* on-secondary-container */
+  background: var(--hb-secondary-fixed);
+  color: var(--hb-on-secondary-container);
   border-radius: 9999px;
   font-size: 12px;
   font-weight: 500;
@@ -142,7 +142,7 @@
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--hb-scrim);
 }
 
 .sidebar {
@@ -194,7 +194,7 @@ nav {
   }
 
   &.nav-item--active {
-    background: rgba(1, 83, 0, 0.12); /* primary tint */
+    background: color-mix(in srgb, var(--hb-primary) 12%, transparent); /* primary tint */
     color: var(--hb-primary);
     font-weight: 600;
 
