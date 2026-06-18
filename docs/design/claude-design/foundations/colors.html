@@ -1,0 +1,74 @@
+<!-- @dsCard group="Foundations" name="Color palette" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HB — Color palette</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --hb-primary: #015300;
+    --hb-primary-container: #026e00;
+    --hb-on-primary: #ffffff;
+    --hb-secondary: #964900;
+    --hb-background: #fcf9f8;
+    --hb-surface: #fcf9f8;
+    --hb-surface-container-lowest: #ffffff;
+    --hb-surface-container-low: #f6f3f2;
+    --hb-surface-container: #f0eded;
+    --hb-on-surface: #1c1b1b;
+    --hb-on-surface-variant: #404a3b;
+    --hb-outline: #707a6a;
+    --hb-outline-variant: #bfcab7;
+    --hb-error: #ba1a1a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px;
+    font-family: Inter, system-ui, sans-serif;
+    background: var(--hb-background);
+    color: var(--hb-on-surface);
+  }
+  h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 4px; }
+  p.lede { color: var(--hb-on-surface-variant); font-size: 14px; margin: 0 0 28px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px; }
+  .swatch { border: 1px solid var(--hb-outline-variant); border-radius: 8px; overflow: hidden; background: #fff; }
+  .chip { height: 72px; }
+  .meta { padding: 10px 12px; }
+  .name { font-size: 13px; font-weight: 600; }
+  .hex { font-size: 12px; color: var(--hb-on-surface-variant); font-variant-numeric: tabular-nums; text-transform: uppercase; }
+  .usage { font-size: 11px; color: var(--hb-on-surface-variant); margin-top: 4px; }
+  .group-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--hb-on-surface-variant); margin: 28px 0 12px; }
+</style>
+</head>
+<body>
+  <h1>HB — Color palette</h1>
+  <p class="lede">Trans-Frontier Commerce System · "Growth Green" anchored, earth-tone accents.</p>
+
+  <div class="group-label">Brand</div>
+  <div class="grid">
+    <div class="swatch"><div class="chip" style="background:#015300"></div><div class="meta"><div class="name">primary</div><div class="hex">#015300</div><div class="usage">Primary actions, links, focus ring</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#026e00"></div><div class="meta"><div class="name">primary-container</div><div class="hex">#026e00</div><div class="usage">Lighter primary / hover accents</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#ffffff;border-bottom:1px solid #bfcab7"></div><div class="meta"><div class="name">on-primary</div><div class="hex">#ffffff</div><div class="usage">Text/icons on primary</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#964900"></div><div class="meta"><div class="name">secondary</div><div class="hex">#964900</div><div class="usage">Earth-tone accent, aux icons</div></div></div>
+  </div>
+
+  <div class="group-label">Surfaces</div>
+  <div class="grid">
+    <div class="swatch"><div class="chip" style="background:#fcf9f8;border-bottom:1px solid #bfcab7"></div><div class="meta"><div class="name">background / surface</div><div class="hex">#fcf9f8</div><div class="usage">Page background, app surface</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#ffffff;border-bottom:1px solid #bfcab7"></div><div class="meta"><div class="name">surface-container-lowest</div><div class="hex">#ffffff</div><div class="usage">Cards, inputs</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#f6f3f2;border-bottom:1px solid #bfcab7"></div><div class="meta"><div class="name">surface-container-low</div><div class="hex">#f6f3f2</div><div class="usage">Subtle hover fills</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#f0eded;border-bottom:1px solid #bfcab7"></div><div class="meta"><div class="name">surface-container</div><div class="hex">#f0eded</div><div class="usage">Panels, trust-badge fill</div></div></div>
+  </div>
+
+  <div class="group-label">Text & lines</div>
+  <div class="grid">
+    <div class="swatch"><div class="chip" style="background:#1c1b1b"></div><div class="meta"><div class="name">on-surface</div><div class="hex">#1c1b1b</div><div class="usage">Body text / headings</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#404a3b"></div><div class="meta"><div class="name">on-surface-variant</div><div class="hex">#404a3b</div><div class="usage">Labels, secondary text</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#707a6a"></div><div class="meta"><div class="name">outline</div><div class="hex">#707a6a</div><div class="usage">Strong input borders</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#bfcab7"></div><div class="meta"><div class="name">outline-variant</div><div class="hex">#bfcab7</div><div class="usage">Card borders, dividers</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#ba1a1a"></div><div class="meta"><div class="name">error</div><div class="hex">#ba1a1a</div><div class="usage">Validation / error text</div></div></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!-- @dsCard group="Screens" name="Vendor Dashboard" -->
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ZANAM Market - Vendor Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#7ddc69",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "secondary-container": "#fe9b53",
+                    "surface-container-highest": "#e5e2e1",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e5e2e1",
+                    "outline": "#707a6a",
+                    "on-primary-fixed-variant": "#015300",
+                    "on-secondary-fixed-variant": "#723600",
+                    "surface-dim": "#dcd9d9",
+                    "secondary-fixed-dim": "#ffb787",
+                    "on-tertiary-fixed-variant": "#015300",
+                    "secondary": "#964900",
+                    "on-primary": "#ffffff",
+                    "primary-container": "#026e00",
+                    "on-primary-container": "#8eee78",
+                    "primary": "#015300",
+                    "surface-container-high": "#eae7e7",
+                    "on-tertiary-container": "#33f925",
+                    "inverse-surface": "#313030",
+                    "inverse-on-surface": "#f3f0ef",
+                    "tertiary-container": "#026e00",
+                    "on-secondary": "#ffffff",
+                    "background": "#fcf9f8",
+                    "surface-container": "#f0eded",
+                    "primary-fixed-dim": "#7ddc69",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#404a3b",
+                    "tertiary-fixed": "#77ff61",
+                    "on-surface": "#1c1b1b",
+                    "on-secondary-container": "#703500",
+                    "tertiary-fixed-dim": "#03e600",
+                    "surface-container-low": "#f6f3f2",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#98f982",
+                    "on-tertiary-fixed": "#002200",
+                    "surface": "#fcf9f8",
+                    "on-primary-fixed": "#002200",
+                    "surface-tint": "#036e00",
+                    "surface-bright": "#fcf9f8",
+                    "outline-variant": "#bfcab7",
+                    "tertiary": "#015300",
+                    "on-secondary-fixed": "#311300",
+                    "secondary-fixed": "#ffdcc7",
+                    "on-background": "#1c1b1b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-md": "16px",
+                    "gutter": "24px",
+                    "unit": "8px",
+                    "container-max": "1280px",
+                    "stack-xs": "4px",
+                    "stack-xl": "48px",
+                    "stack-sm": "8px",
+                    "margin-mobile": "16px",
+                    "stack-lg": "24px",
+                    "margin-desktop": "40px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"], "body-md": ["Inter"], "label-lg": ["Inter"], "body-sm": ["Inter"],
+                    "headline-md": ["Inter"], "body-lg": ["Inter"], "title-lg": ["Inter"], "display-lg": ["Inter"], "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="bg-surface sticky top-0 z-50 border-b border-outline-variant w-full">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-stack-md w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined text-primary cursor-pointer md:hidden" data-icon="menu">menu</span>
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">H&amp;B Market</h1>
+</div>
+<div class="hidden md:flex items-center gap-stack-lg">
+<div class="flex items-center gap-stack-xs text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container transition-colors p-2 rounded-lg cursor-pointer">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="">ZAR / NAD</span>
+</div>
+<div class="flex items-center gap-stack-xs text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container transition-colors p-2 rounded-lg cursor-pointer">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="">Cart</span>
+</div>
+<div class="h-10 w-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+</div>
+</div>
+</header>
+<div class="flex max-w-container-max mx-auto min-h-[calc(100vh-80px)]">
+<!-- Sidebar Navigation -->
+<aside class="hidden md:flex flex-col w-80 p-stack-lg bg-surface-container border-r border-outline-variant">
+<div class="mb-stack-xl">
+<div class="flex items-center gap-stack-md p-stack-md bg-white rounded-xl shadow-sm border border-outline-variant mb-stack-lg">
+<div class="w-12 h-12 bg-secondary-fixed rounded-lg flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+</div>
+<div>
+<p class="font-title-lg text-title-lg text-primary">SME Partner</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Verified Vendor</p>
+</div>
+</div>
+</div>
+<nav class="space-y-stack-sm">
+<a class="flex items-center gap-stack-md p-stack-md bg-secondary-container text-on-secondary-container rounded-xl font-bold transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-outline-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-body-md text-body-md">Products</span>
+</a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-outline-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="package_2">package_2</span>
+<span class="font-body-md text-body-md">Orders</span>
+</a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-outline-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+<span class="font-body-md text-body-md">Logistics</span>
+</a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-outline-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-body-md text-body-md">Analytics</span>
+</a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-outline-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+</nav>
+<div class="mt-auto pt-stack-xl">
+<div class="bg-primary-container text-on-primary-container p-stack-lg rounded-xl flex flex-col gap-stack-sm">
+<span class="font-label-lg text-label-lg uppercase tracking-wider opacity-80">ZA to NA Status</span>
+<p class="font-headline-md text-headline-md">Active Port</p>
+<div class="flex items-center gap-2 mt-stack-xs">
+<span class="w-3 h-3 bg-tertiary-fixed rounded-full animate-pulse"></span>
+<span class="text-body-sm">Nakop Border Open</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 p-margin-mobile md:p-margin-desktop bg-background overflow-x-hidden">
+<!-- Page Header -->
+<div class="mb-stack-xl flex flex-col md:flex-row md:items-end justify-between gap-stack-md">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Vendor Overview</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Track your regional trade performance across SACU borders.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="bg-white border border-outline px-stack-lg py-stack-sm rounded-lg font-label-lg text-label-lg text-on-surface hover:bg-surface-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+                        Export Report
+                    </button>
+<button class="bg-primary text-white px-stack-lg py-stack-sm rounded-lg font-label-lg text-label-lg hover:opacity-90 transition-opacity flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                        New Product
+                    </button>
+</div>
+</div>
+<!-- KPI Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-xl">
+<div class="bg-white border border-outline-variant p-stack-lg rounded-xl hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-stack-md">
+<span class="text-on-surface-variant font-label-lg text-label-lg">Total Sales (ZAR)</span>
+<span class="material-symbols-outlined text-primary" data-icon="trending_up">trending_up</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-display-lg text-primary">R 142.5k</span>
+<span class="text-on-primary-fixed-variant font-label-sm text-label-sm bg-primary-fixed px-2 py-0.5 rounded-full">+12.4%</span>
+</div>
+<p class="mt-stack-md font-body-sm text-body-sm text-on-surface-variant">Performance since last month</p>
+</div>
+<div class="bg-white border border-outline-variant p-stack-lg rounded-xl hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-stack-md">
+<span class="text-on-surface-variant font-label-lg text-label-lg">Active Shipments</span>
+<span class="material-symbols-outlined text-secondary" data-icon="local_shipping">local_shipping</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-display-lg text-on-surface">24</span>
+<span class="text-on-secondary-container font-label-sm text-label-sm bg-secondary-fixed px-2 py-0.5 rounded-full">In Transit</span>
+</div>
+<p class="mt-stack-md font-body-sm text-body-sm text-on-surface-variant">South Africa ➔ Namibia</p>
+</div>
+<div class="bg-white border border-outline-variant p-stack-lg rounded-xl hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-stack-md">
+<span class="text-on-surface-variant font-label-lg text-label-lg">Customer Reach</span>
+<span class="material-symbols-outlined text-primary" data-icon="groups">groups</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-display-lg text-on-surface">1,892</span>
+<span class="text-on-primary-fixed-variant font-label-sm text-label-sm bg-primary-fixed px-2 py-0.5 rounded-full">+5%</span>
+</div>
+<p class="mt-stack-md font-body-sm text-body-sm text-on-surface-variant">Unique Namibian buyers</p>
+</div>
+</div>
+<!-- Main Data Sections -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Active Cross-Border Shipments Table -->
+<div class="lg:col-span-2 bg-white border border-outline-variant rounded-xl overflow-hidden">
+<div class="p-stack-lg border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-on-surface">Active Cross-Border Shipments</h3>
+<span class="text-primary font-label-lg text-label-lg cursor-pointer">View All</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">Order ID</th>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">Destination</th>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">Status</th>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">ETA</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">#ZN-9821</td>
+<td class="p-stack-md font-body-md text-body-md">Windhoek, NA</td>
+<td class="p-stack-md">
+<span class="bg-primary-fixed text-on-primary-fixed-variant px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+                                            Customs Cleared
+                                        </span>
+</td>
+<td class="p-stack-md font-body-md text-body-md">Oct 24, 2024</td>
+</tr>
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">#ZN-9844</td>
+<td class="p-stack-md font-body-md text-body-md">Walvis Bay, NA</td>
+<td class="p-stack-md">
+<span class="bg-secondary-fixed text-on-secondary-container px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="local_shipping">local_shipping</span>
+                                            In Transit
+                                        </span>
+</td>
+<td class="p-stack-md font-body-md text-body-md">Oct 26, 2024</td>
+</tr>
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">#ZN-9851</td>
+<td class="p-stack-md font-body-md text-body-md">Swakopmund, NA</td>
+<td class="p-stack-md">
+<span class="bg-surface-container-high text-on-surface-variant px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="warehouse">warehouse</span>
+                                            At Port (ZA)
+                                        </span>
+</td>
+<td class="p-stack-md font-body-md text-body-md">Oct 29, 2024</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Top Selling Products -->
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden">
+<div class="p-stack-lg border-b border-outline-variant">
+<h3 class="font-title-lg text-title-lg text-on-surface">Popular in Namibia</h3>
+</div>
+<div class="p-stack-lg space-y-stack-lg">
+<div class="flex items-center gap-stack-md">
+<img alt="Active Sport Pro" class="w-16 h-16 rounded-lg object-cover border border-outline-variant" data-alt="A premium pair of high-performance red running shoes placed against a clean, white studio background. The lighting is bright and even, highlighting the sleek texture of the synthetic fabric and the dynamic silhouette of the footwear. The overall style is professional e-commerce photography with a modern, high-key aesthetic focused on clarity and product detail." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCogI9RSnmF1KERZb3fxf-plJ86ipPOGTN0mJNWi7yGFv0nXtyAhcyVdtuOEqlURotp08HYe2iEFl71tThqbsq0z4cWS00bGWvg4SiqgCJq2bT6DCdETd1VfsdgT5n163EezC1bMDipU92id0dTboLNw8taMuCNRFn0_2hvCDGI5j8-g2RGLy9JhRrF-b8JOHBiltZzg27vpAtvqblA1NrBDtFYUOpjMyYOzEm5mbW3bv6SQJVtyymZJCGiG8Oj7Fh9WIxeYxW4jgj8">
+<div class="flex-1">
+<p class="font-label-lg text-label-lg text-on-surface">Active Sport Pro</p>
+<p class="text-body-sm text-on-surface-variant">342 units sold</p>
+</div>
+<div class="text-right">
+<p class="font-bold text-primary">R 1,200</p>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<img alt="Smart Watch V2" class="w-16 h-16 rounded-lg object-cover border border-outline-variant" data-alt="A minimalist white smartwatch with a clean digital face, showcasing modern wearable technology. The product is photographed in a high-key lighting environment with soft shadows, emphasizing its elegant design and premium materials. The scene is bright and airy, reflecting a sophisticated corporate-modern visual language centered on innovation and reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHxnVJ9jXN2jYYI7fzdNWFSFiboIM_Pf2WNpdmwbWRpEZkWU3ERuzsbHiZNAZ9LIFYjOgXHkIciXyCRpOhLoy_qL-ebjHHT92mayjPTCjn2wrguBOu1T7W6FAUFA9CYA-sG7OuIElJy5y1NUiB29usO5WZCoUIUQppmJBpCju_iJ1oZjPbYs_305Y8C3_E4VhCXSoDt4tQU5yPZ40ArESISVkpXHMNEpD21uJoF2tAJ__rM8bXLRu8nexP4jkuVA-zFC8OxlGXcpYY">
+<div class="flex-1">
+<p class="font-label-lg text-label-lg text-on-surface">Smart Watch V2</p>
+<p class="text-body-sm text-on-surface-variant">210 units sold</p>
+</div>
+<div class="text-right">
+<p class="font-bold text-primary">R 2,450</p>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<img alt="Audio Bass X" class="w-16 h-16 rounded-lg object-cover border border-outline-variant" data-alt="Professional over-ear wireless headphones in a sleek matte black finish. The image is a sharp, high-contrast studio shot with pristine lighting that accentuates the curves and premium build quality. Set against a neutral gray background, the visual style is clean, modern, and high-end, suitable for a professional marketplace dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjzgKUh0K2pLubv2DFv1Awc93bJ3ApkYuimK7i0HhNkjD4tu_9SOLZnKArhHZ7dFnq3ZLRINJ6WsQBiGHKJL5hmLhP8C5lbO0UdgorBNPdi5_5slSnE4FVS-gAXKu6FkBefezZtaZWtCf4pQKy1w8aINTJPPairaFhiHhFWRWPYG2MfB3eJWcduYPtfI9cR_27K8d5Ht9BXE6axKnquofMR54EciUdZzqMooSs5Q66Looid9HvNdpAzSeEjpdI3g69dsHcKaAMYIPX">
+<div class="flex-1">
+<p class="font-label-lg text-label-lg text-on-surface">Audio Bass X</p>
+<p class="text-body-sm text-on-surface-variant">158 units sold</p>
+</div>
+<div class="text-right">
+<p class="font-bold text-primary">R 890</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Regional Trade Alerts -->
+<div class="mt-stack-xl">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-stack-lg">Regional Trade Alerts</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<div class="p-stack-lg bg-surface-container-low border-l-4 border-primary rounded-r-xl">
+<div class="flex items-center gap-stack-sm mb-stack-sm">
+<span class="material-symbols-outlined text-primary" data-icon="info">info</span>
+<span class="font-label-lg text-label-lg text-primary">SACU Regulation Update</span>
+</div>
+<p class="font-body-md text-body-md font-bold mb-stack-xs">VAT Documentation Phase 2</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Starting Nov 1st, all cross-border invoices must include the standardized SACU regional trade code.</p>
+</div>
+<div class="p-stack-lg bg-surface-container-low border-l-4 border-secondary rounded-r-xl">
+<div class="flex items-center gap-stack-sm mb-stack-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="warning">warning</span>
+<span class="font-label-lg text-label-lg text-secondary">Logistics Advisory</span>
+</div>
+<p class="font-body-md text-body-md font-bold mb-stack-xs">B1 Highway Maintenance</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Expect 4-6 hour delays on the Windhoek-Okahandja stretch due to scheduled road works.</p>
+</div>
+<div class="p-stack-lg bg-surface-container-low border-l-4 border-primary rounded-r-xl">
+<div class="flex items-center gap-stack-sm mb-stack-sm">
+<span class="material-symbols-outlined text-primary" data-icon="check_circle">check_circle</span>
+<span class="font-label-lg text-label-lg text-primary">Compliance Status</span>
+</div>
+<p class="font-body-md text-body-md font-bold mb-stack-xs">Vendor Verification Valid</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Your SME Verified status is active until Dec 2025. You are eligible for zero-rated export duties.</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant w-full mt-stack-xl">
+<div class="w-full py-stack-xl px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter max-w-container-max mx-auto">
+<div>
+<h4 class="font-title-lg text-title-lg text-primary mb-stack-md">H&amp;B Market</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">© 2024 H&amp;B Cross-Border Marketplace. Empowering Regional Trade.</p>
+</div>
+<div>
+<h5 class="font-label-lg text-label-lg text-on-surface mb-stack-md">Logistics &amp; Trade</h5>
+<ul class="space-y-stack-sm font-body-sm text-body-sm">
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Shipping Policy</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">SME Verification</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Customs Guide</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-lg text-label-lg text-on-surface mb-stack-md">Legal &amp; Compliance</h5>
+<ul class="space-y-stack-sm font-body-sm text-body-sm">
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms of Trade</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy Policy</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">SACU Compliance</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-lg text-label-lg text-on-surface mb-stack-md">Support Center</h5>
+<ul class="space-y-stack-sm font-body-sm text-body-sm">
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Contact Support</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Seller FAQ</a></li>
+<li class="flex items-center gap-2 text-primary font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="mail">mail</span>
+                        trade@zanam.com
+                    </li>
+</ul>
+</div>
+</div>
+</footer>
+<!-- Bottom Navigation for Mobile -->
+<div class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center bg-surface border-t border-outline-variant pb-safe pt-2 px-2">
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl p-2 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="package_2">package_2</span>
+<span class="font-label-sm text-label-sm">Orders</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-sm text-label-sm">Dash</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</div>
+</div>
+<script>
+        // Simple micro-interaction for KPI cards
+        document.querySelectorAll('.hover\\:shadow-md').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+                card.style.transition = 'all 0.3s ease';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+
+
+</body></html>

@@ -1,0 +1,498 @@
+<!-- @dsCard group="Screens" name="Storefront" -->
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ZANAM Market | Cross-Border Commerce</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#eae7e7",
+                    "on-error-container": "#93000a",
+                    "surface-tint": "#036e00",
+                    "secondary-fixed-dim": "#ffb787",
+                    "inverse-primary": "#7ddc69",
+                    "secondary-fixed": "#ffdcc7",
+                    "outline-variant": "#bfcab7",
+                    "surface-container-highest": "#e5e2e1",
+                    "primary-fixed-dim": "#7ddc69",
+                    "on-tertiary-fixed-variant": "#015300",
+                    "on-tertiary-container": "#33f925",
+                    "error-container": "#ffdad6",
+                    "outline": "#707a6a",
+                    "surface-bright": "#fcf9f8",
+                    "tertiary-fixed": "#77ff61",
+                    "on-background": "#1c1b1b",
+                    "surface-dim": "#dcd9d9",
+                    "on-primary-container": "#8eee78",
+                    "tertiary-container": "#026e00",
+                    "surface-variant": "#e5e2e1",
+                    "primary-fixed": "#98f982",
+                    "on-surface": "#1c1b1b",
+                    "on-secondary-container": "#703500",
+                    "tertiary": "#015300",
+                    "background": "#fcf9f8",
+                    "surface": "#fcf9f8",
+                    "on-primary-fixed-variant": "#015300",
+                    "tertiary-fixed-dim": "#03e600",
+                    "on-primary-fixed": "#002200",
+                    "error": "#ba1a1a",
+                    "inverse-on-surface": "#f3f0ef",
+                    "on-surface-variant": "#404a3b",
+                    "surface-container-low": "#f6f3f2",
+                    "on-secondary-fixed-variant": "#723600",
+                    "surface-container": "#f0eded",
+                    "secondary-container": "#fe9b53",
+                    "primary-container": "#026e00",
+                    "secondary": "#964900",
+                    "primary": "#015300",
+                    "inverse-surface": "#313030",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed": "#002200",
+                    "on-secondary-fixed": "#311300",
+                    "on-primary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-secondary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "stack-xs": "4px",
+                    "container-max": "1280px",
+                    "stack-md": "16px",
+                    "stack-xl": "48px",
+                    "margin-mobile": "16px",
+                    "stack-sm": "8px",
+                    "stack-lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hero-gradient { background: linear-gradient(rgba(1, 83, 0, 0.7), rgba(1, 83, 0, 0.4)); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-40 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-stack-md w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary cursor-pointer">menu</span>
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">H&amp;B Market</h1>
+</div>
+<div class="hidden md:flex items-center gap-gutter">
+<nav class="flex gap-stack-lg items-center">
+<a class="text-primary dark:text-primary-fixed font-bold font-body-md" href="#">Home</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high transition-colors px-2 py-1 rounded font-body-md" href="#">SME Directory</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high transition-colors px-2 py-1 rounded font-body-md" href="#">Logistics</a>
+</nav>
+<div class="h-6 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-stack-sm cursor-pointer hover:bg-surface-container transition-colors px-2 py-1 rounded">
+<span class="text-label-lg font-label-lg text-primary">ZAR/NAD</span>
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 18px;">expand_more</span>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">search</span>
+<div class="flex items-center gap-stack-xs cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined text-primary">shopping_cart</span>
+<span class="hidden md:inline font-label-lg text-primary">Cart</span>
+</div>
+</div>
+</div>
+</header>
+<main class="w-full pb-32">
+<!-- Hero Section -->
+<section class="relative w-full h-[500px] md:h-[600px] flex items-center overflow-hidden">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="A high-resolution, wide-angle photograph of a bustling, modern logistics hub with commercial trucks in the foreground and a sun-drenched landscape characteristic of Southern Africa in the background. The scene is bathed in warm, golden afternoon light, emphasizing the efficiency and scale of cross-border trade. The color palette features rich earthy tones and vibrant greens, creating a professional and reliable atmosphere that aligns with a premium marketplace identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7WTa1MpPaXEllfldpwxYBv-W9FCi_bJmLsofmhI5f1xOsukbDxHP0U55I9B_qOUHIcbvJioBLauiBF0MuD8qOEOFq5FiHXAquNiXqgnzNl-zaecXlDizji0t8GrkJV-_l-K9ILVO1VgjdmH7Oc9yK9AZKOaBJUVAh6dV1zOznQAGjHiM1-261YPWLDnCBBsz8pkTsDkPKe4kJaIQXPCRgGvU1_nHN5wNVQ8G24khQspQ3DI1eOXvchtIMmYrf5HyXsBHtGNrStefu">
+<div class="absolute inset-0 hero-gradient"></div>
+<div class="relative z-10 px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto text-white">
+<div class="max-w-2xl">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm uppercase tracking-wider mb-stack-md inline-block">Cross-Border Excellence</span>
+<h2 class="font-display-lg text-display-lg mb-stack-md leading-tight">Seamless Trade:<br><span class="text-secondary-fixed">ZA to NA</span></h2>
+<p class="font-body-lg text-body-lg mb-stack-xl text-white/90">Connecting verified South African SMEs with discerning Namibian consumers through reliable logistics and secure regional payments.</p>
+<div class="flex flex-col md:flex-row gap-stack-md">
+<button class="bg-primary text-on-primary px-stack-xl py-stack-md rounded-lg font-label-lg hover:brightness-110 transition-all shadow-lg">Shop New Arrivals</button>
+<button class="border border-white/40 bg-white/10 backdrop-blur-md text-white px-stack-xl py-stack-md rounded-lg font-label-lg hover:bg-white/20 transition-all">SME Verification</button>
+</div>
+</div>
+</div>
+</section>
+<!-- New in Namibia (Horizontal Scroll) -->
+<section class="py-stack-xl px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto">
+<div class="flex justify-between items-end mb-stack-lg">
+<div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">New in Namibia</h3>
+<p class="font-body-md text-on-surface-variant">Fresh arrivals from South African SME partners</p>
+</div>
+<a class="text-primary font-label-lg flex items-center gap-1 hover:underline" href="#">View All <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span></a>
+</div>
+<div class="flex gap-gutter overflow-x-auto no-scrollbar pb-stack-md -mx-margin-mobile px-margin-mobile md:mx-0 md:px-0">
+<!-- Product Card 1 -->
+<div class="min-w-[260px] md:min-w-[280px] bg-surface-container-lowest border border-outline-variant rounded-xl group cursor-pointer transition-all hover:shadow-md">
+<div class="relative aspect-square overflow-hidden rounded-t-xl">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="A studio-lit, high-quality product photograph of artisanal handcrafted South African textiles. The fabric displays vibrant patterns with deep greens and earthy orange tones, draped elegantly against a clean white background. The lighting is soft and even, highlighting the intricate texture of the material. This clean, minimalist presentation reflects a premium, trustworthy e-commerce aesthetic with a focus on local SME craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2XOEXi995kEffFqoqvC1H4D6ivWXp62hxExfFHFs9aC4YFX0cRNLfy-HQwYOSl40F8ZIUrmPMbp14FSvVwDp11XqQvn56PcTBuPm8Nv9jGpZoDRq-HFigwN7r4tgSAAeMwiIkG3C9yq63fkibPdezO3z6s2BprH23GMQ4ALQrcU6EHoXNqmWoZ2BAekvQOqw3A59M1jf3vAgBSr7f8ECgPlHXGrpBkO9fn6qxYMR8XXFuysBQibZJIXC-eLRnKiv1zc9gC3qwdzoZ">
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-[#e8f5e9] text-[#015300] px-2 py-1 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[10px] font-bold">SME VERIFIED</span>
+</div>
+</div>
+<div class="p-stack-md">
+<p class="font-label-sm text-secondary uppercase mb-1">Textiles</p>
+<h4 class="font-body-md text-on-surface line-clamp-1 mb-2">Artisanal Venda Pattern Wrap</h4>
+<div class="flex justify-between items-center">
+<span class="font-headline-md text-on-surface">N$ 849.00</span>
+<button class="bg-surface-container-high p-2 rounded-full hover:bg-primary hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Repeat Product Cards -->
+<div class="min-w-[260px] md:min-w-[280px] bg-surface-container-lowest border border-outline-variant rounded-xl group cursor-pointer transition-all hover:shadow-md">
+<div class="relative aspect-square overflow-hidden rounded-t-xl">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="A professional flat-lay photograph of organic South African health and beauty products, specifically cold-pressed oils and natural balms. The packaging is sleek and modern with clear labeling, arranged on a neutral grey stone surface. Soft daylight illuminates the scene from the side, creating delicate shadows. The overall mood is clean, professional, and emphasizes high-quality regional ingredients." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLAX8eSGTfar0Ey2XQmu_hhW9khRq4u8GzMijGnagNhXeYgaMzgvU-sLUKDXgxuHKNRI4_sz1_vOFLi3154B660A00nwZvfstQt_U-O8TRQmyEVr2w5OV9VSfUKW3q1T1pwBVpWCpyXQBzu4vADd9u7A_Ri6ccb1z3cjqClhvgUmv3HNEMxCn78vSbFiAywzE5sS7MLmGeJ0kIzAJvFb0M5y04tj5zsJA51SiPWylQ2Np8ML4jRRaOnjL8QfQ-OaqoBywf3ijxxjUV">
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-[#e8f5e9] text-[#015300] px-2 py-1 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[10px] font-bold">SME VERIFIED</span>
+</div>
+</div>
+<div class="p-stack-md">
+<p class="font-label-sm text-secondary uppercase mb-1">Health &amp; Beauty</p>
+<h4 class="font-body-md text-on-surface line-clamp-1 mb-2">Marula &amp; Rooibos Facial Serum</h4>
+<div class="flex justify-between items-center">
+<span class="font-headline-md text-on-surface">N$ 320.00</span>
+<button class="bg-surface-container-high p-2 rounded-full hover:bg-primary hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<div class="min-w-[260px] md:min-w-[280px] bg-surface-container-lowest border border-outline-variant rounded-xl group cursor-pointer transition-all hover:shadow-md">
+<div class="relative aspect-square overflow-hidden rounded-t-xl">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="A bright and vibrant photograph of a variety of South African organic produce in a rustic wooden crate. The lighting is high-key and natural, showcasing the vivid colors of fresh fruits and vegetables. The composition is dynamic, suggesting abundance and freshness. The image reflects a reliable, community-focused agricultural trade theme within a modern marketplace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDo-uUITkAorHwU-NjOsKa-Ob3HZ1PV2ELVmGWy2GWEwPA0lpTZZeZJIjlUg0jqCpUW6OzmbFNjnzijS4kp9Tz5NcfnQJ0Z97e4lyljqjON47sQZ6iC6OaC2AjV56bSdAahcLPi7_m4h2qw_LQx5mX0ADcFajmZuaEl05zNdDmwbk_SLkQwgS4LJbVHvdyq2SbuUssOlArOFz3gLB965nxGm4dln3UMQiEOW52x1hKRwbAYOGTAT3IufV4GAGA6x3kle1YV8CKwXZSQ">
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-[#e8f5e9] text-[#015300] px-2 py-1 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[10px] font-bold">SME VERIFIED</span>
+</div>
+</div>
+<div class="p-stack-md">
+<p class="font-label-sm text-secondary uppercase mb-1">Agriculture</p>
+<h4 class="font-body-md text-on-surface line-clamp-1 mb-2">Organic Dried Fruit Hamper</h4>
+<div class="flex justify-between items-center">
+<span class="font-headline-md text-on-surface">N$ 185.00</span>
+<button class="bg-surface-container-high p-2 rounded-full hover:bg-primary hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<div class="min-w-[260px] md:min-w-[280px] bg-surface-container-lowest border border-outline-variant rounded-xl group cursor-pointer transition-all hover:shadow-md">
+<div class="relative aspect-square overflow-hidden rounded-t-xl">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="A detailed close-up photograph of high-end, handcrafted South African leather goods, such as a messenger bag or wallet. The focus is on the precision of the stitching and the rich grain of the leather. The lighting is warm and directional, creating depth and a premium feel. This image represents the handicraft category, conveying durability and artisanal quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKse02jHhTchbpBwYF5KhY9qLbwmuQCPgr-3auHNW5JJT-XEFrA8pNnIm3AxPTzbP3KVSwWJi7UDtztUolYG4f30TafOsxucOP_SYyY-5JM1bZyJqyyDHX8MzHLnBulRAkLKqcePhBfQPUtnPIDuVgwPdZds1qblnFAy6UASJS2kt-JuuB8Tpk0MviA1FXbexj719vqHA5y84V9l_kHBnGYwaNO0oC0hoxyu3tkNdjJ3xI_jlrDjpmUCwz77i7Wy2gaHf6L8ewlG5H">
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-[#e8f5e9] text-[#015300] px-2 py-1 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[10px] font-bold">SME VERIFIED</span>
+</div>
+</div>
+<div class="p-stack-md">
+<p class="font-label-sm text-secondary uppercase mb-1">Handicrafts</p>
+<h4 class="font-body-md text-on-surface line-clamp-1 mb-2">Full Grain Leather Tote</h4>
+<div class="flex justify-between items-center">
+<span class="font-headline-md text-on-surface">N$ 1,450.00</span>
+<button class="bg-surface-container-high p-2 rounded-full hover:bg-primary hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust-building Banner -->
+<section class="py-stack-xl bg-surface-container w-full">
+<div class="px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="flex items-start gap-stack-md p-stack-lg bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm transition-transform hover:-translate-y-1">
+<div class="bg-primary/10 p-3 rounded-lg text-primary">
+<span class="material-symbols-outlined" style="font-size: 32px;">verified_user</span>
+</div>
+<div>
+<h5 class="font-title-lg text-title-lg text-on-surface mb-1">Secure Regional Payments</h5>
+<p class="font-body-sm text-on-surface-variant">Instant ZAR to NAD settlement with zero cross-border fees for verified users.</p>
+</div>
+</div>
+<div class="flex items-start gap-stack-md p-stack-lg bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm transition-transform hover:-translate-y-1">
+<div class="bg-secondary/10 p-3 rounded-lg text-secondary">
+<span class="material-symbols-outlined" style="font-size: 32px;">local_shipping</span>
+</div>
+<div>
+<h5 class="font-title-lg text-title-lg text-on-surface mb-1">Express ZA-NA Logistics</h5>
+<p class="font-body-sm text-on-surface-variant">Door-to-door tracking from Cape Town or Jo'burg warehouses to Windhoek in 3-5 days.</p>
+</div>
+</div>
+<div class="flex items-start gap-stack-md p-stack-lg bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm transition-transform hover:-translate-y-1">
+<div class="bg-tertiary-container/20 p-3 rounded-lg text-tertiary">
+<span class="material-symbols-outlined" style="font-size: 32px;">policy</span>
+</div>
+<div>
+<h5 class="font-title-lg text-title-lg text-on-surface mb-1">Simplified Customs</h5>
+<p class="font-body-sm text-on-surface-variant">Automated SACU duty calculations and documentation for seamless clearance.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Shop by Category Grid -->
+<section class="py-stack-xl px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto">
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-stack-lg">Explore Categories</h3>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Bento Item 1 -->
+<div class="relative group cursor-pointer overflow-hidden rounded-2xl h-64 border border-outline-variant">
+<img class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A clean, minimalist category image featuring agriculture products. High-key lighting, soft shadows, and a focus on organic textures. The image uses a palette of fresh greens and natural wood tones, conveying a sense of transparency and quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnwDAfrXOsFzIB0-g3IK00Ex3jRAqPCl4nQ_LcfQpbXm-X-CtLE4qmEcaD2WFJOMe8fyBWFzO3LN9lru07I53CiywPbp0SgNs-xm5s-sKzhIInMc93CzHyF8EIk62Me4VLPQ9Rzp5nqRDGndbLm-6GG_VOIrAnAnCGNBf71rxRjaXMjizy8bKD_EVcDGKJpma3jmiPK6gNofuhj-R2l-GcsxT_7tnU1wMj1167ZAJAgEgOCaJX83nSjizSkMClYLIO9mdj2V1Zag49">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<h4 class="text-white font-title-lg text-title-lg">Agriculture</h4>
+<p class="text-white/80 font-label-sm">342 Products</p>
+</div>
+</div>
+<!-- Bento Item 2 -->
+<div class="relative group cursor-pointer overflow-hidden rounded-2xl h-64 border border-outline-variant">
+<img class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A stunning category banner for handicrafts, showcasing a curated selection of woven baskets and clay pottery. The lighting is warm and golden, casting long shadows that highlight the artisanal textures. The color palette is composed of rich terracotta oranges and deep primary greens." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQtWIxRLd-HgoC0-xo68g_YU5qn-6LzanY_E_MOJyTsMA0CYLVuOrXjvW0FATlFuPjkCCmi31bNSPHfIOgA1bDj5stRThwd-ZXYPMj0K4AvRP5JOor78V88bvrY-FG57JXgqO-9PPK5th_wNsKMUVCOHxzgBy_rpPH-sfyx6jikc2bohYhNkAWeZ0EbMV6EoQGQ3TX8YKagV1wkTSq1AbhhOtwZ1Nv7acJrGCUCXH0tCHdROV1Ayfx9K9W28JS9X9pcOEdgQD3Mi6F">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<h4 class="text-white font-title-lg text-title-lg">Handicrafts</h4>
+<p class="text-white/80 font-label-sm">128 Products</p>
+</div>
+</div>
+<!-- Bento Item 3 -->
+<div class="relative group cursor-pointer overflow-hidden rounded-2xl h-64 border border-outline-variant">
+<img class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A high-end lifestyle category image for health and beauty. Features an array of natural apothecary bottles on a minimalist white shelf. The aesthetic is extremely clean and airy, with a cool-toned light-mode palette and subtle green plant accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoGFlqDP6jI4zIyU8Ahrx0d4LBnnUqW3eV-tY9lUsBW9pDx5DytxISoxBDwoY00Y2X3su_1NSjhuIjsYBoYtfSpAX_2Aux9U4TI0hzPqsKqcxDPoj261QK3AAFm7Z8M-bv5TazCbM2YAbuS60RduWHF0UasFAOFVkBnSrr2DG-RAVQBKFJKf6nZs-R0hb3zedvbkpay5kAVcdtnd78Dqzjh60dsYHvuD1sVzf2LarylrARX2VwSKIQg1BmZ5ufOjr09pmhXmMkoMJV">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<h4 class="text-white font-title-lg text-title-lg">Health &amp; Beauty</h4>
+<p class="text-white/80 font-label-sm">215 Products</p>
+</div>
+</div>
+<!-- Bento Item 4 -->
+<div class="relative group cursor-pointer overflow-hidden rounded-2xl h-64 border border-outline-variant">
+<img class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A macro-photography category image of fine textile fibers and woven fabrics. The lighting is crisp, revealing the intricate details of the weave. The image emphasizes high-quality materials with a professional, minimalist corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-VnbXOzmYPw6mAP-Q7vU4rzmd46TRoeQs5qyUg7xWUAgy4hewLQHkrvtavse8mRcSbgLUECnydSzNNodsY5b8gPM8jsbiqS6ecdHSIKKVDuqzxBrbDFvzYHdXOoYQHmDP0YA2revbSBXRUi0y5L83CPW0efDflARTGNsdQ5E6smauWCworcut5lnZ7gVq2lpL761YW_E1-Vx2CWmmnhHIQqlh4eaXWrrV_qwQHjj0msC9m0qcgv9DGcHP0V5Tx3-kwNUV3VQcW2On">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<h4 class="text-white font-title-lg text-title-lg">Textiles</h4>
+<p class="text-white/80 font-label-sm">89 Products</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Featured SME Vendors -->
+<section class="py-stack-xl px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto bg-surface-container-low rounded-3xl mb-stack-xl">
+<div class="mb-stack-lg text-center">
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Featured SME Vendors</h3>
+<p class="font-body-md text-on-surface-variant max-w-xl mx-auto mt-2">Empowering local South African businesses through regional export opportunities.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Vendor Card 1 -->
+<div class="bg-surface p-stack-lg rounded-2xl border border-outline-variant flex gap-stack-lg items-center group hover:border-primary transition-colors">
+<div class="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A warm and professional portrait of a South African female SME owner in her workshop. The background shows blurred artisanal tools and products, creating a sense of authenticity. The lighting is soft and natural, emphasizing a trustworthy and community-focused vendor profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDE9k3u7Oo6kYMVyhLnFcGacrBfqze2fbuG9JAgUlgXioiALDaFuHZw3IXC318d-n5ICgzxbAlJ95Rr-vEc86SiDKUW1Y_3YMgDlQFfy-d5wm_3waXEktxf8T-NoIDNMpY0oN4kUV3HQnL5xIdDYpPGUDpDz1IyB2FTKkCAg41Nuz4A4Ep0uHRcEVlY5M5ZBWUL6Sd3__P3YShx0103DYMEjLxviCidji4WDArRKE8H8-A2G-anzA3JpDyBjqto3o5seFzz60OaNrKm">
+</div>
+<div>
+<div class="flex items-center gap-1 mb-1">
+<h5 class="font-title-lg text-title-lg text-on-surface">Roots &amp; Shoots Art</h5>
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span> Cape Town, ZA
+                        </p>
+<div class="mt-stack-sm flex gap-stack-xs">
+<span class="bg-surface-container-high text-[10px] font-bold px-2 py-1 rounded">CRAFTS</span>
+<span class="bg-surface-container-high text-[10px] font-bold px-2 py-1 rounded">5.0 ★</span>
+</div>
+</div>
+</div>
+<!-- Vendor Card 2 -->
+<div class="bg-surface p-stack-lg rounded-2xl border border-outline-variant flex gap-stack-lg items-center group hover:border-primary transition-colors">
+<div class="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a male SME owner in a modern agricultural setting. The lighting is bright and clean, projecting reliability and institutional expertise. The overall aesthetic is corporate but approachable." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsaoQKkuWRunU_bv0gBbQwSFGDnO94SE03IubwuzKRZ_ZoblpTG5zWkcU2r0X43MuwM-7goT6DCf1ln5GX1IuknszIosXU7D_PB4KnKgzrIme6VgkkZlA_whHU3F17syFg1Uwe1seSK-u99oeqbsTAZASYuiVgwEgsuGYh6mutHhRzmI13oAr3CChMi_zGhoUcv5qQJE6Fcs-Bn0Ap2d_Pq52NetkicGQFmZer1Fem7Ie-u8_ek7vwJsigXgkKBT3yM6Dsk4dcGzfB">
+</div>
+<div>
+<div class="flex items-center gap-1 mb-1">
+<h5 class="font-title-lg text-title-lg text-on-surface">Leko Organics</h5>
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span> Stellenbosch, ZA
+                        </p>
+<div class="mt-stack-sm flex gap-stack-xs">
+<span class="bg-surface-container-high text-[10px] font-bold px-2 py-1 rounded">AGRI</span>
+<span class="bg-surface-container-high text-[10px] font-bold px-2 py-1 rounded">4.9 ★</span>
+</div>
+</div>
+</div>
+<!-- Vendor Card 3 -->
+<div class="bg-surface p-stack-lg rounded-2xl border border-outline-variant flex gap-stack-lg items-center group hover:border-primary transition-colors">
+<div class="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A professional and friendly portrait of a female entrepreneur specializing in textiles. The workshop setting is neat and modern, with soft afternoon light. The aesthetic emphasizes a balance of professional quality and local artisanal soul." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHI8lyD01plWMYQ4-TfjXuZH04q5gnI58Qho5e1SDZ6en2BSuRtHzbnHz8S8OtV_NhqfuOSMHqjUNSXU4RWO_6No8wd2NYx7_wuH3arDPGpJ4iJL8NWeRFZPGHYxU0aIJPDoeNfaxGfkeXSTEf14fto2bMyyL5qoCNsl0aeqH6MrZm4OyPU_KgHEhiZxyrNH7skZgTlI6PRymEpCsm0HESLkbcv08OzXhGiSAFp7sq9l7u7skNKP3sl0iH_mx-4O0xIWELeUmzMdm7">
+</div>
+<div>
+<div class="flex items-center gap-1 mb-1">
+<h5 class="font-title-lg text-title-lg text-on-surface">Zulu Weaves</h5>
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span> Durban, ZA
+                        </p>
+<div class="mt-stack-sm flex gap-stack-xs">
+<span class="bg-surface-container-high text-[10px] font-bold px-2 py-1 rounded">FABRIC</span>
+<span class="bg-surface-container-high text-[10px] font-bold px-2 py-1 rounded">4.8 ★</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Newsletter / Community Section -->
+<section class="py-stack-xl px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto text-center border-t border-outline-variant">
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Stay Updated on Trade</h3>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-2xl mx-auto">Get the latest on regional SME arrivals, logistics updates, and cross-border trade tips directly in your inbox.</p>
+<div class="mt-stack-xl flex flex-col md:flex-row gap-stack-sm max-w-lg mx-auto">
+<input class="flex-grow bg-surface-container-lowest border border-outline rounded-lg px-4 py-3 text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Enter your email address" type="email">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-lg whitespace-nowrap hover:brightness-110">Join Community</button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-stack-xl border-t border-outline-variant dark:border-outline bg-surface-container-lowest dark:bg-surface-dim">
+<div class="w-full py-stack-xl px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter max-w-container-max mx-auto">
+<div class="flex flex-col gap-stack-md">
+<h6 class="font-title-lg text-title-lg text-primary dark:text-primary-fixed">H&amp;B Market</h6>
+<p class="font-body-sm text-on-surface-variant">Your reliable bridge for cross-border trade between South African SMEs and Namibian customers.</p>
+<div class="flex gap-stack-md mt-stack-sm">
+<span class="material-symbols-outlined text-primary cursor-pointer hover:scale-110 transition-transform">public</span>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:scale-110 transition-transform">shield</span>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:scale-110 transition-transform">payments</span>
+</div>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<p class="font-label-lg text-on-surface uppercase tracking-wider mb-2">Trade Info</p>
+<a class="font-body-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Shipping Policy</a>
+<a class="font-body-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">SME Verification</a>
+<a class="font-body-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms of Trade</a>
+<a class="font-body-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Contact Support</a>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<p class="font-label-lg text-on-surface uppercase tracking-wider mb-2">SME Access</p>
+<a class="font-body-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Register as Vendor</a>
+<a class="font-body-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Logistics Partnership</a>
+<a class="font-body-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Export Documentation</a>
+<a class="font-body-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Success Stories</a>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<p class="font-label-lg text-on-surface uppercase tracking-wider mb-2">Connect</p>
+<p class="font-body-sm text-on-surface-variant">Your reliable bridge for cross-border trade between South African SMEs and Namibian customers.</p>
+<p class="font-body-sm text-on-surface-variant">Your reliable bridge for cross-border trade between South African SMEs and Namibian customers.</p>
+<p class="font-body-sm text-on-surface-variant">Your reliable bridge for cross-border trade between South African SMEs and Namibian customers.</p>
+</div>
+</div>
+<div class="w-full py-stack-md px-margin-mobile border-t border-outline-variant text-center">
+<p class="font-body-sm text-on-surface-variant">© 2024 H&amp;B Cross-Border Marketplace. Empowering Regional Trade.</p>
+</div>
+</footer>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center bg-surface dark:bg-surface-dim pb-safe pt-2 px-2 border-t border-outline-variant">
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-tertiary-container text-on-primary-container dark:text-on-tertiary-container rounded-xl p-2 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-sm text-label-sm">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">package_2</span>
+<span class="font-label-sm text-label-sm">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for horizontal scroll
+        const scrollContainer = document.querySelector('.overflow-x-auto');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        scrollContainer.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - scrollContainer.offsetLeft;
+            scrollLeft = scrollContainer.scrollLeft;
+        });
+        scrollContainer.addEventListener('mouseleave', () => {
+            isDown = false;
+        });
+        scrollContainer.addEventListener('mouseup', () => {
+            isDown = false;
+        });
+        scrollContainer.addEventListener('mousemove', (e) => {
+            if(!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - scrollContainer.offsetLeft;
+            const walk = (x - startX) * 2;
+            scrollContainer.scrollLeft = scrollLeft - walk;
+        });
+    </script>
+
+
+</body></html>

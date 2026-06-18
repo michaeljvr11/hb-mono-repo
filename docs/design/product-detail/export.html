@@ -1,0 +1,320 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "background": "#fcf9f8",
+                    "on-primary-fixed-variant": "#015300",
+                    "on-primary-fixed": "#002200",
+                    "surface-dim": "#dcd9d9",
+                    "surface-container-high": "#eae7e7",
+                    "error-container": "#ffdad6",
+                    "primary": "#015300",
+                    "secondary-fixed": "#ffdcc7",
+                    "on-surface-variant": "#404a3b",
+                    "on-secondary-fixed": "#311300",
+                    "secondary-fixed-dim": "#ffb787",
+                    "tertiary-fixed": "#77ff61",
+                    "surface-variant": "#e5e2e1",
+                    "surface-container": "#f0eded",
+                    "outline": "#707a6a",
+                    "primary-fixed-dim": "#7ddc69",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#015300",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#98f982",
+                    "outline-variant": "#bfcab7",
+                    "on-secondary-fixed-variant": "#723600",
+                    "on-tertiary-container": "#33f925",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#fe9b53",
+                    "secondary": "#964900",
+                    "inverse-primary": "#7ddc69",
+                    "error": "#ba1a1a",
+                    "on-secondary-container": "#703500",
+                    "on-tertiary-fixed": "#002200",
+                    "primary-container": "#026e00",
+                    "surface-tint": "#036e00",
+                    "surface": "#fcf9f8",
+                    "surface-container-low": "#f6f3f2",
+                    "on-tertiary-fixed-variant": "#015300",
+                    "surface-container-highest": "#e5e2e1",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#313030",
+                    "on-error-container": "#93000a",
+                    "on-primary-container": "#8eee78",
+                    "tertiary-fixed-dim": "#03e600",
+                    "on-background": "#1c1b1b",
+                    "inverse-on-surface": "#f3f0ef",
+                    "surface-bright": "#fcf9f8",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#026e00",
+                    "on-surface": "#1c1b1b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "24px",
+                    "stack-xl": "48px",
+                    "stack-xs": "4px",
+                    "margin-mobile": "16px",
+                    "unit": "8px",
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "stack-sm": "8px",
+                    "container-max": "1280px",
+                    "stack-md": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden pb-32">
+<!-- TopAppBar Component -->
+<header class="w-full top-0 sticky z-40 bg-surface border-b border-outline-variant flex justify-between items-center px-margin-mobile py-stack-md max-w-container-max mx-auto">
+<div class="flex items-center gap-stack-sm cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</div>
+<h1 class="text-headline-md font-headline-md font-bold text-primary">H&amp;B Market</h1>
+<div class="flex items-center gap-stack-sm cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined text-primary">shopping_cart</span>
+</div>
+</header>
+<main class="max-w-container-max mx-auto">
+<!-- Hero Image Gallery -->
+<section class="relative w-full bg-surface-container-low">
+<div class="aspect-square w-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A high-end, professionally lit studio photograph of a premium glass jar of Organic Fynbos Honey. The jar features a minimalist cream-colored label and is set against a soft, sun-drenched background with hints of Cape fynbos flora. The lighting is warm and golden, reflecting the rich, viscous amber texture of the honey inside, creating a sophisticated and appetizing commercial aesthetic consistent with modern e-commerce standards." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKB_N2-Y3pg70lRMNu7oKQjzGf8dL811ym3Ahx-UaXsqlGeKAAPgWDnNCoktVfQkA85_B8zR_qAVPYt3tDBz3b_s9G37hxFjME1pbOvx-7XXWNk6EKpGjZDaAmC7maHAVFpkzi1NUOhwQRYDNF4B3NSWGwFDsXehBTeGWn-2nnIC5OOeqYfpwjX14rytUeIJhWYytw1So2Zsdazgt4czHzFIxhiU-zDUnvraAaWE9rhGhpL7miBjNklK0HCyw4s2IL5t29665_OpIz">
+</div>
+<div class="absolute bottom-margin-mobile left-margin-mobile flex gap-stack-xs">
+<div class="px-stack-sm py-1 bg-primary text-on-primary rounded-full text-label-sm font-label-sm">1 / 4</div>
+</div>
+<!-- SME Verified Badge Overlay -->
+<div class="absolute top-margin-mobile right-margin-mobile bg-[#e8f5e9] px-stack-sm py-1 rounded-full flex items-center gap-1 border border-primary/10">
+<span class="material-symbols-outlined text-[#015300] text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[#015300] font-label-lg text-label-lg">SME Verified</span>
+</div>
+</section>
+<!-- Product Header & Pricing -->
+<section class="px-margin-mobile pt-stack-lg">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-stack-xs">Organic Fynbos Honey 500g</h2>
+<div class="flex flex-col gap-1 mb-stack-md">
+<div class="flex items-baseline gap-stack-sm">
+<span class="text-headline-md font-headline-md text-primary">R 145.00</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">/</span>
+<span class="text-headline-md font-headline-md text-secondary">N$ 145.00</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">1:1 Regional Parity Guaranteed</p>
+</div>
+</section>
+<!-- Cross-Border Shipping Info -->
+<section class="px-margin-mobile mb-stack-lg">
+<div class="bg-surface-container rounded-xl p-stack-md border border-outline-variant">
+<div class="flex items-center gap-stack-sm mb-stack-sm">
+<span class="material-symbols-outlined text-secondary">local_shipping</span>
+<h3 class="font-title-lg text-title-lg">Cross-Border Shipping</h3>
+</div>
+<div class="relative py-stack-sm">
+<div class="flex justify-between items-center mb-stack-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Origin</span>
+<span class="font-body-md text-body-md font-semibold">Cape Town, ZA</span>
+</div>
+<div class="flex-grow mx-4 border-t-2 border-dashed border-outline-variant relative">
+<span class="material-symbols-outlined absolute -top-3 left-1/2 -translate-x-1/2 bg-surface-container px-1 text-primary">potted_plant</span>
+</div>
+<div class="flex flex-col text-right">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Destination</span>
+<span class="font-body-md text-body-md font-semibold">Windhoek, NA</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2 mt-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">schedule</span>
+<p class="text-body-sm font-body-sm">Arrives in 3-5 business days</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<p class="text-body-sm font-body-sm font-medium text-primary">Simplified Customs Included</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Product Description -->
+<section class="px-margin-mobile mb-stack-xl">
+<h3 class="font-title-lg text-title-lg mb-stack-sm">Description</h3>
+<div class="space-y-stack-sm text-on-surface-variant leading-relaxed">
+<p class="font-body-md text-body-md">
+                    Sourced from the floral kingdom of the Western Cape, our Organic Fynbos Honey is a complex, aromatic multi-floral honey. Unlike commercial varieties, this raw honey preserves the natural enzymes, pollen, and propolis gathered from the unique endemic vegetation of the Stellenbosch region.
+                </p>
+<p class="font-body-md text-body-md">
+<strong class="text-on-surface">Health Benefits:</strong> Rich in antioxidants and natural anti-inflammatories, it serves as a powerful immune booster and a natural alternative to refined sugars.
+                </p>
+</div>
+</section>
+<!-- Vendor Profile Section -->
+<section class="px-margin-mobile mb-stack-xl">
+<div class="p-stack-md rounded-xl border border-outline-variant flex items-center gap-stack-md bg-surface-container-low">
+<img class="w-16 h-16 rounded-full object-cover border-2 border-primary" data-alt="A warm, professional portrait of a South African female entrepreneur in her thirties, smiling confidently in a rustic yet clean workshop setting. She is wearing a green linen apron, and the background is softly blurred, showing wooden shelves with glass honey jars. The lighting is natural and flattering, emphasizing a mood of authenticity, craftsmanship, and verified SME professionalism within the marketplace context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAgd0iZ30WnSsRmFHsCccmqQixxcOze5qpPh1c2om8maHwCJ1q2HuFQr-YZri0l-makf4uC8W7VXrMMSZgPFPXSty2HrNYWyMux5_6dm5ky6D6fPBDFKB7uZVdTp_vX1QMSIJaN0o3qOivfUMo28iZ7YJUWePjaKrCnqGPXnOVBU3hniP3sRAJM3aLVFFeqOVvxn8p80yRdTPraKICKCXGFtNRem0GrDB-J8P3hS4GJi4A5ZibQXd1JFdD-LCrgotP-uUyQyKngyWA">
+<div class="flex-grow">
+<div class="flex items-center justify-between">
+<h4 class="font-title-lg text-title-lg">Leko Organics</h4>
+<div class="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-label-sm font-label-sm text-on-surface font-bold">4.9</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-body-sm font-body-sm">Stellenbosch, ZA</span>
+</div>
+<button class="mt-stack-sm text-primary font-label-lg text-label-lg flex items-center gap-1">
+                        View Storefront <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Suggested Products -->
+<section class="px-margin-mobile mb-stack-xl">
+<div class="flex justify-between items-end mb-stack-md">
+<h3 class="font-title-lg text-title-lg">You may also like</h3>
+<span class="text-primary font-label-lg text-label-lg">See All</span>
+</div>
+<div class="grid grid-cols-2 gap-gutter">
+<!-- Related Product 1 -->
+<div class="flex flex-col gap-stack-sm">
+<div class="aspect-square rounded-lg overflow-hidden border border-outline-variant relative group cursor-pointer">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="A crisp, high-quality product photo of loose-leaf Rooibos Tea in a minimalist tin canister. The setting is clean and modern, with a focus on the rich reddish-brown color of the tea leaves scattered artistically at the base. Soft, cool-toned daylight creates a professional e-commerce look that complements the marketplace's high-end aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2hJeosGNUtf9Ipjhy2CA8lAd8Q7KqJwuhYABIWZtId33LcVcSbHc9N3tOQNhhLDPrLLnGEcyzX4-9Ppa170ZAMGW5amI26-AQ6qFmhcA7DW7CKa9C_UuR9nbO9346TOxwfZGur77Li2YKyy1DP6BbBB-05hpkh5tgWOE8WsfV8-N_YZL5_wDiB10l0Xu0EbhSN-X-HjUxLbaXwxyUV-GvD4WjGJ6rWBzBEo1-cWxWEyOhmiL8Zl2AOTOw8Dyu8zZIp4oTEnweW8F6">
+<div class="absolute top-2 left-2 bg-[#e8f5e9] px-1.5 py-0.5 rounded-full border border-primary/10">
+<span class="text-[#015300] font-label-sm text-[10px] font-bold">SME Verified</span>
+</div>
+</div>
+<div>
+<h5 class="font-body-md text-body-md font-medium text-on-surface line-clamp-1">Wild Rooibos Loose Tea</h5>
+<div class="flex gap-2 items-center">
+<span class="font-label-lg text-label-lg text-primary">R 85.00</span>
+</div>
+</div>
+</div>
+<!-- Related Product 2 -->
+<div class="flex flex-col gap-stack-sm">
+<div class="aspect-square rounded-lg overflow-hidden border border-outline-variant relative group cursor-pointer">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="A beautiful, vibrant photo of artisanal fruit jams in elegant glass jars. The colors of the jam—vibrant strawberry red and deep apricot orange—glow under soft studio lighting. The presentation is clean and premium, highlighting the high-quality ingredients and local craftsmanship of South African SME producers." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMPMbXD34R8BW3gCNVD12y36tQejhfgEKtzpcZfdRdq2BqtS8K1uCBRD8MG1tDdhkHGNZpaZ7sonFkaXKpnA1mMB81KaQ8vJiQP-_sAv7SV_jmh9L_ibrIJaRiwvdxPB4UJQau0gA6KDWhplubFWGv-Tmn5X6gDrtOHeVz9Q-kak-Lui-DIs_gw14qUJnobI0p_-Sq7xaRtB6edBClKdpxW1Ze5IpgZZXQvaQ9afLJFuGHrXSOVT1eCSCNG7PbDLLH23pMC-p_0JbY">
+<div class="absolute top-2 left-2 bg-[#e8f5e9] px-1.5 py-0.5 rounded-full border border-primary/10">
+<span class="text-[#015300] font-label-sm text-[10px] font-bold">SME Verified</span>
+</div>
+</div>
+<div>
+<h5 class="font-body-md text-body-md font-medium text-on-surface line-clamp-1">Artisanal Apricot Jam</h5>
+<div class="flex gap-2 items-center">
+<span class="font-label-lg text-label-lg text-primary">R 65.00</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Sticky Bottom Actions -->
+<div class="fixed bottom-16 md:bottom-20 left-0 w-full z-40 px-margin-mobile pb-stack-md pt-2 bg-gradient-to-t from-background via-background to-transparent">
+<button class="w-full bg-primary text-on-primary py-4 rounded-xl font-label-lg text-label-lg shadow-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-transform" id="add-to-cart">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+            Add to Cart - R 145.00
+        </button>
+</div>
+<!-- BottomNavBar Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center bg-surface pb-safe pt-2 px-2 border-t border-outline-variant">
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-sm text-label-sm">Search</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">package_2</span>
+<span class="font-label-sm text-label-sm">Orders</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</div>
+</nav>
+<script>
+        // Simple Interaction: Button feedback
+        const addToCartBtn = document.getElementById('add-to-cart');
+        addToCartBtn.addEventListener('click', () => {
+            const originalText = addToCartBtn.innerHTML;
+            addToCartBtn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span> Adding...`;
+            addToCartBtn.classList.replace('bg-primary', 'bg-secondary');
+            
+            setTimeout(() => {
+                addToCartBtn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> Added to Cart`;
+                addToCartBtn.classList.replace('bg-secondary', 'bg-tertiary-fixed-dim');
+                addToCartBtn.classList.add('text-on-tertiary-fixed');
+                
+                setTimeout(() => {
+                    addToCartBtn.innerHTML = originalText;
+                    addToCartBtn.classList.remove('bg-tertiary-fixed-dim', 'text-on-tertiary-fixed');
+                    addToCartBtn.classList.add('bg-primary');
+                }, 2000);
+            }, 800);
+        });
+    </script>
+
+
+</body></html>

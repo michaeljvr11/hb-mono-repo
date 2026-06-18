@@ -1,0 +1,308 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ZANAM Market - Product Discovery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#026e00",
+                    "surface-container-high": "#eae7e7",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#015300",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed-dim": "#03e600",
+                    "surface-container": "#f0eded",
+                    "secondary": "#964900",
+                    "primary-fixed": "#98f982",
+                    "inverse-on-surface": "#f3f0ef",
+                    "on-secondary-fixed-variant": "#723600",
+                    "on-secondary-fixed": "#311300",
+                    "primary": "#015300",
+                    "error-container": "#ffdad6",
+                    "on-surface-variant": "#404a3b",
+                    "on-secondary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "outline-variant": "#bfcab7",
+                    "surface-container-highest": "#e5e2e1",
+                    "on-primary-container": "#8eee78",
+                    "tertiary-fixed": "#77ff61",
+                    "on-primary-fixed-variant": "#015300",
+                    "on-tertiary-container": "#33f925",
+                    "background": "#fcf9f8",
+                    "inverse-primary": "#7ddc69",
+                    "surface-bright": "#fcf9f8",
+                    "on-tertiary-fixed": "#002200",
+                    "surface-tint": "#036e00",
+                    "on-background": "#1c1b1b",
+                    "surface": "#fcf9f8",
+                    "outline": "#707a6a",
+                    "surface-variant": "#e5e2e1",
+                    "error": "#ba1a1a",
+                    "secondary-container": "#fe9b53",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#313030",
+                    "surface-dim": "#dcd9d9",
+                    "on-primary-fixed": "#002200"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "margin-desktop": "40px",
+                    "stack-xl": "48px",
+                    "stack-md": "16px",
+                    "gutter": "24px",
+                    "unit": "8px",
+                    "container-max": "1280px",
+                    "stack-xs": "4px",
+                    "stack-sm": "8px",
+                    "stack-lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-50 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline flat no shadows">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-stack-md w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed cursor-pointer active:opacity-80">menu</span>
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">H&amp;B Market</h1>
+</div>
+<div class="flex items-center gap-stack-lg">
+<span class="material-symbols-outlined text-on-surface-variant dark:text-on-surface-variant cursor-pointer hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors p-2 rounded-full">search</span>
+<button class="font-label-lg text-label-lg text-primary dark:text-primary-fixed font-bold cursor-pointer active:opacity-80">Cart</button>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg space-y-stack-lg">
+<!-- Search & Global Filters Section -->
+<section class="space-y-stack-md">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-12 pr-4 py-4 rounded-xl border border-outline bg-surface-container-lowest focus:ring-2 focus:ring-primary outline-none transition-all font-body-md" placeholder="Search for regional products..." type="text">
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-2">
+<button class="bg-primary text-on-primary px-stack-lg py-2 rounded-full font-label-lg whitespace-nowrap">All Items</button>
+<button class="bg-surface-container-high text-on-surface-variant px-stack-lg py-2 rounded-full font-label-lg whitespace-nowrap hover:bg-outline-variant transition-colors">Agriculture</button>
+<button class="bg-surface-container-high text-on-surface-variant px-stack-lg py-2 rounded-full font-label-lg whitespace-nowrap hover:bg-outline-variant transition-colors">Handicrafts</button>
+<button class="bg-surface-container-high text-on-surface-variant px-stack-lg py-2 rounded-full font-label-lg whitespace-nowrap hover:bg-outline-variant transition-colors">Fashion</button>
+<button class="bg-surface-container-high text-on-surface-variant px-stack-lg py-2 rounded-full font-label-lg whitespace-nowrap hover:bg-outline-variant transition-colors">Health &amp; Beauty</button>
+</div>
+</div>
+<!-- SME Verification Toggle -->
+<div class="flex items-center justify-between bg-surface-container-low p-4 rounded-xl border border-outline-variant">
+<div class="flex items-center gap-stack-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<div>
+<p class="font-label-lg text-on-surface">Verified SME Vendors</p>
+<p class="font-label-sm text-on-surface-variant">Only show verified ZA &amp; NA businesses</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox">
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</section>
+<!-- Product Discovery Grid -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-gutter">
+<!-- Product Card 1 -->
+<div class="flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
+<div class="relative aspect-square bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="A professional studio product shot of premium organic honey in a glass jar, set against a clean white background with soft natural lighting. The scene represents a high-end marketplace aesthetic with a focus on South African agricultural excellence. The honey has a deep amber color and the packaging looks modern and artisanal, reflecting reliability and regional trade quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcKqx6kqKpEsicTEXmjvIqdKe1QNPP1U7uKTw5APqplECoM7Zm2WNqny1DBWU_KME12K6K17mHSL2TNEXF3ioBcwomTNVi4RZHlGLiiSEyfzo-QYG9ZLiybpaW6lI8u0t6okV7aJ2-L_QPrm02BQZd22ZM0p8lZavOfY5CkeECvz2ePXFbKjIZhfaPPO2inau73w6mzok-vSvrzmJCq1mYXI0nXs4FSe6dmCt6AtZ5WAeXByGwD83bKdWIpERzDFaN8OU_C1CtqqYc">
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-[#e8f5e9] text-[#015300] px-2 py-1 rounded-full text-[10px] font-bold border border-[#015300]/20">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        SME VERIFIED
+                    </div>
+</div>
+<div class="p-stack-md flex flex-col flex-grow">
+<h3 class="font-body-md text-on-surface line-clamp-2 mb-1">Organic Fynbos Honey 500g</h3>
+<p class="font-headline-md text-primary mb-2">R 145.00 / N$ 145.00</p>
+<div class="mt-auto space-y-3">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span>
+<span class="text-label-sm">ZA to NA: 3-5 days</span>
+</div>
+<button class="w-full bg-primary text-on-primary py-2 rounded-lg font-label-lg hover:opacity-90 active:scale-95 transition-all">Add to Cart</button>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
+<div class="relative aspect-square bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Intricately hand-woven traditional basket displayed in a minimalist gallery setting with sharp focus and warm directional lighting. The texture of the natural fibers is prominent against a neutral background, highlighting the craftsmanship of local Namibian artisans. The visual style is professional, clean, and commercial, using a palette of earthy browns and pristine whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQkq0En_YsXbgf-M8_NPgKPsPJxTd26Ai76pWzSXTEgAoj2ci6TSsNv-f7wQuX0nODnr2l1ysLIvHEK7NWsfGB697h26-30MZq_VpCx4QfTn73e_WdLvw8Or5l04eMquF5Nee5LLybm4ISyvgiGdbgo2bXEFfSXbEEHscAquyPL3_0gQaxl5cl_J1MB6MVTSpWxDNDBLyqjNAn5bYvVk3HqV2ujpDWzL4XzqsCjyDg20s_NJECZEAdLrTYxpW0l4CcDOKAAb2rGeIK">
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-[#e8f5e9] text-[#015300] px-2 py-1 rounded-full text-[10px] font-bold border border-[#015300]/20">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        SME VERIFIED
+                    </div>
+</div>
+<div class="p-stack-md flex flex-col flex-grow">
+<h3 class="font-body-md text-on-surface line-clamp-2 mb-1">Handwoven Kavango Basket</h3>
+<p class="font-headline-md text-primary mb-2">R 320.00 / N$ 320.00</p>
+<div class="mt-auto space-y-3">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span>
+<span class="text-label-sm">NA to ZA: 4-6 days</span>
+</div>
+<button class="w-full bg-primary text-on-primary py-2 rounded-lg font-label-lg hover:opacity-90 active:scale-95 transition-all">Add to Cart</button>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
+<div class="relative aspect-square bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="A luxurious bottle of cold-pressed marula oil presented on a stone pedestal with soft, diffused sunlight casting gentle shadows. The packaging is sleek and modern, emphasizing the premium quality of regional health and beauty products. The overall atmosphere is serene and institutional, using a green and white color palette to suggest natural purity and cross-border commercial reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuPdNvO7itC8xO4wsQClXZZlmZvZhNl695t2OWY6zoJGavcqMTCtjzrp5kzTkSau4jDOyQWXL1lMbX1FfUHswjeKeOCny70wIhzroWXbLGlK4BRcaCdsPbLv9BlWtvOP23zHyBjIjw70YD4sq8VS847l2NcablcZUxP7EUkfjQPgzfs6zBFRdbc0b4EV3wXV9aIKB30S98xOSBNJR7xFnXecklogWM-CIdEzNZdzjcYKYfawBaW2NKJXvPw5BN6sEYYmy12ND7zMeZ">
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-[#e8f5e9] text-[#015300] px-2 py-1 rounded-full text-[10px] font-bold border border-[#015300]/20">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        SME VERIFIED
+                    </div>
+</div>
+<div class="p-stack-md flex flex-col flex-grow">
+<h3 class="font-body-md text-on-surface line-clamp-2 mb-1">Pure Marula Face Oil 30ml</h3>
+<p class="font-headline-md text-primary mb-2">R 285.00 / N$ 285.00</p>
+<div class="mt-auto space-y-3">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span>
+<span class="text-label-sm">ZA to NA: 3-5 days</span>
+</div>
+<button class="w-full bg-primary text-on-primary py-2 rounded-lg font-label-lg hover:opacity-90 active:scale-95 transition-all">Add to Cart</button>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
+<div class="relative aspect-square bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="High-quality cotton textiles with vibrant traditional patterns folded neatly in a bright, modern studio. The lighting is high-key and professional, showcasing the rich colors and detailed weaving. The aesthetic is corporate yet approachable, focusing on the efficiency and transparency of the SME marketplace. The scene is bright and airy, following a minimalist light-mode design language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCg0-UdaV0DaAPErIMHbdbDVjsC_XRwC0oPRxzYQsoCwiF08jWD8iDjYISPpBSdvQZTF6h5PyeOJrz1R4Z7nUSIViy9ThKsIfGJ5XqMOnFNOXQ3bkaNFs8KxvtiDlqm8JD4FImXddXXi782iGWJvkhWvPsmNp2iuixqOIZ5LzDWHk98t_MPnmkMA-30BslFcmqTROhU1nfvB0GMZ4o1cetdpR8lMPqvGs_NeAzmJe9ps1QDwu3XArSXZKBE3_71MvO9ZUT9GKiPUe7i">
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-[#e8f5e9] text-[#015300] px-2 py-1 rounded-full text-[10px] font-bold border border-[#015300]/20">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        SME VERIFIED
+                    </div>
+</div>
+<div class="p-stack-md flex flex-col flex-grow">
+<h3 class="font-body-md text-on-surface line-clamp-2 mb-1">Traditional Shweshwe Fabric</h3>
+<p class="font-headline-md text-primary mb-2">R 95.00 / N$ 95.00</p>
+<div class="mt-auto space-y-3">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span>
+<span class="text-label-sm">ZA to NA: 3-5 days</span>
+</div>
+<button class="w-full bg-primary text-on-primary py-2 rounded-lg font-label-lg hover:opacity-90 active:scale-95 transition-all">Add to Cart</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Regional Logistics Banner -->
+<section class="bg-secondary-container rounded-xl p-stack-lg flex flex-col md:flex-row items-center justify-between gap-stack-md">
+<div class="space-y-1">
+<h4 class="font-title-lg text-on-secondary-container">Seamless Cross-Border Shipping</h4>
+<p class="font-body-sm text-on-secondary-container/80">From Johannesburg to Windhoek. Unified trade logistics for SMEs.</p>
+</div>
+<div class="flex items-center gap-4 bg-surface/20 p-4 rounded-lg border border-white/10">
+<div class="flex flex-col items-center">
+<span class="text-label-sm text-on-secondary-container font-bold">ZA</span>
+<div class="w-10 h-1 bg-primary rounded-full"></div>
+</div>
+<span class="material-symbols-outlined text-on-secondary-container">trending_flat</span>
+<div class="flex flex-col items-center">
+<span class="text-label-sm text-on-secondary-container font-bold">NA</span>
+<div class="w-10 h-1 bg-secondary rounded-full"></div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center bg-surface dark:bg-surface-dim pb-safe pt-2 px-2 border-t border-outline-variant dark:border-outline flat no shadows">
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant p-2 hover:bg-surface-container-low dark:hover:bg-surface-container-highest cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container dark:bg-tertiary-container text-on-primary-container dark:text-on-tertiary-container rounded-xl p-2 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-sm text-label-sm">Search</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant p-2 hover:bg-surface-container-low dark:hover:bg-surface-container-highest cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">package_2</span>
+<span class="font-label-sm text-label-sm">Orders</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant p-2 hover:bg-surface-container-low dark:hover:bg-surface-container-highest cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant p-2 hover:bg-surface-container-low dark:hover:bg-surface-container-highest cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</div>
+</nav>
+<script>
+        // Simple micro-interaction for category chips
+        const chips = document.querySelectorAll('.hide-scrollbar button');
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                chips.forEach(c => {
+                    c.classList.remove('bg-primary', 'text-on-primary');
+                    c.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                });
+                chip.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+                chip.classList.add('bg-primary', 'text-on-primary');
+            });
+        });
+    </script>
+
+
+</body></html>

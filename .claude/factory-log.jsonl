@@ -1,3 +1,6 @@
 {"ts":"2026-06-18T12:14:47.925Z","type":"prod_fence_block","reason":"push names a protected branch","command":"git push origin main","source":"guardrail-validation"}
 {"ts":"2026-06-18T12:14:47.992Z","type":"prod_fence_block","reason":"force push","command":"git push --force origin feat/x","source":"guardrail-validation"}
 {"ts":"2026-06-18T12:14:48.051Z","type":"prod_fence_block","reason":"gh pr merge is human-only","command":"gh pr merge 1 --squash","source":"guardrail-validation"}
+{"ts":"2026-06-18T13:05:22.058Z","type":"edit_lint","file":"apps/api/src/auth/auth.controller.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-18T13:05:32.115Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-18T13:06:03.568Z","type":"prod_fence_block","reason":"push names a protected branch","command":"cd \"C:\\Users\\michael.jvanrensburg\\vscode\\hb-mono-repo\" && git commit -m \"$(cat <<'EOF'\nchore: merge main into feat/mMFxZIKE-login-registration-pages\n\nConflicts resolved:\n- auth.controller.ts: kept HEAD (RefreshPayload type, rememberMe, maxAgeMs)\n- auth.service.ts: kept main (typed payload: { sub: st"}

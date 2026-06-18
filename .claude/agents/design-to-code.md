@@ -1,10 +1,10 @@
 ---
 name: design-to-code
-description: Converts Stitch design exports (HTML/Tailwind + screenshots) into Angular standalone components. Use when a card introduces a NEW screen or major visual rework.
+description: Converts Claude Design exports (HTML/Tailwind + screenshots) into Angular standalone components. Use when a card introduces a NEW screen or major visual rework.
 tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 ---
-You translate Stitch design exports into idiomatic Angular 21 components for HB.
+You translate Claude Design exports into idiomatic Angular 21 components for HB.
 
 Inputs for a screen named `<screen>`:
 1. `docs/design/<screen>/` — exported HTML (Tailwind classes) + reference screenshot.

@@ -1,17 +1,19 @@
 # HB Design System — Source of Truth
 
-> **STATUS: SEEDED from the Stitch "Trans-Frontier Commerce System" design system**
-> (first pull: Login + Register screens, card `mMFxZIKE`). Tokens below are canonical.
-> Screens not yet pulled still fall back to these tokens + Angular Material 21 defaults;
-> do not invent values outside this palette.
+> **STATUS: Source of truth is Claude Design (claude.ai/design).** Migrated from the Stitch
+> "Trans-Frontier Commerce System" design system on 2026-06-18; all seven screens are pulled.
+> Tokens below are canonical and mirrored in the `claude-design/` sync bundle. Screens not yet
+> implemented fall back to these tokens + Angular Material 21 defaults; do not invent values
+> outside this palette.
 
 ## How this directory works
 
 ```
 docs/design/
 ├── DESIGN.md          ← this file: tokens (colors, typography, spacing, components)
-└── <screen>/          ← one folder per Stitch screen, e.g. product-detail/
-    ├── export.html    ← Stitch HTML + Tailwind export
+├── claude-design/     ← Claude Design sync bundle (pushed to claude.ai/design via DesignSync)
+└── <screen>/          ← one folder per screen, e.g. product-detail/
+    ├── export.html    ← HTML + Tailwind export (mirrored from Claude Design)
     └── reference.png  ← screenshot of the design
 ```
 
@@ -19,12 +21,12 @@ The `design-to-code` agent reads all three and produces Angular standalone compo
 Tokens in this file are **canonical** — exported HTML is reference material, not truth.
 
 **Agent workflow for a new screen:**
-1. Use `stitch` MCP tools → list projects → fetch the screen design
-2. Save raw output to `docs/design/<screen>/export.html` + `reference.png`
+1. Sync the screen from the Claude Design project via the `/design-sync` skill (`DesignSync` tool)
+2. Mirror the export + screenshot to `docs/design/<screen>/export.html` + `reference.png`
 3. Update token tables in this file if the design introduces new values
 4. Invoke the `design-to-code` agent with the export path; it handles Angular conversion
 
-## Tokens (Stitch export — canonical)
+## Tokens (canonical)
 
 ### Colors
 | Token | Value | Usage |
@@ -69,14 +71,16 @@ page margins `16px` (mobile) / `40px` (desktop); container max `1280px`.
 Radius: `4px` (small), `8px` / `lg` (buttons, inputs, cards), `12px` / `xl` (large cards, modals), `full`.
 
 ## Screens
+All seven screens are pulled into `docs/design/<screen>/` and mirrored as `@dsCard` cards in
+the `claude-design/` bundle.
+
 Pulled & implemented:
 - **login** — `docs/design/login/` → `apps/web/.../auth/login`
 - **register** — `docs/design/register/` → `apps/web/.../auth/register`
 
-Seed list (not yet pulled):
-- catalog / product listing (PLP)
-- product detail
-- cart
-- checkout
-- order confirmation
-- vendor dashboard (minimal admin)
+Pulled, not yet implemented:
+- **storefront** — `docs/design/storefront/`
+- **product-discovery** — `docs/design/product-discovery/` (catalog / PLP)
+- **product-detail** — `docs/design/product-detail/`
+- **checkout** — `docs/design/checkout/` (secure checkout)
+- **vendor-dashboard** — `docs/design/vendor-dashboard/` (desktop)

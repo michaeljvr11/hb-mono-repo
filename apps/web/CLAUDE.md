@@ -7,12 +7,14 @@
   no rebuild needed during dev). Never hand-duplicate models.
 - Keep components small and presentational; data access lives in services under `core/api`.
 - Styling follows `docs/design/DESIGN.md` tokens (colors, spacing, type scale).
-- **When implementing a screen:** use the `stitch` MCP tools to fetch the current design
-  for that screen first (list projects → get screen). Save the HTML+Tailwind output to
-  `docs/design/<screen>/export.html` and a screenshot to `docs/design/<screen>/reference.png`,
-  then build idiomatic Angular standalone components that match — never paste raw exported
-  markup directly into the app. If the Stitch MCP is unavailable, read the saved
-  `docs/design/<screen>/` files as fallback.
+- **When implementing a screen:** the design lives in Claude Design (claude.ai/design),
+  mirrored locally under `docs/design/<screen>/` (`export.html` + `reference.png`) — read those
+  first. All seven current screens (login, register, storefront, product-discovery,
+  product-detail, checkout, vendor-dashboard) are already pulled. Build idiomatic Angular
+  standalone components that match — never paste raw exported markup directly into the app.
+  To pull a new or updated screen, sync it from the Claude Design project via the `/design-sync`
+  skill (`DesignSync` tool) into the `docs/design/claude-design/` bundle, then mirror the
+  export + screenshot to `docs/design/<screen>/`.
 - Angular Material 21 is available; prefer it for standard controls, themed via tokens.
 - Frontend env files hold only `apiBaseUrl` + flags. No secrets, no provider keys.
 

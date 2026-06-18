@@ -1,0 +1,47 @@
+<!-- @dsCard group="Foundations" name="Type scale" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HB — Type scale</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  body {
+    margin: 0; padding: 32px;
+    font-family: Inter, system-ui, sans-serif;
+    background: #fcf9f8; color: #1c1b1b;
+  }
+  h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 4px; }
+  p.lede { color: #404a3b; font-size: 14px; margin: 0 0 28px; }
+  .row { display: flex; align-items: baseline; gap: 20px; padding: 14px 0; border-top: 1px solid #bfcab7; }
+  .row:first-of-type { border-top: none; }
+  .token { flex: 0 0 200px; color: #404a3b; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .token b { display: block; color: #1c1b1b; font-size: 13px; }
+  .sample { flex: 1; min-width: 0; }
+  .display-lg   { font-size: 48px; font-weight: 700; letter-spacing: -0.02em; line-height: 56px; }
+  .headline-lg  { font-size: 32px; font-weight: 600; letter-spacing: -0.01em; line-height: 40px; }
+  .headline-md  { font-size: 24px; font-weight: 600; line-height: 32px; }
+  .title-lg     { font-size: 20px; font-weight: 500; line-height: 28px; }
+  .body-lg      { font-size: 18px; font-weight: 400; line-height: 28px; }
+  .body-md      { font-size: 16px; font-weight: 400; line-height: 24px; }
+  .body-sm      { font-size: 14px; font-weight: 400; line-height: 20px; }
+  .label-lg     { font-size: 14px; font-weight: 600; line-height: 20px; }
+  .label-sm     { font-size: 12px; font-weight: 500; line-height: 16px; }
+</style>
+</head>
+<body>
+  <h1>HB — Type scale</h1>
+  <p class="lede">Inter across all levels. Tight tracking on headlines, generous 1.5&times; body leading.</p>
+
+  <div class="row"><div class="token"><b>display-lg</b>48px / 700 / -0.02em</div><div class="sample display-lg">Cross-border commerce</div></div>
+  <div class="row"><div class="token"><b>headline-lg</b>32px / 600 / -0.01em</div><div class="sample headline-lg">Ship across the frontier</div></div>
+  <div class="row"><div class="token"><b>headline-md</b>24px / 600</div><div class="sample headline-md">Featured SMEs near you</div></div>
+  <div class="row"><div class="token"><b>title-lg</b>20px / 500</div><div class="sample title-lg">Order summary</div></div>
+  <div class="row"><div class="token"><b>body-lg</b>18px / 400</div><div class="sample body-lg">Reliable delivery from South Africa to Namibia.</div></div>
+  <div class="row"><div class="token"><b>body-md</b>16px / 400</div><div class="sample body-md">Standard body copy used across most screens for readability.</div></div>
+  <div class="row"><div class="token"><b>body-sm</b>14px / 400</div><div class="sample body-sm">Secondary metadata, helper text, and captions.</div></div>
+  <div class="row"><div class="token"><b>label-lg</b>14px / 600</div><div class="sample label-lg">SME VERIFIED</div></div>
+  <div class="row"><div class="token"><b>label-sm</b>12px / 500</div><div class="sample label-sm">IN STOCK</div></div>
+</body>
+</html>

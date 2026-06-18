@@ -10,7 +10,7 @@ Architecture details and key decisions: see `README.md` (current truth).
 
 ## Source of truth
 - **Business rules & domain model:** Obsidian vault (use `obsidian` MCP tools).
-- **Designs & tokens:** Stitch MCP (`stitch` tools) is the live source — fetch the screen before implementing it. `docs/design/DESIGN.md` holds token overrides; `docs/design/<screen>/` holds the saved HTML export + screenshot for traceability.
+- **Designs & tokens:** Claude Design (claude.ai/design) is the source of truth. The design system lives in the `docs/design/claude-design/` sync bundle and pushes up via the `DesignSync` tool (use the `/design-sync` skill). `docs/design/DESIGN.md` holds the canonical tokens; `docs/design/<screen>/` holds the saved HTML export + screenshot for traceability. (Migrated off Stitch on 2026-06-18; the `stitch` MCP is retained only as a legacy export source — do not treat it as live truth.)
 - **Work items:** Trello board (use `trello` MCP tools).
 - **API contract:** `libs/shared` (`@hb/shared`) — interfaces + enums only.
 

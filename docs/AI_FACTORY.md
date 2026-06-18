@@ -24,9 +24,9 @@ credentials, and the demo runbook.
 | Evidence generator | `docs/ai-evidence/` (`npm run evidence`) | compiles git + telemetry + Trello + PRs into `REPORT.md` — self-updating proof of AI use |
 | Secrets fence | `.claude/settings.json` permissions | Agents cannot Read any `.env*` (`.env.example` stays readable) |
 | Agent Teams | `.claude/settings.json` env | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (needs Claude Code ≥ 2.1.32) |
-| MCP wiring | `.mcp.json` | Obsidian (HTTP) + Trello (npx) + Stitch (npx) — reads credentials from env vars, nothing secret committed |
+| MCP wiring | `.mcp.json` | Obsidian (HTTP) + Trello (npx) + Stitch (npx, legacy export source) — reads credentials from env vars, nothing secret committed. Design now syncs via the built-in `DesignSync` tool (claude.ai/design), not an MCP server. |
 | PR template | `.github/pull_request_template.md` | Forces card + Obsidian links = traceability |
-| Design scaffold | `docs/design/DESIGN.md` | Placeholder — replace with Stitch export |
+| Design system | `docs/design/DESIGN.md` + `docs/design/claude-design/` | Canonical tokens + Claude Design sync bundle (all 7 screens pulled) |
 
 ## What YOU still need to do (credentials & external state)
 
@@ -44,25 +44,31 @@ Lists: **To Do → In Progress → In Review → Done** (+ Documentation). "To D
 ready queue `/ship-card` pulls from; agents move cards to "In Review" with the PR link.
 Still to seed: well-formed cards in "To Do" (clear acceptance criteria).
 
-### 3. Stitch — ✓ DONE (verified 2026-06-13)
-MCP connected via `@google/stitch-mcp@latest` (stdio). API token is in `.mcp.json`
-under `STITCH_API_KEY` (gitignored; regenerate at stitch.withgoogle.com → Settings →
-API Tokens if it stops working — tokens expire after 90 days).
+### 3. Design — Claude Design (migrated off Stitch on 2026-06-18)
+Source of truth is **Claude Design** (claude.ai/design), driven by the built-in `DesignSync`
+tool + the `/design-sync` skill. The design system and all seven screens live in the
+`docs/design/claude-design/` sync bundle (DESIGN.md + foundations + screen `@dsCard` cards),
+mirrored per-screen under `docs/design/<screen>/`.
+
+**Live project ID:** `79b1b10c-28fd-496f-9956-6f71670c11d1`
+
+> **Login required:** `DesignSync` needs an interactive claude.ai login. A
+> `CLAUDE_CODE_OAUTH_TOKEN` session can't be granted design scopes — run `/login` before
+> pushing or pulling.
+
+The legacy **Stitch** MCP (`@google/stitch-mcp@latest`, token `STITCH_API_KEY` in `.mcp.json`,
+regenerate at stitch.withgoogle.com if needed) is retained only to re-pull historical exports;
+it is no longer live truth.
 
 **What agents must do before implementing any new screen:**
-1. Use the `stitch` MCP tools to pull the target screen's design and design tokens.
-   Start by listing available projects/screens, then fetch the specific screen's
-   markup and token values.
-2. Capture any token overrides into `docs/design/DESIGN.md` (colors, type scale,
-   spacing) so they remain the canonical reference.
-3. Save the raw Stitch HTML+Tailwind export to `docs/design/<screen>/export.html`
-   and a screenshot to `docs/design/<screen>/reference.png` for traceability.
+1. Read the mirrored design under `docs/design/<screen>/` (export.html + reference.png).
+   All seven current screens are already pulled.
+2. For a new/updated screen, sync it from the Claude Design project via `/design-sync`
+   (`DesignSync` tool) into the `docs/design/claude-design/` bundle, then mirror the export
+   + screenshot to `docs/design/<screen>/`.
+3. Capture any token changes into `docs/design/DESIGN.md` (canonical reference).
 4. Hand the export to the `design-to-code` agent, which converts it to an idiomatic
    Angular standalone component — never paste raw exported markup into the app.
-
-**Fallback (if MCP is down):** export HTML+Tailwind manually from the Stitch UI
-into `docs/design/<screen>/export.html` + `reference.png`. The `design-to-code`
-agent reads those files directly; the workflow is identical.
 
 ### 4. GitHub — ✓ DONE (2026-06-12)
 gh CLI 2.93.0 installed, authed as michaeljvr11. Branch protection live on `main`:
@@ -78,7 +84,7 @@ the `anthropics/claude-code-action` version/inputs against its current docs befo
 ### 6. Verify (do this BEFORE the event)
 1. Restart Claude Code in this repo; approve the project `.mcp.json` servers when prompted.
 2. `/mcp` — both servers connected.
-3. Trivial calls: "list Trello lists on the board" · "search Obsidian for <note>" · "list my Stitch projects".
+3. Trivial calls: "list Trello lists on the board" · "search Obsidian for <note>" · "list my Claude Design projects" (needs `/login`).
 4. Test the fence: ask the agent to `git push origin main` — the hook must refuse.
 5. **Dry-run `/ship-card` on one seeded card.** Fix friction now, not on stage.
 
