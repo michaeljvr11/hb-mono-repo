@@ -23,6 +23,7 @@
     "migration:revert": "npm run migration:revert -w @hb/api",
     "test:api": "npm run test -w @hb/api",
     "lint:api": "npm run lint -w @hb/api",
+    "evidence": "node docs/ai-evidence/generate.mjs",
     "format": "prettier --write \"apps/*/src/**/*.{ts,html,scss}\" \"libs/*/src/**/*.ts\""
   },
   "devDependencies": {

@@ -1,0 +1,51 @@
+name: CI
+
+# Mirrors the factory's local quality gates on every PR and push, so the same
+# checks the hooks enforce on a laptop are visible and enforced on GitHub.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: Lint · Test · Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Build shared contracts
+        run: npm run build:shared
+      - name: Lint API
+        run: npm run lint:api
+      - name: Test API (the PR gate, in CI)
+        run: npm run test:api
+      - name: Build all (shared → api → web)
+        run: npm run build
+
+  web-tests:
+    # Non-blocking: Angular `ng test` needs a browser runner that may need tuning
+    # in CI. Kept informational until the runner is confirmed, then promote to a
+    # required check. Does not gate merges today.
+    name: Web unit tests (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build:shared
+      - name: Web tests (headless)
+        run: npm run test -w @hb/web -- --watch=false --browsers=ChromeHeadless
