@@ -51,8 +51,8 @@
   gap: 10px;
   padding: 12px 16px;
   margin-bottom: 20px;
-  background: #fff1f1;
-  color: #93000a;
+  background: color-mix(in srgb, var(--hb-error) 10%, transparent);
+  color: var(--hb-error);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;

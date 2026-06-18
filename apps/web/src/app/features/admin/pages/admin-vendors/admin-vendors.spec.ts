@@ -3,7 +3,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, throwError, NEVER } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { VendorStatus, AdminVendorDto } from '@hb/shared';
 
@@ -218,6 +218,18 @@ describe('AdminVendors component', () => {
     const v1 = component.vendors().find(v => v.id === 'v1');
     expect(v1?.status).toBe(VendorStatus.APPROVED);
     expect(component.pendingId()).toBeNull();
+  });
+
+  it('applyAction is a no-op while another update is already in flight', async () => {
+    // First call never completes, so pendingId stays set.
+    vendorsStub.updateStatus.mockReturnValueOnce(NEVER);
+    component.applyAction('v1', VendorStatus.APPROVED);
+    expect(component.pendingId()).toBe('v1');
+
+    // Second call must be ignored — no extra updateStatus invocation.
+    component.applyAction('v2', VendorStatus.SUSPENDED);
+    expect(vendorsStub.updateStatus).toHaveBeenCalledTimes(1);
+    expect(component.pendingId()).toBe('v1');
   });
 
   it('applyAction surfaces actionError on failure and clears pendingId', async () => {

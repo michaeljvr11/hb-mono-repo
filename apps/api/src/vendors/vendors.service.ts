@@ -43,7 +43,8 @@ export class VendorsService {
       website: vendor.website,
       description: vendor.description,
       verificationDocumentUrl: vendor.verificationDocumentUrl,
-      appliedAt: vendor.createdAt ? vendor.createdAt.toISOString() : null,
+      // createdAt is a CreateDateColumn — always set on a persisted vendor.
+      appliedAt: vendor.createdAt.toISOString(),
     };
   }
 

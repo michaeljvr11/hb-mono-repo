@@ -61,15 +61,6 @@ describe('VendorsService', () => {
       expect(result[0].appliedAt).toBe('2026-06-01T10:00:00.000Z');
     });
 
-    it('returns appliedAt as null when createdAt is undefined', async () => {
-      const vendor = mockVendor({ createdAt: undefined });
-      vendorRepo.find.mockResolvedValue([vendor]);
-
-      const result = await service.findAll();
-
-      expect(result[0].appliedAt).toBeNull();
-    });
-
     it('returns an empty array when no vendors exist', async () => {
       vendorRepo.find.mockResolvedValue([]);
 
