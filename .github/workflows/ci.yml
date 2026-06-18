@@ -47,5 +47,5 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build:shared
-      - name: Web tests (headless)
-        run: npm run test -w @hb/web -- --watch=false --browsers=ChromeHeadless
+      - name: Web tests (vitest)
+        run: npm run test -w @hb/web -- --watch=false
