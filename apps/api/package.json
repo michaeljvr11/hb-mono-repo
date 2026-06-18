@@ -18,7 +18,8 @@
     "typeorm": "typeorm-ts-node-commonjs -d src/database/data-source.ts",
     "migration:generate": "npm run typeorm -- migration:generate src/database/migrations/Migration",
     "migration:run": "npm run typeorm -- migration:run",
-    "migration:revert": "npm run typeorm -- migration:revert"
+    "migration:revert": "npm run typeorm -- migration:revert",
+    "seed": "ts-node -r dotenv/config src/database/seed.ts"
   },
   "dependencies": {
     "@hb/shared": "*",

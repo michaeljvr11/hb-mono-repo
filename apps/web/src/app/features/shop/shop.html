@@ -1,10 +1,256 @@
-<main class="shop-page">
-  <section class="shop-hero" aria-labelledby="shop-title">
-    <p class="section-kicker">H&amp;B marketplace</p>
-    <h1 id="shop-title">Welcome to the shop.</h1>
-    <p>
-      Your account is ready for the H&amp;B marketplace. Product browsing, categories,
-      and checkout experiences can grow from here.
-    </p>
+<app-nav-bar />
+
+<main class="storefront" aria-label="H&amp;B Market storefront">
+
+  <!-- ── Hero ──────────────────────────────────────────────────────────── -->
+  <section class="hero" aria-labelledby="hero-heading">
+    <div class="hero__overlay" aria-hidden="true"></div>
+    <div class="hero__content">
+      <span class="hero__kicker">Cross-Border Excellence</span>
+      <h1 id="hero-heading" class="hero__headline">
+        Seamless Trade:<br>
+        <span class="hero__headline-accent">ZA to NA</span>
+      </h1>
+      <p class="hero__body">
+        Connecting verified South African SMEs with discerning Namibian consumers
+        through reliable logistics and secure regional payments.
+      </p>
+      <div class="hero__cta-group">
+        <button
+          type="button"
+          class="btn btn--primary"
+          (click)="onHeroShopNow()"
+        >Shop New Arrivals</button>
+        <button
+          type="button"
+          class="btn btn--ghost"
+          (click)="onHeroSmeVerification()"
+        >SME Verification</button>
+      </div>
+    </div>
   </section>
+
+  <!-- ── New in Namibia ─────────────────────────────────────────────────── -->
+  <section class="section section--products" aria-labelledby="products-heading">
+    <div class="section__header">
+      <div>
+        <h2 id="products-heading" class="section__title">New in Namibia</h2>
+        <p class="section__sub">Fresh arrivals from South African SME partners</p>
+      </div>
+      <a class="section__view-all" href="#" aria-label="View all products">
+        View All
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+      </a>
+    </div>
+
+    @if (productsState() === 'loading') {
+      <div class="state-message" role="status" aria-live="polite">
+        <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
+        <p>Loading products…</p>
+      </div>
+    } @else if (productsState() === 'error') {
+      <div class="state-message state-message--error" role="alert">
+        <span class="material-symbols-outlined state-message__icon">error_outline</span>
+        <p>Could not load products right now. Please try again later.</p>
+      </div>
+    } @else if (productsState() === 'empty') {
+      <div class="state-message" role="status">
+        <span class="material-symbols-outlined state-message__icon">inventory_2</span>
+        <p>No products available yet. Check back soon.</p>
+      </div>
+    } @else {
+      <div class="products-carousel" role="list">
+        @for (product of products(); track product.id) {
+          <article class="product-card" role="listitem">
+            <div class="product-card__image-wrap">
+              @if (getPrimaryImage(product); as imgUrl) {
+                <img
+                  class="product-card__image"
+                  [src]="imgUrl"
+                  [alt]="getImageAlt(product)"
+                  loading="lazy"
+                />
+              } @else {
+                <div class="product-card__placeholder" aria-hidden="true">
+                  <span class="material-symbols-outlined product-card__placeholder-icon">inventory_2</span>
+                </div>
+              }
+            </div>
+            <div class="product-card__body">
+              @if (product.categories.length) {
+                <p class="product-card__category">{{ product.categories[0].name }}</p>
+              }
+              <h3 class="product-card__name">{{ product.name }}</h3>
+              <div class="product-card__footer">
+                <span class="product-card__price">{{ formatPrice(product.price, product.currency) }}</span>
+                <button
+                  type="button"
+                  class="product-card__cart-btn"
+                  [attr.aria-label]="'Add ' + product.name + ' to cart'"
+                  (click)="addToCart(product)"
+                >
+                  <span class="material-symbols-outlined" aria-hidden="true">add_shopping_cart</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ── Trust banner ──────────────────────────────────────────────────── -->
+  <section class="trust-banner" aria-labelledby="trust-heading">
+    <div class="trust-banner__inner">
+      <h2 id="trust-heading" class="visually-hidden">Why shop with H&amp;B</h2>
+      <div class="trust-banner__grid">
+        <div class="trust-card">
+          <div class="trust-card__icon-wrap trust-card__icon-wrap--primary" aria-hidden="true">
+            <span class="material-symbols-outlined trust-card__icon">verified_user</span>
+          </div>
+          <div class="trust-card__body">
+            <h3 class="trust-card__title">Secure Regional Payments</h3>
+            <p class="trust-card__desc">Instant ZAR to NAD settlement with zero cross-border fees for verified users.</p>
+          </div>
+        </div>
+        <div class="trust-card">
+          <div class="trust-card__icon-wrap trust-card__icon-wrap--secondary" aria-hidden="true">
+            <span class="material-symbols-outlined trust-card__icon">local_shipping</span>
+          </div>
+          <div class="trust-card__body">
+            <h3 class="trust-card__title">Express ZA-NA Logistics</h3>
+            <p class="trust-card__desc">Door-to-door tracking from Cape Town or Jo'burg warehouses to Windhoek in 3–5 days.</p>
+          </div>
+        </div>
+        <div class="trust-card">
+          <div class="trust-card__icon-wrap trust-card__icon-wrap--tertiary" aria-hidden="true">
+            <span class="material-symbols-outlined trust-card__icon">policy</span>
+          </div>
+          <div class="trust-card__body">
+            <h3 class="trust-card__title">Simplified Customs</h3>
+            <p class="trust-card__desc">Automated SACU duty calculations and documentation for seamless clearance.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Explore Categories ─────────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="categories-heading">
+    <div class="section__header section__header--flush">
+      <h2 id="categories-heading" class="section__title">Explore Categories</h2>
+    </div>
+
+    @if (categoriesState() === 'loading') {
+      <div class="state-message" role="status" aria-live="polite">
+        <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
+        <p>Loading categories…</p>
+      </div>
+    } @else if (categoriesState() === 'error') {
+      <div class="state-message state-message--error" role="alert">
+        <span class="material-symbols-outlined state-message__icon">error_outline</span>
+        <p>Could not load categories right now. Please try again later.</p>
+      </div>
+    } @else if (categoriesState() === 'empty') {
+      <div class="state-message" role="status">
+        <span class="material-symbols-outlined state-message__icon">category</span>
+        <p>No categories available yet.</p>
+      </div>
+    } @else {
+      <div class="categories-grid" role="list">
+        @for (cat of categories(); track cat.id) {
+          <div class="category-card" role="listitem">
+            <div class="category-card__icon-wrap" aria-hidden="true">
+              <span class="material-symbols-outlined category-card__icon">{{ getCategoryIcon(cat.name) }}</span>
+            </div>
+            <div class="category-card__body">
+              <h3 class="category-card__name">{{ cat.name }}</h3>
+              <p class="category-card__count">{{ cat.productCount }} product{{ cat.productCount !== 1 ? 's' : '' }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ── Featured SME Vendors ──────────────────────────────────────────── -->
+  <section class="section vendors-section" aria-labelledby="vendors-heading">
+    <div class="vendors-section__header">
+      <h2 id="vendors-heading" class="section__title">Featured SME Vendors</h2>
+      <p class="section__sub">Empowering local South African businesses through regional export opportunities.</p>
+    </div>
+
+    @if (vendorsState() === 'loading') {
+      <div class="state-message" role="status" aria-live="polite">
+        <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
+        <p>Loading vendors…</p>
+      </div>
+    } @else if (vendorsState() === 'error') {
+      <div class="state-message state-message--error" role="alert">
+        <span class="material-symbols-outlined state-message__icon">error_outline</span>
+        <p>Could not load vendors right now. Please try again later.</p>
+      </div>
+    } @else if (vendorsState() === 'empty') {
+      <div class="state-message" role="status">
+        <span class="material-symbols-outlined state-message__icon">storefront</span>
+        <p>No vendors available yet.</p>
+      </div>
+    } @else {
+      <div class="vendors-grid" role="list">
+        @for (vendor of vendors(); track vendor.id) {
+          <div class="vendor-card" role="listitem">
+            <!-- Avatar initials -->
+            <div class="vendor-card__avatar" aria-hidden="true">
+              {{ getVendorInitials(vendor.businessName) }}
+            </div>
+            <div class="vendor-card__body">
+              <div class="vendor-card__name-row">
+                <h3 class="vendor-card__name">{{ vendor.tradingName ?? vendor.businessName }}</h3>
+                @if (vendor.status === 'approved') {
+                  <span
+                    class="material-symbols-outlined vendor-card__verified"
+                    aria-label="Verified vendor"
+                    title="Verified vendor"
+                    style="font-variation-settings: 'FILL' 1"
+                  >verified</span>
+                }
+              </div>
+              <p class="vendor-card__location">
+                <span class="material-symbols-outlined vendor-card__location-icon" aria-hidden="true">location_on</span>
+                {{ getVendorCountry(vendor.countryCode) }}
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ── Newsletter ────────────────────────────────────────────────────── -->
+  <section class="newsletter" aria-labelledby="newsletter-heading">
+    <div class="newsletter__inner">
+      <h2 id="newsletter-heading" class="newsletter__title">Stay Updated on Trade</h2>
+      <p class="newsletter__sub">
+        Get the latest on regional SME arrivals, logistics updates, and cross-border trade tips directly in your inbox.
+      </p>
+      <div class="newsletter__form" role="form" aria-label="Newsletter sign-up">
+        <label for="newsletter-email" class="visually-hidden">Email address</label>
+        <input
+          id="newsletter-email"
+          type="email"
+          class="newsletter__input"
+          placeholder="Enter your email address"
+          autocomplete="email"
+        />
+        <button
+          type="button"
+          class="btn btn--primary newsletter__btn"
+          (click)="onNewsletterJoin()"
+        >Join Community</button>
+      </div>
+    </div>
+  </section>
+
 </main>
+
+<app-footer />

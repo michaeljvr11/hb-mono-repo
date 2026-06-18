@@ -2,6 +2,12 @@
 // PreToolUse hook: hard fence around prod. Blocks git/gh commands that would
 // push, merge, or force anything into main/master/prod. Exit 2 = block, stderr
 // goes back to the agent. The fence must not rely on the model "remembering".
+//
+// Carve-out: the Obsidian vault (`hb-vault`) is a shared knowledge base whose
+// documented workflow is to commit straight to main and push — unlike this
+// project, where a human owns the merge to main. The vault repo (identified by
+// its origin remote) is therefore exempt from the protected-branch *push* block;
+// force-pushes and remote branch deletes stay blocked everywhere.
 const { execSync } = require('child_process');
 const { logEvent } = require('./_log');
 
@@ -41,18 +47,41 @@ process.stdin.on('end', () => {
     }
   };
 
+  // Resolve the repo a git command targets (honors `git -C <path>`), then check
+  // whether it is the exempt vault repo by its origin remote.
+  const targetDir = () => {
+    const m = cmd.match(/\bgit\b\s+-C\s+(?:"([^"]+)"|'([^']+)'|(\S+))/);
+    return (m && (m[1] || m[2] || m[3])) || cwd;
+  };
+  const isVaultRepo = () => {
+    try {
+      const url = execSync('git config --get remote.origin.url', {
+        cwd: targetDir(),
+        stdio: ['ignore', 'pipe', 'ignore'],
+      })
+        .toString()
+        .trim();
+      return /hb-vault(\.git)?$/i.test(url);
+    } catch {
+      return false;
+    }
+  };
+
   if (/\bgh\s+pr\s+merge\b/.test(cmd)) block('gh pr merge is human-only');
 
   const pushMatch = cmd.match(/\bgit\b[^|;&]*\bpush\b(.*)$/);
   if (pushMatch) {
     if (/(\s|^)(--force|--force-with-lease|-f)\b/.test(cmd)) block('force push');
     if (/--delete\b/.test(cmd) && PROTECTED.test(cmd)) block('remote branch delete');
-    if (PROTECTED.test(cmd)) block('push names a protected branch');
-    // bare push (no explicit refspec) resolves to HEAD — block if HEAD is protected
-    const args = pushMatch[1].trim().split(/\s+/).filter((t) => t && !t.startsWith('-'));
-    if (args.length <= 1) {
-      const branch = currentBranch();
-      if (PROTECTED.test(branch)) block(`bare push from protected branch '${branch}'`);
+    // The vault commits straight to main by design — exempt it from the rest.
+    if (!isVaultRepo()) {
+      if (PROTECTED.test(cmd)) block('push names a protected branch');
+      // bare push (no explicit refspec) resolves to HEAD — block if HEAD is protected
+      const args = pushMatch[1].trim().split(/\s+/).filter((t) => t && !t.startsWith('-'));
+      if (args.length <= 1) {
+        const branch = currentBranch();
+        if (PROTECTED.test(branch)) block(`bare push from protected branch '${branch}'`);
+      }
     }
   }
 

@@ -1,0 +1,65 @@
+<header class="nav-bar" role="banner">
+  <div class="nav-bar__inner">
+    <!-- Brand -->
+    <div class="nav-bar__brand-group">
+      <a class="nav-bar__brand" routerLink="/shop" aria-label="H&B Market home">
+        H&amp;B Market
+      </a>
+    </div>
+
+    <!-- Desktop nav links -->
+    <nav class="nav-bar__links" aria-label="Primary navigation">
+      <a
+        class="nav-bar__link nav-bar__link--active"
+        routerLink="/shop"
+        routerLinkActive="nav-bar__link--active"
+        ariaCurrentWhenActive="page"
+      >Home</a>
+      <button
+        type="button"
+        class="nav-bar__link nav-bar__link--btn"
+        (click)="notifyComingSoon('SME Directory')"
+      >SME Directory</button>
+      <button
+        type="button"
+        class="nav-bar__link nav-bar__link--btn"
+        (click)="notifyComingSoon('Logistics')"
+      >Logistics</button>
+    </nav>
+
+    <!-- Desktop utilities -->
+    <div class="nav-bar__utils">
+      <div class="nav-bar__divider" aria-hidden="true"></div>
+      <button
+        type="button"
+        class="nav-bar__currency"
+        (click)="notifyComingSoon('Currency switcher')"
+        aria-label="Switch currency"
+      >
+        <span class="nav-bar__currency-label">ZAR/NAD</span>
+        <span class="material-symbols-outlined nav-bar__expand-icon" aria-hidden="true">expand_more</span>
+      </button>
+    </div>
+
+    <!-- Action icons -->
+    <div class="nav-bar__actions">
+      <button
+        type="button"
+        class="nav-bar__icon-btn"
+        aria-label="Search"
+        (click)="notifyComingSoon('Search')"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+      </button>
+      <button
+        type="button"
+        class="nav-bar__cart-btn"
+        aria-label="View cart"
+        (click)="notifyComingSoon('Cart')"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
+        <span class="nav-bar__cart-label">Cart</span>
+      </button>
+    </div>
+  </div>
+</header>

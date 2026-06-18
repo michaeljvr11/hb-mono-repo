@@ -6,6 +6,7 @@ import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { AdminCreateVendorDto } from './dto/admin-create-vendor.dto';
 import { UpdateVendorStatusDto } from './dto/update-vendor-status.dto';
 import { Roles } from '../common/decorators/roles.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { User } from '../users/entities/user.entity';
 
@@ -37,6 +38,12 @@ export class VendorsController {
   @Roles(UserRole.ADMIN)
   updateStatus(@Param('id') id: string, @Body() body: UpdateVendorStatusDto) {
     return this.vendorsService.updateStatus(id, body.status);
+  }
+
+  @Public()
+  @Get('directory')
+  findDirectory() {
+    return this.vendorsService.findDirectory();
   }
 
   @Get('me')
