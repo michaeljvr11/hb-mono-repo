@@ -15,7 +15,7 @@ claude-design/
 ├── foundations/
 │   ├── colors.html            ← @dsCard "Color palette"
 │   └── typography.html        ← @dsCard "Type scale"
-└── screens/<slug>/index.html  ← one @dsCard per screen (7 total)
+└── screens/<slug>/index.html  ← one @dsCard per screen (8 total)
 ```
 
 Each preview file's **first line** is an `@dsCard` marker:

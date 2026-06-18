@@ -1,0 +1,597 @@
+<!-- @dsCard group="Screens" name="Admin Dashboard" -->
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>H&amp;B Market - Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#7ddc69",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "secondary-container": "#fe9b53",
+                    "surface-container-highest": "#e5e2e1",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e5e2e1",
+                    "outline": "#707a6a",
+                    "on-primary-fixed-variant": "#015300",
+                    "on-secondary-fixed-variant": "#723600",
+                    "surface-dim": "#dcd9d9",
+                    "secondary-fixed-dim": "#ffb787",
+                    "on-tertiary-fixed-variant": "#015300",
+                    "secondary": "#964900",
+                    "on-primary": "#ffffff",
+                    "primary-container": "#026e00",
+                    "on-primary-container": "#8eee78",
+                    "primary": "#015300",
+                    "surface-container-high": "#eae7e7",
+                    "on-tertiary-container": "#33f925",
+                    "inverse-surface": "#313030",
+                    "inverse-on-surface": "#f3f0ef",
+                    "tertiary-container": "#026e00",
+                    "on-secondary": "#ffffff",
+                    "background": "#fcf9f8",
+                    "surface-container": "#f0eded",
+                    "primary-fixed-dim": "#7ddc69",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#404a3b",
+                    "tertiary-fixed": "#77ff61",
+                    "on-surface": "#1c1b1b",
+                    "on-secondary-container": "#703500",
+                    "tertiary-fixed-dim": "#03e600",
+                    "surface-container-low": "#f6f3f2",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#98f982",
+                    "on-tertiary-fixed": "#002200",
+                    "surface": "#fcf9f8",
+                    "on-primary-fixed": "#002200",
+                    "surface-tint": "#036e00",
+                    "surface-bright": "#fcf9f8",
+                    "outline-variant": "#bfcab7",
+                    "tertiary": "#015300",
+                    "on-secondary-fixed": "#311300",
+                    "secondary-fixed": "#ffdcc7",
+                    "on-background": "#1c1b1b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-md": "16px",
+                    "gutter": "24px",
+                    "unit": "8px",
+                    "container-max": "1280px",
+                    "stack-xs": "4px",
+                    "stack-xl": "48px",
+                    "stack-sm": "8px",
+                    "margin-mobile": "16px",
+                    "stack-lg": "24px",
+                    "margin-desktop": "40px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"], "body-md": ["Inter"], "label-lg": ["Inter"], "body-sm": ["Inter"],
+                    "headline-md": ["Inter"], "body-lg": ["Inter"], "title-lg": ["Inter"], "display-lg": ["Inter"], "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="bg-surface sticky top-0 z-50 border-b border-outline-variant w-full">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-stack-md w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined text-primary cursor-pointer md:hidden" data-icon="menu">menu</span>
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">H&amp;B Market</h1>
+<span class="hidden md:inline-flex items-center gap-1 bg-secondary-fixed text-on-secondary-container px-stack-sm py-1 rounded-full text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[14px]" data-icon="shield_person">shield_person</span>
+                    Admin Console
+                </span>
+</div>
+<div class="hidden md:flex items-center gap-stack-lg">
+<div class="flex items-center gap-stack-xs text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container transition-colors p-2 rounded-lg cursor-pointer">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="">Search</span>
+</div>
+<div class="relative flex items-center gap-stack-xs text-on-surface-variant font-label-lg text-label-lg hover:bg-surface-container transition-colors p-2 rounded-lg cursor-pointer">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1 left-6 w-2 h-2 bg-error rounded-full"></span>
+<span class="">Alerts</span>
+</div>
+<div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+</div>
+</div>
+</div>
+</header>
+<div class="flex max-w-container-max mx-auto min-h-[calc(100vh-80px)]">
+<!-- Sidebar Navigation -->
+<aside class="hidden md:flex flex-col w-80 p-stack-lg bg-surface-container border-r border-outline-variant">
+<div class="mb-stack-xl">
+<div class="flex items-center gap-stack-md p-stack-md bg-white rounded-xl shadow-sm border border-outline-variant mb-stack-lg">
+<div class="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="shield_person" style="font-variation-settings: 'FILL' 1;">shield_person</span>
+</div>
+<div>
+<p class="font-title-lg text-title-lg text-primary">Platform Admin</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Super Administrator</p>
+</div>
+</div>
+</div>
+<nav class="space-y-stack-sm">
+<a class="flex items-center gap-stack-md p-stack-md bg-secondary-container text-on-secondary-container rounded-xl font-bold transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Overview</span>
+</a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-outline-variant rounded-xl transition-all" href="#vendors">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-body-md text-body-md">Vendors</span>
+</a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-outline-variant rounded-xl transition-all" href="#products">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-body-md text-body-md">Products</span>
+</a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-outline-variant rounded-xl transition-all" href="#users">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-md text-body-md">Users</span>
+</a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-outline-variant rounded-xl transition-all" href="#logs">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-body-md text-body-md">System Logs</span>
+</a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-surface hover:bg-outline-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-stack-xl">
+<div class="bg-primary-container text-on-primary-container p-stack-lg rounded-xl flex flex-col gap-stack-sm">
+<span class="font-label-lg text-label-lg uppercase tracking-wider opacity-80">System Health</span>
+<p class="font-headline-md text-headline-md">All Systems Go</p>
+<div class="flex items-center gap-2 mt-stack-xs">
+<span class="w-3 h-3 bg-tertiary-fixed rounded-full animate-pulse"></span>
+<span class="text-body-sm">99.98% uptime · 30d</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 p-margin-mobile md:p-margin-desktop bg-background overflow-x-hidden">
+<!-- Page Header -->
+<div class="mb-stack-xl flex flex-col md:flex-row md:items-end justify-between gap-stack-md">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Platform Administration</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Oversee vendors, products, users and system activity across the marketplace.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="bg-white border border-outline px-stack-lg py-stack-sm rounded-lg font-label-lg text-label-lg text-on-surface hover:bg-surface-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+                        Export Data
+                    </button>
+<button class="bg-primary text-white px-stack-lg py-stack-sm rounded-lg font-label-lg text-label-lg hover:opacity-90 transition-opacity flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+                        Add Admin
+                    </button>
+</div>
+</div>
+<!-- KPI Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-gutter mb-stack-xl">
+<div class="bg-white border border-outline-variant p-stack-lg rounded-xl hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-stack-md">
+<span class="text-on-surface-variant font-label-lg text-label-lg">Active Vendors</span>
+<span class="material-symbols-outlined text-primary" data-icon="storefront">storefront</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-display-lg text-on-surface">312</span>
+<span class="text-on-primary-fixed-variant font-label-sm text-label-sm bg-primary-fixed px-2 py-0.5 rounded-full">+8</span>
+</div>
+<p class="mt-stack-md font-body-sm text-body-sm text-on-surface-variant">14 pending verification</p>
+</div>
+<div class="bg-white border border-outline-variant p-stack-lg rounded-xl hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-stack-md">
+<span class="text-on-surface-variant font-label-lg text-label-lg">Registered Users</span>
+<span class="material-symbols-outlined text-primary" data-icon="group">group</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-display-lg text-on-surface">48,920</span>
+<span class="text-on-primary-fixed-variant font-label-sm text-label-sm bg-primary-fixed px-2 py-0.5 rounded-full">+3.2%</span>
+</div>
+<p class="mt-stack-md font-body-sm text-body-sm text-on-surface-variant">6,418 active this week</p>
+</div>
+<div class="bg-white border border-outline-variant p-stack-lg rounded-xl hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-stack-md">
+<span class="text-on-surface-variant font-label-lg text-label-lg">Listed Products</span>
+<span class="material-symbols-outlined text-secondary" data-icon="inventory_2">inventory_2</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-display-lg text-on-surface">9,734</span>
+<span class="text-on-secondary-container font-label-sm text-label-sm bg-secondary-fixed px-2 py-0.5 rounded-full">23 flagged</span>
+</div>
+<p class="mt-stack-md font-body-sm text-body-sm text-on-surface-variant">Awaiting moderation review</p>
+</div>
+<div class="bg-white border border-outline-variant p-stack-lg rounded-xl hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-stack-md">
+<span class="text-on-surface-variant font-label-lg text-label-lg">GMV (ZAR, 30d)</span>
+<span class="material-symbols-outlined text-primary" data-icon="trending_up">trending_up</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-display-lg text-primary">R 4.6M</span>
+<span class="text-on-primary-fixed-variant font-label-sm text-label-sm bg-primary-fixed px-2 py-0.5 rounded-full">+12.4%</span>
+</div>
+<p class="mt-stack-md font-body-sm text-body-sm text-on-surface-variant">Gross merchandise value</p>
+</div>
+</div>
+<!-- Vendors + Users -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter" id="vendors">
+<!-- Vendor Oversight Table -->
+<div class="lg:col-span-2 bg-white border border-outline-variant rounded-xl overflow-hidden">
+<div class="p-stack-lg border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-on-surface">Vendor Oversight</h3>
+<span class="text-primary font-label-lg text-label-lg cursor-pointer">View All</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">Vendor</th>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">Region</th>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">Products</th>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">Karoo Crafts Co.</td>
+<td class="p-stack-md font-body-md text-body-md">Western Cape, ZA</td>
+<td class="p-stack-md font-body-md text-body-md">142</td>
+<td class="p-stack-md">
+<span class="bg-primary-fixed text-on-primary-fixed-variant px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="verified">verified</span>
+                                            SME Verified
+                                        </span>
+</td>
+</tr>
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">Namib Tech Imports</td>
+<td class="p-stack-md font-body-md text-body-md">Khomas, NA</td>
+<td class="p-stack-md font-body-md text-body-md">87</td>
+<td class="p-stack-md">
+<span class="bg-secondary-fixed text-on-secondary-container px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="pending">pending</span>
+                                            Pending Review
+                                        </span>
+</td>
+</tr>
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">Orange River Foods</td>
+<td class="p-stack-md font-body-md text-body-md">Northern Cape, ZA</td>
+<td class="p-stack-md font-body-md text-body-md">209</td>
+<td class="p-stack-md">
+<span class="bg-primary-fixed text-on-primary-fixed-variant px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="verified">verified</span>
+                                            SME Verified
+                                        </span>
+</td>
+</tr>
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">Coastal Apparel Ltd</td>
+<td class="p-stack-md font-body-md text-body-md">Erongo, NA</td>
+<td class="p-stack-md font-body-md text-body-md">54</td>
+<td class="p-stack-md">
+<span class="bg-error-container text-on-error-container px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="block">block</span>
+                                            Suspended
+                                        </span>
+</td>
+</tr>
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">Highveld Hardware</td>
+<td class="p-stack-md font-body-md text-body-md">Gauteng, ZA</td>
+<td class="p-stack-md font-body-md text-body-md">316</td>
+<td class="p-stack-md">
+<span class="bg-primary-fixed text-on-primary-fixed-variant px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="verified">verified</span>
+                                            SME Verified
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Recent User Signups -->
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden" id="users">
+<div class="p-stack-lg border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-on-surface">New Users</h3>
+<span class="text-primary font-label-lg text-label-lg cursor-pointer">Manage</span>
+</div>
+<div class="p-stack-lg space-y-stack-lg">
+<div class="flex items-center gap-stack-md">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-label-lg text-label-lg shrink-0">TM</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-lg text-label-lg text-on-surface truncate">Thabo Mokoena</p>
+<p class="text-body-sm text-on-surface-variant truncate">Buyer · Pretoria, ZA</p>
+</div>
+<span class="text-body-sm text-on-surface-variant whitespace-nowrap">2m ago</span>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-container font-label-lg text-label-lg shrink-0">LN</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-lg text-label-lg text-on-surface truncate">Lina Nangolo</p>
+<p class="text-body-sm text-on-surface-variant truncate">Vendor · Windhoek, NA</p>
+</div>
+<span class="text-body-sm text-on-surface-variant whitespace-nowrap">18m ago</span>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-label-lg text-label-lg shrink-0">JV</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-lg text-label-lg text-on-surface truncate">Jan van der Merwe</p>
+<p class="text-body-sm text-on-surface-variant truncate">Buyer · Cape Town, ZA</p>
+</div>
+<span class="text-body-sm text-on-surface-variant whitespace-nowrap">1h ago</span>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-container font-label-lg text-label-lg shrink-0">AS</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-lg text-label-lg text-on-surface truncate">Aune Shikongo</p>
+<p class="text-body-sm text-on-surface-variant truncate">Buyer · Oshakati, NA</p>
+</div>
+<span class="text-body-sm text-on-surface-variant whitespace-nowrap">3h ago</span>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-label-lg text-label-lg shrink-0">RP</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-lg text-label-lg text-on-surface truncate">Refilwe Pule</p>
+<p class="text-body-sm text-on-surface-variant truncate">Buyer · Bloemfontein, ZA</p>
+</div>
+<span class="text-body-sm text-on-surface-variant whitespace-nowrap">5h ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Moderation Queue -->
+<div class="mt-stack-xl bg-white border border-outline-variant rounded-xl overflow-hidden" id="products">
+<div class="p-stack-lg border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-on-surface">Product Moderation Queue</h3>
+<span class="text-primary font-label-lg text-label-lg cursor-pointer">View All</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">Product</th>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">Vendor</th>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">Price</th>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant">Flag Reason</th>
+<th class="p-stack-md font-label-lg text-label-lg text-on-surface-variant text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">Wireless Earbuds Z3</td>
+<td class="p-stack-md font-body-md text-body-md">Namib Tech Imports</td>
+<td class="p-stack-md font-body-md text-body-md">R 480</td>
+<td class="p-stack-md">
+<span class="bg-error-container text-on-error-container px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="flag">flag</span>
+                                            Counterfeit claim
+                                        </span>
+</td>
+<td class="p-stack-md text-right">
+<div class="flex gap-stack-sm justify-end">
+<button class="text-primary font-label-lg text-label-lg hover:underline">Approve</button>
+<button class="text-error font-label-lg text-label-lg hover:underline">Remove</button>
+</div>
+</td>
+</tr>
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">Herbal Wellness Tea</td>
+<td class="p-stack-md font-body-md text-body-md">Orange River Foods</td>
+<td class="p-stack-md font-body-md text-body-md">R 95</td>
+<td class="p-stack-md">
+<span class="bg-secondary-fixed text-on-secondary-container px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="description">description</span>
+                                            Missing cert
+                                        </span>
+</td>
+<td class="p-stack-md text-right">
+<div class="flex gap-stack-sm justify-end">
+<button class="text-primary font-label-lg text-label-lg hover:underline">Approve</button>
+<button class="text-error font-label-lg text-label-lg hover:underline">Remove</button>
+</div>
+</td>
+</tr>
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">Designer Sunglasses</td>
+<td class="p-stack-md font-body-md text-body-md">Coastal Apparel Ltd</td>
+<td class="p-stack-md font-body-md text-body-md">R 1,350</td>
+<td class="p-stack-md">
+<span class="bg-error-container text-on-error-container px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="flag">flag</span>
+                                            Trademark
+                                        </span>
+</td>
+<td class="p-stack-md text-right">
+<div class="flex gap-stack-sm justify-end">
+<button class="text-primary font-label-lg text-label-lg hover:underline">Approve</button>
+<button class="text-error font-label-lg text-label-lg hover:underline">Remove</button>
+</div>
+</td>
+</tr>
+<tr>
+<td class="p-stack-md font-body-md text-body-md font-bold">Solar Power Bank 20k</td>
+<td class="p-stack-md font-body-md text-body-md">Highveld Hardware</td>
+<td class="p-stack-md font-body-md text-body-md">R 620</td>
+<td class="p-stack-md">
+<span class="bg-secondary-fixed text-on-secondary-container px-stack-sm py-1 rounded-full text-label-sm font-label-sm flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="image">image</span>
+                                            Image quality
+                                        </span>
+</td>
+<td class="p-stack-md text-right">
+<div class="flex gap-stack-sm justify-end">
+<button class="text-primary font-label-lg text-label-lg hover:underline">Approve</button>
+<button class="text-error font-label-lg text-label-lg hover:underline">Remove</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- System Logs -->
+<div class="mt-stack-xl bg-white border border-outline-variant rounded-xl overflow-hidden" id="logs">
+<div class="p-stack-lg border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-on-surface">System Activity Log</h3>
+<span class="text-primary font-label-lg text-label-lg cursor-pointer">Open Full Log</span>
+</div>
+<div class="divide-y divide-outline-variant font-body-sm text-body-sm">
+<div class="flex items-start gap-stack-md p-stack-md">
+<span class="material-symbols-outlined text-primary mt-0.5" data-icon="check_circle">check_circle</span>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Vendor <span class="text-primary">Karoo Crafts Co.</span> verification approved</p>
+<p class="text-on-surface-variant">by admin@hbmarket.co.za · audit event AUD-44210</p>
+</div>
+<span class="text-on-surface-variant font-mono whitespace-nowrap">2026-06-18 09:42</span>
+</div>
+<div class="flex items-start gap-stack-md p-stack-md bg-surface-container-low">
+<span class="material-symbols-outlined text-error mt-0.5" data-icon="error">error</span>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Payment gateway timeout on checkout</p>
+<p class="text-on-surface-variant">PayFast adapter · 3 retries · order #ZN-10238</p>
+</div>
+<span class="text-on-surface-variant font-mono whitespace-nowrap">2026-06-18 09:15</span>
+</div>
+<div class="flex items-start gap-stack-md p-stack-md">
+<span class="material-symbols-outlined text-secondary mt-0.5" data-icon="warning">warning</span>
+<div class="flex-1">
+<p class="font-bold text-on-surface">High API usage from vendor integration</p>
+<p class="text-on-surface-variant">Namib Tech Imports · 4,200 req/min · rate limit warning</p>
+</div>
+<span class="text-on-surface-variant font-mono whitespace-nowrap">2026-06-18 08:58</span>
+</div>
+<div class="flex items-start gap-stack-md p-stack-md">
+<span class="material-symbols-outlined text-on-surface-variant mt-0.5" data-icon="login">login</span>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Admin login from new device</p>
+<p class="text-on-surface-variant">IP 41.13.x.x · Johannesburg · session verified via MFA</p>
+</div>
+<span class="text-on-surface-variant font-mono whitespace-nowrap">2026-06-18 08:30</span>
+</div>
+<div class="flex items-start gap-stack-md p-stack-md bg-surface-container-low">
+<span class="material-symbols-outlined text-error mt-0.5" data-icon="block">block</span>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Vendor <span class="text-error">Coastal Apparel Ltd</span> suspended</p>
+<p class="text-on-surface-variant">repeated trademark violations · auto-flag threshold reached</p>
+</div>
+<span class="text-on-surface-variant font-mono whitespace-nowrap">2026-06-17 22:11</span>
+</div>
+<div class="flex items-start gap-stack-md p-stack-md">
+<span class="material-symbols-outlined text-primary mt-0.5" data-icon="sync">sync</span>
+<div class="flex-1">
+<p class="font-bold text-on-surface">SACU customs feed synced</p>
+<p class="text-on-surface-variant">Nakop border · 1,284 shipment records updated</p>
+</div>
+<span class="text-on-surface-variant font-mono whitespace-nowrap">2026-06-17 21:00</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant w-full mt-stack-xl">
+<div class="w-full py-stack-xl px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter max-w-container-max mx-auto">
+<div>
+<h4 class="font-title-lg text-title-lg text-primary mb-stack-md">H&amp;B Market</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">© 2026 H&amp;B Cross-Border Marketplace. Admin Console.</p>
+</div>
+<div>
+<h5 class="font-label-lg text-label-lg text-on-surface mb-stack-md">Administration</h5>
+<ul class="space-y-stack-sm font-body-sm text-body-sm">
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#vendors">Vendor Management</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#products">Product Moderation</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#users">User Management</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-lg text-label-lg text-on-surface mb-stack-md">Compliance</h5>
+<ul class="space-y-stack-sm font-body-sm text-body-sm">
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Audit Trail</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Access Control</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">SACU Compliance</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-lg text-label-lg text-on-surface mb-stack-md">System</h5>
+<ul class="space-y-stack-sm font-body-sm text-body-sm">
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#logs">System Logs</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-secondary transition-colors" href="#">Status Page</a></li>
+<li class="flex items-center gap-2 text-primary font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="mail">mail</span>
+                        ops@hbmarket.co.za
+                    </li>
+</ul>
+</div>
+</div>
+</footer>
+<!-- Bottom Navigation for Mobile -->
+<div class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center bg-surface border-t border-outline-variant pb-safe pt-2 px-2">
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl p-2 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-sm text-label-sm">Overview</span>
+</div>
+<a href="#vendors" class="flex flex-col items-center justify-center text-on-surface-variant p-2 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-label-sm text-label-sm">Vendors</span>
+</a>
+<a href="#products" class="flex flex-col items-center justify-center text-on-surface-variant p-2 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-sm text-label-sm">Products</span>
+</a>
+<a href="#logs" class="flex flex-col items-center justify-center text-on-surface-variant p-2 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-sm text-label-sm">Logs</span>
+</a>
+</div>
+<script>
+        document.querySelectorAll('.hover\\:shadow-md').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+                card.style.transition = 'all 0.3s ease';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+
+
+</body></html>

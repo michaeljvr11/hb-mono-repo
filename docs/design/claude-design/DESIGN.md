@@ -93,3 +93,4 @@ cards/inputs. Shadows reserved for floating elements (dropdowns, modals): very d
 | Product Detail | mobile | — |
 | Secure Checkout | mobile | — |
 | Vendor Dashboard | desktop | — |
+| Admin Dashboard | desktop | — |
