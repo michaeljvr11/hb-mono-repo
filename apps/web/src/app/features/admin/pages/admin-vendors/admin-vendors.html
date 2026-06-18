@@ -1,0 +1,191 @@
+<section class="vendors-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Vendors</h1>
+    <p class="page-sub">Review and manage vendor applications and account status.</p>
+  </header>
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading vendors…</p>
+    </div>
+  }
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+    <!-- Status filter tabs -->
+    <div class="filter-tabs" role="tablist" aria-label="Filter vendors by status">
+      @for (tab of filterTabs; track tab.value) {
+        <button
+          class="tab-btn"
+          role="tab"
+          [class.tab-btn--active]="activeFilter() === tab.value"
+          [attr.aria-selected]="activeFilter() === tab.value"
+          type="button"
+          (click)="setFilter(tab.value)"
+        >
+          {{ tab.label }}
+          <span class="tab-count" aria-label="{{ countFor(tab.value) }} vendors">
+            {{ countFor(tab.value) }}
+          </span>
+        </button>
+      }
+    </div>
+
+    <!-- Main split layout -->
+    <div class="split-layout">
+      <!-- Vendor list -->
+      <div class="vendor-list" role="list" aria-label="Vendors">
+        @if (filteredVendors().length === 0) {
+          <div class="list-empty">
+            <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
+            <p>No vendors in this category.</p>
+          </div>
+        }
+
+        @for (vendor of filteredVendors(); track vendor.id) {
+          <button
+            class="vendor-row"
+            role="listitem"
+            type="button"
+            [class.vendor-row--selected]="selectedId() === vendor.id"
+            [attr.aria-pressed]="selectedId() === vendor.id"
+            (click)="selectVendor(vendor.id)"
+          >
+            <div class="vendor-row-main">
+              <span class="vendor-business-name">{{ vendor.businessName }}</span>
+              @if (vendor.tradingName) {
+                <span class="vendor-trading-name">{{ vendor.tradingName }}</span>
+              }
+            </div>
+            <div class="vendor-row-meta">
+              <span class="status-pill status-pill--{{ vendor.status }}" aria-label="Status: {{ vendor.status }}">
+                {{ vendor.status }}
+              </span>
+              <span class="vendor-country">{{ vendor.countryCode }}</span>
+            </div>
+          </button>
+        }
+      </div>
+
+      <!-- Detail panel -->
+      <div class="detail-panel">
+        @if (selectedVendor(); as vendor) {
+          <div class="detail-card">
+            <h2 class="detail-name">{{ vendor.businessName }}</h2>
+
+            @if (vendor.tradingName) {
+              <p class="detail-trading">Trading as: <strong>{{ vendor.tradingName }}</strong></p>
+            }
+
+            <dl class="detail-list">
+              <div class="detail-row">
+                <dt>Status</dt>
+                <dd>
+                  <span class="status-pill status-pill--{{ vendor.status }}">{{ vendor.status }}</span>
+                </dd>
+              </div>
+
+              <div class="detail-row">
+                <dt>Country</dt>
+                <dd>{{ vendor.countryCode }}</dd>
+              </div>
+
+              @if (vendor.registrationNumber) {
+                <div class="detail-row">
+                  <dt>Registration No.</dt>
+                  <dd>{{ vendor.registrationNumber }}</dd>
+                </div>
+              }
+
+              <div class="detail-row">
+                <dt>Applied</dt>
+                <dd>{{ vendor.appliedAt | date:'d MMM y, HH:mm' }}</dd>
+              </div>
+
+              @if (vendor.website) {
+                <div class="detail-row">
+                  <dt>Website</dt>
+                  <dd>
+                    <a
+                      [href]="vendor.website"
+                      target="_blank"
+                      rel="noopener"
+                      class="detail-link"
+                    >{{ vendor.website }}</a>
+                  </dd>
+                </div>
+              }
+
+              @if (vendor.description) {
+                <div class="detail-row detail-row--block">
+                  <dt>Description</dt>
+                  <dd>{{ vendor.description }}</dd>
+                </div>
+              }
+
+              @if (vendor.verificationDocumentUrl) {
+                <div class="detail-row">
+                  <dt>Verification doc</dt>
+                  <dd>
+                    <a
+                      [href]="vendor.verificationDocumentUrl"
+                      target="_blank"
+                      rel="noopener"
+                      class="detail-link"
+                    >
+                      <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+                      View document
+                    </a>
+                  </dd>
+                </div>
+              }
+            </dl>
+
+            <!-- Action error banner -->
+            @if (actionError()) {
+              <div class="error-banner error-banner--inline" role="alert">
+                <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                <span>{{ actionError() }}</span>
+              </div>
+            }
+
+            <!-- Transition actions -->
+            @let actions = actionsFor(vendor.status);
+            @if (actions.length > 0) {
+              <div class="action-bar">
+                @for (action of actions; track action.target) {
+                  <button
+                    class="action-btn action-btn--{{ action.target }}"
+                    type="button"
+                    [disabled]="pendingId() === vendor.id"
+                    (click)="applyAction(vendor.id, action.target)"
+                  >
+                    @if (pendingId() === vendor.id) {
+                      <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+                    }
+                    {{ action.label }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="detail-empty">
+            <span class="material-symbols-outlined detail-empty-icon" aria-hidden="true">storefront</span>
+            <p>Select a vendor to view details and take action.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</section>

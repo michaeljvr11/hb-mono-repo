@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   AdminCreateVendorRequest,
+  AdminVendorDto,
   CreateVendorRequest,
   UpdateVendorRequest,
   UpdateVendorStatusRequest,
@@ -18,8 +19,8 @@ export class VendorsService {
 
   constructor(private http: HttpClient) {}
 
-  list(): Observable<Vendor[]> {
-    return this.http.get<Vendor[]>(this.API_URL);
+  list(): Observable<AdminVendorDto[]> {
+    return this.http.get<AdminVendorDto[]>(this.API_URL);
   }
 
   getById(id: string): Observable<Vendor> {

@@ -8,6 +8,14 @@ export interface VendorDto {
   countryCode: CountryCode;
 }
 
+export interface AdminVendorDto extends VendorDto {
+  registrationNumber?: string;
+  website?: string;
+  description?: string;
+  verificationDocumentUrl?: string;
+  appliedAt: string; // ISO timestamp of when the vendor applied (createdAt)
+}
+
 export interface CreateVendorRequest {
   businessName: string;
   tradingName?: string;
