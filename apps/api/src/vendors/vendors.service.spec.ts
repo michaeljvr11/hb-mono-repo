@@ -36,6 +36,49 @@ describe('VendorsService', () => {
 
   afterEach(() => jest.clearAllMocks());
 
+  describe('findAll', () => {
+    it('calls vendorRepository.find() and maps results to the admin shape', async () => {
+      const vendor = mockVendor({
+        id: 'v1',
+        businessName: 'Kalahari Naturals',
+        tradingName: 'Kalahari',
+        status: VendorStatus.PENDING,
+        countryCode: 'ZA',
+        registrationNumber: 'ZA/2024/001',
+        website: 'https://kalahari.co.za',
+        description: 'Natural products',
+        verificationDocumentUrl: 'https://cdn.hb.com/docs/za2024001.pdf',
+        createdAt: new Date('2026-06-01T10:00:00.000Z'),
+      });
+      vendorRepo.find.mockResolvedValue([vendor]);
+
+      const result = await service.findAll();
+
+      expect(vendorRepo.find).toHaveBeenCalled();
+      expect(result).toHaveLength(1);
+      expect(result[0].registrationNumber).toBe('ZA/2024/001');
+      expect(result[0].verificationDocumentUrl).toBe('https://cdn.hb.com/docs/za2024001.pdf');
+      expect(result[0].appliedAt).toBe('2026-06-01T10:00:00.000Z');
+    });
+
+    it('returns appliedAt as null when createdAt is undefined', async () => {
+      const vendor = mockVendor({ createdAt: undefined });
+      vendorRepo.find.mockResolvedValue([vendor]);
+
+      const result = await service.findAll();
+
+      expect(result[0].appliedAt).toBeNull();
+    });
+
+    it('returns an empty array when no vendors exist', async () => {
+      vendorRepo.find.mockResolvedValue([]);
+
+      const result = await service.findAll();
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('findDirectory', () => {
     it('queries only APPROVED vendors ordered by businessName ascending', async () => {
       const approved = [

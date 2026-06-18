@@ -12,6 +12,7 @@ import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { AdminCreateVendorDto } from './dto/admin-create-vendor.dto';
 import { VendorResponseDto } from './dto/vendor-response.dto';
+import { AdminVendorResponseDto } from './dto/admin-vendor-response.dto';
 import { User } from '../users/entities/user.entity';
 
 @Injectable()
@@ -28,6 +29,21 @@ export class VendorsService {
       tradingName: vendor.tradingName,
       status: vendor.status,
       countryCode: vendor.countryCode,
+    };
+  }
+
+  private toAdminResponseDto(vendor: Vendor): AdminVendorResponseDto {
+    return {
+      id: vendor.id,
+      businessName: vendor.businessName,
+      tradingName: vendor.tradingName,
+      status: vendor.status,
+      countryCode: vendor.countryCode,
+      registrationNumber: vendor.registrationNumber,
+      website: vendor.website,
+      description: vendor.description,
+      verificationDocumentUrl: vendor.verificationDocumentUrl,
+      appliedAt: vendor.createdAt ? vendor.createdAt.toISOString() : null,
     };
   }
 
@@ -74,9 +90,9 @@ export class VendorsService {
     return this.toResponseDto(updated);
   }
 
-  async findAll(): Promise<VendorResponseDto[]> {
+  async findAll(): Promise<AdminVendorResponseDto[]> {
     const vendors = await this.vendorRepository.find();
-    return vendors.map((v) => this.toResponseDto(v));
+    return vendors.map((v) => this.toAdminResponseDto(v));
   }
 
   async findDirectory(): Promise<VendorResponseDto[]> {
