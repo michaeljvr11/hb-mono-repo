@@ -1,0 +1,28 @@
+<div class="auth-screen auth-centered">
+  <div class="auth-panel">
+    <a class="panel-brand" routerLink="/login" aria-label="H&B Marketplace home">
+      <span class="material-symbols-outlined" aria-hidden="true">hub</span>
+      <span>H&amp;B</span>
+    </a>
+
+    @switch (state()) {
+      @case ('success') {
+        <span class="material-symbols-outlined state-icon ok" aria-hidden="true">mark_email_read</span>
+        <h1>Email verified</h1>
+        <p class="panel-sub">{{ message() }}</p>
+        <a class="primary-action" routerLink="/shop">Continue to H&amp;B</a>
+      }
+      @case ('error') {
+        <span class="material-symbols-outlined state-icon bad" aria-hidden="true">error</span>
+        <h1>Verification failed</h1>
+        <p class="panel-sub">{{ message() }}</p>
+        <a class="primary-action" routerLink="/login">Back to log in</a>
+      }
+      @default {
+        <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_top</span>
+        <h1>Verifying…</h1>
+        <p class="panel-sub">{{ message() }}</p>
+      }
+    }
+  </div>
+</div>

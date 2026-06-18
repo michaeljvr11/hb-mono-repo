@@ -38,12 +38,56 @@ export class UsersService {
     return UserToResponseDto(updated);
   }
 
-  async updateRefreshToken(id: string, hashedRefresh: string | null) {
+  async updateRefreshToken(id: string, hashedRefresh: string | null, expMs?: number) {
+    const ttl = expMs ?? 7 * 24 * 60 * 60 * 1000;
     await this.usersRepository.update(id, {
       currentRefreshToken: hashedRefresh,
-      currentRefreshTokenExp: hashedRefresh
-        ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        : null,
+      currentRefreshTokenExp: hashedRefresh ? new Date(Date.now() + ttl) : null,
+    });
+  }
+
+  // ── Password reset + email verification ──
+  // Tokens are stored as SHA-256 hashes; lookups hash the incoming raw token.
+
+  async findByPasswordResetTokenHash(hash: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { passwordResetTokenHash: hash } });
+  }
+
+  async findByEmailVerificationTokenHash(hash: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { emailVerificationTokenHash: hash } });
+  }
+
+  async setPasswordResetToken(id: string, hash: string | null, expires: Date | null) {
+    await this.usersRepository.update(id, {
+      passwordResetTokenHash: hash,
+      passwordResetExpires: expires,
+    });
+  }
+
+  async setEmailVerificationToken(id: string, hash: string | null, expires: Date | null) {
+    await this.usersRepository.update(id, {
+      emailVerificationTokenHash: hash,
+      emailVerificationExpires: expires,
+    });
+  }
+
+  async setPassword(id: string, hashedPassword: string) {
+    // New password clears the reset token and drops the refresh session, forcing
+    // a fresh login everywhere (anyone holding an old session is logged out).
+    await this.usersRepository.update(id, {
+      password: hashedPassword,
+      passwordResetTokenHash: null,
+      passwordResetExpires: null,
+      currentRefreshToken: null,
+      currentRefreshTokenExp: null,
+    });
+  }
+
+  async markEmailVerified(id: string) {
+    await this.usersRepository.update(id, {
+      isVerified: true,
+      emailVerificationTokenHash: null,
+      emailVerificationExpires: null,
     });
   }
 

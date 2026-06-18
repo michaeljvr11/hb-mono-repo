@@ -6,11 +6,15 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 import {
   AuthResponse,
   AuthUser,
+  ForgotPasswordRequest,
   LoginRequest,
   LogoutResponse,
+  MessageResponse,
   RegisterRequest,
+  ResetPasswordRequest,
   UserDto,
   UserRole,
+  VerifyEmailRequest,
 } from '@hb/shared';
 import { environment } from '../../../environments/environment';
 
@@ -48,6 +52,30 @@ export class AuthService {
     return this.http
       .post<AuthResponse>(`${this.API_URL}/auth/refresh`, {}, { withCredentials: true })
       .pipe(tap((response) => this.handleAuthentication(response)));
+  }
+
+  forgotPassword(email: string): Observable<MessageResponse> {
+    const body: ForgotPasswordRequest = { email };
+    return this.http.post<MessageResponse>(`${this.API_URL}/auth/forgot-password`, body);
+  }
+
+  resetPassword(token: string, password: string): Observable<MessageResponse> {
+    const body: ResetPasswordRequest = { token, password };
+    return this.http.post<MessageResponse>(`${this.API_URL}/auth/reset-password`, body);
+  }
+
+  verifyEmail(token: string): Observable<MessageResponse> {
+    const body: VerifyEmailRequest = { token };
+    return this.http.post<MessageResponse>(`${this.API_URL}/auth/verify-email`, body);
+  }
+
+  resendVerification(): Observable<MessageResponse> {
+    // Authenticated — the auth interceptor attaches the access token.
+    return this.http.post<MessageResponse>(
+      `${this.API_URL}/auth/resend-verification`,
+      {},
+      { withCredentials: true },
+    );
   }
 
   logout(): void {

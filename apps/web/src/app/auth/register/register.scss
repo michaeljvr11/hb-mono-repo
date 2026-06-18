@@ -1,20 +1,200 @@
-.register-page {
-  grid-template-columns: minmax(0, 1fr) minmax(390px, 560px);
+/* Register-specific layout. Shared auth primitives live in global styles.scss. */
+:host {
+  display: block;
 }
 
-.register-page .brand-panel::before {
-  background: rgba(245, 124, 0, 0.13);
+.register-shell {
+  max-width: 30rem;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 16px 24px;
 }
 
-.register-page .brand-panel::after {
-  background: rgba(46, 125, 50, 0.12);
+/* Header */
+.register-head {
+  margin-bottom: 32px;
 }
 
-.register-page .brand-leaf {
-  background: var(--hb-auth-orange);
-  box-shadow: 0 18px 34px rgba(245, 124, 0, 0.2);
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  text-decoration: none;
+  color: var(--hb-primary);
 }
 
-.register-page .brand-badges span {
-  border-color: rgba(46, 125, 50, 0.22);
+.brand .material-symbols-outlined {
+  font-size: 32px;
+}
+
+.brand-name {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--hb-primary);
+}
+
+.register-head h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.register-head p {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--hb-on-surface-variant);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+/* Register inputs: lighter border, inline leading icon, roomier padding */
+.field label,
+.field small {
+  margin-left: 4px;
+}
+
+.input-wrap {
+  border: 1px solid var(--hb-outline-variant);
+  overflow: hidden;
+}
+
+.input-wrap > .material-symbols-outlined {
+  margin-left: 16px;
+  font-size: 24px;
+  opacity: 0.6;
+}
+
+.input-wrap input {
+  padding: 16px 12px;
+}
+
+.input-wrap input::placeholder {
+  color: rgba(64, 74, 59, 0.4);
+}
+
+.toggle-visibility {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  padding: 16px;
+  color: var(--hb-on-surface-variant);
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.toggle-visibility:hover {
+  color: var(--hb-primary);
+}
+
+.remember-me {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 4px;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+  cursor: pointer;
+  user-select: none;
+}
+
+.remember-me input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--hb-primary);
+  cursor: pointer;
+}
+
+.primary-action {
+  margin-top: 8px;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(28, 27, 27, 0.08);
+}
+
+.social-action {
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.social-action:hover {
+  background: var(--hb-surface-container);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(191, 202, 183, 0.5);
+}
+
+.divider span {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hb-on-surface-variant);
+}
+
+/* Footer */
+.register-footer {
+  margin-top: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  text-align: center;
+}
+
+.switch-auth {
+  font-size: 16px;
+}
+
+.switch-auth a {
+  font-weight: 700;
+}
+
+.trust-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: var(--hb-surface-container);
+  border: 1px solid rgba(191, 202, 183, 0.3);
+  border-radius: 16px;
+}
+
+.trust-item {
+  justify-content: center;
+  letter-spacing: 0.08em;
+}
+
+.trust-item .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.trust-item .primary {
+  color: var(--hb-primary);
+}
+
+.trust-item .secondary {
+  color: var(--hb-secondary);
 }

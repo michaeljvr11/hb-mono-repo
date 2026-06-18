@@ -1,9 +1,4 @@
-import {
-  ProductCategoryDto,
-  ProductDto,
-  ProductImageDto,
-  UserDto,
-} from '@hb/shared';
+import { ProductCategoryDto, ProductDto, ProductImageDto, UserDto } from '@hb/shared';
 import { User } from '../../users/entities/user.entity';
 import { Product } from '../../products/entities/product.entity';
 
@@ -13,9 +8,9 @@ export function UserToResponseDto(user: User): UserDto {
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    name:
-      user.firstName && user.lastName ? `${user.firstName} ${user.lastName}`.trim() : undefined,
+    name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}`.trim() : undefined,
     role: user.role,
+    isVerified: user.isVerified,
   };
 }
 

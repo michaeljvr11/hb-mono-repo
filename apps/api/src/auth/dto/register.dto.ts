@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 import { RegisterRequest, UserRole } from '@hb/shared';
 
 export class RegisterDto implements RegisterRequest {
@@ -21,4 +21,8 @@ export class RegisterDto implements RegisterRequest {
   @IsEnum(UserRole)
   @IsOptional()
   role?: UserRole; // defaults to CUSTOMER; admins create vendors
+
+  @IsOptional()
+  @IsBoolean()
+  rememberMe?: boolean;
 }

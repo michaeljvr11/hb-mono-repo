@@ -13,6 +13,22 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/register/register').then(m => m.Register)
   },
   {
+    path: 'forgot-password',
+    loadComponent: () => import('./auth/forgot-password/forgot-password').then(m => m.ForgotPassword)
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./auth/reset-password/reset-password').then(m => m.ResetPassword)
+  },
+  {
+    path: 'verify-email',
+    loadComponent: () => import('./auth/verify-email/verify-email').then(m => m.VerifyEmail)
+  },
+  {
+    path: 'auth/callback',
+    loadComponent: () => import('./auth/callback/auth-callback').then(m => m.AuthCallback)
+  },
+  {
     path: '',
     redirectTo: 'shop',
     pathMatch: 'full'

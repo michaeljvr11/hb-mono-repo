@@ -1,9 +1,10 @@
-﻿import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { environment } from '../../../environments/environment';
 import { LoginRequest } from '@hb/shared';
 
 @Component({
@@ -21,12 +22,18 @@ export class Login {
 
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal('');
+  readonly currentYear = new Date().getFullYear();
+  // Full-page redirect into the server-side Google OAuth flow.
+  readonly googleAuthUrl = `${environment.apiBaseUrl}/auth/google`;
   readonly returnUrl = computed(() => this.route.snapshot.queryParamMap.get('returnUrl') ?? '');
+  readonly registerLinkParams = computed(() =>
+    this.returnUrl() ? { returnUrl: this.returnUrl() } : {},
+  );
 
   readonly loginForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
-    rememberMe: [true],
+    rememberMe: [false],
   });
 
   get emailControl() {
@@ -48,18 +55,34 @@ export class Login {
     const credentials: LoginRequest = {
       email: this.loginForm.controls.email.value,
       password: this.loginForm.controls.password.value,
+      rememberMe: this.loginForm.controls.rememberMe.value,
     };
 
     this.isSubmitting.set(true);
 
-    this.authService.login(credentials).pipe(
-      finalize(() => this.isSubmitting.set(false)),
-    ).subscribe({
-      next: () => {
-        this.showSuccessMessage('Welcome back. Your H&B session is ready.');
-        void this.router.navigateByUrl(this.returnUrl() || '/shop');
-      },
-      error: error => this.errorMessage.set(this.getErrorMessage(error, 'We could not sign you in. Check your details and try again.')),
+    this.authService
+      .login(credentials)
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .subscribe({
+        next: () => {
+          this.showSuccessMessage('Welcome back. Your H&B session is ready.');
+          void this.router.navigateByUrl(this.returnUrl() || '/shop');
+        },
+        error: (error) =>
+          this.errorMessage.set(
+            this.getErrorMessage(error, 'We could not sign you in. Check your details and try again.'),
+          ),
+      });
+  }
+
+  // Password reset and Google sign-in are not built yet (see Auth & Roles note).
+  // Surface an honest "coming soon" message instead of wiring a fake flow.
+  notifyComingSoon(feature: string): void {
+    this.snackBar.open(`${feature} is coming soon.`, 'Close', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      panelClass: ['hb-info-snackbar'],
+      verticalPosition: 'top',
     });
   }
 
@@ -73,20 +96,22 @@ export class Login {
   }
 
   private getErrorMessage(error: unknown, fallback: string): string {
-    if (this.hasMessage(error)) {
-      return error.error.message;
+    // NestJS returns `message` as a string (e.g. 401/409) or a string[] for
+    // DTO validation failures — normalise both to the first useful line.
+    const message = this.extractMessage(error);
+    if (Array.isArray(message)) {
+      return message[0] ?? fallback;
     }
-
-    return fallback;
+    return message ?? fallback;
   }
 
-  private hasMessage(error: unknown): error is { error: { message: string } } {
-    return typeof error === 'object'
-      && error !== null
-      && 'error' in error
-      && typeof (error as { error?: { message?: unknown } }).error?.message === 'string';
+  private extractMessage(error: unknown): string | string[] | undefined {
+    if (typeof error === 'object' && error !== null && 'error' in error) {
+      const inner = (error as { error?: { message?: unknown } }).error;
+      if (inner && (typeof inner.message === 'string' || Array.isArray(inner.message))) {
+        return inner.message as string | string[];
+      }
+    }
+    return undefined;
   }
 }
-
-
-

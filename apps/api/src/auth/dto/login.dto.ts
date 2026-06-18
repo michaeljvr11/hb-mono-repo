@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
 import { LoginRequest } from '@hb/shared';
 
 export class LoginDto implements LoginRequest {
@@ -8,4 +8,8 @@ export class LoginDto implements LoginRequest {
 
   @IsNotEmpty()
   password: string;
+
+  @IsOptional()
+  @IsBoolean()
+  rememberMe?: boolean;
 }
