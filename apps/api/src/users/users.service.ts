@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UserRole } from '@hb/shared';
 import { User } from './entities/user.entity';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UserToResponseDto } from '../common/utils/mappers.utils';
@@ -81,6 +82,10 @@ export class UsersService {
       currentRefreshToken: null,
       currentRefreshTokenExp: null,
     });
+  }
+
+  async countByRole(role: UserRole): Promise<number> {
+    return this.usersRepository.count({ where: { role } });
   }
 
   async markEmailVerified(id: string) {

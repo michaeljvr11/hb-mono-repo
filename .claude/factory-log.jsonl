@@ -14,4 +14,15 @@
 {"ts":"2026-06-18T17:27:47.043Z","type":"edit_lint","file":"apps/api/src/database/seed.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-06-18T20:37:31.799Z","type":"pr_gate","result":"pass","durationMs":3886}
 {"ts":"2026-06-18T20:40:10.447Z","type":"prod_fence_block","reason":"push names a protected branch","command":"cd \"C:/Development/3. TechAcc/hb-vault\" && git add \"Listing Types & Vendor Rules.md\" \"History/Josh/session-2.md\" AI*Evidence*Log.md && echo \"===staged===\" && git diff --cached --name-only && git commit -m \"$(cat <<'EOF'\ndocs(storefront): record vendor directory + storefront (card L9fM1Gu7)\n\nImplemen"}
+{"ts":"2026-06-18T20:42:39.332Z","type":"edit_lint","file":"apps/api/src/auth/dto/bootstrap-admin.dto.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-18T20:42:48.272Z","type":"edit_lint","file":"apps/api/src/users/users.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-18T20:42:57.720Z","type":"edit_lint","file":"apps/api/src/users/users.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-18T20:43:05.679Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-18T20:43:22.243Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-18T20:44:08.571Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.ts","autofixed":true,"tool":"Write"}
 {"ts":"2026-06-18T20:44:12.002Z","type":"prod_fence_block","reason":"push names a protected branch","command":"cd \"C:/Development/3. TechAcc/hb-mono-repo\" && git add .claude/hooks/block-prod-git.js .claude/factory-log.jsonl && git commit -m \"$(cat <<'EOF'\nchore(hooks): exempt the shared vault repo from the prod-branch push fence\n\nThe Obsidian vault (hb-vault) commits straight to main and pushes by design\n(th"}
+{"ts":"2026-06-18T20:44:37.609Z","type":"edit_lint","file":"apps/api/src/auth/auth.controller.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-18T20:45:31.491Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.spec.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-18T21:00:54.798Z","type":"prod_fence_block","reason":"push names a protected branch","command":"cd /c/Users/michael.jvanrensburg/vscode/hb-vault && git add \"Vendor & Admin Portals.md\" \"History/Michael/session-1.md\" && git status --short && git commit -q -m \"$(cat <<'EOF'\ndocs(admin-portal): impl notes + Michael session-1 for AP-6\n\nRecord the admin portal foundation work (card Z1ADCLQm): self-s"}
+{"ts":"2026-06-18T21:01:30.925Z","type":"prod_fence_block","reason":"push names a protected branch","command":"git -C /c/Users/michael.jvanrensburg/vscode/hb-vault push 2>&1 | tail -6 && echo \"---verify---\" && git -C /c/Users/michael.jvanrensburg/vscode/hb-vault log origin/main..HEAD --oneline"}
+{"ts":"2026-06-18T21:02:44.573Z","type":"pr_gate","result":"pass","durationMs":6565}

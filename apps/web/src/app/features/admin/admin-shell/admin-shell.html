@@ -1,0 +1,63 @@
+<div class="admin-shell">
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-start">
+      <button
+        class="menu-btn"
+        type="button"
+        aria-label="Toggle navigation"
+        (click)="toggleSidebar()"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+      </button>
+      <a class="wordmark" routerLink="/admin/dashboard" aria-label="H&B Market Admin home">
+        H&amp;B Market
+      </a>
+      <span class="console-badge" aria-label="Admin Console">
+        <span class="material-symbols-outlined badge-icon" aria-hidden="true">shield_person</span>
+        Admin Console
+      </span>
+    </div>
+
+    <div class="topbar-end">
+      <button class="sign-out-btn" type="button" (click)="signOut()">
+        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+        <span class="sign-out-label">Sign out</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="shell-body">
+    <!-- Sidebar overlay (mobile) -->
+    @if (sidebarOpen()) {
+      <div
+        class="sidebar-overlay"
+        aria-hidden="true"
+        (click)="closeSidebar()"
+      ></div>
+    }
+
+    <!-- Sidebar -->
+    <aside class="sidebar" [class.sidebar--open]="sidebarOpen()" aria-label="Admin navigation">
+      <nav>
+        @for (item of navItems; track item.path) {
+          <a
+            class="nav-item"
+            [routerLink]="item.path"
+            routerLinkActive="nav-item--active"
+            [routerLinkActiveOptions]="{ exact: false }"
+            (click)="closeSidebar()"
+          >
+            <span class="material-symbols-outlined nav-icon" aria-hidden="true">{{ item.icon }}</span>
+            <span class="nav-label">{{ item.label }}</span>
+          </a>
+        }
+      </nav>
+    </aside>
+
+    <!-- Main content -->
+    <main class="shell-main">
+      <router-outlet />
+    </main>
+  </div>
+</div>

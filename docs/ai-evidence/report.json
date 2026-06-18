@@ -1,51 +1,51 @@
 {
-  "generatedAt": "2026-06-18T20:36:35.329Z",
+  "generatedAt": "2026-06-18T21:20:03.016Z",
   "git": {
-    "totalCommits": 17,
-    "aiCommits": 11,
-    "aiPct": 65,
-    "appCommits": 13,
-    "ins": 19328,
-    "del": 776,
-    "net": 18552,
-    "aiIns": 6951,
-    "aiDel": 720,
-    "filesTouched": 287,
+    "totalCommits": 23,
+    "aiCommits": 18,
+    "aiPct": 78,
+    "appCommits": 16,
+    "ins": 21059,
+    "del": 996,
+    "net": 20063,
+    "aiIns": 8682,
+    "aiDel": 940,
+    "filesTouched": 302,
     "areaRows": [
       {
         "name": "Docs",
-        "commits": 7,
-        "ins": 7297,
-        "del": 61
+        "commits": 11,
+        "ins": 8233,
+        "del": 270
       },
       {
         "name": "Web (Angular)",
-        "commits": 10,
-        "ins": 5533,
-        "del": 622
+        "commits": 12,
+        "ins": 6122,
+        "del": 626
       },
       {
         "name": "API (NestJS)",
-        "commits": 8,
-        "ins": 4912,
-        "del": 76
+        "commits": 9,
+        "ins": 5052,
+        "del": 77
       },
       {
         "name": "AI Factory config",
-        "commits": 5,
-        "ins": 635,
-        "del": 10
+        "commits": 9,
+        "ins": 692,
+        "del": 16
       },
       {
         "name": "Shared contracts",
-        "commits": 2,
-        "ins": 400,
+        "commits": 3,
+        "ins": 405,
         "del": 1
       },
       {
         "name": "Root & config",
-        "commits": 7,
-        "ins": 351,
+        "commits": 8,
+        "ins": 355,
         "del": 4
       },
       {
@@ -59,8 +59,43 @@
     "lastDate": "2026-06-18",
     "recent": [
       {
+        "hash": "c446a17",
+        "subject": "chore(evidence): recompile AI evidence report for AP-6",
+        "ai": true
+      },
+      {
+        "hash": "d1198da",
+        "subject": "style(web): register admin-shell colors as design tokens",
+        "ai": true
+      },
+      {
+        "hash": "ea86576",
+        "subject": "feat(web): add role-gated /admin route area with shell + placeholder pages",
+        "ai": true
+      },
+      {
+        "hash": "f79698c",
+        "subject": "feat(auth): add self-sealing bootstrap-admin endpoint",
+        "ai": true
+      },
+      {
+        "hash": "bab9fe5",
+        "subject": "chore(hooks): exempt the shared vault repo from the prod-branch push fence",
+        "ai": true
+      },
+      {
+        "hash": "15e8075",
+        "subject": "chore(evidence): recompile AI evidence report for storefront work",
+        "ai": true
+      },
+      {
         "hash": "34fec07",
         "subject": "refactor(web): extract testable category-count helper; drop dead signal",
+        "ai": true
+      },
+      {
+        "hash": "25e582b",
+        "subject": "chore(design): pull admin-dashboard screen from Claude Design + create sync anchor",
         "ai": true
       },
       {
@@ -82,49 +117,14 @@
         "hash": "130586b",
         "subject": "migration from stitch to claude design system",
         "ai": false
-      },
-      {
-        "hash": "c346ded",
-        "subject": "index on main: ca3d4a0 Merge pull request #2 from michaeljvr11/feat/ai-evidence-system",
-        "ai": false
-      },
-      {
-        "hash": "f8836df",
-        "subject": "fix(api): resolve pre-existing lint tech debt surfaced by CI",
-        "ai": true
-      },
-      {
-        "hash": "9de2405",
-        "subject": "feat(factory): add AI evidence system, CI, planning front-end, and live dashboard",
-        "ai": true
-      },
-      {
-        "hash": "ac8963f",
-        "subject": "refactor(auth): make refresh cookie SameSite env-driven (default strict)",
-        "ai": true
-      },
-      {
-        "hash": "475d58d",
-        "subject": "refactor(auth): harden reset + warn on missing Google creds",
-        "ai": true
-      },
-      {
-        "hash": "6292b85",
-        "subject": "feat(auth): add Google social sign-in for login & registration",
-        "ai": true
-      },
-      {
-        "hash": "276549f",
-        "subject": "feat(auth): add password reset, email verification & remember-me",
-        "ai": true
       }
     ]
   },
   "branches": [
     {
-      "branch": "feat/L9fM1Gu7-storefront",
-      "cardId": "L9fM1Gu7",
-      "slug": "storefront"
+      "branch": "feat/Z1ADCLQm-admin-portal-shell",
+      "cardId": "Z1ADCLQm",
+      "slug": "admin-portal-shell"
     },
     {
       "branch": "feat/ai-evidence-system",
@@ -135,15 +135,20 @@
       "branch": "feat/mMFxZIKE-login-registration-pages",
       "cardId": "mMFxZIKE",
       "slug": "login-registration-pages"
+    },
+    {
+      "branch": "feat/L9fM1Gu7-storefront",
+      "cardId": "L9fM1Gu7",
+      "slug": "storefront"
     }
   ],
   "tests": {
-    "total": 18,
+    "total": 20,
     "api": 5,
-    "web": 13
+    "web": 15
   },
   "design": {
-    "files": 26,
+    "files": 27,
     "screens": [
       "checkout",
       "claude-design",
@@ -157,20 +162,34 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 4,
+    "prodBlocks": 8,
     "blockReasons": {
-      "push names a protected branch": 2,
+      "push names a protected branch": 6,
       "force push": 1,
       "gh pr merge is human-only": 1
     },
-    "gatePass": 1,
+    "gatePass": 3,
     "gateFail": 1,
-    "edits": 8,
-    "editsUnfixable": 1,
+    "edits": 16,
+    "editsUnfixable": 4,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-18T17:27:47.043Z"
+    "lastTs": "2026-06-18T21:02:44.573Z"
   },
   "prs": [
+    {
+      "headRefName": "feat/Z1ADCLQm-admin-portal-shell",
+      "number": 5,
+      "state": "OPEN",
+      "title": "feat(admin): admin portal shell + self-sealing bootstrap-admin endpoint (AP-6)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/5"
+    },
+    {
+      "headRefName": "feat/L9fM1Gu7-storefront",
+      "number": 4,
+      "state": "MERGED",
+      "title": "feat: storefront page — nav bar, footer, products/categories/vendors [L9fM1Gu7]",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/4"
+    },
     {
       "headRefName": "chore/loop-obsidian-session-history",
       "number": 3,
@@ -200,15 +219,15 @@
     },
     {
       "name": "To Do",
-      "cards": 17
+      "cards": 16
     },
     {
       "name": "In Progress",
-      "cards": 1
+      "cards": 0
     },
     {
       "name": "In Review",
-      "cards": 1
+      "cards": 3
     },
     {
       "name": "Done",
