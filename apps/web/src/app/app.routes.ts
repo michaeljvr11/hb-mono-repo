@@ -69,6 +69,13 @@ export const routes: Routes = [
   //   ]
   // },
 
+  // Vendor onboarding — auth-only (no roleGuard); must be before the role-gated 'vendor' block
+  {
+    path: 'vendor/apply',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/vendor/onboarding/vendor-onboarding').then(m => m.VendorOnboarding),
+  },
+
   // Vendor Portal (protected + role-based)
   {
     path: 'vendor',
