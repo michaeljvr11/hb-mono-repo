@@ -359,6 +359,29 @@ describe('VendorProducts component', () => {
       component.cancelDeleteProduct();
       expect(component.pendingDeleteProductId()).toBeNull();
     });
+
+    it('sets deleteError and clears pending when delete fails', async () => {
+      productsStub.delete.mockReturnValue(throwError(() => new Error('500')));
+
+      component.confirmDeleteProduct('prod-1');
+      component.deleteProduct('prod-1');
+      await fixture.whenStable();
+
+      expect(component.deleteError()).toBeTruthy();
+      expect(component.pendingDeleteProductId()).toBeNull();
+      // Product should still be in the list
+      expect(component.allProducts().some(p => p.id === 'prod-1')).toBe(true);
+    });
+
+    it('clears deleteError when starting a new delete', async () => {
+      productsStub.delete.mockReturnValue(of(undefined));
+
+      component.deleteError.set('Some previous error');
+      component.deleteProduct('prod-1');
+      await fixture.whenStable();
+
+      expect(component.deleteError()).toBeNull();
+    });
   });
 
   // ── Requirement 5: Loading + error states ─────────────────────────────────

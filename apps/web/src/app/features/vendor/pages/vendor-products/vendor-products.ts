@@ -68,6 +68,7 @@ export class VendorProducts implements OnInit {
 
   // ─── Delete guard ────────────────────────────────────────────────────────────
   readonly pendingDeleteProductId = signal<string | null>(null);
+  readonly deleteError = signal<string | null>(null);
 
   // ─── Expose enums to template ────────────────────────────────────────────────
   readonly CurrencyCode = CurrencyCode;
@@ -249,6 +250,7 @@ export class VendorProducts implements OnInit {
   }
 
   deleteProduct(id: string): void {
+    this.deleteError.set(null);
     this.productsService.delete(id).subscribe({
       next: () => {
         this.allProducts.update(list => list.filter(p => p.id !== id));
@@ -256,6 +258,7 @@ export class VendorProducts implements OnInit {
       },
       error: () => {
         this.pendingDeleteProductId.set(null);
+        this.deleteError.set('Failed to delete product. Please try again.');
       },
     });
   }

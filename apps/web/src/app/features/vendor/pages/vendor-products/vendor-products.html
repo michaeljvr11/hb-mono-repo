@@ -44,6 +44,14 @@
       </div>
     }
 
+    <!-- Delete error -->
+    @if (deleteError()) {
+      <div class="error-banner" role="alert">
+        <span class="material-symbols-outlined" aria-hidden="true">error</span>
+        <span>{{ deleteError() }}</span>
+      </div>
+    }
+
     <!-- Product table -->
     @if (!productsLoading() && !vendorLoading() && !productsError()) {
       @if (vendorProducts().length === 0) {
