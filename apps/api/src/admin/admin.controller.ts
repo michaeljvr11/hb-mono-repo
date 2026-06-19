@@ -4,14 +4,19 @@ import { GetUser } from '../common/decorators/get-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '@hb/shared';
 import { AdminService } from './admin.service';
+import { AdminOrdersService } from './admin-orders.service';
 import { AdminUserQueryDto } from './dto/admin-user-query.dto';
+import { AdminOrderQueryDto } from './dto/admin-order-query.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { SetUserActiveDto } from './dto/set-user-active.dto';
 
 @Controller('admin')
 @Roles(UserRole.ADMIN)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly adminOrdersService: AdminOrdersService,
+  ) {}
 
   @Get('users')
   listUsers(@Query() query: AdminUserQueryDto) {
@@ -34,5 +39,15 @@ export class AdminController {
     @GetUser() requestingUser: User,
   ) {
     return this.adminService.setUserActive(id, dto.isActive, requestingUser.id);
+  }
+
+  @Get('orders')
+  listOrders(@Query() query: AdminOrderQueryDto) {
+    return this.adminOrdersService.listOrders(query);
+  }
+
+  @Get('dashboard')
+  getDashboard() {
+    return this.adminOrdersService.getDashboard();
   }
 }

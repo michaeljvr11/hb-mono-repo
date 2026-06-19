@@ -8,3 +8,4 @@ export * from './order';
 export * from './payment';
 export * from './shipping';
 export * from './cart';
+export * from './dashboard';
