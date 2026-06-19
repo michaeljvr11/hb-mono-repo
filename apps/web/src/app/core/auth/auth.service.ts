@@ -78,6 +78,12 @@ export class AuthService {
     );
   }
 
+  refreshCurrentUser(): Observable<UserDto> {
+    return this.http.get<UserDto>(`${this.API_URL}/users/me`).pipe(
+      tap((user) => this.currentUserSubject.next(user)),
+    );
+  }
+
   logout(): void {
     const clearSession = () => {
       if (this.isBrowser()) {

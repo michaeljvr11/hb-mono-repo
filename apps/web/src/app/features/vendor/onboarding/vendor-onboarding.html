@@ -1,0 +1,213 @@
+<div class="onboarding-screen">
+  <main class="onboarding-card">
+    <header class="onboarding-head">
+      <a class="brand" routerLink="/shop" aria-label="H&B Market home">
+        <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+        <span class="brand-name">H&amp;B Market</span>
+      </a>
+      <h1>Sell on H&amp;B</h1>
+      <p>Reach customers across South Africa and Namibia. Apply to become a verified vendor.</p>
+    </header>
+
+    <!-- ── Customer: Application form ───────────────────────────────────── -->
+    @if (screenState() === 'form') {
+      <form [formGroup]="applyForm" (ngSubmit)="submit()" novalidate>
+
+        <div class="field">
+          <label for="businessName">Business Name <span class="required" aria-hidden="true">*</span></label>
+          <div class="input-wrap" [class.invalid]="businessNameControl.invalid && businessNameControl.touched">
+            <span class="material-symbols-outlined" aria-hidden="true">business</span>
+            <input
+              id="businessName"
+              type="text"
+              formControlName="businessName"
+              autocomplete="organization"
+              placeholder="e.g. Acme Trading (Pty) Ltd"
+            />
+          </div>
+          @if (businessNameControl.hasError('required') && businessNameControl.touched) {
+            <small class="field-error">Business name is required.</small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="tradingName">Trading Name <span class="optional">(optional)</span></label>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined" aria-hidden="true">label</span>
+            <input
+              id="tradingName"
+              type="text"
+              formControlName="tradingName"
+              autocomplete="off"
+              placeholder="Public-facing brand name"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="registrationNumber">Registration Number <span class="optional">(optional)</span></label>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined" aria-hidden="true">pin</span>
+            <input
+              id="registrationNumber"
+              type="text"
+              formControlName="registrationNumber"
+              autocomplete="off"
+              placeholder="e.g. 2024/123456/07"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="countryCode">Country <span class="optional">(optional)</span></label>
+          <div class="input-wrap input-wrap--select">
+            <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+            <select id="countryCode" formControlName="countryCode">
+              <option value="">Select a country</option>
+              @for (opt of countryCodes; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+            <span class="material-symbols-outlined select-chevron" aria-hidden="true">expand_more</span>
+          </div>
+        </div>
+
+        @if (errorMessage()) {
+          <p class="status-error" role="alert">{{ errorMessage() }}</p>
+        }
+
+        <button
+          class="primary-action"
+          type="submit"
+          [disabled]="isSubmitting()"
+        >
+          @if (isSubmitting()) {
+            Submitting application…
+          } @else {
+            Apply to Sell
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+          }
+        </button>
+      </form>
+    }
+
+    <!-- ── Success: application just submitted ──────────────────────────── -->
+    @if (screenState() === 'pending-confirm') {
+      <div class="status-panel status-panel--pending" role="status" aria-live="polite">
+        <div class="status-panel__icon-wrap" aria-hidden="true">
+          <span class="material-symbols-outlined status-panel__icon">hourglass_top</span>
+        </div>
+        <h2 class="status-panel__title">Application Submitted</h2>
+        <p class="status-panel__body">
+          Your application is under review. We'll get back to you as soon as possible.
+        </p>
+        <a routerLink="/shop" class="secondary-action">Back to Shop</a>
+      </div>
+    }
+
+    <!-- ── 409: already applied ─────────────────────────────────────────── -->
+    @if (screenState() === 'already-applied') {
+      <div class="status-panel" role="status" aria-live="polite">
+        <div class="status-panel__icon-wrap" aria-hidden="true">
+          <span class="material-symbols-outlined status-panel__icon">info</span>
+        </div>
+        <h2 class="status-panel__title">You've already applied</h2>
+        <p class="status-panel__body">
+          You already have a vendor application on file. See your current status below.
+        </p>
+
+        @if (statusLoading()) {
+          <p class="loading-text">Loading your status…</p>
+        } @else if (vendorData()) {
+          <div class="inline-status">
+            Status:
+            <span class="status-badge status-badge--{{ vendorData()!.status }}">
+              {{ vendorData()!.status }}
+            </span>
+          </div>
+        }
+
+        <a routerLink="/shop" class="secondary-action">Back to Shop</a>
+      </div>
+    }
+
+    <!-- ── Vendor: status screen ─────────────────────────────────────────── -->
+    @if (screenState() === 'vendor-status') {
+      @if (statusLoading()) {
+        <div class="status-panel" role="status" aria-live="polite">
+          <div class="status-panel__icon-wrap" aria-hidden="true">
+            <span class="material-symbols-outlined status-panel__icon">hourglass_top</span>
+          </div>
+          <p class="loading-text">Loading your vendor status…</p>
+        </div>
+      } @else if (statusError()) {
+        <div class="status-panel status-panel--error" role="alert">
+          <div class="status-panel__icon-wrap" aria-hidden="true">
+            <span class="material-symbols-outlined status-panel__icon">error_outline</span>
+          </div>
+          <p class="status-panel__body">{{ statusError() }}</p>
+        </div>
+      } @else if (vendorData()) {
+        @switch (vendorData()!.status) {
+          @case (VendorStatus.PENDING) {
+            <div class="status-panel status-panel--pending" role="status">
+              <div class="status-panel__icon-wrap" aria-hidden="true">
+                <span class="material-symbols-outlined status-panel__icon">hourglass_top</span>
+              </div>
+              <h2 class="status-panel__title">Application under review</h2>
+              <p class="status-panel__body">
+                Your application is under review. We'll notify you once a decision has been made.
+              </p>
+              <a routerLink="/shop" class="secondary-action">Back to Shop</a>
+            </div>
+          }
+
+          @case (VendorStatus.APPROVED) {
+            <div class="status-panel status-panel--approved" role="status">
+              <div class="status-panel__icon-wrap" aria-hidden="true">
+                <span class="material-symbols-outlined status-panel__icon">verified</span>
+              </div>
+              <h2 class="status-panel__title">You're approved!</h2>
+              <p class="status-panel__body">
+                Welcome to the H&amp;B vendor community. Your store is live.
+              </p>
+              <a routerLink="/vendor" class="primary-action">Go to your dashboard</a>
+            </div>
+          }
+
+          @case (VendorStatus.REJECTED) {
+            <div class="status-panel status-panel--rejected" role="alert">
+              <div class="status-panel__icon-wrap" aria-hidden="true">
+                <span class="material-symbols-outlined status-panel__icon">cancel</span>
+              </div>
+              <h2 class="status-panel__title">Application not approved</h2>
+              <p class="status-panel__body">
+                Unfortunately your application was not approved at this time. If you believe this is an error, please contact our support team.
+              </p>
+              <a href="mailto:support@hb-ecommerce.com" class="secondary-action">
+                <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+                Contact Support
+              </a>
+            </div>
+          }
+
+          @case (VendorStatus.SUSPENDED) {
+            <div class="status-panel status-panel--suspended" role="alert">
+              <div class="status-panel__icon-wrap" aria-hidden="true">
+                <span class="material-symbols-outlined status-panel__icon">block</span>
+              </div>
+              <h2 class="status-panel__title">Account suspended</h2>
+              <p class="status-panel__body">
+                Your vendor account has been suspended. Please contact our support team for more information.
+              </p>
+              <a href="mailto:support@hb-ecommerce.com" class="secondary-action">
+                <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+                Contact Support
+              </a>
+            </div>
+          }
+        }
+      }
+    }
+  </main>
+</div>
