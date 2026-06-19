@@ -25,6 +25,8 @@ Architecture details and key decisions: see `README.md` (current truth).
 - `npm run test:api` / `npm run test -w @hb/web`
 - `npm run lint:api`
 - `npm run db:up` then `npm run migration:run`
+- `sh .claude/hooks/install-merge-drivers.sh` — **run once after every fresh clone** to install
+  the post-merge git hook (auto-regenerates `docs/ai-evidence/` after any `git merge`/`git pull`)
 
 ## Non-negotiables
 - Shared types live in `libs/shared`; API and web both import from it. **Never duplicate DTOs.**

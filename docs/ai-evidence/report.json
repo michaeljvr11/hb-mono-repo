@@ -1,45 +1,45 @@
 {
-  "generatedAt": "2026-06-19T14:28:59.650Z",
+  "generatedAt": "2026-06-19T15:01:21.304Z",
   "git": {
-    "totalCommits": 38,
-    "aiCommits": 31,
-    "aiPct": 82,
-    "appCommits": 23,
-    "ins": 25349,
-    "del": 1409,
-    "net": 23940,
-    "aiIns": 12972,
-    "aiDel": 1353,
-    "filesTouched": 321,
+    "totalCommits": 40,
+    "aiCommits": 33,
+    "aiPct": 83,
+    "appCommits": 24,
+    "ins": 27115,
+    "del": 1497,
+    "net": 25618,
+    "aiIns": 14738,
+    "aiDel": 1441,
+    "filesTouched": 333,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 17,
-        "ins": 9538,
-        "del": 647
+        "commits": 18,
+        "ins": 10686,
+        "del": 651
       },
       {
         "name": "Docs",
-        "commits": 16,
-        "ins": 8727,
-        "del": 646
+        "commits": 17,
+        "ins": 8824,
+        "del": 730
       },
       {
         "name": "API (NestJS)",
-        "commits": 12,
-        "ins": 5204,
+        "commits": 13,
+        "ins": 5683,
         "del": 89
       },
       {
         "name": "AI Factory config",
-        "commits": 15,
-        "ins": 865,
+        "commits": 16,
+        "ins": 888,
         "del": 16
       },
       {
         "name": "Shared contracts",
-        "commits": 4,
-        "ins": 413,
+        "commits": 5,
+        "ins": 432,
         "del": 1
       },
       {
@@ -58,6 +58,16 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-06-19",
     "recent": [
+      {
+        "hash": "30488db",
+        "subject": "feat(admin): user management screen + NestJS admin module (AP-9)",
+        "ai": true
+      },
+      {
+        "hash": "8760e96",
+        "subject": "chore(evidence): recompile AI evidence report post-merge with main",
+        "ai": true
+      },
       {
         "hash": "cd359f1",
         "subject": "index on feat/IhTVdNYP-admin-catalog: 4558444 chore(evidence): recompile AI evidence report for AP-8 admin catalog",
@@ -107,16 +117,6 @@
         "hash": "ad1ea82",
         "subject": "feat(admin): vendor approvals page — approve/reject/suspend",
         "ai": true
-      },
-      {
-        "hash": "c20836b",
-        "subject": "chore(evidence): recompile AI evidence report for VP-1",
-        "ai": true
-      },
-      {
-        "hash": "1e808ff",
-        "subject": "feat(vendors): expose admin-only vendor shape on GET /vendors",
-        "ai": true
       }
     ]
   },
@@ -135,6 +135,11 @@
       "branch": "feat/L9fM1Gu7-storefront",
       "cardId": "L9fM1Gu7",
       "slug": "storefront"
+    },
+    {
+      "branch": "feat/N8P6OPPm-admin-user-mgmt",
+      "cardId": "N8P6OPPm",
+      "slug": "admin-user-mgmt"
     },
     {
       "branch": "feat/RLiauFte-admin-vendor-approvals",
@@ -163,9 +168,9 @@
     }
   ],
   "tests": {
-    "total": 23,
-    "api": 5,
-    "web": 18
+    "total": 25,
+    "api": 6,
+    "web": 19
   },
   "design": {
     "files": 27,
@@ -188,18 +193,25 @@
       "force push": 1,
       "gh pr merge is human-only": 2
     },
-    "gatePass": 6,
+    "gatePass": 7,
     "gateFail": 1,
-    "edits": 27,
-    "editsUnfixable": 7,
+    "edits": 50,
+    "editsUnfixable": 16,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-19T13:51:59.111Z"
+    "lastTs": "2026-06-19T15:01:01.309Z"
   },
   "prs": [
     {
+      "headRefName": "feat/N8P6OPPm-admin-user-mgmt",
+      "number": 11,
+      "state": "OPEN",
+      "title": "feat(admin): user management screen + NestJS admin module (AP-9)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/11"
+    },
+    {
       "headRefName": "feat/IhTVdNYP-admin-catalog",
       "number": 10,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(admin): platform listings + category management UI (AP-8)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/10"
     },
@@ -274,11 +286,11 @@
     },
     {
       "name": "To Do",
-      "cards": 12
+      "cards": 10
     },
     {
       "name": "In Progress",
-      "cards": 0
+      "cards": 2
     },
     {
       "name": "In Review",

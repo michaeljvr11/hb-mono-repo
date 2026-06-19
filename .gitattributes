@@ -1,16 +1,15 @@
-# Merge drivers for AI evidence files
+# Merge strategy for AI evidence files
 #
-# factory-log.jsonl is append-only; the union driver takes all lines from
-# both sides without producing conflict markers, which is exactly right.
+# Both files are append-only or fully-regenerated — a union merge (all lines
+# from both sides, no conflict markers) is semantically correct and works on
+# GitHub's servers without any local driver installation.
 #
-# The generated report files (REPORT.md, report.js, report.json) use a
-# custom "evidence-regen" driver defined in .git/config (installed by
-# .claude/hooks/install-merge-drivers.sh) that simply accepts our version
-# and lets the post-merge hook regenerate the correct content.
-# If the driver isn't configured yet, fall back to union (temporarily
-# wrong content, fixed immediately by the post-merge hook).
+# After any merge the post-merge hook (.claude/hooks/post-merge) runs
+# "npm run evidence" to regenerate report.js / report.json / REPORT.md from
+# the now-complete factory-log, so the union-merged content is immediately
+# corrected and ready to commit.
 
 .claude/factory-log.jsonl       merge=union
-docs/ai-evidence/REPORT.md      merge=evidence-regen
-docs/ai-evidence/report.js      merge=evidence-regen
-docs/ai-evidence/report.json    merge=evidence-regen
+docs/ai-evidence/REPORT.md      merge=union
+docs/ai-evidence/report.js      merge=union
+docs/ai-evidence/report.json    merge=union
