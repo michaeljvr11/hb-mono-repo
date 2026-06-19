@@ -29,7 +29,7 @@ export class VendorsController {
   }
 
   @Post()
-  @Roles(UserRole.VENDOR)
+  @Roles(UserRole.CUSTOMER, UserRole.VENDOR)
   create(@Body() createDto: CreateVendorDto, @GetUser() user: User) {
     return this.vendorsService.create(createDto, user);
   }

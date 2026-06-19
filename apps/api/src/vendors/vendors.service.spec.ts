@@ -1,9 +1,12 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { VendorStatus } from '@hb/shared';
+import { VendorStatus, UserRole, CountryCode } from '@hb/shared';
 import { VendorsService } from './vendors.service';
 import { Vendor } from './entities/vendor.entity';
+import { CreateVendorDto } from './dto/create-vendor.dto';
+import { UsersService } from '../users/users.service';
+import { User } from '../users/entities/user.entity';
 
 const mockVendor = (overrides: Partial<Vendor> = {}): Vendor =>
   ({
@@ -15,9 +18,17 @@ const mockVendor = (overrides: Partial<Vendor> = {}): Vendor =>
     ...overrides,
   }) as Vendor;
 
+const mockUser = (overrides: Partial<User> = {}): User =>
+  ({
+    id: 'u1',
+    role: UserRole.CUSTOMER,
+    ...overrides,
+  }) as User;
+
 describe('VendorsService', () => {
   let service: VendorsService;
   let vendorRepo: Record<string, jest.Mock>;
+  let usersService: { update: jest.Mock };
 
   beforeEach(async () => {
     vendorRepo = {
@@ -28,14 +39,77 @@ describe('VendorsService', () => {
       delete: jest.fn(),
     };
 
+    usersService = { update: jest.fn() };
+
     const module = await Test.createTestingModule({
-      providers: [VendorsService, { provide: getRepositoryToken(Vendor), useValue: vendorRepo }],
+      providers: [
+        VendorsService,
+        { provide: getRepositoryToken(Vendor), useValue: vendorRepo },
+        { provide: UsersService, useValue: usersService },
+      ],
     }).compile();
 
     service = module.get(VendorsService);
   });
 
   afterEach(() => jest.clearAllMocks());
+
+  describe('create', () => {
+    it('persists a vendor with status PENDING when the customer has no existing profile', async () => {
+      const user = mockUser();
+      const dto: CreateVendorDto = {
+        businessName: 'Dune Crafts',
+        countryCode: CountryCode.NAMIBIA,
+      };
+
+      vendorRepo.findOne.mockResolvedValue(null);
+      vendorRepo.create.mockImplementation((data: Partial<Vendor>) => ({ ...data }));
+      vendorRepo.save.mockImplementation((v: Partial<Vendor>) =>
+        Promise.resolve({ id: 'v2', tradingName: null, ...v } as Vendor),
+      );
+      usersService.update.mockResolvedValue({});
+
+      const result = await service.create(dto, user);
+
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ status: VendorStatus.PENDING }),
+      );
+      expect(result.status).toBe(VendorStatus.PENDING);
+    });
+
+    it('calls usersService.update with the vendor role when the applicant is a customer', async () => {
+      const user = mockUser({ id: 'u1', role: UserRole.CUSTOMER });
+      const dto: CreateVendorDto = {
+        businessName: 'Dune Crafts',
+        countryCode: CountryCode.NAMIBIA,
+      };
+
+      vendorRepo.findOne.mockResolvedValue(null);
+      vendorRepo.create.mockImplementation((data: Partial<Vendor>) => ({ ...data }));
+      vendorRepo.save.mockImplementation((v: Partial<Vendor>) =>
+        Promise.resolve({ id: 'v2', tradingName: null, ...v } as Vendor),
+      );
+      usersService.update.mockResolvedValue({});
+
+      await service.create(dto, user);
+
+      expect(usersService.update).toHaveBeenCalledWith('u1', { role: UserRole.VENDOR });
+    });
+
+    it('throws ConflictException and does not save when the user already has a vendor profile', async () => {
+      const user = mockUser();
+      const dto: CreateVendorDto = {
+        businessName: 'Dune Crafts',
+        countryCode: CountryCode.NAMIBIA,
+      };
+
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ userId: 'u1' }));
+
+      await expect(service.create(dto, user)).rejects.toBeInstanceOf(ConflictException);
+      expect(vendorRepo.save).not.toHaveBeenCalled();
+      expect(usersService.update).not.toHaveBeenCalled();
+    });
+  });
 
   describe('findAll', () => {
     it('calls vendorRepository.find() and maps results to the admin shape', async () => {
