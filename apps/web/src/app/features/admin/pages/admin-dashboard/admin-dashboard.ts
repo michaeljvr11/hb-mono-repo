@@ -35,9 +35,16 @@ export class AdminDashboard implements OnInit {
     return status.charAt(0).toUpperCase() + status.slice(1);
   }
 
+  /** Known currency symbols. Unknown currencies fall back to the ISO code only —
+   *  the currency is always data, never assumed. */
+  private static readonly CURRENCY_SYMBOLS: Partial<Record<CurrencyCode, string>> = {
+    ZAR: 'R',
+    NAD: 'N$',
+  };
+
   /** Format an amount to 2 decimal places with its currency symbol. */
   formatMoney(amount: number, currency: CurrencyCode): string {
-    const symbol = currency === 'ZAR' ? 'R' : 'N$';
-    return `${symbol} ${amount.toFixed(2)} ${currency}`;
+    const symbol = AdminDashboard.CURRENCY_SYMBOLS[currency] ?? '';
+    return `${symbol} ${amount.toFixed(2)} ${currency}`.trim();
   }
 }

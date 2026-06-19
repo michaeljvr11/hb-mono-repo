@@ -4,7 +4,11 @@ import { CurrencyCode, OrderStatus } from '../enums';
  *  the 1:1 peg is data, never assumed (see Money & Currency Rules). */
 export interface CurrencyTotalDto {
   currency: CurrencyCode;
-  /** numeric(12,2): sum of line totals (unitPrice * quantity) in this currency. */
+  /**
+   * numeric(12,2): sum of line totals (unitPrice * quantity) in this currency.
+   * Order-level shipping (`shippingTotal`) is intentionally NOT included — this is
+   * goods/GMV revenue from order lines only, so it will not equal a sum of `order.total`.
+   */
   amount: number;
 }
 

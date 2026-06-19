@@ -465,7 +465,7 @@ describe('AdminOrdersService', () => {
       expect(result.items[0].customerName).toBeUndefined();
     });
 
-    it('deduplcates vendorIds when multiple items share the same vendor', async () => {
+    it('deduplicates vendorIds when multiple items share the same vendor', async () => {
       const item1 = makeItem({ id: 'i1', vendorId: 'vendor-1' });
       const item2 = makeItem({ id: 'i2', vendorId: 'vendor-1' });
       const order = makeOrder({ items: [item1, item2], user: makeUser() as never });
