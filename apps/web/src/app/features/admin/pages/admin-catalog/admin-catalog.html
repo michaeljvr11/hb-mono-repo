@@ -1,0 +1,504 @@
+<section class="catalog-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Catalog</h1>
+    <p class="page-sub">Manage platform product listings and product categories.</p>
+  </header>
+
+  <!-- Section tabs -->
+  <div class="section-tabs" role="tablist" aria-label="Catalog sections">
+    <button
+      class="tab-btn"
+      role="tab"
+      [class.tab-btn--active]="activeView() === 'products'"
+      [attr.aria-selected]="activeView() === 'products'"
+      type="button"
+      (click)="switchView('products')"
+    >
+      <span class="material-symbols-outlined tab-icon" aria-hidden="true">inventory_2</span>
+      Products
+    </button>
+    <button
+      class="tab-btn"
+      role="tab"
+      [class.tab-btn--active]="activeView() === 'categories'"
+      [attr.aria-selected]="activeView() === 'categories'"
+      type="button"
+      (click)="switchView('categories')"
+    >
+      <span class="material-symbols-outlined tab-icon" aria-hidden="true">category</span>
+      Categories
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       PRODUCTS SECTION
+       ════════════════════════════════════════════════════════════════════ -->
+  @if (activeView() === 'products') {
+    <div class="section-content">
+      <div class="section-bar">
+        <h2 class="section-title">Platform Listings</h2>
+        <button class="add-btn" type="button" (click)="openCreateProduct()">
+          <span class="material-symbols-outlined" aria-hidden="true">add</span>
+          Add Product
+        </button>
+      </div>
+
+      <!-- Loading -->
+      @if (productsLoading()) {
+        <div class="state-placeholder" role="status" aria-live="polite">
+          <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+          <p>Loading products…</p>
+        </div>
+      }
+
+      <!-- Error -->
+      @if (productsError()) {
+        <div class="error-banner" role="alert">
+          <span class="material-symbols-outlined" aria-hidden="true">error</span>
+          <span>{{ productsError() }}</span>
+        </div>
+      }
+
+      <!-- Table -->
+      @if (!productsLoading() && !productsError()) {
+        @if (platformProducts().length === 0) {
+          <div class="list-empty">
+            <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+            <p>No platform products yet. Add one to get started.</p>
+          </div>
+        } @else {
+          <div class="table-wrap">
+            <table class="data-table" aria-label="Platform product listings">
+              <thead>
+                <tr>
+                  <th scope="col">Product</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Stock</th>
+                  <th scope="col">Categories</th>
+                  <th scope="col"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of platformProducts(); track product.id) {
+                  <tr>
+                    <td class="td-product">
+                      @if (primaryImageUrl(product); as url) {
+                        <img
+                          class="product-thumb"
+                          [src]="url"
+                          [alt]="product.name"
+                          width="40"
+                          height="40"
+                          loading="lazy"
+                        />
+                      } @else {
+                        <span
+                          class="product-thumb product-thumb--placeholder"
+                          aria-hidden="true"
+                        >
+                          <span class="material-symbols-outlined">image</span>
+                        </span>
+                      }
+                      <span class="product-name">{{ product.name }}</span>
+                    </td>
+                    <td class="td-price">
+                      {{ product.currency }} {{ product.price | number:'1.2-2' }}
+                    </td>
+                    <td class="td-stock">{{ product.stockQuantity }}</td>
+                    <td class="td-categories">
+                      @if (product.categories.length === 0) {
+                        <span class="no-categories">—</span>
+                      } @else {
+                        @for (cat of product.categories; track cat.id) {
+                          <span class="category-chip">{{ cat.name }}</span>
+                        }
+                      }
+                    </td>
+                    <td class="td-actions">
+                      @if (pendingDeleteProductId() === product.id) {
+                        <span class="confirm-text">Delete?</span>
+                        <button
+                          class="row-btn row-btn--danger"
+                          type="button"
+                          (click)="deleteProduct(product.id)"
+                        >Yes</button>
+                        <button
+                          class="row-btn"
+                          type="button"
+                          (click)="cancelDeleteProduct()"
+                        >No</button>
+                      } @else {
+                        <button
+                          class="row-btn"
+                          type="button"
+                          (click)="openEditProduct(product)"
+                          aria-label="Edit {{ product.name }}"
+                        >
+                          <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                        </button>
+                        <button
+                          class="row-btn row-btn--danger"
+                          type="button"
+                          (click)="confirmDeleteProduct(product.id)"
+                          aria-label="Delete {{ product.name }}"
+                        >
+                          <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- ── Product form drawer ─────────────────────────────────────────── -->
+    @if (productFormOpen()) {
+      <div class="drawer-backdrop" (click)="closeProductForm()" aria-hidden="true"></div>
+      <aside class="drawer" role="dialog" aria-modal="true"
+             [attr.aria-label]="productFormMode() === 'create' ? 'Add product' : 'Edit product'">
+        <header class="drawer-header">
+          <h2 class="drawer-title">
+            {{ productFormMode() === 'create' ? 'Add Product' : 'Edit Product' }}
+          </h2>
+          <button class="close-btn" type="button" (click)="closeProductForm()" aria-label="Close">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </header>
+
+        <form class="drawer-form" [formGroup]="productForm" (ngSubmit)="submitProductForm()">
+
+          <div class="field">
+            <label class="field-label" for="prod-name">Name <span class="req">*</span></label>
+            <input
+              id="prod-name"
+              class="field-input"
+              type="text"
+              formControlName="name"
+              autocomplete="off"
+              [class.field-input--error]="productForm.get('name')?.invalid && productForm.get('name')?.touched"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="prod-description">Description <span class="req">*</span></label>
+            <textarea
+              id="prod-description"
+              class="field-input field-textarea"
+              formControlName="description"
+              rows="4"
+              [class.field-input--error]="productForm.get('description')?.invalid && productForm.get('description')?.touched"
+            ></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field field--half">
+              <label class="field-label" for="prod-price">Price <span class="req">*</span></label>
+              <input
+                id="prod-price"
+                class="field-input"
+                type="number"
+                step="0.01"
+                min="0"
+                formControlName="price"
+                [class.field-input--error]="productForm.get('price')?.invalid && productForm.get('price')?.touched"
+              />
+            </div>
+
+            <div class="field field--half">
+              <label class="field-label" for="prod-currency">Currency</label>
+              <select id="prod-currency" class="field-input field-select" formControlName="currency">
+                <option [value]="CurrencyCode.ZAR">ZAR</option>
+                <option [value]="CurrencyCode.NAD">NAD</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field field--half">
+              <label class="field-label" for="prod-stock">Stock Quantity</label>
+              <input
+                id="prod-stock"
+                class="field-input"
+                type="number"
+                min="0"
+                formControlName="stockQuantity"
+              />
+            </div>
+
+            <div class="field field--half">
+              <label class="field-label" for="prod-country">Origin Country</label>
+              <select id="prod-country" class="field-input field-select" formControlName="originCountry">
+                <option [value]="CountryCode.SOUTH_AFRICA">South Africa (ZA)</option>
+                <option [value]="CountryCode.NAMIBIA">Namibia (NA)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Categories multi-select -->
+          <div class="field">
+            <span class="field-label">Categories</span>
+            @if (categories().length === 0) {
+              <p class="field-hint">No categories available. Create some in the Categories tab.</p>
+            } @else {
+              <div class="checkbox-group">
+                @for (cat of categories(); track cat.id) {
+                  <label class="checkbox-item">
+                    <input
+                      type="checkbox"
+                      class="checkbox-input"
+                      [checked]="isCategorySelected(cat.id)"
+                      (change)="toggleCategory(cat.id)"
+                    />
+                    <span class="checkbox-label">{{ cat.name }}</span>
+                  </label>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Image upload — create only -->
+          @if (productFormMode() === 'create') {
+            <div class="field">
+              <label class="field-label" for="prod-images">Images (optional)</label>
+              <input
+                id="prod-images"
+                class="field-input field-file"
+                type="file"
+                accept="image/*"
+                multiple
+                (change)="onImageChange($event)"
+              />
+              @if (selectedImages().length > 0) {
+                <p class="field-hint">{{ selectedImages().length }} file(s) selected</p>
+              }
+            </div>
+          }
+
+          @if (productFormError()) {
+            <div class="error-banner error-banner--inline" role="alert">
+              <span class="material-symbols-outlined" aria-hidden="true">error</span>
+              <span>{{ productFormError() }}</span>
+            </div>
+          }
+
+          <div class="drawer-actions">
+            <button class="drawer-btn drawer-btn--secondary" type="button" (click)="closeProductForm()">
+              Cancel
+            </button>
+            <button
+              class="drawer-btn drawer-btn--primary"
+              type="submit"
+              [disabled]="productForm.invalid || productFormPending()"
+            >
+              @if (productFormPending()) {
+                <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+              }
+              {{ productFormMode() === 'create' ? 'Create Product' : 'Save Changes' }}
+            </button>
+          </div>
+        </form>
+      </aside>
+    }
+  }
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       CATEGORIES SECTION
+       ════════════════════════════════════════════════════════════════════ -->
+  @if (activeView() === 'categories') {
+    <div class="section-content">
+      <div class="section-bar">
+        <h2 class="section-title">Categories</h2>
+        <button class="add-btn" type="button" (click)="openCreateCategory()">
+          <span class="material-symbols-outlined" aria-hidden="true">add</span>
+          Add Category
+        </button>
+      </div>
+
+      <!-- Loading -->
+      @if (categoriesLoading()) {
+        <div class="state-placeholder" role="status" aria-live="polite">
+          <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+          <p>Loading categories…</p>
+        </div>
+      }
+
+      <!-- Error -->
+      @if (categoriesError()) {
+        <div class="error-banner" role="alert">
+          <span class="material-symbols-outlined" aria-hidden="true">error</span>
+          <span>{{ categoriesError() }}</span>
+        </div>
+      }
+
+      <!-- Table -->
+      @if (!categoriesLoading() && !categoriesError()) {
+        @if (categories().length === 0) {
+          <div class="list-empty">
+            <span class="material-symbols-outlined" aria-hidden="true">category</span>
+            <p>No categories yet. Add one to get started.</p>
+          </div>
+        } @else {
+          <div class="table-wrap">
+            <table class="data-table" aria-label="Product categories">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Slug</th>
+                  <th scope="col">Order</th>
+                  <th scope="col">Description</th>
+                  <th scope="col"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (cat of categories(); track cat.id) {
+                  <tr>
+                    <td class="td-bold">{{ cat.name }}</td>
+                    <td class="td-code">{{ cat.slug ?? '—' }}</td>
+                    <td>{{ cat.displayOrder }}</td>
+                    <td class="td-desc">{{ cat.description ?? '—' }}</td>
+                    <td class="td-actions">
+                      @if (pendingDeleteCategoryId() === cat.id) {
+                        <span class="confirm-text">Delete?</span>
+                        <button
+                          class="row-btn row-btn--danger"
+                          type="button"
+                          (click)="deleteCategory(cat.id)"
+                        >Yes</button>
+                        <button
+                          class="row-btn"
+                          type="button"
+                          (click)="cancelDeleteCategory()"
+                        >No</button>
+                      } @else {
+                        <button
+                          class="row-btn"
+                          type="button"
+                          (click)="openEditCategory(cat)"
+                          aria-label="Edit {{ cat.name }}"
+                        >
+                          <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                        </button>
+                        <button
+                          class="row-btn row-btn--danger"
+                          type="button"
+                          (click)="confirmDeleteCategory(cat.id)"
+                          aria-label="Delete {{ cat.name }}"
+                        >
+                          <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- ── Category form drawer ────────────────────────────────────────── -->
+    @if (categoryFormOpen()) {
+      <div class="drawer-backdrop" (click)="closeCategoryForm()" aria-hidden="true"></div>
+      <aside class="drawer" role="dialog" aria-modal="true"
+             [attr.aria-label]="categoryFormMode() === 'create' ? 'Add category' : 'Edit category'">
+        <header class="drawer-header">
+          <h2 class="drawer-title">
+            {{ categoryFormMode() === 'create' ? 'Add Category' : 'Edit Category' }}
+          </h2>
+          <button class="close-btn" type="button" (click)="closeCategoryForm()" aria-label="Close">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </header>
+
+        <form class="drawer-form" [formGroup]="categoryForm" (ngSubmit)="submitCategoryForm()">
+
+          <div class="field">
+            <label class="field-label" for="cat-name">Name <span class="req">*</span></label>
+            <input
+              id="cat-name"
+              class="field-input"
+              type="text"
+              formControlName="name"
+              autocomplete="off"
+              [class.field-input--error]="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="cat-slug">Slug</label>
+            <input
+              id="cat-slug"
+              class="field-input"
+              type="text"
+              formControlName="slug"
+              autocomplete="off"
+              placeholder="auto-generated if empty"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="cat-description">Description</label>
+            <textarea
+              id="cat-description"
+              class="field-input field-textarea"
+              formControlName="description"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="cat-order">Display Order</label>
+            <input
+              id="cat-order"
+              class="field-input"
+              type="number"
+              min="0"
+              formControlName="displayOrder"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="cat-parent">Parent Category (optional)</label>
+            <select id="cat-parent" class="field-input field-select" formControlName="parentId">
+              <option value="">None</option>
+              @for (cat of categories(); track cat.id) {
+                @if (cat.id !== editingCategoryId()) {
+                  <option [value]="cat.id">{{ cat.name }}</option>
+                }
+              }
+            </select>
+          </div>
+
+          @if (categoryFormError()) {
+            <div class="error-banner error-banner--inline" role="alert">
+              <span class="material-symbols-outlined" aria-hidden="true">error</span>
+              <span>{{ categoryFormError() }}</span>
+            </div>
+          }
+
+          <div class="drawer-actions">
+            <button class="drawer-btn drawer-btn--secondary" type="button" (click)="closeCategoryForm()">
+              Cancel
+            </button>
+            <button
+              class="drawer-btn drawer-btn--primary"
+              type="submit"
+              [disabled]="categoryForm.invalid || categoryFormPending()"
+            >
+              @if (categoryFormPending()) {
+                <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+              }
+              {{ categoryFormMode() === 'create' ? 'Create Category' : 'Save Changes' }}
+            </button>
+          </div>
+        </form>
+      </aside>
+    }
+  }
+</section>
