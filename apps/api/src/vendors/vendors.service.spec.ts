@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { VendorStatus } from '@hb/shared';
 import { VendorsService } from './vendors.service';
 import { Vendor } from './entities/vendor.entity';
@@ -67,6 +68,59 @@ describe('VendorsService', () => {
       const result = await service.findAll();
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('updateStatus', () => {
+    // The legal transitions, per [[Listing Types & Vendor Rules]]:
+    // pending→approved, pending→rejected, approved→suspended, suspended→approved.
+    const valid: ReadonlyArray<[VendorStatus, VendorStatus]> = [
+      [VendorStatus.PENDING, VendorStatus.APPROVED],
+      [VendorStatus.PENDING, VendorStatus.REJECTED],
+      [VendorStatus.APPROVED, VendorStatus.SUSPENDED],
+      [VendorStatus.SUSPENDED, VendorStatus.APPROVED],
+    ];
+
+    it.each(valid)('persists the new status for %s → %s', async (from, to) => {
+      const vendor = mockVendor({ id: 'v1', status: from });
+      vendorRepo.findOne.mockResolvedValue(vendor);
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+
+      const result = await service.updateStatus('v1', to);
+
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'v1', status: to }),
+      );
+      expect(result.status).toBe(to);
+    });
+
+    // Anything outside the table above is illegal — including re-approving an already
+    // approved vendor, resurrecting a rejected one, or suspending a pending one.
+    const invalid: ReadonlyArray<[VendorStatus, VendorStatus]> = [
+      [VendorStatus.PENDING, VendorStatus.SUSPENDED],
+      [VendorStatus.APPROVED, VendorStatus.APPROVED],
+      [VendorStatus.APPROVED, VendorStatus.REJECTED],
+      [VendorStatus.SUSPENDED, VendorStatus.REJECTED],
+      [VendorStatus.SUSPENDED, VendorStatus.SUSPENDED],
+      [VendorStatus.REJECTED, VendorStatus.APPROVED],
+      [VendorStatus.REJECTED, VendorStatus.SUSPENDED],
+    ];
+
+    it.each(invalid)('rejects the illegal transition %s → %s with 409', async (from, to) => {
+      const vendor = mockVendor({ id: 'v1', status: from });
+      vendorRepo.findOne.mockResolvedValue(vendor);
+
+      await expect(service.updateStatus('v1', to)).rejects.toBeInstanceOf(ConflictException);
+      expect(vendorRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when the vendor does not exist', async () => {
+      vendorRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.updateStatus('missing', VendorStatus.APPROVED)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(vendorRepo.save).not.toHaveBeenCalled();
     });
   });
 
