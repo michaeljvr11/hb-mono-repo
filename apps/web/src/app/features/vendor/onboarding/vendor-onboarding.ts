@@ -94,11 +94,12 @@ export class VendorOnboarding implements OnInit {
           const status = (err as { status?: number }).status;
           if (status === 409) {
             this.screenState.set('already-applied');
-            // Refresh role and fetch status to show current state
+            // Refresh role and fetch status to show current state. Attempt the
+            // status load whether or not the refresh succeeds — loadVendorStatus
+            // surfaces its own error state if that call also fails.
             this.authService.refreshCurrentUser().subscribe({
-              next: () => {
-                this.loadVendorStatus();
-              },
+              next: () => this.loadVendorStatus(),
+              error: () => this.loadVendorStatus(),
             });
           } else {
             this.errorMessage.set(

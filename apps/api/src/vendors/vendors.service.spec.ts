@@ -1,9 +1,10 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { VendorStatus, UserRole } from '@hb/shared';
+import { VendorStatus, UserRole, CountryCode } from '@hb/shared';
 import { VendorsService } from './vendors.service';
 import { Vendor } from './entities/vendor.entity';
+import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 
@@ -56,7 +57,10 @@ describe('VendorsService', () => {
   describe('create', () => {
     it('persists a vendor with status PENDING when the customer has no existing profile', async () => {
       const user = mockUser();
-      const dto = { businessName: 'Dune Crafts', countryCode: 'NA' };
+      const dto: CreateVendorDto = {
+        businessName: 'Dune Crafts',
+        countryCode: CountryCode.NAMIBIA,
+      };
 
       vendorRepo.findOne.mockResolvedValue(null);
       vendorRepo.create.mockImplementation((data: Partial<Vendor>) => ({ ...data }));
@@ -65,7 +69,7 @@ describe('VendorsService', () => {
       );
       usersService.update.mockResolvedValue({});
 
-      const result = await service.create(dto as any, user);
+      const result = await service.create(dto, user);
 
       expect(vendorRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ status: VendorStatus.PENDING }),
@@ -75,7 +79,10 @@ describe('VendorsService', () => {
 
     it('calls usersService.update with the vendor role when the applicant is a customer', async () => {
       const user = mockUser({ id: 'u1', role: UserRole.CUSTOMER });
-      const dto = { businessName: 'Dune Crafts', countryCode: 'NA' };
+      const dto: CreateVendorDto = {
+        businessName: 'Dune Crafts',
+        countryCode: CountryCode.NAMIBIA,
+      };
 
       vendorRepo.findOne.mockResolvedValue(null);
       vendorRepo.create.mockImplementation((data: Partial<Vendor>) => ({ ...data }));
@@ -84,18 +91,21 @@ describe('VendorsService', () => {
       );
       usersService.update.mockResolvedValue({});
 
-      await service.create(dto as any, user);
+      await service.create(dto, user);
 
       expect(usersService.update).toHaveBeenCalledWith('u1', { role: UserRole.VENDOR });
     });
 
     it('throws ConflictException and does not save when the user already has a vendor profile', async () => {
       const user = mockUser();
-      const dto = { businessName: 'Dune Crafts', countryCode: 'NA' };
+      const dto: CreateVendorDto = {
+        businessName: 'Dune Crafts',
+        countryCode: CountryCode.NAMIBIA,
+      };
 
       vendorRepo.findOne.mockResolvedValue(mockVendor({ userId: 'u1' }));
 
-      await expect(service.create(dto as any, user)).rejects.toBeInstanceOf(ConflictException);
+      await expect(service.create(dto, user)).rejects.toBeInstanceOf(ConflictException);
       expect(vendorRepo.save).not.toHaveBeenCalled();
       expect(usersService.update).not.toHaveBeenCalled();
     });
