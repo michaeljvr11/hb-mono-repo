@@ -1,0 +1,290 @@
+<section class="products-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">My Products</h1>
+    <p class="page-sub">Manage your vendor product listings.</p>
+  </header>
+
+  <!-- Vendor profile error -->
+  @if (vendorError()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ vendorError() }}</span>
+    </div>
+  }
+
+  <!-- Section bar -->
+  @if (!vendorError()) {
+    <div class="section-bar">
+      <h2 class="section-title">Listings</h2>
+      <button
+        class="add-btn"
+        type="button"
+        [disabled]="vendorLoading()"
+        (click)="openCreateProduct()"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        Add Product
+      </button>
+    </div>
+
+    <!-- Loading -->
+    @if (productsLoading() || vendorLoading()) {
+      <div class="state-placeholder" role="status" aria-live="polite">
+        <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+        <p>Loading products…</p>
+      </div>
+    }
+
+    <!-- Products error -->
+    @if (productsError() && !productsLoading()) {
+      <div class="error-banner" role="alert">
+        <span class="material-symbols-outlined" aria-hidden="true">error</span>
+        <span>{{ productsError() }}</span>
+      </div>
+    }
+
+    <!-- Product table -->
+    @if (!productsLoading() && !vendorLoading() && !productsError()) {
+      @if (vendorProducts().length === 0) {
+        <div class="list-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+          <p>You haven't listed any products yet. Add one to get started.</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="data-table" aria-label="Your product listings">
+            <thead>
+              <tr>
+                <th scope="col">Product</th>
+                <th scope="col">Price</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Categories</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (product of vendorProducts(); track product.id) {
+                <tr>
+                  <td class="td-product">
+                    @if (primaryImageUrl(product); as url) {
+                      <img
+                        class="product-thumb"
+                        [src]="url"
+                        [alt]="product.name"
+                        width="40"
+                        height="40"
+                        loading="lazy"
+                      />
+                    } @else {
+                      <span class="product-thumb product-thumb--placeholder" aria-hidden="true">
+                        <span class="material-symbols-outlined">image</span>
+                      </span>
+                    }
+                    <span class="product-name">{{ product.name }}</span>
+                  </td>
+                  <td class="td-price">
+                    {{ product.currency }} {{ product.price | number:'1.2-2' }}
+                  </td>
+                  <td class="td-stock">{{ product.stockQuantity }}</td>
+                  <td class="td-categories">
+                    @if (product.categories.length === 0) {
+                      <span class="no-categories">—</span>
+                    } @else {
+                      @for (cat of product.categories; track cat.id) {
+                        <span class="category-chip">{{ cat.name }}</span>
+                      }
+                    }
+                  </td>
+                  <td class="td-actions">
+                    @if (pendingDeleteProductId() === product.id) {
+                      <span class="confirm-text">Delete?</span>
+                      <button
+                        class="row-btn row-btn--danger"
+                        type="button"
+                        (click)="deleteProduct(product.id)"
+                      >Yes</button>
+                      <button
+                        class="row-btn"
+                        type="button"
+                        (click)="cancelDeleteProduct()"
+                      >No</button>
+                    } @else {
+                      <button
+                        class="row-btn"
+                        type="button"
+                        (click)="openEditProduct(product)"
+                        [attr.aria-label]="'Edit ' + product.name"
+                      >
+                        <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                      </button>
+                      <button
+                        class="row-btn row-btn--danger"
+                        type="button"
+                        (click)="confirmDeleteProduct(product.id)"
+                        [attr.aria-label]="'Delete ' + product.name"
+                      >
+                        <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  }
+
+  <!-- ── Product form drawer ──────────────────────────────────────────────── -->
+  @if (productFormOpen()) {
+    <div class="drawer-backdrop" (click)="closeProductForm()" aria-hidden="true"></div>
+    <aside class="drawer" role="dialog" aria-modal="true"
+           [attr.aria-label]="productFormMode() === 'create' ? 'Add product' : 'Edit product'">
+      <header class="drawer-header">
+        <h2 class="drawer-title">
+          {{ productFormMode() === 'create' ? 'Add Product' : 'Edit Product' }}
+        </h2>
+        <button class="close-btn" type="button" (click)="closeProductForm()" aria-label="Close">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </header>
+
+      <form class="drawer-form" [formGroup]="productForm" (ngSubmit)="submitProductForm()">
+
+        <div class="field">
+          <label class="field-label" for="prod-name">Name <span class="req">*</span></label>
+          <input
+            id="prod-name"
+            class="field-input"
+            type="text"
+            formControlName="name"
+            autocomplete="off"
+            [class.field-input--error]="productForm.get('name')?.invalid && productForm.get('name')?.touched"
+          />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="prod-description">Description <span class="req">*</span></label>
+          <textarea
+            id="prod-description"
+            class="field-input field-textarea"
+            formControlName="description"
+            rows="4"
+            [class.field-input--error]="productForm.get('description')?.invalid && productForm.get('description')?.touched"
+          ></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field field--half">
+            <label class="field-label" for="prod-price">Price <span class="req">*</span></label>
+            <input
+              id="prod-price"
+              class="field-input"
+              type="number"
+              step="0.01"
+              min="0"
+              formControlName="price"
+              [class.field-input--error]="productForm.get('price')?.invalid && productForm.get('price')?.touched"
+            />
+          </div>
+
+          <div class="field field--half">
+            <label class="field-label" for="prod-currency">Currency</label>
+            <select id="prod-currency" class="field-input field-select" formControlName="currency">
+              <option [value]="CurrencyCode.ZAR">ZAR</option>
+              <option [value]="CurrencyCode.NAD">NAD</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field field--half">
+            <label class="field-label" for="prod-stock">Stock Quantity</label>
+            <input
+              id="prod-stock"
+              class="field-input"
+              type="number"
+              min="0"
+              formControlName="stockQuantity"
+            />
+          </div>
+
+          <div class="field field--half">
+            <label class="field-label" for="prod-country">Origin Country</label>
+            <select id="prod-country" class="field-input field-select" formControlName="originCountry">
+              <option [value]="CountryCode.SOUTH_AFRICA">South Africa (ZA)</option>
+              <option [value]="CountryCode.NAMIBIA">Namibia (NA)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Categories multi-select -->
+        <div class="field">
+          <span class="field-label">Categories</span>
+          @if (categoriesLoading()) {
+            <p class="field-hint">Loading categories…</p>
+          } @else if (categories().length === 0) {
+            <p class="field-hint">No categories available.</p>
+          } @else {
+            <div class="checkbox-group">
+              @for (cat of categories(); track cat.id) {
+                <label class="checkbox-item">
+                  <input
+                    type="checkbox"
+                    class="checkbox-input"
+                    [checked]="isCategorySelected(cat.id)"
+                    (change)="toggleCategory(cat.id)"
+                  />
+                  <span class="checkbox-label">{{ cat.name }}</span>
+                </label>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Image upload — create only -->
+        @if (productFormMode() === 'create') {
+          <div class="field">
+            <label class="field-label" for="prod-images">Images (optional)</label>
+            <input
+              id="prod-images"
+              class="field-input field-file"
+              type="file"
+              accept="image/*"
+              multiple
+              (change)="onImageChange($event)"
+            />
+            @if (selectedImages().length > 0) {
+              <p class="field-hint">{{ selectedImages().length }} file(s) selected</p>
+            }
+          </div>
+        }
+
+        @if (productFormError()) {
+          <div class="error-banner error-banner--inline" role="alert">
+            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+            <span>{{ productFormError() }}</span>
+          </div>
+        }
+
+        <div class="drawer-actions">
+          <button class="drawer-btn drawer-btn--secondary" type="button" (click)="closeProductForm()">
+            Cancel
+          </button>
+          <button
+            class="drawer-btn drawer-btn--primary"
+            type="submit"
+            [disabled]="productForm.invalid || productFormPending()"
+          >
+            @if (productFormPending()) {
+              <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+            }
+            {{ productFormMode() === 'create' ? 'Create Product' : 'Save Changes' }}
+          </button>
+        </div>
+      </form>
+    </aside>
+  }
+</section>
