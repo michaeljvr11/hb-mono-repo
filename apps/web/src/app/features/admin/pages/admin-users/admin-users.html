@@ -1,0 +1,187 @@
+<section class="users-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Users</h1>
+    <p class="page-sub">Manage user accounts, roles, and access.</p>
+  </header>
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading users…</p>
+    </div>
+  }
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+    <!-- Filter tabs -->
+    <div class="filter-tabs" role="tablist" aria-label="Filter users by role or status">
+      @for (tab of filterTabs; track tab.value) {
+        <button
+          class="tab-btn"
+          role="tab"
+          [class.tab-btn--active]="activeFilter() === tab.value"
+          [attr.aria-selected]="activeFilter() === tab.value"
+          type="button"
+          (click)="setFilter(tab.value)"
+        >
+          {{ tab.label }}
+          <span class="tab-count" aria-label="{{ countFor(tab.value) }} users">
+            {{ countFor(tab.value) }}
+          </span>
+        </button>
+      }
+    </div>
+
+    <!-- Search bar -->
+    <div class="search-bar">
+      <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
+      <input
+        class="search-input"
+        type="search"
+        placeholder="Search by name or email…"
+        aria-label="Search users"
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)"
+      />
+    </div>
+
+    <!-- Main split layout -->
+    <div class="split-layout">
+      <!-- User list -->
+      <div class="user-list" role="list" aria-label="Users">
+        @if (filteredUsers().length === 0) {
+          <div class="list-empty">
+            <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
+            <p>No users in this category.</p>
+          </div>
+        }
+
+        @for (user of filteredUsers(); track user.id) {
+          <button
+            class="user-row"
+            role="listitem"
+            type="button"
+            [class.user-row--selected]="selectedId() === user.id"
+            [attr.aria-pressed]="selectedId() === user.id"
+            (click)="selectUser(user.id)"
+          >
+            <div class="user-row-main">
+              <span class="user-display-name">{{ displayName(user) }}</span>
+              @if (user.name) {
+                <span class="user-email">{{ user.email }}</span>
+              }
+            </div>
+            <div class="user-row-meta">
+              <span
+                class="role-pill role-pill--{{ user.role }}"
+                aria-label="Role: {{ user.role }}"
+              >{{ user.role }}</span>
+              @if (!user.isActive) {
+                <span class="inactive-badge" aria-label="Inactive">inactive</span>
+              }
+            </div>
+          </button>
+        }
+      </div>
+
+      <!-- Detail panel -->
+      <div class="detail-panel">
+        @if (selectedUser(); as user) {
+          <div class="detail-card">
+            <h2 class="detail-name">{{ displayName(user) }}</h2>
+            <p class="detail-email">{{ user.email }}</p>
+
+            <dl class="detail-list">
+              <div class="detail-row">
+                <dt>Status</dt>
+                <dd class="detail-badges">
+                  @if (user.isActive) {
+                    <span class="verified-badge">Active</span>
+                  } @else {
+                    <span class="inactive-badge">Inactive</span>
+                  }
+                  @if (user.isVerified) {
+                    <span class="verified-badge verified-badge--email" aria-label="Email verified">Verified</span>
+                  }
+                </dd>
+              </div>
+
+              <div class="detail-row">
+                <dt>Role</dt>
+                <dd>
+                  <select
+                    class="role-select"
+                    [value]="user.role"
+                    [disabled]="pendingId() === user.id"
+                    (change)="onRoleChange(user.id, $event)"
+                    aria-label="Change user role"
+                  >
+                    @for (role of roles; track role) {
+                      <option [value]="role">{{ role }}</option>
+                    }
+                  </select>
+                </dd>
+              </div>
+
+              <div class="detail-row">
+                <dt>Joined</dt>
+                <dd>{{ user.createdAt | date:'d MMM y' }}</dd>
+              </div>
+            </dl>
+
+            <!-- Action error banner -->
+            @if (actionError()) {
+              <div class="error-banner error-banner--inline" role="alert">
+                <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                <span>{{ actionError() }}</span>
+              </div>
+            }
+
+            <!-- Action bar -->
+            <div class="action-bar">
+              @if (user.isActive) {
+                <button
+                  class="action-btn action-btn--deactivate"
+                  type="button"
+                  [disabled]="pendingId() === user.id"
+                  (click)="onToggleActive(user.id, user.isActive)"
+                >
+                  @if (pendingId() === user.id) {
+                    <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+                  }
+                  Deactivate
+                </button>
+              } @else {
+                <button
+                  class="action-btn action-btn--activate"
+                  type="button"
+                  [disabled]="pendingId() === user.id"
+                  (click)="onToggleActive(user.id, user.isActive)"
+                >
+                  @if (pendingId() === user.id) {
+                    <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+                  }
+                  Activate
+                </button>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="detail-empty">
+            <span class="material-symbols-outlined detail-empty-icon" aria-hidden="true">group</span>
+            <p>Select a user to view details and take action.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</section>
