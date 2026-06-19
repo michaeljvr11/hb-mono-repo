@@ -82,9 +82,28 @@ export class VendorsService {
     return this.toResponseDto(saved);
   }
 
+  // Admin-only status lifecycle. Only these transitions are legal; anything else
+  // (e.g. resurrecting a rejected vendor, or approving an already-approved one) is
+  // refused. Enforced here in the service layer — never hand-rolled in the controller.
+  private static readonly STATUS_TRANSITIONS: Readonly<
+    Record<VendorStatus, readonly VendorStatus[]>
+  > = {
+    [VendorStatus.PENDING]: [VendorStatus.APPROVED, VendorStatus.REJECTED],
+    [VendorStatus.APPROVED]: [VendorStatus.SUSPENDED],
+    [VendorStatus.SUSPENDED]: [VendorStatus.APPROVED],
+    [VendorStatus.REJECTED]: [],
+  };
+
   async updateStatus(id: string, newStatus: VendorStatus): Promise<VendorResponseDto> {
     const vendor = await this.vendorRepository.findOne({ where: { id } });
     if (!vendor) throw new NotFoundException('Vendor not found');
+
+    const allowed = VendorsService.STATUS_TRANSITIONS[vendor.status] ?? [];
+    if (!allowed.includes(newStatus)) {
+      throw new ConflictException(
+        `Cannot change vendor status from '${vendor.status}' to '${newStatus}'`,
+      );
+    }
 
     vendor.status = newStatus;
     const updated = await this.vendorRepository.save(vendor);
