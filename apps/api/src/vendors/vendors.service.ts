@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { VendorStatus } from '@hb/shared';
+import { VendorStatus, UserRole } from '@hb/shared';
 import { Vendor } from './entities/vendor.entity';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
@@ -14,12 +14,14 @@ import { AdminCreateVendorDto } from './dto/admin-create-vendor.dto';
 import { VendorResponseDto } from './dto/vendor-response.dto';
 import { AdminVendorResponseDto } from './dto/admin-vendor-response.dto';
 import { User } from '../users/entities/user.entity';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class VendorsService {
   constructor(
     @InjectRepository(Vendor)
     private vendorRepository: Repository<Vendor>,
+    private usersService: UsersService,
   ) {}
 
   private toResponseDto(vendor: Vendor): VendorResponseDto {
@@ -67,18 +69,22 @@ export class VendorsService {
 
   async create(createDto: CreateVendorDto, user: User): Promise<VendorResponseDto> {
     if (await this.hasVendor(user.id)) {
-      throw new ForbiddenException('You already have a vendor profile');
+      throw new ConflictException('You already have a vendor profile');
     }
 
     const vendor = this.vendorRepository.create({
       ...createDto,
       user,
       userId: user.id,
-      // Auto-approve for now; switch to PENDING + admin approval when onboarding hardens.
-      status: VendorStatus.APPROVED,
+      status: VendorStatus.PENDING,
     });
 
     const saved = await this.vendorRepository.save(vendor);
+
+    if (user.role !== UserRole.VENDOR) {
+      await this.usersService.update(user.id, { role: UserRole.VENDOR });
+    }
+
     return this.toResponseDto(saved);
   }
 
