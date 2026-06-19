@@ -1,0 +1,111 @@
+<section class="dashboard-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-sub">Platform-wide metrics and order oversight.</p>
+  </header>
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading dashboard…</p>
+    </div>
+  }
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (!loading() && !error() && dashboard(); as data) {
+    <div class="metrics-grid">
+
+      <!-- Pending vendors CTA -->
+      <a
+        class="metric-card metric-card--cta"
+        routerLink="/admin/vendors"
+        aria-label="Go to vendors page — {{ data.pendingVendorCount }} awaiting approval"
+      >
+        <div class="metric-card-icon">
+          <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+        </div>
+        <div class="metric-card-body">
+          <span class="metric-value">{{ data.pendingVendorCount }}</span>
+          <span class="metric-label">
+            {{ data.pendingVendorCount === 1 ? 'vendor' : 'vendors' }} awaiting approval
+          </span>
+        </div>
+        <span class="material-symbols-outlined metric-card-arrow" aria-hidden="true">arrow_forward</span>
+      </a>
+
+      <!-- Total orders -->
+      <div class="metric-card">
+        <div class="metric-card-icon">
+          <span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span>
+        </div>
+        <div class="metric-card-body">
+          <span class="metric-value">{{ data.totalOrders }}</span>
+          <span class="metric-label">Total orders</span>
+        </div>
+      </div>
+
+      <!-- Orders by status -->
+      <div class="metric-card metric-card--wide">
+        <h2 class="metric-card-title">Orders by status</h2>
+        @if (data.orderCountsByStatus.length === 0 || data.orderCountsByStatus.every(s => s.count === 0)) {
+          <p class="metric-empty">No orders yet.</p>
+        } @else {
+          <ul class="status-list" aria-label="Order counts by status">
+            @for (item of data.orderCountsByStatus; track item.status) {
+              <li class="status-item">
+                <span class="status-badge status-badge--{{ item.status }}" aria-label="Status: {{ humanizeStatus(item.status) }}">
+                  {{ humanizeStatus(item.status) }}
+                </span>
+                <span class="status-count" aria-label="{{ item.count }} orders">{{ item.count }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <!-- Platform revenue -->
+      <div class="metric-card metric-card--wide">
+        <h2 class="metric-card-title">Platform revenue</h2>
+        @if (data.platformRevenue.length === 0) {
+          <p class="metric-empty">No platform revenue recorded.</p>
+        } @else {
+          <ul class="revenue-list" aria-label="Platform revenue by currency">
+            @for (entry of data.platformRevenue; track entry.currency) {
+              <li class="revenue-item">
+                <span class="revenue-currency">{{ entry.currency }}</span>
+                <span class="revenue-amount">{{ formatMoney(entry.amount, entry.currency) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <!-- Vendor revenue -->
+      <div class="metric-card metric-card--wide">
+        <h2 class="metric-card-title">Vendor revenue</h2>
+        @if (data.vendorRevenue.length === 0) {
+          <p class="metric-empty">No vendor revenue recorded.</p>
+        } @else {
+          <ul class="revenue-list" aria-label="Vendor revenue by currency">
+            @for (entry of data.vendorRevenue; track entry.currency) {
+              <li class="revenue-item">
+                <span class="revenue-currency">{{ entry.currency }}</span>
+                <span class="revenue-amount">{{ formatMoney(entry.amount, entry.currency) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+    </div>
+  }
+</section>

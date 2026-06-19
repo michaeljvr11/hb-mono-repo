@@ -1,0 +1,202 @@
+<section class="orders-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Orders</h1>
+    <p class="page-sub">View and inspect orders across the platform.</p>
+  </header>
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <!-- Status filter tabs -->
+  <div class="filter-tabs" role="tablist" aria-label="Filter orders by status">
+    @for (tab of statusTabs; track tab.value) {
+      <button
+        class="tab-btn"
+        role="tab"
+        [class.tab-btn--active]="statusFilter() === tab.value"
+        [attr.aria-selected]="statusFilter() === tab.value"
+        type="button"
+        (click)="setStatusFilter(tab.value)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  <!-- Vendor ID filter -->
+  <div class="toolbar">
+    <div class="search-bar">
+      <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
+      <input
+        class="search-input"
+        type="search"
+        placeholder="Filter by vendor ID…"
+        aria-label="Filter by vendor ID"
+        [value]="vendorIdFilter()"
+        (change)="applyVendorFilter($event)"
+      />
+    </div>
+  </div>
+
+  <!-- Main split layout -->
+  <div class="split-layout">
+    <!-- Order list panel -->
+    <div class="order-panel">
+
+      <!-- Loading state -->
+      @if (loading()) {
+        <div class="state-placeholder" role="status" aria-live="polite">
+          <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+          <p>Loading orders…</p>
+        </div>
+      }
+
+      @if (!loading()) {
+        <!-- Empty state -->
+        @if (result().items.length === 0) {
+          <div class="list-empty">
+            <span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span>
+            <p>No orders yet.</p>
+            <span class="list-empty-sub">Order creation becomes available once checkout is built.</span>
+          </div>
+        }
+
+        <!-- Order rows -->
+        @if (result().items.length > 0) {
+          <div class="order-list" role="list" aria-label="Orders">
+            @for (order of result().items; track order.id) {
+              <button
+                class="order-row"
+                role="listitem"
+                type="button"
+                [class.order-row--selected]="selectedId() === order.id"
+                [attr.aria-pressed]="selectedId() === order.id"
+                (click)="selectOrder(order.id)"
+              >
+                <div class="order-row-main">
+                  <span class="order-id" title="{{ order.id }}">#{{ shortId(order.id) }}</span>
+                  <span class="order-customer">{{ customerDisplay(order) }}</span>
+                </div>
+                <div class="order-row-meta">
+                  <span
+                    class="status-badge status-badge--{{ order.status }}"
+                    aria-label="Status: {{ humanizeStatus(order.status) }}"
+                  >{{ humanizeStatus(order.status) }}</span>
+                  <span class="order-total">{{ formatMoney(order.total, order.currency) }}</span>
+                </div>
+              </button>
+            }
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination" aria-label="Pagination">
+            <button
+              class="page-btn"
+              type="button"
+              [disabled]="isPrevDisabled()"
+              (click)="goToPrev()"
+              aria-label="Previous page"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+              Prev
+            </button>
+
+            <span class="page-info" aria-live="polite">
+              Page {{ result().page }} of {{ result().pageCount }}
+              <span class="page-total">({{ result().total }} total)</span>
+            </span>
+
+            <button
+              class="page-btn"
+              type="button"
+              [disabled]="isNextDisabled()"
+              (click)="goToNext()"
+              aria-label="Next page"
+            >
+              Next
+              <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+            </button>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Detail panel -->
+    <div class="detail-panel">
+      @if (selectedOrder(); as order) {
+        <div class="detail-card">
+          <h2 class="detail-heading">Order <span class="detail-id" title="{{ order.id }}">#{{ shortId(order.id) }}</span></h2>
+          <p class="detail-sub">{{ order.createdAt | date:'d MMM y, HH:mm' }}</p>
+
+          <dl class="detail-list">
+            <div class="detail-row">
+              <dt>Status</dt>
+              <dd>
+                <span class="status-badge status-badge--{{ order.status }}">{{ humanizeStatus(order.status) }}</span>
+              </dd>
+            </div>
+
+            <div class="detail-row">
+              <dt>Customer</dt>
+              <dd>
+                {{ customerDisplay(order) }}
+                @if (order.customerName) {
+                  <span class="detail-secondary">{{ order.customerEmail }}</span>
+                }
+              </dd>
+            </div>
+
+            <div class="detail-row">
+              <dt>Total</dt>
+              <dd>{{ formatMoney(order.total, order.currency) }}</dd>
+            </div>
+
+            <div class="detail-row">
+              <dt>Items</dt>
+              <dd>{{ order.itemCount }}</dd>
+            </div>
+
+            <div class="detail-row">
+              <dt>Route</dt>
+              <dd>{{ order.originCountry }} → {{ order.destinationCountry }}</dd>
+            </div>
+
+            @if (order.vendorIds.length > 0) {
+              <div class="detail-row detail-row--block">
+                <dt>Vendor IDs</dt>
+                <dd>
+                  <ul class="vendor-id-list">
+                    @for (vid of order.vendorIds; track vid) {
+                      <li class="vendor-id-item">{{ vid }}</li>
+                    }
+                  </ul>
+                </dd>
+              </div>
+            } @else {
+              <div class="detail-row">
+                <dt>Vendor IDs</dt>
+                <dd class="detail-muted">Platform-fulfilled (no vendors)</dd>
+              </div>
+            }
+
+            <div class="detail-row">
+              <dt>Updated</dt>
+              <dd>{{ order.updatedAt | date:'d MMM y, HH:mm' }}</dd>
+            </div>
+          </dl>
+        </div>
+      } @else {
+        <div class="detail-empty">
+          <span class="material-symbols-outlined detail-empty-icon" aria-hidden="true">receipt_long</span>
+          <p>Select an order to view its details.</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>

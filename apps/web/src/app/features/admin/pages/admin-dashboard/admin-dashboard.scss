@@ -1,0 +1,260 @@
+/* Admin Dashboard page — tokens from docs/design/DESIGN.md */
+:host {
+  display: block;
+}
+
+/* ─── Page header ─────────────────────────────────────────────── */
+.dashboard-page {
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  margin: 0 0 4px;
+  font: 600 32px/40px Inter, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--hb-on-surface);
+}
+
+.page-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ─── Loading / error states ─────────────────────────────────── */
+.state-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: var(--hb-on-surface-variant);
+  font-size: 14px;
+
+  p {
+    margin: 0;
+  }
+
+  .state-icon {
+    font-size: 40px;
+    opacity: 0.5;
+  }
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background: color-mix(in srgb, var(--hb-error) 10%, transparent);
+  color: var(--hb-error);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+}
+
+/* ─── Metrics grid ────────────────────────────────────────────── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* ─── Metric card ─────────────────────────────────────────────── */
+.metric-card {
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  &--wide {
+    grid-column: span 2;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+
+    @media (max-width: 700px) {
+      grid-column: span 1;
+    }
+  }
+
+  &--cta {
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease;
+    border-color: var(--hb-primary);
+    background: color-mix(in srgb, var(--hb-primary) 5%, transparent);
+
+    &:hover {
+      background: color-mix(in srgb, var(--hb-primary) 10%, transparent);
+    }
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--hb-primary);
+      box-shadow: 0 0 0 2px rgba(1, 83, 0, 0.1);
+    }
+  }
+}
+
+.metric-card-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--hb-primary) 12%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .material-symbols-outlined {
+    font-size: 24px;
+    color: var(--hb-primary);
+  }
+}
+
+.metric-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.metric-value {
+  font: 700 32px/40px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+  letter-spacing: -0.02em;
+}
+
+.metric-label {
+  font-size: 13px;
+  color: var(--hb-on-surface-variant);
+  font-weight: 500;
+}
+
+.metric-card-arrow {
+  flex-shrink: 0;
+  color: var(--hb-primary);
+  font-size: 20px;
+}
+
+.metric-card-title {
+  margin: 0;
+  font: 600 16px/24px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+}
+
+.metric-empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ─── Status list ─────────────────────────────────────────────── */
+.status-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-count {
+  font: 600 14px/20px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.03em;
+
+  &--pending {
+    background: var(--hb-secondary-fixed);
+    color: var(--hb-on-secondary-container);
+  }
+
+  &--confirmed,
+  &--processing {
+    background: color-mix(in srgb, var(--hb-primary) 12%, transparent);
+    color: var(--hb-primary);
+  }
+
+  &--shipped {
+    background: color-mix(in srgb, var(--hb-primary) 20%, transparent);
+    color: var(--hb-primary);
+  }
+
+  &--delivered {
+    background: var(--hb-primary);
+    color: var(--hb-on-primary);
+  }
+
+  &--cancelled {
+    background: color-mix(in srgb, var(--hb-error) 12%, transparent);
+    color: var(--hb-error);
+  }
+}
+
+/* ─── Revenue list ────────────────────────────────────────────── */
+.revenue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.revenue-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--hb-outline-variant);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.revenue-currency {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hb-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.revenue-amount {
+  font: 600 16px/24px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+}
