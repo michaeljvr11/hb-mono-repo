@@ -1,28 +1,28 @@
 {
-  "generatedAt": "2026-06-19T11:05:51.729Z",
+  "generatedAt": "2026-06-19T14:28:59.650Z",
   "git": {
-    "totalCommits": 33,
-    "aiCommits": 27,
+    "totalCommits": 38,
+    "aiCommits": 31,
     "aiPct": 82,
-    "appCommits": 21,
-    "ins": 23193,
-    "del": 1201,
-    "net": 21992,
-    "aiIns": 10816,
-    "aiDel": 1145,
-    "filesTouched": 318,
+    "appCommits": 23,
+    "ins": 25349,
+    "del": 1409,
+    "net": 23940,
+    "aiIns": 12972,
+    "aiDel": 1353,
+    "filesTouched": 321,
     "areaRows": [
       {
-        "name": "Docs",
-        "commits": 14,
-        "ins": 8453,
-        "del": 444
+        "name": "Web (Angular)",
+        "commits": 17,
+        "ins": 9538,
+        "del": 647
       },
       {
-        "name": "Web (Angular)",
-        "commits": 15,
-        "ins": 7664,
-        "del": 641
+        "name": "Docs",
+        "commits": 16,
+        "ins": 8727,
+        "del": 646
       },
       {
         "name": "API (NestJS)",
@@ -32,8 +32,8 @@
       },
       {
         "name": "AI Factory config",
-        "commits": 13,
-        "ins": 857,
+        "commits": 15,
+        "ins": 865,
         "del": 16
       },
       {
@@ -58,6 +58,36 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-06-19",
     "recent": [
+      {
+        "hash": "cd359f1",
+        "subject": "index on feat/IhTVdNYP-admin-catalog: 4558444 chore(evidence): recompile AI evidence report for AP-8 admin catalog",
+        "ai": false
+      },
+      {
+        "hash": "87bd111",
+        "subject": "untracked files on feat/IhTVdNYP-admin-catalog: 4558444 chore(evidence): recompile AI evidence report for AP-8 admin catalog",
+        "ai": false
+      },
+      {
+        "hash": "4558444",
+        "subject": "chore(evidence): recompile AI evidence report for AP-8 admin catalog",
+        "ai": true
+      },
+      {
+        "hash": "21eea4b",
+        "subject": "refactor(admin): use design tokens for catalog drawer/focus shadows",
+        "ai": true
+      },
+      {
+        "hash": "a9fccd5",
+        "subject": "feat(admin): platform listings + category management UI (AP-8)",
+        "ai": true
+      },
+      {
+        "hash": "d68075a",
+        "subject": "chore(evidence): recompile AI evidence report for AP-7 lifecycle hardening",
+        "ai": true
+      },
       {
         "hash": "d743ff1",
         "subject": "feat(vendors): enforce vendor status lifecycle server-side (AP-7)",
@@ -87,36 +117,6 @@
         "hash": "1e808ff",
         "subject": "feat(vendors): expose admin-only vendor shape on GET /vendors",
         "ai": true
-      },
-      {
-        "hash": "e996ffc",
-        "subject": "feat(web): add vendor portal route area + layout shell (VP-1)",
-        "ai": true
-      },
-      {
-        "hash": "c491778",
-        "subject": "chore(design-sync): make Claude Design config per-device for multi-dev sync",
-        "ai": true
-      },
-      {
-        "hash": "f437778",
-        "subject": "chore(hooks): pull the Obsidian vault on session start",
-        "ai": true
-      },
-      {
-        "hash": "c446a17",
-        "subject": "chore(evidence): recompile AI evidence report for AP-6",
-        "ai": true
-      },
-      {
-        "hash": "d1198da",
-        "subject": "style(web): register admin-shell colors as design tokens",
-        "ai": true
-      },
-      {
-        "hash": "ea86576",
-        "subject": "feat(web): add role-gated /admin route area with shell + placeholder pages",
-        "ai": true
       }
     ]
   },
@@ -125,6 +125,11 @@
       "branch": "feat/EXPtZCJL-vendor-portal-shell",
       "cardId": "EXPtZCJL",
       "slug": "vendor-portal-shell"
+    },
+    {
+      "branch": "feat/IhTVdNYP-admin-catalog",
+      "cardId": "IhTVdNYP",
+      "slug": "admin-catalog"
     },
     {
       "branch": "feat/L9fM1Gu7-storefront",
@@ -158,9 +163,9 @@
     }
   ],
   "tests": {
-    "total": 22,
+    "total": 23,
     "api": 5,
-    "web": 17
+    "web": 18
   },
   "design": {
     "files": 27,
@@ -177,24 +182,31 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 9,
+    "prodBlocks": 11,
     "blockReasons": {
-      "push names a protected branch": 7,
+      "push names a protected branch": 8,
       "force push": 1,
-      "gh pr merge is human-only": 1
+      "gh pr merge is human-only": 2
     },
     "gatePass": 6,
     "gateFail": 1,
     "edits": 27,
     "editsUnfixable": 7,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-19T11:04:37.566Z"
+    "lastTs": "2026-06-19T13:51:59.111Z"
   },
   "prs": [
     {
+      "headRefName": "feat/IhTVdNYP-admin-catalog",
+      "number": 10,
+      "state": "OPEN",
+      "title": "feat(admin): platform listings + category management UI (AP-8)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/10"
+    },
+    {
       "headRefName": "feat/RLiauFte-admin-vendor-approvals",
       "number": 9,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(vendors): enforce vendor status lifecycle server-side (AP-7)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/9"
     },
@@ -258,11 +270,11 @@
   "trello": [
     {
       "name": "Documentation",
-      "cards": 7
+      "cards": 8
     },
     {
       "name": "To Do",
-      "cards": 13
+      "cards": 12
     },
     {
       "name": "In Progress",
@@ -274,7 +286,7 @@
     },
     {
       "name": "Done",
-      "cards": 4
+      "cards": 5
     }
   ],
   "notes": []
