@@ -43,3 +43,26 @@
 {"ts":"2026-06-19T11:04:37.566Z","type":"pr_gate","result":"pass","durationMs":3147}
 {"ts":"2026-06-19T11:08:54.439Z","type":"prod_fence_block","reason":"gh pr merge is human-only","command":"PYTHONIOENCODING=utf-8 python << 'PYEOF'\nimport io,re\nf = r'C:/Development/3. TechAcc/hb-vault/AI Factory — Evidence Log.md'\nt = io.open(f, encoding='utf-8').read()\n\nold_start = t.find('## Snapshot')\n# snapshot section runs until the next '## ' heading\nnxt = t.find('\\n## ', old_start+5)\nold_block = "}
 {"ts":"2026-06-19T13:51:59.111Z","type":"prod_fence_block","reason":"push names a protected branch","command":"cd \"C:/Development/3. TechAcc/hb-mono-repo\" && git stash push -m \"wip-factory-log\" -- .claude/factory-log.jsonl && git checkout main && git pull --ff-only && echo \"---NEW BRANCH---\" && git checkout -b feat/IhTVdNYP-admin-catalog && git stash pop && git log --oneline -3 | cat"}
+{"ts":"2026-06-19T14:38:28.635Z","type":"edit_lint","file":"apps/api/src/admin/dto/admin-user-response.dto.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-19T14:38:39.618Z","type":"edit_lint","file":"apps/api/src/admin/dto/admin-user-query.dto.ts","autofixed":false,"tool":"Write"}
+{"ts":"2026-06-19T14:38:49.026Z","type":"edit_lint","file":"apps/api/src/admin/dto/admin-user-query.dto.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-19T14:38:58.094Z","type":"edit_lint","file":"apps/api/src/admin/dto/update-user-role.dto.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-19T14:39:06.529Z","type":"edit_lint","file":"apps/api/src/admin/dto/set-user-active.dto.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-19T14:39:20.582Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-19T14:39:34.292Z","type":"edit_lint","file":"apps/api/src/admin/admin.controller.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-19T14:39:42.163Z","type":"edit_lint","file":"apps/api/src/admin/admin.module.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-06-19T14:39:52.915Z","type":"edit_lint","file":"apps/api/src/app.module.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-19T14:45:13.187Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.spec.ts","autofixed":false,"tool":"Write"}
+{"ts":"2026-06-19T14:45:38.991Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-19T14:45:57.422Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-19T14:46:13.666Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-19T14:46:24.394Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-19T14:48:40.903Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-19T14:55:08.406Z","type":"edit_lint","file":"apps/api/src/admin/dto/admin-user-query.dto.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-19T14:55:17.278Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-19T14:55:29.897Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-19T14:55:46.839Z","type":"edit_lint","file":"apps/api/src/admin/admin.controller.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-06-19T14:56:06.078Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-19T14:56:18.078Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-19T14:56:30.461Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-06-19T14:57:26.444Z","type":"edit_lint","file":"apps/api/src/admin/admin.service.spec.ts","autofixed":true,"tool":"Edit"}
