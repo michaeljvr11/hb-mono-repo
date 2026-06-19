@@ -1,52 +1,52 @@
 {
-  "generatedAt": "2026-06-19T14:28:59.650Z",
+  "generatedAt": "2026-06-19T16:37:44.489Z",
   "git": {
-    "totalCommits": 38,
-    "aiCommits": 31,
-    "aiPct": 82,
-    "appCommits": 23,
-    "ins": 25349,
-    "del": 1409,
-    "net": 23940,
-    "aiIns": 12972,
-    "aiDel": 1353,
-    "filesTouched": 321,
+    "totalCommits": 47,
+    "aiCommits": 40,
+    "aiPct": 85,
+    "appCommits": 27,
+    "ins": 28472,
+    "del": 1637,
+    "net": 26835,
+    "aiIns": 16095,
+    "aiDel": 1581,
+    "filesTouched": 340,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 17,
-        "ins": 9538,
-        "del": 647
+        "commits": 20,
+        "ins": 11775,
+        "del": 655
       },
       {
         "name": "Docs",
-        "commits": 16,
-        "ins": 8727,
-        "del": 646
+        "commits": 20,
+        "ins": 8941,
+        "del": 832
       },
       {
         "name": "API (NestJS)",
-        "commits": 12,
-        "ins": 5204,
-        "del": 89
+        "commits": 15,
+        "ins": 5779,
+        "del": 104
       },
       {
         "name": "AI Factory config",
-        "commits": 15,
-        "ins": 865,
-        "del": 16
-      },
-      {
-        "name": "Shared contracts",
-        "commits": 4,
-        "ins": 413,
-        "del": 1
+        "commits": 20,
+        "ins": 930,
+        "del": 23
       },
       {
         "name": "Root & config",
-        "commits": 9,
-        "ins": 402,
-        "del": 8
+        "commits": 10,
+        "ins": 415,
+        "del": 20
+      },
+      {
+        "name": "Shared contracts",
+        "commits": 5,
+        "ins": 432,
+        "del": 1
       },
       {
         "name": "CI / templates",
@@ -58,6 +58,51 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-06-19",
     "recent": [
+      {
+        "hash": "ce69ce7",
+        "subject": "chore(evidence): update factory log",
+        "ai": true
+      },
+      {
+        "hash": "58c4162",
+        "subject": "chore(tooling): fix evidence/log merge conflicts via union driver + post-merge hook",
+        "ai": true
+      },
+      {
+        "hash": "f288724",
+        "subject": "chore(evidence): recompile AI evidence report for VP-5 vendor onboarding",
+        "ai": true
+      },
+      {
+        "hash": "5aeaea3",
+        "subject": "fix(vendors): address code-review nits — typed test dto + resilient 409 status load",
+        "ai": true
+      },
+      {
+        "hash": "0c40fa6",
+        "subject": "feat(web): vendor onboarding \"become a vendor\" flow (VP-5)",
+        "ai": true
+      },
+      {
+        "hash": "4e78fb4",
+        "subject": "chore(evidence): recompile AI evidence report for AP-9 admin user management",
+        "ai": true
+      },
+      {
+        "hash": "30488db",
+        "subject": "feat(admin): user management screen + NestJS admin module (AP-9)",
+        "ai": true
+      },
+      {
+        "hash": "effda17",
+        "subject": "feat(vendors): harden self-onboarding — pending status, role grant, 409 on duplicate",
+        "ai": true
+      },
+      {
+        "hash": "8760e96",
+        "subject": "chore(evidence): recompile AI evidence report post-merge with main",
+        "ai": true
+      },
       {
         "hash": "cd359f1",
         "subject": "index on feat/IhTVdNYP-admin-catalog: 4558444 chore(evidence): recompile AI evidence report for AP-8 admin catalog",
@@ -71,51 +116,6 @@
       {
         "hash": "4558444",
         "subject": "chore(evidence): recompile AI evidence report for AP-8 admin catalog",
-        "ai": true
-      },
-      {
-        "hash": "21eea4b",
-        "subject": "refactor(admin): use design tokens for catalog drawer/focus shadows",
-        "ai": true
-      },
-      {
-        "hash": "a9fccd5",
-        "subject": "feat(admin): platform listings + category management UI (AP-8)",
-        "ai": true
-      },
-      {
-        "hash": "d68075a",
-        "subject": "chore(evidence): recompile AI evidence report for AP-7 lifecycle hardening",
-        "ai": true
-      },
-      {
-        "hash": "d743ff1",
-        "subject": "feat(vendors): enforce vendor status lifecycle server-side (AP-7)",
-        "ai": true
-      },
-      {
-        "hash": "a47459b",
-        "subject": "chore(evidence): recompile AI evidence report for AP-7",
-        "ai": true
-      },
-      {
-        "hash": "90e4019",
-        "subject": "refactor(vendors): address code review on AP-7",
-        "ai": true
-      },
-      {
-        "hash": "ad1ea82",
-        "subject": "feat(admin): vendor approvals page — approve/reject/suspend",
-        "ai": true
-      },
-      {
-        "hash": "c20836b",
-        "subject": "chore(evidence): recompile AI evidence report for VP-1",
-        "ai": true
-      },
-      {
-        "hash": "1e808ff",
-        "subject": "feat(vendors): expose admin-only vendor shape on GET /vendors",
         "ai": true
       }
     ]
@@ -137,9 +137,19 @@
       "slug": "storefront"
     },
     {
+      "branch": "feat/N8P6OPPm-admin-user-mgmt",
+      "cardId": "N8P6OPPm",
+      "slug": "admin-user-mgmt"
+    },
+    {
       "branch": "feat/RLiauFte-admin-vendor-approvals",
       "cardId": "RLiauFte",
       "slug": "admin-vendor-approvals"
+    },
+    {
+      "branch": "feat/1fqtc2JF-vendor-onboarding",
+      "cardId": "1fqtc2JF",
+      "slug": "vendor-onboarding"
     },
     {
       "branch": "feat/DD6Z0NUW-admin-vendor-approvals",
@@ -163,9 +173,9 @@
     }
   ],
   "tests": {
-    "total": 23,
-    "api": 5,
-    "web": 18
+    "total": 26,
+    "api": 6,
+    "web": 20
   },
   "design": {
     "files": 27,
@@ -182,24 +192,46 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 11,
+    "prodBlocks": 14,
     "blockReasons": {
-      "push names a protected branch": 8,
+      "push names a protected branch": 10,
       "force push": 1,
-      "gh pr merge is human-only": 2
+      "gh pr merge is human-only": 2,
+      "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 6,
+    "gatePass": 8,
     "gateFail": 1,
-    "edits": 27,
-    "editsUnfixable": 7,
+    "edits": 60,
+    "editsUnfixable": 20,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-19T13:51:59.111Z"
+    "lastTs": "2026-06-19T15:01:01.309Z"
   },
   "prs": [
     {
+      "headRefName": "chore/no-conflict-evidence-log",
+      "number": 13,
+      "state": "OPEN",
+      "title": "chore(tooling): fix evidence/log merge conflicts via union driver + post-merge hook",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/13"
+    },
+    {
+      "headRefName": "feat/1fqtc2JF-vendor-onboarding",
+      "number": 12,
+      "state": "MERGED",
+      "title": "feat: vendor onboarding — become a vendor flow (VP-5)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/12"
+    },
+    {
+      "headRefName": "feat/N8P6OPPm-admin-user-mgmt",
+      "number": 11,
+      "state": "MERGED",
+      "title": "feat(admin): user management screen + NestJS admin module (AP-9)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/11"
+    },
+    {
       "headRefName": "feat/IhTVdNYP-admin-catalog",
       "number": 10,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(admin): platform listings + category management UI (AP-8)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/10"
     },
@@ -274,7 +306,7 @@
     },
     {
       "name": "To Do",
-      "cards": 12
+      "cards": 10
     },
     {
       "name": "In Progress",
@@ -282,11 +314,11 @@
     },
     {
       "name": "In Review",
-      "cards": 3
+      "cards": 2
     },
     {
       "name": "Done",
-      "cards": 5
+      "cards": 8
     }
   ],
   "notes": []
