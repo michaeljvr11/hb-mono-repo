@@ -1,52 +1,52 @@
 {
-  "generatedAt": "2026-06-19T16:37:44.489Z",
+  "generatedAt": "2026-06-19T17:13:49.430Z",
   "git": {
-    "totalCommits": 47,
-    "aiCommits": 40,
-    "aiPct": 85,
-    "appCommits": 27,
-    "ins": 28472,
-    "del": 1637,
-    "net": 26835,
-    "aiIns": 16095,
-    "aiDel": 1581,
-    "filesTouched": 340,
+    "totalCommits": 51,
+    "aiCommits": 46,
+    "aiPct": 90,
+    "appCommits": 32,
+    "ins": 32655,
+    "del": 1828,
+    "net": 30827,
+    "aiIns": 20278,
+    "aiDel": 1772,
+    "filesTouched": 355,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 20,
-        "ins": 11775,
-        "del": 655
+        "commits": 24,
+        "ins": 15117,
+        "del": 671
       },
       {
         "name": "Docs",
-        "commits": 20,
-        "ins": 8941,
-        "del": 832
+        "commits": 22,
+        "ins": 9144,
+        "del": 1002
       },
       {
         "name": "API (NestJS)",
-        "commits": 15,
-        "ins": 5779,
-        "del": 104
+        "commits": 17,
+        "ins": 6497,
+        "del": 108
       },
       {
         "name": "AI Factory config",
         "commits": 20,
-        "ins": 930,
+        "ins": 781,
         "del": 23
+      },
+      {
+        "name": "Shared contracts",
+        "commits": 7,
+        "ins": 501,
+        "del": 2
       },
       {
         "name": "Root & config",
         "commits": 10,
         "ins": 415,
         "del": 20
-      },
-      {
-        "name": "Shared contracts",
-        "commits": 5,
-        "ins": 432,
-        "del": 1
       },
       {
         "name": "CI / templates",
@@ -58,6 +58,41 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-06-19",
     "recent": [
+      {
+        "hash": "d3a4088",
+        "subject": "refactor(admin): address review nits for AP-10",
+        "ai": true
+      },
+      {
+        "hash": "9d157f4",
+        "subject": "feat(web): admin order oversight + dashboard screens (AP-10)",
+        "ai": true
+      },
+      {
+        "hash": "d861715",
+        "subject": "chore(evidence): recompile AI evidence report for VP-3 vendor products",
+        "ai": true
+      },
+      {
+        "hash": "9efb5ff",
+        "subject": "feat(admin): order oversight + dashboard read-model endpoints (AP-10)",
+        "ai": true
+      },
+      {
+        "hash": "2daae7e",
+        "subject": "fix(web): surface delete-error in vendor products; add delete-error tests",
+        "ai": true
+      },
+      {
+        "hash": "de20644",
+        "subject": "feat(web): vendor product management UI (VP-3)",
+        "ai": true
+      },
+      {
+        "hash": "5b95bf4",
+        "subject": "chore(evidence): regenerate post-sync with current main",
+        "ai": true
+      },
       {
         "hash": "ce69ce7",
         "subject": "chore(evidence): update factory log",
@@ -82,49 +117,44 @@
         "hash": "0c40fa6",
         "subject": "feat(web): vendor onboarding \"become a vendor\" flow (VP-5)",
         "ai": true
-      },
-      {
-        "hash": "4e78fb4",
-        "subject": "chore(evidence): recompile AI evidence report for AP-9 admin user management",
-        "ai": true
-      },
-      {
-        "hash": "30488db",
-        "subject": "feat(admin): user management screen + NestJS admin module (AP-9)",
-        "ai": true
-      },
-      {
-        "hash": "effda17",
-        "subject": "feat(vendors): harden self-onboarding — pending status, role grant, 409 on duplicate",
-        "ai": true
-      },
-      {
-        "hash": "8760e96",
-        "subject": "chore(evidence): recompile AI evidence report post-merge with main",
-        "ai": true
-      },
-      {
-        "hash": "cd359f1",
-        "subject": "index on feat/IhTVdNYP-admin-catalog: 4558444 chore(evidence): recompile AI evidence report for AP-8 admin catalog",
-        "ai": false
-      },
-      {
-        "hash": "87bd111",
-        "subject": "untracked files on feat/IhTVdNYP-admin-catalog: 4558444 chore(evidence): recompile AI evidence report for AP-8 admin catalog",
-        "ai": false
-      },
-      {
-        "hash": "4558444",
-        "subject": "chore(evidence): recompile AI evidence report for AP-8 admin catalog",
-        "ai": true
       }
     ]
   },
   "branches": [
     {
+      "branch": "feat/1fqtc2JF-vendor-onboarding",
+      "cardId": "1fqtc2JF",
+      "slug": "vendor-onboarding"
+    },
+    {
+      "branch": "feat/DD6Z0NUW-admin-vendor-approvals",
+      "cardId": "DD6Z0NUW",
+      "slug": "admin-vendor-approvals"
+    },
+    {
       "branch": "feat/EXPtZCJL-vendor-portal-shell",
       "cardId": "EXPtZCJL",
       "slug": "vendor-portal-shell"
+    },
+    {
+      "branch": "feat/Z1ADCLQm-admin-portal-shell",
+      "cardId": "Z1ADCLQm",
+      "slug": "admin-portal-shell"
+    },
+    {
+      "branch": "feat/ai-evidence-system",
+      "cardId": "ai",
+      "slug": "evidence-system"
+    },
+    {
+      "branch": "feat/mMFxZIKE-login-registration-pages",
+      "cardId": "mMFxZIKE",
+      "slug": "login-registration-pages"
+    },
+    {
+      "branch": "feat/sw8qYBV1-admin-orders-dashboard",
+      "cardId": "sw8qYBV1",
+      "slug": "admin-orders-dashboard"
     },
     {
       "branch": "feat/IhTVdNYP-admin-catalog",
@@ -147,35 +177,15 @@
       "slug": "admin-vendor-approvals"
     },
     {
-      "branch": "feat/1fqtc2JF-vendor-onboarding",
-      "cardId": "1fqtc2JF",
-      "slug": "vendor-onboarding"
-    },
-    {
-      "branch": "feat/DD6Z0NUW-admin-vendor-approvals",
-      "cardId": "DD6Z0NUW",
-      "slug": "admin-vendor-approvals"
-    },
-    {
-      "branch": "feat/Z1ADCLQm-admin-portal-shell",
-      "cardId": "Z1ADCLQm",
-      "slug": "admin-portal-shell"
-    },
-    {
-      "branch": "feat/ai-evidence-system",
-      "cardId": "ai",
-      "slug": "evidence-system"
-    },
-    {
-      "branch": "feat/mMFxZIKE-login-registration-pages",
-      "cardId": "mMFxZIKE",
-      "slug": "login-registration-pages"
+      "branch": "feat/xEOk5i0M-vendor-products",
+      "cardId": "xEOk5i0M",
+      "slug": "vendor-products"
     }
   ],
   "tests": {
-    "total": 26,
-    "api": 6,
-    "web": 20
+    "total": 29,
+    "api": 7,
+    "web": 22
   },
   "design": {
     "files": 27,
@@ -201,16 +211,23 @@
     },
     "gatePass": 8,
     "gateFail": 1,
-    "edits": 60,
-    "editsUnfixable": 20,
+    "edits": 69,
+    "editsUnfixable": 21,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-19T15:01:01.309Z"
+    "lastTs": "2026-06-19T17:12:27.927Z"
   },
   "prs": [
     {
+      "headRefName": "feat/xEOk5i0M-vendor-products",
+      "number": 14,
+      "state": "OPEN",
+      "title": "feat(web): vendor product management UI (VP-3)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/14"
+    },
+    {
       "headRefName": "chore/no-conflict-evidence-log",
       "number": 13,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "chore(tooling): fix evidence/log merge conflicts via union driver + post-merge hook",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/13"
     },
@@ -306,11 +323,11 @@
     },
     {
       "name": "To Do",
-      "cards": 10
+      "cards": 8
     },
     {
       "name": "In Progress",
-      "cards": 0
+      "cards": 1
     },
     {
       "name": "In Review",
@@ -318,7 +335,7 @@
     },
     {
       "name": "Done",
-      "cards": 8
+      "cards": 9
     }
   ],
   "notes": []
