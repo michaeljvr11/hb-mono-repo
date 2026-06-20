@@ -1,9 +1,40 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DecimalPipe, KeyValuePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { CurrencyCode, VendorDashboardDto } from '@hb/shared';
+import { VendorsService } from '../../../../core/api/vendors.service';
 
 @Component({
   selector: 'app-vendor-dashboard',
   standalone: true,
-  template: `<section class="vendor-page"><h1>Dashboard</h1><p>Coming soon.</p></section>`,
-  styles: [`.vendor-page{padding:24px} h1{font:600 32px/40px Inter,system-ui,sans-serif;margin:0 0 8px;color:var(--hb-on-surface)} p{margin:0;color:var(--hb-on-surface-variant)}`],
+  imports: [DecimalPipe, KeyValuePipe, RouterLink],
+  templateUrl: './vendor-dashboard.html',
+  styleUrl: './vendor-dashboard.scss',
 })
-export class VendorDashboard {}
+export class VendorDashboard implements OnInit {
+  private readonly vendorsService = inject(VendorsService);
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly dashboard = signal<VendorDashboardDto | null>(null);
+
+  readonly totalOrders = computed(() => {
+    const counts = this.dashboard()?.orderCountByStatus ?? {};
+    return Object.values(counts).reduce((sum, n) => sum + n, 0);
+  });
+
+  readonly CurrencyCode = CurrencyCode;
+
+  ngOnInit(): void {
+    this.vendorsService.getDashboard().subscribe({
+      next: (data) => {
+        this.dashboard.set(data);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('Could not load dashboard data. Please refresh.');
+        this.loading.set(false);
+      },
+    });
+  }
+}
