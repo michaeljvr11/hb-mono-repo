@@ -1,28 +1,28 @@
 {
-  "generatedAt": "2026-06-19T16:37:44.489Z",
+  "generatedAt": "2026-06-19T16:53:25.943Z",
   "git": {
-    "totalCommits": 47,
-    "aiCommits": 40,
-    "aiPct": 85,
-    "appCommits": 27,
-    "ins": 28472,
-    "del": 1637,
-    "net": 26835,
-    "aiIns": 16095,
-    "aiDel": 1581,
-    "filesTouched": 340,
+    "totalCommits": 49,
+    "aiCommits": 43,
+    "aiPct": 88,
+    "appCommits": 29,
+    "ins": 30014,
+    "del": 1741,
+    "net": 28273,
+    "aiIns": 17637,
+    "aiDel": 1685,
+    "filesTouched": 343,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 20,
-        "ins": 11775,
-        "del": 655
+        "commits": 22,
+        "ins": 13197,
+        "del": 659
       },
       {
         "name": "Docs",
-        "commits": 20,
-        "ins": 8941,
-        "del": 832
+        "commits": 21,
+        "ins": 9061,
+        "del": 932
       },
       {
         "name": "API (NestJS)",
@@ -58,6 +58,26 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-06-19",
     "recent": [
+      {
+        "hash": "2daae7e",
+        "subject": "fix(web): surface delete-error in vendor products; add delete-error tests",
+        "ai": true
+      },
+      {
+        "hash": "de20644",
+        "subject": "feat(web): vendor product management UI (VP-3)",
+        "ai": true
+      },
+      {
+        "hash": "8074a30",
+        "subject": "index on chore/no-conflict-evidence-log: 4131375 Merge pull request #13 from michaeljvr11/chore/no-conflict-evidence-log",
+        "ai": false
+      },
+      {
+        "hash": "5b95bf4",
+        "subject": "chore(evidence): regenerate post-sync with current main",
+        "ai": true
+      },
       {
         "hash": "ce69ce7",
         "subject": "chore(evidence): update factory log",
@@ -97,26 +117,6 @@
         "hash": "effda17",
         "subject": "feat(vendors): harden self-onboarding — pending status, role grant, 409 on duplicate",
         "ai": true
-      },
-      {
-        "hash": "8760e96",
-        "subject": "chore(evidence): recompile AI evidence report post-merge with main",
-        "ai": true
-      },
-      {
-        "hash": "cd359f1",
-        "subject": "index on feat/IhTVdNYP-admin-catalog: 4558444 chore(evidence): recompile AI evidence report for AP-8 admin catalog",
-        "ai": false
-      },
-      {
-        "hash": "87bd111",
-        "subject": "untracked files on feat/IhTVdNYP-admin-catalog: 4558444 chore(evidence): recompile AI evidence report for AP-8 admin catalog",
-        "ai": false
-      },
-      {
-        "hash": "4558444",
-        "subject": "chore(evidence): recompile AI evidence report for AP-8 admin catalog",
-        "ai": true
       }
     ]
   },
@@ -147,6 +147,11 @@
       "slug": "admin-vendor-approvals"
     },
     {
+      "branch": "feat/xEOk5i0M-vendor-products",
+      "cardId": "xEOk5i0M",
+      "slug": "vendor-products"
+    },
+    {
       "branch": "feat/1fqtc2JF-vendor-onboarding",
       "cardId": "1fqtc2JF",
       "slug": "vendor-onboarding"
@@ -173,9 +178,9 @@
     }
   ],
   "tests": {
-    "total": 26,
+    "total": 27,
     "api": 6,
-    "web": 20
+    "web": 21
   },
   "design": {
     "files": 27,
@@ -199,18 +204,25 @@
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 8,
+    "gatePass": 9,
     "gateFail": 1,
     "edits": 60,
     "editsUnfixable": 20,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-19T15:01:01.309Z"
+    "lastTs": "2026-06-19T16:53:16.018Z"
   },
   "prs": [
     {
+      "headRefName": "feat/xEOk5i0M-vendor-products",
+      "number": 14,
+      "state": "OPEN",
+      "title": "feat(web): vendor product management UI (VP-3)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/14"
+    },
+    {
       "headRefName": "chore/no-conflict-evidence-log",
       "number": 13,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "chore(tooling): fix evidence/log merge conflicts via union driver + post-merge hook",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/13"
     },
@@ -306,19 +318,19 @@
     },
     {
       "name": "To Do",
-      "cards": 10
+      "cards": 8
     },
     {
       "name": "In Progress",
-      "cards": 0
-    },
-    {
-      "name": "In Review",
       "cards": 2
     },
     {
+      "name": "In Review",
+      "cards": 1
+    },
+    {
       "name": "Done",
-      "cards": 8
+      "cards": 9
     }
   ],
   "notes": []
