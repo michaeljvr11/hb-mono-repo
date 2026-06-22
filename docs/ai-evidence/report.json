@@ -1,70 +1,46 @@
 {
-  "generatedAt": "2026-06-19T17:13:49.430Z",
+  "generatedAt": "2026-06-22T11:41:45.103Z",
   "git": {
-    "totalCommits": 51,
-    "aiCommits": 46,
-    "aiPct": 90,
-    "appCommits": 32,
-    "ins": 32655,
-    "del": 1828,
-    "net": 30827,
-    "aiIns": 20278,
-    "aiDel": 1772,
-    "filesTouched": 355,
+    "totalCommits": 57,
+    "aiCommits": 52,
+    "aiPct": 91,
+    "appCommits": 36,
+    "ins": 35485,
+    "del": 2011,
+    "net": 33474,
+    "aiIns": 23108,
+    "aiDel": 1955,
+    "filesTouched": 371,
     "areaRows": [
       {
         "name": "Web (Angular)",
+        "commits": 27,
+        "ins": 16947,
+        "del": 683
+      },
+      {
+        "name": "Docs",
         "commits": 24,
-        "ins": 15117,
-        "del": 671
-      },
-      {
-        "name": "Docs",
-        "commits": 22,
-        "ins": 9144,
-        "del": 1002
-  "generatedAt": "2026-06-19T16:53:25.943Z",
-  "git": {
-    "totalCommits": 49,
-    "aiCommits": 43,
-    "aiPct": 88,
-    "appCommits": 29,
-    "ins": 30014,
-    "del": 1741,
-    "net": 28273,
-    "aiIns": 17637,
-    "aiDel": 1685,
-    "filesTouched": 343,
-    "areaRows": [
-      {
-        "name": "Web (Angular)",
-        "commits": 22,
-        "ins": 13197,
-        "del": 659
-      },
-      {
-        "name": "Docs",
-        "commits": 21,
-        "ins": 9061,
-        "del": 932
+        "ins": 9321,
+        "del": 1157
       },
       {
         "name": "API (NestJS)",
-        "commits": 17,
-        "ins": 6497,
-        "del": 108
+        "commits": 20,
+        "ins": 7247,
+        "del": 123
       },
       {
         "name": "AI Factory config",
-        "commits": 20,
-        "ins": 781,
+        "commits": 22,
+        "ins": 800,
         "del": 23
       },
       {
         "name": "Shared contracts",
-        "commits": 7,
-        "ins": 501,
-        "del": 2
+        "commits": 9,
+        "ins": 555,
+        "del": 3
       },
       {
         "name": "Root & config",
@@ -80,8 +56,38 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-06-19",
+    "lastDate": "2026-06-22",
     "recent": [
+      {
+        "hash": "51d9fe8",
+        "subject": "fix(api): make audit \"to\" filter inclusive of selected day; tighten audit tests",
+        "ai": true
+      },
+      {
+        "hash": "ca28265",
+        "subject": "feat(web): admin audit log viewer (filterable activity table)",
+        "ai": true
+      },
+      {
+        "hash": "cdab6ca",
+        "subject": "feat(api): add admin audit log trail + query endpoint",
+        "ai": true
+      },
+      {
+        "hash": "7b436c7",
+        "subject": "chore(evidence): recompile AI evidence report for VP-2 vendor dashboard",
+        "ai": true
+      },
+      {
+        "hash": "e454b23",
+        "subject": "feat(vendor): VP-2 — dashboard screen + read-model endpoint",
+        "ai": true
+      },
+      {
+        "hash": "6ca422a",
+        "subject": "chore(evidence): recompile AI evidence report for AP-10",
+        "ai": true
+      },
       {
         "hash": "d3a4088",
         "subject": "refactor(admin): address review nits for AP-10",
@@ -111,56 +117,6 @@
         "hash": "de20644",
         "subject": "feat(web): vendor product management UI (VP-3)",
         "ai": true
-      },
-      {
-        "hash": "8074a30",
-        "subject": "index on chore/no-conflict-evidence-log: 4131375 Merge pull request #13 from michaeljvr11/chore/no-conflict-evidence-log",
-        "ai": false
-      },
-      {
-        "hash": "5b95bf4",
-        "subject": "chore(evidence): regenerate post-sync with current main",
-        "ai": true
-      },
-      {
-        "hash": "ce69ce7",
-        "subject": "chore(evidence): update factory log",
-        "ai": true
-      },
-      {
-        "hash": "58c4162",
-        "subject": "chore(tooling): fix evidence/log merge conflicts via union driver + post-merge hook",
-        "ai": true
-      },
-      {
-        "hash": "f288724",
-        "subject": "chore(evidence): recompile AI evidence report for VP-5 vendor onboarding",
-        "ai": true
-      },
-      {
-        "hash": "5aeaea3",
-        "subject": "fix(vendors): address code-review nits — typed test dto + resilient 409 status load",
-        "ai": true
-      },
-      {
-        "hash": "0c40fa6",
-        "subject": "feat(web): vendor onboarding \"become a vendor\" flow (VP-5)",
-        "ai": true
-      },
-      {
-        "hash": "4e78fb4",
-        "subject": "chore(evidence): recompile AI evidence report for AP-9 admin user management",
-        "ai": true
-      },
-      {
-        "hash": "30488db",
-        "subject": "feat(admin): user management screen + NestJS admin module (AP-9)",
-        "ai": true
-      },
-      {
-        "hash": "effda17",
-        "subject": "feat(vendors): harden self-onboarding — pending status, role grant, 409 on duplicate",
-        "ai": true
       }
     ]
   },
@@ -169,6 +125,11 @@
       "branch": "feat/1fqtc2JF-vendor-onboarding",
       "cardId": "1fqtc2JF",
       "slug": "vendor-onboarding"
+    },
+    {
+      "branch": "feat/7oPc1cnk-admin-audit-log",
+      "cardId": "7oPc1cnk",
+      "slug": "admin-audit-log"
     },
     {
       "branch": "feat/DD6Z0NUW-admin-vendor-approvals",
@@ -194,6 +155,11 @@
       "branch": "feat/mMFxZIKE-login-registration-pages",
       "cardId": "mMFxZIKE",
       "slug": "login-registration-pages"
+    },
+    {
+      "branch": "feat/oWqIV57s-vendor-dashboard",
+      "cardId": "oWqIV57s",
+      "slug": "vendor-dashboard"
     },
     {
       "branch": "feat/sw8qYBV1-admin-orders-dashboard",
@@ -227,40 +193,9 @@
     }
   ],
   "tests": {
-    "total": 29,
-    "api": 7,
-    "web": 22
-    },
-    {
-      "branch": "feat/1fqtc2JF-vendor-onboarding",
-      "cardId": "1fqtc2JF",
-      "slug": "vendor-onboarding"
-    },
-    {
-      "branch": "feat/DD6Z0NUW-admin-vendor-approvals",
-      "cardId": "DD6Z0NUW",
-      "slug": "admin-vendor-approvals"
-    },
-    {
-      "branch": "feat/Z1ADCLQm-admin-portal-shell",
-      "cardId": "Z1ADCLQm",
-      "slug": "admin-portal-shell"
-    },
-    {
-      "branch": "feat/ai-evidence-system",
-      "cardId": "ai",
-      "slug": "evidence-system"
-    },
-    {
-      "branch": "feat/mMFxZIKE-login-registration-pages",
-      "cardId": "mMFxZIKE",
-      "slug": "login-registration-pages"
-    }
-  ],
-  "tests": {
-    "total": 27,
-    "api": 6,
-    "web": 21
+    "total": 33,
+    "api": 8,
+    "web": 25
   },
   "design": {
     "files": 27,
@@ -277,26 +212,46 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 14,
+    "prodBlocks": 15,
     "blockReasons": {
-      "push names a protected branch": 10,
+      "push names a protected branch": 11,
       "force push": 1,
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 9,
+    "gatePass": 11,
     "gateFail": 1,
-    "edits": 69,
-    "editsUnfixable": 21,
+    "edits": 113,
+    "editsUnfixable": 39,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-19T17:12:27.927Z"
-    "lastTs": "2026-06-19T16:53:16.018Z"
+    "lastTs": "2026-06-22T11:41:16.540Z"
   },
   "prs": [
     {
+      "headRefName": "feat/7oPc1cnk-admin-audit-log",
+      "number": 17,
+      "state": "OPEN",
+      "title": "feat: admin audit log — activity trail + admin viewer (AP-11)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/17"
+    },
+    {
+      "headRefName": "feat/sw8qYBV1-admin-orders-dashboard",
+      "number": 16,
+      "state": "MERGED",
+      "title": "feat(admin): order oversight + dashboard metrics (AP-10)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/16"
+    },
+    {
+      "headRefName": "feat/oWqIV57s-vendor-dashboard",
+      "number": 15,
+      "state": "MERGED",
+      "title": "feat(vendor): VP-2 — vendor dashboard screen + read-model endpoint",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/15"
+    },
+    {
       "headRefName": "feat/xEOk5i0M-vendor-products",
       "number": 14,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(web): vendor product management UI (VP-3)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/14"
     },
@@ -399,19 +354,15 @@
     },
     {
       "name": "To Do",
-      "cards": 8
+      "cards": 6
     },
     {
       "name": "In Progress",
-      "cards": 1
+      "cards": 0
     },
     {
       "name": "In Review",
-      "cards": 2
-    },
-    {
-      "name": "In Review",
-      "cards": 1
+      "cards": 5
     },
     {
       "name": "Done",
