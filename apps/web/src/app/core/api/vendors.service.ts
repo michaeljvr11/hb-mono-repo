@@ -7,6 +7,7 @@ import {
   CreateVendorRequest,
   UpdateVendorRequest,
   UpdateVendorStatusRequest,
+  VendorDashboardDto,
   VendorDto as Vendor,
 } from '@hb/shared';
 import { environment } from '../../../environments/environment';
@@ -49,6 +50,10 @@ export class VendorsService {
 
   directory(): Observable<Vendor[]> {
     return this.http.get<Vendor[]>(`${this.API_URL}/directory`);
+  }
+
+  getDashboard(): Observable<VendorDashboardDto> {
+    return this.http.get<VendorDashboardDto>(`${this.API_URL}/me/dashboard`);
   }
 
   delete(id: string): Observable<void> {

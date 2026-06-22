@@ -1,9 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { VendorStatus, UserRole, CountryCode } from '@hb/shared';
+import { CurrencyCode, VendorStatus, UserRole, CountryCode } from '@hb/shared';
 import { VendorsService } from './vendors.service';
 import { Vendor } from './entities/vendor.entity';
+import { Product } from '../products/entities/product.entity';
+import { OrderItem } from '../orders/entities/order-item.entity';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
@@ -25,9 +27,31 @@ const mockUser = (overrides: Partial<User> = {}): User =>
     ...overrides,
   }) as User;
 
+const makeQb = (overrides: Record<string, jest.Mock> = {}) => {
+  const qb: Record<string, jest.Mock> = {
+    select: jest.fn(),
+    addSelect: jest.fn(),
+    leftJoin: jest.fn(),
+    where: jest.fn(),
+    groupBy: jest.fn(),
+    getRawOne: jest.fn(),
+    getRawMany: jest.fn(),
+    ...overrides,
+  };
+  // chain all methods back to the same qb
+  Object.keys(qb).forEach((k) => {
+    if (k !== 'getRawOne' && k !== 'getRawMany') {
+      qb[k].mockReturnValue(qb);
+    }
+  });
+  return qb;
+};
+
 describe('VendorsService', () => {
   let service: VendorsService;
   let vendorRepo: Record<string, jest.Mock>;
+  let productRepo: Record<string, jest.Mock>;
+  let orderItemRepo: Record<string, jest.Mock>;
   let usersService: { update: jest.Mock };
 
   beforeEach(async () => {
@@ -39,12 +63,18 @@ describe('VendorsService', () => {
       delete: jest.fn(),
     };
 
+    productRepo = { count: jest.fn() };
+
+    orderItemRepo = { createQueryBuilder: jest.fn() };
+
     usersService = { update: jest.fn() };
 
     const module = await Test.createTestingModule({
       providers: [
         VendorsService,
         { provide: getRepositoryToken(Vendor), useValue: vendorRepo },
+        { provide: getRepositoryToken(Product), useValue: productRepo },
+        { provide: getRepositoryToken(OrderItem), useValue: orderItemRepo },
         { provide: UsersService, useValue: usersService },
       ],
     }).compile();
@@ -246,6 +276,66 @@ describe('VendorsService', () => {
         where: { status: VendorStatus.APPROVED },
         order: { businessName: 'ASC' },
       });
+    });
+  });
+
+  describe('getDashboard', () => {
+    const vendor = mockVendor({ id: 'v1', userId: 'u1' });
+
+    function setupDashboardMocks(
+      revenueRaw: { totalRevenue: string | null } | null,
+      statusRaw: { status: string; count: string }[],
+    ) {
+      vendorRepo.findOne.mockResolvedValue(vendor);
+      productRepo.count.mockResolvedValue(5);
+
+      const revenueQb = makeQb({ getRawOne: jest.fn().mockResolvedValue(revenueRaw) });
+      const statusQb = makeQb({ getRawMany: jest.fn().mockResolvedValue(statusRaw) });
+      orderItemRepo.createQueryBuilder.mockReturnValueOnce(revenueQb).mockReturnValueOnce(statusQb);
+    }
+
+    it('returns productCount from the product repository', async () => {
+      setupDashboardMocks({ totalRevenue: '0' }, []);
+      const result = await service.getDashboard('u1');
+      expect(result.productCount).toBe(5);
+    });
+
+    it('parses totalRevenue from the decimal string returned by the query', async () => {
+      setupDashboardMocks({ totalRevenue: '1500.50' }, []);
+      const result = await service.getDashboard('u1');
+      expect(result.totalRevenue).toBeCloseTo(1500.5);
+    });
+
+    it('returns 0 totalRevenue when no order items exist (null aggregate)', async () => {
+      setupDashboardMocks(null, []);
+      const result = await service.getDashboard('u1');
+      expect(result.totalRevenue).toBe(0);
+    });
+
+    it('returns 0 totalRevenue when aggregate returns null totalRevenue field', async () => {
+      setupDashboardMocks({ totalRevenue: null }, []);
+      const result = await service.getDashboard('u1');
+      expect(result.totalRevenue).toBe(0);
+    });
+
+    it('builds orderCountByStatus from the status group rows', async () => {
+      setupDashboardMocks({ totalRevenue: '500.00' }, [
+        { status: 'pending', count: '3' },
+        { status: 'delivered', count: '7' },
+      ]);
+      const result = await service.getDashboard('u1');
+      expect(result.orderCountByStatus).toEqual({ pending: 3, delivered: 7 });
+    });
+
+    it('returns ZAR as the currency', async () => {
+      setupDashboardMocks({ totalRevenue: '0' }, []);
+      const result = await service.getDashboard('u1');
+      expect(result.currency).toBe(CurrencyCode.ZAR);
+    });
+
+    it('throws NotFoundException when the vendor profile does not exist', async () => {
+      vendorRepo.findOne.mockResolvedValue(null);
+      await expect(service.getDashboard('no-such-user')).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 });

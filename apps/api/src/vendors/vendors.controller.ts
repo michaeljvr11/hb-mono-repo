@@ -52,6 +52,12 @@ export class VendorsController {
     return this.vendorsService.findByUserId(user.id);
   }
 
+  @Get('me/dashboard')
+  @Roles(UserRole.VENDOR)
+  getMyDashboard(@GetUser() user: User) {
+    return this.vendorsService.getDashboard(user.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.vendorsService.findOne(id);
