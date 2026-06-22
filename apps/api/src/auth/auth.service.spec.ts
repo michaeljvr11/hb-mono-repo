@@ -7,6 +7,7 @@ import { UserRole } from '@hb/shared';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
+import { AuditService } from '../audit/audit.service';
 
 // bcryptjs exports are non-configurable, so spyOn can't wrap them — mock the module.
 jest.mock('bcryptjs', () => ({
@@ -21,6 +22,7 @@ describe('AuthService', () => {
   let usersService: Record<string, jest.Mock>;
   let jwtService: { sign: jest.Mock };
   let mailService: Record<string, jest.Mock>;
+  let auditService: { log: jest.Mock; query: jest.Mock };
 
   beforeEach(async () => {
     usersService = {
@@ -38,6 +40,7 @@ describe('AuthService', () => {
     };
     jwtService = { sign: jest.fn().mockReturnValue('signed.jwt') };
     mailService = { sendPasswordReset: jest.fn(), sendEmailVerification: jest.fn() };
+    auditService = { log: jest.fn().mockResolvedValue(undefined), query: jest.fn() };
 
     const module = await Test.createTestingModule({
       providers: [
@@ -46,6 +49,7 @@ describe('AuthService', () => {
         { provide: JwtService, useValue: jwtService },
         { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('cfg') } },
         { provide: MailService, useValue: mailService },
+        { provide: AuditService, useValue: auditService },
       ],
     }).compile();
 
@@ -140,6 +144,15 @@ describe('AuthService', () => {
         }),
       );
       expect(result.access_token).toBe('signed.jwt');
+      // The self-sealing bootstrap is an auditable event (card: log admin bootstrap).
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'a1',
+          action: 'admin.bootstrapped',
+          entityType: 'user',
+          entityId: 'a1',
+        }),
+      );
     });
 
     it('C: throws BadRequestException when the email is already taken', async () => {

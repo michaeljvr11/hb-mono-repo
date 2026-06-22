@@ -36,8 +36,12 @@ export class VendorsController {
 
   @Patch(':id/status')
   @Roles(UserRole.ADMIN)
-  updateStatus(@Param('id') id: string, @Body() body: UpdateVendorStatusDto) {
-    return this.vendorsService.updateStatus(id, body.status);
+  updateStatus(
+    @Param('id') id: string,
+    @Body() body: UpdateVendorStatusDto,
+    @GetUser() user: User,
+  ) {
+    return this.vendorsService.updateStatus(id, body.status, user.id);
   }
 
   @Public()

@@ -4,6 +4,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ILike } from 'typeorm';
 import { UserRole } from '@hb/shared';
 import { AdminService } from './admin.service';
+import { AuditService } from '../audit/audit.service';
 import { User } from '../users/entities/user.entity';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -29,6 +30,7 @@ const mockUser = (overrides: Partial<User> = {}): User =>
 describe('AdminService', () => {
   let service: AdminService;
   let usersRepo: Record<string, jest.Mock>;
+  let auditService: { log: jest.Mock; query: jest.Mock };
 
   beforeEach(async () => {
     usersRepo = {
@@ -37,8 +39,14 @@ describe('AdminService', () => {
       update: jest.fn(),
     };
 
+    auditService = { log: jest.fn().mockResolvedValue(undefined), query: jest.fn() };
+
     const module = await Test.createTestingModule({
-      providers: [AdminService, { provide: getRepositoryToken(User), useValue: usersRepo }],
+      providers: [
+        AdminService,
+        { provide: getRepositoryToken(User), useValue: usersRepo },
+        { provide: AuditService, useValue: auditService },
+      ],
     }).compile();
 
     service = module.get(AdminService);
@@ -291,6 +299,19 @@ describe('AdminService', () => {
       const result = await service.setUserActive(REQUESTER, true, REQUESTER);
 
       expect(result.isActive).toBe(true);
+    });
+
+    // Card acceptance criterion: deactivating a user writes a user.deactivated audit entry.
+    it('calls auditService.log with action user.deactivated when deactivating a user', async () => {
+      const user = mockUser({ id: 'u1', isActive: true });
+      usersRepo.findOne.mockResolvedValue(user);
+      usersRepo.update.mockResolvedValue(undefined);
+
+      await service.setUserActive('u1', false, REQUESTER);
+
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'user.deactivated', entityId: 'u1' }),
+      );
     });
   });
 });

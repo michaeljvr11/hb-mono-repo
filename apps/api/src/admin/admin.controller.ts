@@ -5,10 +5,12 @@ import { User } from '../users/entities/user.entity';
 import { UserRole } from '@hb/shared';
 import { AdminService } from './admin.service';
 import { AdminOrdersService } from './admin-orders.service';
+import { AuditService } from '../audit/audit.service';
 import { AdminUserQueryDto } from './dto/admin-user-query.dto';
 import { AdminOrderQueryDto } from './dto/admin-order-query.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { SetUserActiveDto } from './dto/set-user-active.dto';
+import { AuditLogQueryDto } from '../audit/dto/audit-log-query.dto';
 
 @Controller('admin')
 @Roles(UserRole.ADMIN)
@@ -16,6 +18,7 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly adminOrdersService: AdminOrdersService,
+    private readonly auditService: AuditService,
   ) {}
 
   @Get('users')
@@ -49,5 +52,10 @@ export class AdminController {
   @Get('dashboard')
   getDashboard() {
     return this.adminOrdersService.getDashboard();
+  }
+
+  @Get('audit-logs')
+  listAuditLogs(@Query() query: AuditLogQueryDto) {
+    return this.auditService.query(query);
   }
 }

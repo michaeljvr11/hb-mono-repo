@@ -1,0 +1,212 @@
+<section class="logs-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Audit Log</h1>
+    <p class="page-sub">Privileged-action history across the platform. Append-only.</p>
+  </header>
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="filters-bar" role="search" aria-label="Audit log filters">
+    <!-- Action filter -->
+    <div class="filter-field">
+      <label class="filter-label" for="actionFilter">Action</label>
+      <div class="search-bar">
+        <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
+        <input
+          id="actionFilter"
+          class="search-input"
+          type="search"
+          placeholder="e.g. vendor.status_changed"
+          aria-label="Filter by action"
+          [value]="actionFilter()"
+          (input)="onActionInput($event)"
+        />
+      </div>
+    </div>
+
+    <!-- Entity type filter -->
+    <div class="filter-field">
+      <label class="filter-label" for="entityTypeFilter">Entity type</label>
+      <select
+        id="entityTypeFilter"
+        class="filter-select"
+        aria-label="Filter by entity type"
+        [value]="entityTypeFilter()"
+        (change)="onEntityTypeChange($event)"
+      >
+        @for (opt of entityTypeOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Date from -->
+    <div class="filter-field">
+      <label class="filter-label" for="fromFilter">From</label>
+      <input
+        id="fromFilter"
+        class="filter-input"
+        type="date"
+        aria-label="Filter from date"
+        [value]="fromFilter()"
+        (input)="onFromInput($event)"
+      />
+    </div>
+
+    <!-- Date to -->
+    <div class="filter-field">
+      <label class="filter-label" for="toFilter">To</label>
+      <input
+        id="toFilter"
+        class="filter-input"
+        type="date"
+        aria-label="Filter to date"
+        [value]="toFilter()"
+        (input)="onToInput($event)"
+      />
+    </div>
+
+    <!-- User ID filter -->
+    <div class="filter-field">
+      <label class="filter-label" for="userIdFilter">Actor (user ID)</label>
+      <input
+        id="userIdFilter"
+        class="filter-input"
+        type="search"
+        placeholder="UUID"
+        aria-label="Filter by actor user ID"
+        [value]="userIdFilter()"
+        (input)="onUserIdInput($event)"
+      />
+    </div>
+
+    <!-- Apply / Clear -->
+    <div class="filter-actions">
+      <button class="btn-apply" type="button" (click)="applyFilters()">Apply</button>
+      <button class="btn-clear" type="button" (click)="clearFilters()">Clear</button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading audit logs&hellip;</p>
+    </div>
+  }
+
+  @if (!loading()) {
+    <!-- Empty state -->
+    @if (result().items.length === 0) {
+      <div class="list-empty">
+        <span class="material-symbols-outlined" aria-hidden="true">manage_search</span>
+        <p>No activity logged yet.</p>
+        <span class="list-empty-sub">Privileged actions will appear here as they occur.</span>
+      </div>
+    }
+
+    <!-- Log table -->
+    @if (result().items.length > 0) {
+      <div class="table-wrapper">
+        <table class="log-table" aria-label="Audit log entries">
+          <thead>
+            <tr>
+              <th scope="col" class="col-timestamp">Timestamp</th>
+              <th scope="col" class="col-actor">Actor</th>
+              <th scope="col" class="col-action">Action</th>
+              <th scope="col" class="col-entity">Entity</th>
+              <th scope="col" class="col-meta" aria-label="Metadata"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of result().items; track entry.id) {
+              <tr
+                class="log-row"
+                [class.log-row--expanded]="expandedId() === entry.id"
+              >
+                <td class="col-timestamp">
+                  <span class="timestamp">{{ entry.createdAt | date:'d MMM y, HH:mm:ss' }}</span>
+                </td>
+                <td class="col-actor">
+                  @if (entry.userId) {
+                    <span class="actor-id" [title]="entry.userId">{{ shortId(entry.userId) }}&hellip;</span>
+                  } @else {
+                    <span class="actor-system">system</span>
+                  }
+                </td>
+                <td class="col-action">
+                  <span class="action-key">{{ entry.action }}</span>
+                </td>
+                <td class="col-entity">
+                  <span class="entity-type">{{ entry.entityType }}</span>
+                  <span class="entity-id" [title]="entry.entityId">{{ shortId(entry.entityId) }}&hellip;</span>
+                </td>
+                <td class="col-meta">
+                  @if (hasMetadata(entry)) {
+                    <button
+                      class="meta-toggle"
+                      type="button"
+                      [attr.aria-expanded]="expandedId() === entry.id"
+                      [attr.aria-controls]="'meta-' + entry.id"
+                      (click)="toggleExpand(entry.id)"
+                      aria-label="Toggle metadata"
+                    >
+                      <span class="material-symbols-outlined" aria-hidden="true">
+                        {{ expandedId() === entry.id ? 'expand_less' : 'expand_more' }}
+                      </span>
+                    </button>
+                  }
+                </td>
+              </tr>
+              @if (expandedId() === entry.id && hasMetadata(entry)) {
+                <tr class="meta-row" [id]="'meta-' + entry.id">
+                  <td colspan="5">
+                    <pre class="meta-pre">{{ metadataSummary(entry) }}</pre>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" aria-label="Pagination">
+        <button
+          class="page-btn"
+          type="button"
+          [disabled]="isPrevDisabled()"
+          (click)="goToPrev()"
+          aria-label="Previous page"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+          Prev
+        </button>
+
+        <span class="page-info" aria-live="polite">
+          Page {{ result().page }} of {{ result().pageCount }}
+          <span class="page-total">({{ result().total }} total)</span>
+        </span>
+
+        <button
+          class="page-btn"
+          type="button"
+          [disabled]="isNextDisabled()"
+          (click)="goToNext()"
+          aria-label="Next page"
+        >
+          Next
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+      </div>
+    }
+  }
+</section>
