@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { CurrencyCode, VendorStatus, UserRole, CountryCode } from '@hb/shared';
 import { VendorsService } from './vendors.service';
+import { AuditService } from '../audit/audit.service';
 import { Vendor } from './entities/vendor.entity';
 import { Product } from '../products/entities/product.entity';
 import { OrderItem } from '../orders/entities/order-item.entity';
@@ -53,6 +54,7 @@ describe('VendorsService', () => {
   let productRepo: Record<string, jest.Mock>;
   let orderItemRepo: Record<string, jest.Mock>;
   let usersService: { update: jest.Mock };
+  let auditService: { log: jest.Mock; query: jest.Mock };
 
   beforeEach(async () => {
     vendorRepo = {
@@ -69,6 +71,8 @@ describe('VendorsService', () => {
 
     usersService = { update: jest.fn() };
 
+    auditService = { log: jest.fn().mockResolvedValue(undefined), query: jest.fn() };
+
     const module = await Test.createTestingModule({
       providers: [
         VendorsService,
@@ -76,6 +80,7 @@ describe('VendorsService', () => {
         { provide: getRepositoryToken(Product), useValue: productRepo },
         { provide: getRepositoryToken(OrderItem), useValue: orderItemRepo },
         { provide: UsersService, useValue: usersService },
+        { provide: AuditService, useValue: auditService },
       ],
     }).compile();
 

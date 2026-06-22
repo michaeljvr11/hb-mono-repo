@@ -18,6 +18,7 @@ import { AdminVendorResponseDto } from './dto/admin-vendor-response.dto';
 import { VendorDashboardResponseDto } from './dto/vendor-dashboard-response.dto';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import { AuditAction, AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class VendorsService {
@@ -29,6 +30,7 @@ export class VendorsService {
     @InjectRepository(OrderItem)
     private orderItemRepository: Repository<OrderItem>,
     private usersService: UsersService,
+    private auditService: AuditService,
   ) {}
 
   private toResponseDto(vendor: Vendor): VendorResponseDto {
@@ -107,7 +109,11 @@ export class VendorsService {
     [VendorStatus.REJECTED]: [],
   };
 
-  async updateStatus(id: string, newStatus: VendorStatus): Promise<VendorResponseDto> {
+  async updateStatus(
+    id: string,
+    newStatus: VendorStatus,
+    actingUserId?: string,
+  ): Promise<VendorResponseDto> {
     const vendor = await this.vendorRepository.findOne({ where: { id } });
     if (!vendor) throw new NotFoundException('Vendor not found');
 
@@ -118,8 +124,18 @@ export class VendorsService {
       );
     }
 
+    const previousStatus = vendor.status;
     vendor.status = newStatus;
     const updated = await this.vendorRepository.save(vendor);
+
+    await this.auditService.log({
+      userId: actingUserId ?? null,
+      action: AuditAction.VENDOR_STATUS_CHANGED,
+      entityType: 'vendor',
+      entityId: id,
+      metadata: { from: previousStatus, to: newStatus },
+    });
+
     return this.toResponseDto(updated);
   }
 

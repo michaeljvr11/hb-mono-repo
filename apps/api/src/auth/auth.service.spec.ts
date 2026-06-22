@@ -7,6 +7,7 @@ import { UserRole } from '@hb/shared';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
+import { AuditService } from '../audit/audit.service';
 
 // bcryptjs exports are non-configurable, so spyOn can't wrap them — mock the module.
 jest.mock('bcryptjs', () => ({
@@ -46,6 +47,10 @@ describe('AuthService', () => {
         { provide: JwtService, useValue: jwtService },
         { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('cfg') } },
         { provide: MailService, useValue: mailService },
+        {
+          provide: AuditService,
+          useValue: { log: jest.fn().mockResolvedValue(undefined), query: jest.fn() },
+        },
       ],
     }).compile();
 

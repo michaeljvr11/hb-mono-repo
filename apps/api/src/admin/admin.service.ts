@@ -5,6 +5,7 @@ import { UserRole } from '@hb/shared';
 import { User } from '../users/entities/user.entity';
 import { AdminUserResponseDto } from './dto/admin-user-response.dto';
 import { AdminUserQueryDto } from './dto/admin-user-query.dto';
+import { AuditAction, AuditService } from '../audit/audit.service';
 
 function toAdminDto(user: User): AdminUserResponseDto {
   return {
@@ -25,6 +26,7 @@ export class AdminService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly auditService: AuditService,
   ) {}
 
   async listUsers(query: AdminUserQueryDto): Promise<AdminUserResponseDto[]> {
@@ -63,6 +65,13 @@ export class AdminService {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
     await this.usersRepository.update(id, { role });
+    await this.auditService.log({
+      userId: requestingUserId,
+      action: AuditAction.USER_ROLE_ASSIGNED,
+      entityType: 'user',
+      entityId: id,
+      metadata: { role },
+    });
     return { ...toAdminDto(user), role };
   }
 
@@ -77,6 +86,12 @@ export class AdminService {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
     await this.usersRepository.update(id, { isActive });
+    await this.auditService.log({
+      userId: requestingUserId,
+      action: isActive ? AuditAction.USER_ACTIVATED : AuditAction.USER_DEACTIVATED,
+      entityType: 'user',
+      entityId: id,
+    });
     return { ...toAdminDto(user), isActive };
   }
 }

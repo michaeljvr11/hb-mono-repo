@@ -17,6 +17,7 @@ import { LoginDto } from './dto/login.dto';
 import { BootstrapAdminDto } from './dto/bootstrap-admin.dto';
 import { GoogleProfile } from './strategies/google.strategy';
 import { User } from '../users/entities/user.entity';
+import { AuditAction, AuditService } from '../audit/audit.service';
 
 // Refresh-session longevity (see Auth & Roles note): "remember me" → 30 days,
 // otherwise 24 hours. The access token stays short-lived via JWT_EXPIRATION.
@@ -36,6 +37,7 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private mailService: MailService,
+    private auditService: AuditService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -143,6 +145,13 @@ export class AuthService {
       password: dto.password,
       role: UserRole.ADMIN,
       isVerified: true,
+    });
+
+    await this.auditService.log({
+      userId: user.id,
+      action: AuditAction.ADMIN_BOOTSTRAPPED,
+      entityType: 'user',
+      entityId: user.id,
     });
 
     return this.getTokensAndUpdateRefresh(user, false);

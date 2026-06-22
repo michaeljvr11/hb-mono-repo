@@ -17,6 +17,7 @@ import { FileUrlService } from './upload/file-url.service';
 import { User } from '../users/entities/user.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
 import { Category } from '../categories/entities/category.entity';
+import { AuditAction, AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class ProductsService {
@@ -30,6 +31,7 @@ export class ProductsService {
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
     private fileUrlService: FileUrlService,
+    private auditService: AuditService,
   ) {}
 
   async create(
@@ -103,7 +105,14 @@ export class ProductsService {
     });
 
     if (!files?.length) {
-      return this.findOne(product.id);
+      const created = await this.findOne(product.id);
+      await this.auditService.log({
+        userId: currentUser.id,
+        action: AuditAction.PRODUCT_CREATED,
+        entityType: 'product',
+        entityId: product.id,
+      });
+      return created;
     }
 
     if (files.length > 8) {
@@ -120,7 +129,14 @@ export class ProductsService {
 
     await this.addMultipleImages(product.id, imageDtos);
 
-    return this.findOne(product.id);
+    const created = await this.findOne(product.id);
+    await this.auditService.log({
+      userId: currentUser.id,
+      action: AuditAction.PRODUCT_CREATED,
+      entityType: 'product',
+      entityId: product.id,
+    });
+    return created;
   }
 
   async addMultipleImages(
@@ -210,6 +226,12 @@ export class ProductsService {
     }
 
     const updated = await this.productsRepository.save(product);
+    await this.auditService.log({
+      userId: currentUser.id,
+      action: AuditAction.PRODUCT_UPDATED,
+      entityType: 'product',
+      entityId: productId,
+    });
     return this.findOne(updated.id);
   }
 
@@ -229,6 +251,13 @@ export class ProductsService {
     if (result.affected === 0) {
       throw new NotFoundException('Product not found');
     }
+
+    await this.auditService.log({
+      userId: currentUser.id,
+      action: AuditAction.PRODUCT_DELETED,
+      entityType: 'product',
+      entityId: id,
+    });
   }
 
   private ensureCanManageProduct(product: Product, currentUser: User): void {
