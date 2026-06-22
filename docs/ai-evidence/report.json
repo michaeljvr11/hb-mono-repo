@@ -1,4 +1,28 @@
 {
+  "generatedAt": "2026-06-19T17:13:49.430Z",
+  "git": {
+    "totalCommits": 51,
+    "aiCommits": 46,
+    "aiPct": 90,
+    "appCommits": 32,
+    "ins": 32655,
+    "del": 1828,
+    "net": 30827,
+    "aiIns": 20278,
+    "aiDel": 1772,
+    "filesTouched": 355,
+    "areaRows": [
+      {
+        "name": "Web (Angular)",
+        "commits": 24,
+        "ins": 15117,
+        "del": 671
+      },
+      {
+        "name": "Docs",
+        "commits": 22,
+        "ins": 9144,
+        "del": 1002
   "generatedAt": "2026-06-19T16:53:25.943Z",
   "git": {
     "totalCommits": 49,
@@ -26,27 +50,27 @@
       },
       {
         "name": "API (NestJS)",
-        "commits": 15,
-        "ins": 5779,
-        "del": 104
+        "commits": 17,
+        "ins": 6497,
+        "del": 108
       },
       {
         "name": "AI Factory config",
         "commits": 20,
-        "ins": 930,
+        "ins": 781,
         "del": 23
+      },
+      {
+        "name": "Shared contracts",
+        "commits": 7,
+        "ins": 501,
+        "del": 2
       },
       {
         "name": "Root & config",
         "commits": 10,
         "ins": 415,
         "del": 20
-      },
-      {
-        "name": "Shared contracts",
-        "commits": 5,
-        "ins": 432,
-        "del": 1
       },
       {
         "name": "CI / templates",
@@ -58,6 +82,26 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-06-19",
     "recent": [
+      {
+        "hash": "d3a4088",
+        "subject": "refactor(admin): address review nits for AP-10",
+        "ai": true
+      },
+      {
+        "hash": "9d157f4",
+        "subject": "feat(web): admin order oversight + dashboard screens (AP-10)",
+        "ai": true
+      },
+      {
+        "hash": "d861715",
+        "subject": "chore(evidence): recompile AI evidence report for VP-3 vendor products",
+        "ai": true
+      },
+      {
+        "hash": "9efb5ff",
+        "subject": "feat(admin): order oversight + dashboard read-model endpoints (AP-10)",
+        "ai": true
+      },
       {
         "hash": "2daae7e",
         "subject": "fix(web): surface delete-error in vendor products; add delete-error tests",
@@ -122,9 +166,39 @@
   },
   "branches": [
     {
+      "branch": "feat/1fqtc2JF-vendor-onboarding",
+      "cardId": "1fqtc2JF",
+      "slug": "vendor-onboarding"
+    },
+    {
+      "branch": "feat/DD6Z0NUW-admin-vendor-approvals",
+      "cardId": "DD6Z0NUW",
+      "slug": "admin-vendor-approvals"
+    },
+    {
       "branch": "feat/EXPtZCJL-vendor-portal-shell",
       "cardId": "EXPtZCJL",
       "slug": "vendor-portal-shell"
+    },
+    {
+      "branch": "feat/Z1ADCLQm-admin-portal-shell",
+      "cardId": "Z1ADCLQm",
+      "slug": "admin-portal-shell"
+    },
+    {
+      "branch": "feat/ai-evidence-system",
+      "cardId": "ai",
+      "slug": "evidence-system"
+    },
+    {
+      "branch": "feat/mMFxZIKE-login-registration-pages",
+      "cardId": "mMFxZIKE",
+      "slug": "login-registration-pages"
+    },
+    {
+      "branch": "feat/sw8qYBV1-admin-orders-dashboard",
+      "cardId": "sw8qYBV1",
+      "slug": "admin-orders-dashboard"
     },
     {
       "branch": "feat/IhTVdNYP-admin-catalog",
@@ -150,6 +224,12 @@
       "branch": "feat/xEOk5i0M-vendor-products",
       "cardId": "xEOk5i0M",
       "slug": "vendor-products"
+    }
+  ],
+  "tests": {
+    "total": 29,
+    "api": 7,
+    "web": 22
     },
     {
       "branch": "feat/1fqtc2JF-vendor-onboarding",
@@ -206,9 +286,10 @@
     },
     "gatePass": 9,
     "gateFail": 1,
-    "edits": 60,
-    "editsUnfixable": 20,
+    "edits": 69,
+    "editsUnfixable": 21,
     "firstTs": "2026-06-18T12:14:47.925Z",
+    "lastTs": "2026-06-19T17:12:27.927Z"
     "lastTs": "2026-06-19T16:53:16.018Z"
   },
   "prs": [
@@ -322,6 +403,10 @@
     },
     {
       "name": "In Progress",
+      "cards": 1
+    },
+    {
+      "name": "In Review",
       "cards": 2
     },
     {
