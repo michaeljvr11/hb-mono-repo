@@ -82,7 +82,13 @@ export class AuditService {
     if (userId !== undefined) where.userId = userId;
 
     const from = fromStr !== undefined ? new Date(fromStr) : undefined;
-    const to = toStr !== undefined ? new Date(toStr) : undefined;
+    // A date-only `to` (e.g. "2026-06-30", what the UI's <input type="date"> emits)
+    // parses to midnight UTC, which would exclude everything logged during that day.
+    // Normalise it to end-of-day so the upper bound is inclusive of the selected date.
+    const to =
+      toStr !== undefined
+        ? new Date(toStr.includes('T') ? toStr : `${toStr}T23:59:59.999Z`)
+        : undefined;
 
     if (from !== undefined && to !== undefined) {
       where.createdAt = Between(from, to);

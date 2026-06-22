@@ -29,7 +29,7 @@ const ENTRY_1 = makeEntry({ id: 'aaaaaaaa-0000-0000-0000-000000000001' });
 const ENTRY_2 = makeEntry({
   id: 'bbbbbbbb-0000-0000-0000-000000000002',
   userId: null,
-  action: 'user.role_changed',
+  action: 'user.role_assigned',
   entityType: 'user',
   entityId: 'ffffffff-0000-0000-0000-000000000002',
   metadata: null,
@@ -123,7 +123,7 @@ describe('AdminLogs component', () => {
     const cells = nativeEl.querySelectorAll('.action-key');
     const texts = Array.from(cells).map(c => c.textContent?.trim() ?? '');
     expect(texts.some(t => t === 'vendor.status_changed')).toBe(true);
-    expect(texts.some(t => t === 'user.role_changed')).toBe(true);
+    expect(texts.some(t => t === 'user.role_assigned')).toBe(true);
   });
 
   it('shows actor short ID when userId is set', () => {

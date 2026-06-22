@@ -195,12 +195,22 @@ describe('VendorsService', () => {
       vendorRepo.findOne.mockResolvedValue(vendor);
       vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
 
-      const result = await service.updateStatus('v1', to);
+      const result = await service.updateStatus('v1', to, 'admin-1');
 
       expect(vendorRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'v1', status: to }),
       );
       expect(result.status).toBe(to);
+      // Every status change writes an audit-trail entry (card AC: "approve vendor → entry").
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'admin-1',
+          action: 'vendor.status_changed',
+          entityType: 'vendor',
+          entityId: 'v1',
+          metadata: { from, to },
+        }),
+      );
     });
 
     // Anything outside the table above is illegal — including re-approving an already
