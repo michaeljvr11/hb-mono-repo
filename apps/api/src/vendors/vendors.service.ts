@@ -6,13 +6,16 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { VendorStatus, UserRole } from '@hb/shared';
+import { CurrencyCode, OrderStatus, VendorStatus, UserRole } from '@hb/shared';
 import { Vendor } from './entities/vendor.entity';
+import { Product } from '../products/entities/product.entity';
+import { OrderItem } from '../orders/entities/order-item.entity';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { AdminCreateVendorDto } from './dto/admin-create-vendor.dto';
 import { VendorResponseDto } from './dto/vendor-response.dto';
 import { AdminVendorResponseDto } from './dto/admin-vendor-response.dto';
+import { VendorDashboardResponseDto } from './dto/vendor-dashboard-response.dto';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 
@@ -21,6 +24,10 @@ export class VendorsService {
   constructor(
     @InjectRepository(Vendor)
     private vendorRepository: Repository<Vendor>,
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
+    @InjectRepository(OrderItem)
+    private orderItemRepository: Repository<OrderItem>,
     private usersService: UsersService,
   ) {}
 
@@ -164,5 +171,41 @@ export class VendorsService {
 
   async hasVendor(userId: string): Promise<boolean> {
     return !!(await this.vendorRepository.findOne({ where: { userId } }));
+  }
+
+  async getDashboard(userId: string): Promise<VendorDashboardResponseDto> {
+    const vendor = await this.vendorRepository.findOne({ where: { userId } });
+    if (!vendor) throw new NotFoundException('Vendor profile not found');
+
+    const vendorId = vendor.id;
+
+    const productCount = await this.productRepository.count({ where: { vendorId } });
+
+    const revenueRow = await this.orderItemRepository
+      .createQueryBuilder('oi')
+      .select('SUM(CAST(oi.unitPrice AS decimal) * oi.quantity)', 'totalRevenue')
+      .where('oi.vendorId = :vendorId', { vendorId })
+      .getRawOne<{ totalRevenue: string | null }>();
+
+    const statusRows = await this.orderItemRepository
+      .createQueryBuilder('oi')
+      .leftJoin('oi.order', 'o')
+      .select('o.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .where('oi.vendorId = :vendorId', { vendorId })
+      .groupBy('o.status')
+      .getRawMany<{ status: string; count: string }>();
+
+    const orderCountByStatus: Partial<Record<OrderStatus, number>> = {};
+    for (const row of statusRows) {
+      orderCountByStatus[row.status as OrderStatus] = parseInt(row.count, 10);
+    }
+
+    return {
+      productCount,
+      orderCountByStatus,
+      totalRevenue: parseFloat(revenueRow?.totalRevenue ?? '0') || 0,
+      currency: CurrencyCode.ZAR,
+    };
   }
 }

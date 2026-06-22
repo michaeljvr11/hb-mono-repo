@@ -1,4 +1,4 @@
-import { CountryCode, VendorStatus } from '../enums';
+import { CountryCode, CurrencyCode, OrderStatus, VendorStatus } from '../enums';
 
 export interface VendorDto {
   id: string;
@@ -39,4 +39,11 @@ export interface UpdateVendorRequest {
 
 export interface UpdateVendorStatusRequest {
   status: Exclude<VendorStatus, 'pending'>;
+}
+
+export interface VendorDashboardDto {
+  productCount: number;
+  orderCountByStatus: Partial<Record<OrderStatus, number>>;
+  totalRevenue: number;
+  currency: CurrencyCode;
 }

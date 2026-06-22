@@ -1,0 +1,108 @@
+<section class="dashboard-page">
+
+  <!-- Page header -->
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Vendor Overview</h1>
+      <p class="page-sub">Track your trade performance across SACU borders.</p>
+    </div>
+    <a class="header-btn" routerLink="../products">
+      <span class="material-symbols-outlined" aria-hidden="true">add</span>
+      New Product
+    </a>
+  </header>
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading dashboard…</p>
+    </div>
+  }
+
+  <!-- Dashboard content -->
+  @if (!loading() && !error() && dashboard(); as data) {
+
+    <!-- KPI cards -->
+    <div class="kpi-grid">
+
+      <div class="kpi-card">
+        <div class="kpi-card__header">
+          <span class="kpi-card__label">Total Products</span>
+          <span class="material-symbols-outlined kpi-card__icon kpi-card__icon--primary" aria-hidden="true">inventory_2</span>
+        </div>
+        <div class="kpi-card__value">{{ data.productCount }}</div>
+        <p class="kpi-card__sub">Your active listings</p>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__header">
+          <span class="kpi-card__label">Total Revenue ({{ data.currency }})</span>
+          <span class="material-symbols-outlined kpi-card__icon kpi-card__icon--primary" aria-hidden="true">trending_up</span>
+        </div>
+        <div class="kpi-card__value kpi-card__value--revenue">
+          {{ data.currency === CurrencyCode.ZAR ? 'R' : 'N$' }}&nbsp;{{ data.totalRevenue | number:'1.2-2' }}
+        </div>
+        <p class="kpi-card__sub">Across all orders</p>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__header">
+          <span class="kpi-card__label">Total Orders</span>
+          <span class="material-symbols-outlined kpi-card__icon kpi-card__icon--secondary" aria-hidden="true">package_2</span>
+        </div>
+        <div class="kpi-card__value">{{ totalOrders() }}</div>
+        <p class="kpi-card__sub">Order lines for your products</p>
+      </div>
+
+    </div>
+
+    <!-- Order status breakdown -->
+    <div class="section-card">
+      <header class="section-card__header">
+        <h2 class="section-card__title">Orders by Status</h2>
+        <a class="section-card__link" routerLink="../orders">View all</a>
+      </header>
+
+      @if (totalOrders() === 0) {
+        <div class="empty-state">
+          <span class="material-symbols-outlined empty-state__icon" aria-hidden="true">package_2</span>
+          <p>No orders yet. Orders will appear here once customers purchase your products.</p>
+        </div>
+      } @else {
+        <div class="status-grid">
+          @for (entry of data.orderCountByStatus | keyvalue; track entry.key) {
+            <div class="status-chip">
+              <span class="status-chip__count">{{ entry.value }}</span>
+              <span class="status-chip__label">{{ entry.key }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Quick links -->
+    <div class="quick-links">
+      <a class="quick-link" routerLink="../products">
+        <span class="material-symbols-outlined quick-link__icon" aria-hidden="true">inventory_2</span>
+        <span class="quick-link__label">Manage Products</span>
+        <span class="material-symbols-outlined quick-link__arrow" aria-hidden="true">arrow_forward</span>
+      </a>
+      <a class="quick-link" routerLink="../orders">
+        <span class="material-symbols-outlined quick-link__icon" aria-hidden="true">package_2</span>
+        <span class="quick-link__label">View Orders</span>
+        <span class="material-symbols-outlined quick-link__arrow" aria-hidden="true">arrow_forward</span>
+      </a>
+    </div>
+
+  }
+
+</section>
