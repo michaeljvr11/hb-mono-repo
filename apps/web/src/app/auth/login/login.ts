@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { environment } from '../../../environments/environment';
-import { LoginRequest } from '@hb/shared';
+import { AuthResponse, LoginRequest, UserRole } from '@hb/shared';
 
 @Component({
   selector: 'app-login',
@@ -64,9 +64,10 @@ export class Login {
       .login(credentials)
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
-        next: () => {
+        next: (response: AuthResponse) => {
           this.showSuccessMessage('Welcome back. Your H&B session is ready.');
-          void this.router.navigateByUrl(this.returnUrl() || '/shop');
+          const defaultUrl = response.user.role === UserRole.ADMIN ? '/admin/dashboard' : '/shop';
+          void this.router.navigateByUrl(this.returnUrl() || defaultUrl);
         },
         error: (error) =>
           this.errorMessage.set(
