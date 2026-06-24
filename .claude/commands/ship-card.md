@@ -54,7 +54,11 @@ an Agent Team; for a single-layer card one subagent is enough — don't over-orc
      auditable record of AI authorship (see `docs/ai-evidence/`). The per-slice commits and
      Implementation Notes from step 3 should already be in place. Push the feature branch.
    - Open a PR using the template — link the Trello card and the Obsidian note.
-   - Comment the PR link on the card and move it to "In Review".
+   - Comment the PR link on the card. **Always use Node.js `url.searchParams.set('text', ...)`
+     to post the comment** — never `curl --data-urlencode`, which puts text in the form body
+     and causes Trello to store raw URL-encoded strings like `%2A%2A` instead of `**`.
+     See the trello-mcp-rest-fallback memory for the exact Node.js snippet.
+     Then move the card to "In Review".
    - EVIDENCE: run `npm run evidence` to recompile `docs/ai-evidence/REPORT.md`, and have
      docs-writer refresh the headline figures in the Obsidian note **AI Factory — Evidence Log**.
    - STOP. Do not merge. A human owns prod.
