@@ -1,14 +1,16 @@
 import 'dotenv/config';
-import { CountryCode, CurrencyCode, ListingType, VendorStatus } from '@hb/shared';
+import { CountryCode, CurrencyCode, ListingType, UserRole, VendorStatus } from '@hb/shared';
 import { Category } from '../categories/entities/category.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
 import { Product } from '../products/entities/product.entity';
+import { User } from '../users/entities/user.entity';
 import dataSource from './data-source';
 
 async function main() {
   await dataSource.initialize();
 
   try {
+    const userRepo = dataSource.getRepository(User);
     const categoryRepo = dataSource.getRepository(Category);
     const vendorRepo = dataSource.getRepository(Vendor);
     const productRepo = dataSource.getRepository(Product);
@@ -19,6 +21,21 @@ async function main() {
       console.log('Seed skipped — data already present');
       return;
     }
+
+    // ------------------------------------------------------------------ //
+    // Admin user
+    // ------------------------------------------------------------------ //
+    await userRepo.save(
+      userRepo.create({
+        email: 'admin@hb.local',
+        password: 'Admin1234!',
+        role: UserRole.ADMIN,
+        isVerified: true,
+        firstName: 'HB',
+        lastName: 'Admin',
+      }),
+    );
+    console.log('Admin user created: admin@hb.local / Admin1234!');
 
     // ------------------------------------------------------------------ //
     // Categories
@@ -230,7 +247,7 @@ async function main() {
     const savedProducts = await productRepo.save(productDefs.map((def) => productRepo.create(def)));
 
     console.log(
-      `Seed complete — ${savedCategories.length} categories, ${savedVendors.length} vendors, ${savedProducts.length} products created.`,
+      `Seed complete — 1 admin user, ${savedCategories.length} categories, ${savedVendors.length} vendors, ${savedProducts.length} products created.`,
     );
   } finally {
     await dataSource.destroy();

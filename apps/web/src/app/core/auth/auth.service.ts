@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom, tap } from 'rxjs';
 import {
   AuthResponse,
   AuthUser,
@@ -32,8 +32,24 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
-  ) {
-    this.loadUserFromStorage();
+  ) {}
+
+  // Called by APP_INITIALIZER — resolves once auth state is known so the
+  // router never runs guards against an uninitialised currentUser$.
+  initialize(): Promise<void> {
+    if (!this.isBrowser() || !this.getToken()) {
+      return Promise.resolve();
+    }
+    return firstValueFrom(
+      this.http.get<UserDto>(`${this.API_URL}/users/me`).pipe(
+        tap(user => this.currentUserSubject.next(user)),
+      ),
+    ).then(() => undefined).catch(() => {
+      // Token is stale/expired — clear it silently. The router guard will
+      // redirect to /login once APP_INITIALIZER resolves.
+      if (this.isBrowser()) localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+      this.currentUserSubject.next(null);
+    });
   }
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
@@ -134,14 +150,4 @@ export class AuthService {
     this.currentUserSubject.next(response.user);
   }
 
-  private loadUserFromStorage(): void {
-    if (!this.getToken()) {
-      return;
-    }
-
-    this.http.get<UserDto>(`${this.API_URL}/users/me`).subscribe({
-      next: (user) => this.currentUserSubject.next(user),
-      error: () => this.logout(),
-    });
-  }
 }
