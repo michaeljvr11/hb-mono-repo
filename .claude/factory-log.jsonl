@@ -138,3 +138,4 @@
 {"ts":"2026-06-22T11:37:35.886Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.spec.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-06-22T11:37:41.285Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.spec.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-06-22T11:41:16.540Z","type":"pr_gate","result":"pass","durationMs":9098}
+{"ts":"2026-06-24T09:52:19.925Z","type":"prod_fence_block","reason":"push names a protected branch","command":"git stash push -u -m \"pre-shipcard evidence regen (kYbVZyqV)\" docs/ai-evidence/REPORT.md docs/ai-evidence/report.js docs/ai-evidence/report.json && echo \"---PULL---\" && git pull --ff-only origin main && echo \"---BRANCH---\" && git checkout -b feat/kYbVZyqV-shop-public-ssr && git status"}

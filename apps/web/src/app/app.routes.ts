@@ -33,9 +33,10 @@ export const routes: Routes = [
     redirectTo: 'shop',
     pathMatch: 'full'
   },
+  // Public storefront — anonymous browsing (no guard). The auth boundary sits
+  // at add-to-cart / checkout, not at browse. See [[Public Storefront & SSR]].
   {
     path: 'shop',
-    canActivate: [authGuard],
     loadComponent: () => import('./features/shop/shop').then(m => m.Shop)
   },
 

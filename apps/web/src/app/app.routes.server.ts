@@ -1,13 +1,15 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
-  // Auth-protected routes must render on the client — the server has no
-  // localStorage, so guards see no token and would always redirect to /login.
-  { path: 'shop', renderMode: RenderMode.Client },
+  // Public storefront is server-rendered for SEO and fast first paint — it reads
+  // only public catalogue endpoints and is SSR-safe (no unguarded browser APIs).
+  { path: 'shop', renderMode: RenderMode.Server },
+  // Admin & vendor portals stay client-rendered: their route guards depend on
+  // localStorage (absent on the server), so SSR would always redirect to /login.
   { path: 'admin', renderMode: RenderMode.Client },
   { path: 'admin/**', renderMode: RenderMode.Client },
   { path: 'vendor', renderMode: RenderMode.Client },
   { path: 'vendor/**', renderMode: RenderMode.Client },
-  // Public routes can be server-rendered.
+  // Remaining public routes can be server-rendered.
   { path: '**', renderMode: RenderMode.Server },
 ];
