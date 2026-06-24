@@ -4,7 +4,7 @@ import { map, take } from 'rxjs';
 import { UserRole } from '@hb/shared';
 import { AuthService } from '../auth.service';
 
-export const roleGuard: CanActivateFn = route => {
+export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const roles = route.data['roles'] as UserRole[] | undefined;
@@ -15,6 +15,10 @@ export const roleGuard: CanActivateFn = route => {
 
   return authService.currentUser$.pipe(
     take(1),
-    map(user => user && roles.includes(user.role) ? true : router.createUrlTree(['/login']))
+    map(user =>
+      user && roles.includes(user.role)
+        ? true
+        : router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } }),
+    ),
   );
 };
