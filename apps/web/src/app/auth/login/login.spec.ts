@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { provideRouter, Router } from '@angular/router';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 
@@ -81,5 +81,53 @@ describe('Login', () => {
     component.submit();
 
     expect(component.errorMessage()).toBe('Invalid credentials');
+  });
+});
+
+describe('Login returnUrl handling', () => {
+  function setup(returnUrl: string | null) {
+    const authService = {
+      login: vi.fn().mockReturnValue(
+        of({ access_token: 'token', user: { id: '1', email: 'a@b.com', role: 'customer' } }),
+      ),
+    };
+    const activatedRoute = {
+      snapshot: {
+        queryParamMap: { get: (key: string) => (key === 'returnUrl' ? returnUrl : null) },
+      },
+    };
+
+    TestBed.configureTestingModule({
+      imports: [Login],
+      providers: [
+        provideNoopAnimations(),
+        provideRouter([]),
+        { provide: AuthService, useValue: authService },
+        { provide: ActivatedRoute, useValue: activatedRoute },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(Login);
+    const component = fixture.componentInstance;
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    return { component, navigate };
+  }
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('navigates to a safe same-app returnUrl after login', () => {
+    const { component, navigate } = setup('/vendor/dashboard');
+    component.loginForm.setValue({ email: 'a@b.com', password: 'password1', rememberMe: false });
+    component.submit();
+    expect(navigate).toHaveBeenCalledWith('/vendor/dashboard');
+  });
+
+  it('ignores an external returnUrl and falls back to the default destination', () => {
+    const { component, navigate } = setup('https://evil.com');
+    component.loginForm.setValue({ email: 'a@b.com', password: 'password1', rememberMe: false });
+    component.submit();
+    expect(navigate).toHaveBeenCalledWith('/shop');
   });
 });

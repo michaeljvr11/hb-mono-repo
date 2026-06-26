@@ -11,6 +11,7 @@ import { AuthService } from '../auth.service';
 async function runGuard(
   routeData: Record<string, unknown>,
   user: { id: string; email: string; role: string } | null,
+  attemptedUrl = '/vendor/dashboard',
 ): Promise<boolean | UrlTree> {
   const authService = { currentUser$: of(user) };
   TestBed.configureTestingModule({
@@ -18,7 +19,7 @@ async function runGuard(
   });
 
   const route = { data: routeData } as unknown as ActivatedRouteSnapshot;
-  const state = {} as RouterStateSnapshot;
+  const state = { url: attemptedUrl } as RouterStateSnapshot;
 
   const executeGuard: CanActivateFn = (...args) =>
     TestBed.runInInjectionContext(() => roleGuard(...args));
@@ -58,6 +59,20 @@ describe('roleGuard', () => {
     const result = await runGuard({ roles: ['admin'] }, null);
     expect(result).toBeInstanceOf(UrlTree);
     expect((result as UrlTree).toString()).toContain('login');
+  });
+
+  it('carries the attempted url as returnUrl when a forbidden role is redirected', async () => {
+    const result = await runGuard(
+      { roles: ['admin'] },
+      { id: '2', email: 'user@hb.com', role: 'customer' },
+      '/admin/dashboard',
+    );
+    expect((result as UrlTree).queryParams['returnUrl']).toBe('/admin/dashboard');
+  });
+
+  it('carries the attempted url as returnUrl when an anonymous user is redirected', async () => {
+    const result = await runGuard({ roles: ['vendor'] }, null, '/vendor/products?sort=price');
+    expect((result as UrlTree).queryParams['returnUrl']).toBe('/vendor/products?sort=price');
   });
 
   it('allows access when no roles are specified in route data', async () => {

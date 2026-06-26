@@ -4,6 +4,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { sanitizeReturnUrl } from '../../core/auth/return-url';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, LoginRequest, UserRole } from '@hb/shared';
 
@@ -25,7 +26,9 @@ export class Login {
   readonly currentYear = new Date().getFullYear();
   // Full-page redirect into the server-side Google OAuth flow.
   readonly googleAuthUrl = `${environment.apiBaseUrl}/auth/google`;
-  readonly returnUrl = computed(() => this.route.snapshot.queryParamMap.get('returnUrl') ?? '');
+  readonly returnUrl = computed(
+    () => sanitizeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl')) ?? '',
+  );
   readonly registerLinkParams = computed(() =>
     this.returnUrl() ? { returnUrl: this.returnUrl() } : {},
   );

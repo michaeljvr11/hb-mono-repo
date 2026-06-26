@@ -1,28 +1,28 @@
 {
-  "generatedAt": "2026-06-24T09:57:57.650Z",
+  "generatedAt": "2026-06-24T10:40:22.676Z",
   "git": {
-    "totalCommits": 62,
-    "aiCommits": 55,
-    "aiPct": 89,
-    "appCommits": 38,
-    "ins": 35715,
-    "del": 2283,
-    "net": 33432,
-    "aiIns": 23338,
-    "aiDel": 2227,
-    "filesTouched": 371,
+    "totalCommits": 64,
+    "aiCommits": 58,
+    "aiPct": 91,
+    "appCommits": 40,
+    "ins": 36074,
+    "del": 2383,
+    "net": 33691,
+    "aiIns": 23692,
+    "aiDel": 2326,
+    "filesTouched": 373,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 29,
-        "ins": 16995,
-        "del": 714
+        "commits": 31,
+        "ins": 17253,
+        "del": 731
       },
       {
         "name": "Docs",
-        "commits": 25,
-        "ins": 9448,
-        "del": 1396
+        "commits": 26,
+        "ins": 9543,
+        "del": 1478
       },
       {
         "name": "API (NestJS)",
@@ -32,9 +32,9 @@
       },
       {
         "name": "AI Factory config",
-        "commits": 23,
-        "ins": 836,
-        "del": 23
+        "commits": 25,
+        "ins": 842,
+        "del": 24
       },
       {
         "name": "Shared contracts",
@@ -59,19 +59,29 @@
     "lastDate": "2026-06-24",
     "recent": [
       {
-        "hash": "e71bf7a",
-        "subject": "feat(web): make /shop public and server-rendered",
+        "hash": "666c7bb",
+        "subject": "test(web): assert register honours/rejects returnUrl like login",
         "ai": true
       },
       {
-        "hash": "91060a3",
-        "subject": "index on main: 2e04311 Merge pull request #18 from michaeljvr11/fix/auth-ssr-init-and-admin-seed",
+        "hash": "7aa13e0",
+        "subject": "feat(web): capture returnUrl in authGuard/roleGuard on redirect to /login",
+        "ai": true
+      },
+      {
+        "hash": "dfcb573",
+        "subject": "ship card trello comment update",
         "ai": false
       },
       {
-        "hash": "b18f79e",
-        "subject": "untracked files on main: 2e04311 Merge pull request #18 from michaeljvr11/fix/auth-ssr-init-and-admin-seed",
-        "ai": false
+        "hash": "a8d0e97",
+        "subject": "chore(evidence): recompile AI-evidence report for kYbVZyqV",
+        "ai": true
+      },
+      {
+        "hash": "e71bf7a",
+        "subject": "feat(web): make /shop public and server-rendered",
+        "ai": true
       },
       {
         "hash": "c0d0520",
@@ -107,16 +117,6 @@
         "hash": "e454b23",
         "subject": "feat(vendor): VP-2 — dashboard screen + read-model endpoint",
         "ai": true
-      },
-      {
-        "hash": "6ca422a",
-        "subject": "chore(evidence): recompile AI evidence report for AP-10",
-        "ai": true
-      },
-      {
-        "hash": "d3a4088",
-        "subject": "refactor(admin): address review nits for AP-10",
-        "ai": true
       }
     ]
   },
@@ -150,6 +150,11 @@
       "branch": "feat/ai-evidence-system",
       "cardId": "ai",
       "slug": "evidence-system"
+    },
+    {
+      "branch": "feat/eOI6gKpN-returnurl-guard-capture",
+      "cardId": "eOI6gKpN",
+      "slug": "returnurl-guard-capture"
     },
     {
       "branch": "feat/kYbVZyqV-shop-public-ssr",
@@ -198,9 +203,9 @@
     }
   ],
   "tests": {
-    "total": 33,
+    "total": 34,
     "api": 8,
-    "web": 25
+    "web": 26
   },
   "design": {
     "files": 27,
@@ -232,6 +237,20 @@
     "lastTs": "2026-06-24T09:52:19.925Z"
   },
   "prs": [
+    {
+      "headRefName": "feat/eOI6gKpN-returnurl-guard-capture",
+      "number": 20,
+      "state": "OPEN",
+      "title": "feat(web): capture returnUrl in authGuard/roleGuard on redirect to /login",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/20"
+    },
+    {
+      "headRefName": "feat/kYbVZyqV-shop-public-ssr",
+      "number": 19,
+      "state": "MERGED",
+      "title": "feat(web): make /shop public + restore SSR (kYbVZyqV)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/19"
+    },
     {
       "headRefName": "fix/auth-ssr-init-and-admin-seed",
       "number": 18,
@@ -366,19 +385,19 @@
     },
     {
       "name": "To Do",
-      "cards": 10
+      "cards": 9
     },
     {
       "name": "In Progress",
-      "cards": 1
-    },
-    {
-      "name": "In Review",
       "cards": 0
     },
     {
+      "name": "In Review",
+      "cards": 1
+    },
+    {
       "name": "Done",
-      "cards": 14
+      "cards": 15
     }
   ],
   "notes": []
