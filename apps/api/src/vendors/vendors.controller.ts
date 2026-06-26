@@ -62,6 +62,11 @@ export class VendorsController {
     return this.vendorsService.getDashboard(user.id);
   }
 
+  // Public so anonymous/SSR-rendered vendor-profile pages can fetch without a token
+  // (parity with @Public() GET /vendors/directory). Approved-only filter lives in the
+  // service so the public :id path matches directory visibility — no pending/rejected/
+  // suspended leak, and the lean VendorResponseDto keeps admin-only PII out of the response.
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.vendorsService.findOne(id);
