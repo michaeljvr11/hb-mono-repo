@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-06-24T10:40:22.676Z",
+  "generatedAt": "2026-06-26T14:15:47.330Z",
   "git": {
-    "totalCommits": 64,
-    "aiCommits": 58,
-    "aiPct": 91,
-    "appCommits": 40,
-    "ins": 36074,
-    "del": 2383,
-    "net": 33691,
-    "aiIns": 23692,
-    "aiDel": 2326,
+    "totalCommits": 68,
+    "aiCommits": 60,
+    "aiPct": 88,
+    "appCommits": 41,
+    "ins": 36251,
+    "del": 2450,
+    "net": 33801,
+    "aiIns": 23869,
+    "aiDel": 2393,
     "filesTouched": 373,
     "areaRows": [
       {
@@ -20,15 +20,15 @@
       },
       {
         "name": "Docs",
-        "commits": 26,
-        "ins": 9543,
-        "del": 1478
+        "commits": 27,
+        "ins": 9629,
+        "del": 1544
       },
       {
         "name": "API (NestJS)",
-        "commits": 21,
-        "ins": 7266,
-        "del": 125
+        "commits": 22,
+        "ins": 7357,
+        "del": 126
       },
       {
         "name": "AI Factory config",
@@ -56,8 +56,28 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-06-24",
+    "lastDate": "2026-06-26",
     "recent": [
+      {
+        "hash": "bf4f237",
+        "subject": "feat(api): make GET /vendors/:id public, approved-only",
+        "ai": true
+      },
+      {
+        "hash": "0fd6050",
+        "subject": "index on main: 79daece Merge pull request #20 from michaeljvr11/feat/eOI6gKpN-returnurl-guard-capture",
+        "ai": false
+      },
+      {
+        "hash": "04ac886",
+        "subject": "untracked files on main: 79daece Merge pull request #20 from michaeljvr11/feat/eOI6gKpN-returnurl-guard-capture",
+        "ai": false
+      },
+      {
+        "hash": "ad702fc",
+        "subject": "chore(evidence): recompile AI-evidence report for eOI6gKpN",
+        "ai": true
+      },
       {
         "hash": "666c7bb",
         "subject": "test(web): assert register honours/rejects returnUrl like login",
@@ -96,26 +116,6 @@
       {
         "hash": "51d9fe8",
         "subject": "fix(api): make audit \"to\" filter inclusive of selected day; tighten audit tests",
-        "ai": true
-      },
-      {
-        "hash": "ca28265",
-        "subject": "feat(web): admin audit log viewer (filterable activity table)",
-        "ai": true
-      },
-      {
-        "hash": "cdab6ca",
-        "subject": "feat(api): add admin audit log trail + query endpoint",
-        "ai": true
-      },
-      {
-        "hash": "7b436c7",
-        "subject": "chore(evidence): recompile AI evidence report for VP-2 vendor dashboard",
-        "ai": true
-      },
-      {
-        "hash": "e454b23",
-        "subject": "feat(vendor): VP-2 — dashboard screen + read-model endpoint",
         "ai": true
       }
     ]
@@ -177,6 +177,11 @@
       "slug": "admin-orders-dashboard"
     },
     {
+      "branch": "feat/vs3y5tDJ-public-vendor-profile",
+      "cardId": "vs3y5tDJ",
+      "slug": "public-vendor-profile"
+    },
+    {
       "branch": "feat/IhTVdNYP-admin-catalog",
       "cardId": "IhTVdNYP",
       "slug": "admin-catalog"
@@ -229,18 +234,25 @@
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 11,
+    "gatePass": 12,
     "gateFail": 1,
-    "edits": 113,
+    "edits": 116,
     "editsUnfixable": 39,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-24T09:52:19.925Z"
+    "lastTs": "2026-06-26T14:14:35.458Z"
   },
   "prs": [
     {
+      "headRefName": "feat/vs3y5tDJ-public-vendor-profile",
+      "number": 21,
+      "state": "OPEN",
+      "title": "feat(api): make GET /vendors/:id public, approved-only (vs3y5tDJ)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/21"
+    },
+    {
       "headRefName": "feat/eOI6gKpN-returnurl-guard-capture",
       "number": 20,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(web): capture returnUrl in authGuard/roleGuard on redirect to /login",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/20"
     },
@@ -385,7 +397,7 @@
     },
     {
       "name": "To Do",
-      "cards": 9
+      "cards": 8
     },
     {
       "name": "In Progress",
@@ -397,7 +409,7 @@
     },
     {
       "name": "Done",
-      "cards": 15
+      "cards": 16
     }
   ],
   "notes": []

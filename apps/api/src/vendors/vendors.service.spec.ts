@@ -294,6 +294,87 @@ describe('VendorsService', () => {
     });
   });
 
+  describe('findOne (public vendor profile)', () => {
+    // Mirror the repository's filtering: only return the stored vendor when EVERY
+    // condition in the `where` clause matches — so the approved-only filter is exercised
+    // exactly as Postgres would apply it (a non-approved vendor is excluded by the query
+    // itself, not just by a hand-stubbed null).
+    const respectsWhere =
+      (stored: Vendor) =>
+      ({ where }: { where: Record<string, unknown> }) =>
+        Promise.resolve(
+          Object.entries(where).every(([k, v]) => stored[k as keyof Vendor] === v) ? stored : null,
+        );
+
+    it('returns an approved vendor mapped to the public VendorResponseDto', async () => {
+      const vendor = mockVendor({
+        id: 'v1',
+        businessName: 'Zulu Weaves',
+        tradingName: 'Zulu Weaves',
+        status: VendorStatus.APPROVED,
+        countryCode: 'ZA',
+      });
+      vendorRepo.findOne.mockImplementation(respectsWhere(vendor));
+
+      const result = await service.findOne('v1');
+
+      // Approved-only filter applied at the query layer, matching findDirectory visibility.
+      expect(vendorRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'v1', status: VendorStatus.APPROVED },
+      });
+      expect(result).toEqual({
+        id: 'v1',
+        businessName: 'Zulu Weaves',
+        tradingName: 'Zulu Weaves',
+        status: VendorStatus.APPROVED,
+        countryCode: 'ZA',
+      });
+    });
+
+    it('omits admin-only PII fields (registrationNumber, verificationDocumentUrl)', async () => {
+      const vendor = mockVendor({
+        id: 'v1',
+        status: VendorStatus.APPROVED,
+        registrationNumber: 'ZA/2024/001',
+        verificationDocumentUrl: 'https://cdn.hb.com/docs/za2024001.pdf',
+        website: 'https://zulu-weaves.example',
+        description: 'Handwoven goods',
+      });
+      vendorRepo.findOne.mockImplementation(respectsWhere(vendor));
+
+      const result = await service.findOne('v1');
+
+      expect(result).not.toHaveProperty('registrationNumber');
+      expect(result).not.toHaveProperty('verificationDocumentUrl');
+      expect(Object.keys(result).sort()).toEqual(
+        ['businessName', 'countryCode', 'id', 'status', 'tradingName'].sort(),
+      );
+    });
+
+    // Only approved vendors are public-facing; every other status must 404, never leak.
+    const nonApproved: VendorStatus[] = [
+      VendorStatus.PENDING,
+      VendorStatus.REJECTED,
+      VendorStatus.SUSPENDED,
+    ];
+
+    it.each(nonApproved)('throws NotFoundException for a %s vendor', async (status) => {
+      const vendor = mockVendor({ id: 'v1', status });
+      vendorRepo.findOne.mockImplementation(respectsWhere(vendor));
+
+      await expect(service.findOne('v1')).rejects.toBeInstanceOf(NotFoundException);
+      expect(vendorRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'v1', status: VendorStatus.APPROVED },
+      });
+    });
+
+    it('throws NotFoundException when no vendor has that id', async () => {
+      vendorRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.findOne('missing')).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
   describe('getDashboard', () => {
     const vendor = mockVendor({ id: 'v1', userId: 'u1' });
 

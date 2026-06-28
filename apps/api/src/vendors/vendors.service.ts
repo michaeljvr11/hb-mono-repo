@@ -152,8 +152,12 @@ export class VendorsService {
     return vendors.map((v) => this.toResponseDto(v));
   }
 
+  // Public vendor-profile lookup. Only APPROVED vendors are public-facing, matching
+  // findDirectory visibility — a pending/rejected/suspended vendor must 404, not leak.
   async findOne(id: string): Promise<VendorResponseDto> {
-    const vendor = await this.vendorRepository.findOne({ where: { id } });
+    const vendor = await this.vendorRepository.findOne({
+      where: { id, status: VendorStatus.APPROVED },
+    });
     if (!vendor) throw new NotFoundException('Vendor not found');
     return this.toResponseDto(vendor);
   }
