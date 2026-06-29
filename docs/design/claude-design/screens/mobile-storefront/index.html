@@ -1,0 +1,440 @@
+<!-- @dsCard group="Screens" name="Mobile Storefront — Radial Nav" viewport="430x880" -->
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>H&amp;B Market — Mobile (Radial Nav)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error-container": "#93000a","secondary-fixed-dim": "#ffb787","inverse-primary": "#7ddc69",
+                    "secondary-fixed": "#ffdcc7","outline-variant": "#bfcab7","primary-fixed-dim": "#7ddc69",
+                    "error-container": "#ffdad6","outline": "#707a6a","surface-bright": "#fcf9f8","on-background": "#1c1b1b",
+                    "surface-dim": "#dcd9d9","on-primary-container": "#8eee78","surface-variant": "#e5e2e1",
+                    "primary-fixed": "#98f982","on-surface": "#1c1b1b","on-secondary-container": "#703500",
+                    "tertiary": "#015300","background": "#fcf9f8","surface": "#fcf9f8","on-primary-fixed-variant": "#015300",
+                    "on-primary-fixed": "#002200","error": "#ba1a1a","on-surface-variant": "#404a3b",
+                    "surface-container-low": "#f6f3f2","surface-container": "#f0eded","secondary-container": "#fe9b53",
+                    "primary-container": "#026e00","secondary": "#964900","primary": "#015300","inverse-surface": "#313030",
+                    "surface-container-lowest": "#ffffff","surface-container-high": "#eae7e7","surface-container-highest": "#e5e2e1",
+                    "on-primary": "#ffffff","on-secondary": "#ffffff","secondary-fixed": "#ffdcc7"
+            },
+            "borderRadius": {"DEFAULT": "0.25rem","lg": "0.5rem","xl": "0.75rem","full": "9999px"},
+            "spacing": {"unit":"8px","gutter":"24px","stack-xs":"4px","stack-md":"16px","stack-xl":"48px","margin-mobile":"16px","stack-sm":"8px","stack-lg":"24px"},
+            "fontFamily": {"display-lg":["Inter"],"label-lg":["Inter"],"label-sm":["Inter"],"headline-md":["Inter"],"headline-lg":["Inter"],"title-lg":["Inter"],"body-sm":["Inter"],"body-md":["Inter"],"body-lg":["Inter"]},
+            "fontSize": {
+                    "display-lg": ["40px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+  * { -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { font-family: 'Inter', sans-serif; margin: 0; background:
+      radial-gradient(120% 80% at 50% 0%, #20251f 0%, #14160f 55%, #0c0d09 100%); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .hero-gradient { background: linear-gradient(rgba(1,83,0,.78), rgba(1,83,0,.35)); }
+
+  /* ---- device stage (fills the viewport, capped width) ---- */
+  #stage-wrap { position: fixed; inset: 0; display: flex; align-items: stretch; justify-content: center; }
+  #stage { position: relative; width: min(440px, 100vw); height: 100%; }
+  .phone {
+    position: absolute; inset: 0; overflow: hidden;
+    background: #fcf9f8;
+    box-shadow: 0 0 70px rgba(0,0,0,.55);
+  }
+  @media (min-width: 472px) {
+    #stage-wrap { align-items: center; padding: 16px 0; }
+    #stage { height: min(900px, calc(100vh - 32px)); }
+    .phone { border-radius: 40px; box-shadow: 0 0 0 11px #0a0b08, 0 0 0 13px #2a2d26, 0 40px 90px -20px rgba(0,0,0,.7); }
+  }
+  .phone-screen { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; }
+  .notch { display: none; }
+  @media (min-width: 472px) { .notch { display: block; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 150px; height: 28px; background: #0a0b08; border-radius: 0 0 18px 18px; z-index: 60; } }
+
+  /* ===== RADIAL NAVIGATION ===== */
+  .radial { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
+
+  .radial-scrim {
+    position: absolute; inset: 0; background: rgba(12,16,9,.34);
+    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    opacity: 0; transition: opacity .45s ease; pointer-events: none;
+  }
+  .radial.open .radial-scrim { opacity: 1; pointer-events: auto; }
+
+  /* concentric guide rings (arc bands) */
+  .ring-band {
+    position: absolute; right: 0; bottom: 0; border-radius: 50%;
+    transform: translate(50%, 50%) scale(.4);
+    border: 1.5px solid rgba(255,255,255,.5);
+    background: radial-gradient(circle at center, rgba(1,83,0,0) 60%, rgba(1,83,0,.06) 100%);
+    opacity: 0; transition: transform .55s cubic-bezier(.22,1,.36,1), opacity .4s ease;
+  }
+  .radial.open .ring-band { transform: translate(50%, 50%) scale(1); opacity: 1; }
+
+  /* nav item buttons */
+  .nav-item {
+    position: absolute; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; background: #ffffff; color: #015300;
+    box-shadow: 0 8px 22px -6px rgba(1,40,0,.45), inset 0 0 0 1px rgba(1,83,0,.12);
+    transform: translate(var(--dx), var(--dy)) scale(.2);
+    opacity: 0; pointer-events: none;
+    transition: transform .5s cubic-bezier(.34,1.56,.64,1), opacity .35s ease, background .2s, color .2s;
+  }
+  .radial.open .nav-item { transform: translate(0,0) scale(1); opacity: 1; pointer-events: auto; }
+  .nav-item:active { background: #015300; color: #fff; }
+  .nav-item.active { background: #015300; color: #fff; }
+  .nav-item .material-symbols-outlined { font-size: 26px; }
+
+  /* labels */
+  .nav-label {
+    position: absolute; transform: translate(-100%, -50%);
+    white-space: nowrap; background: #1c1b1b; color: #fff;
+    font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 8px;
+    opacity: 0; transition: opacity .3s ease; pointer-events: none;
+  }
+  .nav-label::after { content:''; position:absolute; right:-5px; top:50%; transform:translateY(-50%);
+    border:5px solid transparent; border-left-color:#1c1b1b; }
+  .radial.open .nav-label { opacity: 1; }
+
+  /* the corner FAB (quarter disc) */
+  .fab {
+    position: absolute; right: 0; bottom: 0; width: 92px; height: 92px;
+    border-top-left-radius: 100%;
+    background: radial-gradient(120% 120% at 100% 100%, #026e00 0%, #015300 70%);
+    box-shadow: -6px -6px 22px -6px rgba(1,40,0,.5);
+    pointer-events: auto; cursor: pointer; z-index: 55;
+    transition: filter .2s;
+  }
+  .fab:active { filter: brightness(1.1); }
+  .fab-icon {
+    position: absolute; right: 20px; bottom: 20px; color: #fff;
+    transition: transform .45s cubic-bezier(.34,1.56,.64,1);
+  }
+  .fab-icon .material-symbols-outlined { font-size: 30px; }
+  .radial.open .fab-icon { transform: rotate(135deg); }
+  .fab-pulse {
+    position: absolute; right: 0; bottom: 0; width: 92px; height: 92px;
+    border-top-left-radius: 100%; pointer-events: none; z-index: 54;
+    box-shadow: 0 0 0 0 rgba(1,83,0,.45);
+    animation: fabpulse 2.6s ease-out infinite;
+  }
+  .radial.open .fab-pulse { animation: none; opacity: 0; }
+  @keyframes fabpulse {
+    0% { box-shadow: -2px -2px 0 0 rgba(1,83,0,.4); }
+    70% { box-shadow: -22px -22px 0 14px rgba(1,83,0,0); }
+    100% { box-shadow: 0 0 0 0 rgba(1,83,0,0); }
+  }
+
+  /* toast */
+  .toast {
+    position: absolute; left: 50%; bottom: 120px; transform: translate(-50%, 16px);
+    background: #1c1b1b; color: #fff; font-size: 13px; font-weight: 600;
+    padding: 10px 18px; border-radius: 999px; opacity: 0; z-index: 70;
+    transition: opacity .3s, transform .3s; pointer-events: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ring-band, .nav-item, .fab-icon { transition: opacity .2s ease !important; }
+    .fab-pulse { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div id="stage-wrap">
+  <div id="stage">
+    <div class="phone">
+      <div class="notch"></div>
+      <!-- ============ SCREEN CONTENT ============ -->
+      <div class="phone-screen no-scrollbar" id="screen">
+        <!-- status bar -->
+        <div class="flex justify-between items-center px-6 pt-3 pb-1 text-on-surface text-[13px] font-semibold">
+          <span>9:41</span>
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined" style="font-size:17px">signal_cellular_alt</span>
+            <span class="material-symbols-outlined" style="font-size:17px">wifi</span>
+            <span class="material-symbols-outlined" style="font-size:18px">battery_full</span>
+          </div>
+        </div>
+        <!-- top bar -->
+        <header class="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-outline-variant">
+          <div class="flex items-center justify-between px-margin-mobile py-stack-md">
+            <div class="flex items-center gap-2">
+              <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary font-bold">H</div>
+              <div class="leading-tight">
+                <h1 class="text-title-lg font-title-lg text-primary font-bold">H&amp;B Market</h1>
+                <p class="text-[11px] text-on-surface-variant -mt-0.5">Windhoek, NA · ZAR/NAD</p>
+              </div>
+            </div>
+            <div class="relative">
+              <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-secondary rounded-full"></span>
+            </div>
+          </div>
+          <div class="px-margin-mobile pb-stack-md">
+            <div class="flex items-center gap-2 bg-surface-container rounded-full px-4 py-2.5">
+              <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px">search</span>
+              <span class="text-body-sm text-on-surface-variant">Search verified SME products…</span>
+            </div>
+          </div>
+        </header>
+
+        <main class="pb-40">
+          <!-- hero -->
+          <section class="relative h-[230px] mx-margin-mobile mt-stack-md rounded-2xl overflow-hidden">
+            <img class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7WTa1MpPaXEllfldpwxYBv-W9FCi_bJmLsofmhI5f1xOsukbDxHP0U55I9B_qOUHIcbvJioBLauiBF0MuD8qOEOFq5FiHXAquNiXqgnzNl-zaecXlDizji0t8GrkJV-_l-K9ILVO1VgjdmH7Oc9yK9AZKOaBJUVAh6dV1zOznQAGjHiM1-261YPWLDnCBBsz8pkTsDkPKe4kJaIQXPCRgGvU1_nHN5wNVQ8G24khQspQ3DI1eOXvchtIMmYrf5HyXsBHtGNrStefu" alt="Cross-border logistics hub at golden hour">
+            <div class="absolute inset-0 hero-gradient"></div>
+            <div class="absolute inset-0 p-stack-lg flex flex-col justify-end text-white">
+              <span class="bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit mb-2">Cross-Border</span>
+              <h2 class="text-headline-lg font-headline-lg leading-tight">Seamless Trade<br><span class="text-secondary-fixed">ZA → NA</span></h2>
+              <p class="text-body-sm text-white/90 mt-1">Verified SMEs · 3–5 day delivery</p>
+            </div>
+          </section>
+
+          <!-- quick chips -->
+          <section class="flex gap-2 overflow-x-auto no-scrollbar px-margin-mobile py-stack-md">
+            <span class="shrink-0 bg-primary text-on-primary text-label-sm font-label-sm px-3.5 py-1.5 rounded-full">All</span>
+            <span class="shrink-0 bg-surface-container text-on-surface-variant text-label-sm font-label-sm px-3.5 py-1.5 rounded-full">Agriculture</span>
+            <span class="shrink-0 bg-surface-container text-on-surface-variant text-label-sm font-label-sm px-3.5 py-1.5 rounded-full">Handicrafts</span>
+            <span class="shrink-0 bg-surface-container text-on-surface-variant text-label-sm font-label-sm px-3.5 py-1.5 rounded-full">Beauty</span>
+            <span class="shrink-0 bg-surface-container text-on-surface-variant text-label-sm font-label-sm px-3.5 py-1.5 rounded-full">Textiles</span>
+          </section>
+
+          <!-- new arrivals -->
+          <section class="pl-margin-mobile">
+            <div class="flex justify-between items-center pr-margin-mobile mb-stack-md">
+              <h3 class="text-title-lg font-title-lg text-on-surface">New in Namibia</h3>
+              <span class="text-primary text-label-lg font-label-lg">See all</span>
+            </div>
+            <div class="flex gap-stack-md overflow-x-auto no-scrollbar pb-stack-sm pr-margin-mobile">
+              <article class="shrink-0 w-[160px] bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+                <div class="relative aspect-square overflow-hidden">
+                  <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2XOEXi995kEffFqoqvC1H4D6ivWXp62hxExfFHFs9aC4YFX0cRNLfy-HQwYOSl40F8ZIUrmPMbp14FSvVwDp11XqQvn56PcTBuPm8Nv9jGpZoDRq-HFigwN7r4tgSAAeMwiIkG3C9yq63fkibPdezO3z6s2BprH23GMQ4ALQrcU6EHoXNqmWoZ2BAekvQOqw3A59M1jf3vAgBSr7f8ECgPlHXGrpBkO9fn6qxYMR8XXFuysBQibZJIXC-eLRnKiv1zc9gC3qwdzoZ" alt="Venda pattern wrap">
+                  <span class="absolute top-2 left-2 flex items-center gap-1 bg-[#e8f5e9] text-[#015300] px-1.5 py-0.5 rounded-full">
+                    <span class="material-symbols-outlined text-[12px]" style="font-variation-settings:'FILL' 1">verified</span>
+                    <span class="text-[9px] font-bold">SME</span>
+                  </span>
+                </div>
+                <div class="p-stack-md">
+                  <p class="text-[10px] text-secondary uppercase font-bold mb-0.5">Textiles</p>
+                  <h4 class="text-body-sm text-on-surface line-clamp-1">Venda Pattern Wrap</h4>
+                  <div class="flex justify-between items-center mt-1.5">
+                    <span class="text-body-md font-bold text-on-surface">N$ 849</span>
+                    <button class="bg-primary text-on-primary p-1.5 rounded-full"><span class="material-symbols-outlined" style="font-size:18px">add</span></button>
+                  </div>
+                </div>
+              </article>
+              <article class="shrink-0 w-[160px] bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+                <div class="relative aspect-square overflow-hidden">
+                  <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLAX8eSGTfar0Ey2XQmu_hhW9khRq4u8GzMijGnagNhXeYgaMzgvU-sLUKDXgxuHKNRI4_sz1_vOFLi3154B660A00nwZvfstQt_U-O8TRQmyEVr2w5OV9VSfUKW3q1T1pwBVpWCpyXQBzu4vADd9u7A_Ri6ccb1z3cjqClhvgUmv3HNEMxCn78vSbFiAywzE5sS7MLmGeJ0kIzAJvFb0M5y04tj5zsJA51SiPWylQ2Np8ML4jRRaOnjL8QfQ-OaqoBywf3ijxxjUV" alt="Marula serum">
+                  <span class="absolute top-2 left-2 flex items-center gap-1 bg-[#e8f5e9] text-[#015300] px-1.5 py-0.5 rounded-full">
+                    <span class="material-symbols-outlined text-[12px]" style="font-variation-settings:'FILL' 1">verified</span>
+                    <span class="text-[9px] font-bold">SME</span>
+                  </span>
+                </div>
+                <div class="p-stack-md">
+                  <p class="text-[10px] text-secondary uppercase font-bold mb-0.5">Beauty</p>
+                  <h4 class="text-body-sm text-on-surface line-clamp-1">Marula Facial Serum</h4>
+                  <div class="flex justify-between items-center mt-1.5">
+                    <span class="text-body-md font-bold text-on-surface">N$ 320</span>
+                    <button class="bg-primary text-on-primary p-1.5 rounded-full"><span class="material-symbols-outlined" style="font-size:18px">add</span></button>
+                  </div>
+                </div>
+              </article>
+              <article class="shrink-0 w-[160px] bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+                <div class="relative aspect-square overflow-hidden">
+                  <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDo-uUITkAorHwU-NjOsKa-Ob3HZ1PV2ELVmGWy2GWEwPA0lpTZZeZJIjlUg0jqCpUW6OzmbFNjnzijS4kp9Tz5NcfnQJ0Z97e4lyljqjON47sQZ6iC6OaC2AjV56bSdAahcLPi7_m4h2qw_LQx5mX0ADcFajmZuaEl05zNdDmwbk_SLkQwgS4LJbVHvdyq2SbuUssOlArOFz3gLB965nxGm4dln3UMQiEOW52x1hKRwbAYOGTAT3IufV4GAGA6x3kle1YV8CKwXZSQ" alt="Dried fruit hamper">
+                  <span class="absolute top-2 left-2 flex items-center gap-1 bg-[#e8f5e9] text-[#015300] px-1.5 py-0.5 rounded-full">
+                    <span class="material-symbols-outlined text-[12px]" style="font-variation-settings:'FILL' 1">verified</span>
+                    <span class="text-[9px] font-bold">SME</span>
+                  </span>
+                </div>
+                <div class="p-stack-md">
+                  <p class="text-[10px] text-secondary uppercase font-bold mb-0.5">Agriculture</p>
+                  <h4 class="text-body-sm text-on-surface line-clamp-1">Dried Fruit Hamper</h4>
+                  <div class="flex justify-between items-center mt-1.5">
+                    <span class="text-body-md font-bold text-on-surface">N$ 185</span>
+                    <button class="bg-primary text-on-primary p-1.5 rounded-full"><span class="material-symbols-outlined" style="font-size:18px">add</span></button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <!-- categories -->
+          <section class="px-margin-mobile py-stack-lg">
+            <h3 class="text-title-lg font-title-lg text-on-surface mb-stack-md">Explore Categories</h3>
+            <div class="grid grid-cols-2 gap-stack-md">
+              <div class="relative h-28 rounded-2xl overflow-hidden">
+                <img class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnwDAfrXOsFzIB0-g3IK00Ex3jRAqPCl4nQ_LcfQpbXm-X-CtLE4qmEcaD2WFJOMe8fyBWFzO3LN9lru07I53CiywPbp0SgNs-xm5s-sKzhIInMc93CzHyF8EIk62Me4VLPQ9Rzp5nqRDGndbLm-6GG_VOIrAnAnCGNBf71rxRjaXMjizy8bKD_EVcDGKJpma3jmiPK6gNofuhj-R2l-GcsxT_7tnU1wMj1167ZAJAgEgOCaJX83nSjizSkMClYLIO9mdj2V1Zag49" alt="Agriculture">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                <div class="absolute bottom-2 left-3 text-white"><h4 class="font-bold text-body-md">Agriculture</h4><p class="text-[10px] text-white/80">342 items</p></div>
+              </div>
+              <div class="relative h-28 rounded-2xl overflow-hidden">
+                <img class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQtWIxRLd-HgoC0-xo68g_YU5qn-6LzanY_E_MOJyTsMA0CYLVuOrXjvW0FATlFuPjkCCmi31bNSPHfIOgA1bDj5stRThwd-ZXYPMj0K4AvRP5JOor78V88bvrY-FG57JXgqO-9PPK5th_wNsKMUVCOHxzgBy_rpPH-sfyx6jikc2bohYhNkAWeZ0EbMV6EoQGQ3TX8YKagV1wkTSq1AbhhOtwZ1Nv7acJrGCUCXH0tCHdROV1Ayfx9K9W28JS9X9pcOEdgQD3Mi6F" alt="Handicrafts">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                <div class="absolute bottom-2 left-3 text-white"><h4 class="font-bold text-body-md">Handicrafts</h4><p class="text-[10px] text-white/80">128 items</p></div>
+              </div>
+              <div class="relative h-28 rounded-2xl overflow-hidden">
+                <img class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoGFlqDP6jI4zIyU8Ahrx0d4LBnnUqW3eV-tY9lUsBW9pDx5DytxISoxBDwoY00Y2X3su_1NSjhuIjsYBoYtfSpAX_2Aux9U4TI0hzPqsKqcxDPoj261QK3AAFm7Z8M-bv5TazCbM2YAbuS60RduWHF0UasFAOFVkBnSrr2DG-RAVQBKFJKf6nZs-R0hb3zedvbkpay5kAVcdtnd78Dqzjh60dsYHvuD1sVzf2LarylrARX2VwSKIQg1BmZ5ufOjr09pmhXmMkoMJV" alt="Health and Beauty">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                <div class="absolute bottom-2 left-3 text-white"><h4 class="font-bold text-body-md">Health &amp; Beauty</h4><p class="text-[10px] text-white/80">215 items</p></div>
+              </div>
+              <div class="relative h-28 rounded-2xl overflow-hidden">
+                <img class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-VnbXOzmYPw6mAP-Q7vU4rzmd46TRoeQs5qyUg7xWUAgy4hewLQHkrvtavse8mRcSbgLUECnydSzNNodsY5b8gPM8jsbiqS6ecdHSIKKVDuqzxBrbDFvzYHdXOoYQHmDP0YA2revbSBXRUi0y5L83CPW0efDflARTGNsdQ5E6smauWCworcut5lnZ7gVq2lpL761YW_E1-Vx2CWmmnhHIQqlh4eaXWrrV_qwQHjj0msC9m0qcgv9DGcHP0V5Tx3-kwNUV3VQcW2On" alt="Textiles">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                <div class="absolute bottom-2 left-3 text-white"><h4 class="font-bold text-body-md">Textiles</h4><p class="text-[10px] text-white/80">89 items</p></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="px-margin-mobile pb-stack-xl">
+            <div class="bg-primary-container/40 border border-primary/20 rounded-2xl p-stack-lg flex items-center gap-stack-md">
+              <span class="material-symbols-outlined text-primary" style="font-size:34px">local_shipping</span>
+              <div>
+                <h4 class="text-body-md font-bold text-on-surface">Express ZA–NA Logistics</h4>
+                <p class="text-body-sm text-on-surface-variant">Door-to-door tracking, 3–5 days to Windhoek.</p>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- ============ RADIAL NAVIGATION ============ -->
+      <div class="radial" id="radial">
+        <div class="radial-scrim" id="scrim"></div>
+        <!-- ring bands injected -->
+        <!-- nav items + labels injected -->
+        <div class="fab-pulse"></div>
+        <div class="fab" id="fab">
+          <div class="fab-icon"><span class="material-symbols-outlined">add</span></div>
+        </div>
+      </div>
+
+      <div class="toast" id="toast"><span class="material-symbols-outlined" style="font-size:18px">check_circle</span><span id="toast-text">Home</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ---------- radial nav geometry ---------- */
+  // ring radii (to item centre) + the items that live on each ring
+  const RINGS = [
+    { r: 96,  size: 60, items: [ { icon:'home',        label:'Home',    angle:45, active:true } ] },
+    { r: 170, size: 58, items: [ { icon:'search',      label:'Search',  angle:45 } ] },
+    { r: 244, size: 52, items: [
+        { icon:'receipt_long', label:'My Orders', angle:16 },
+        { icon:'person',       label:'Profile',   angle:39 },
+        { icon:'shopping_cart',label:'Cart',      angle:62 },
+        { icon:'favorite',     label:'Wishlist',  angle:84 },
+    ] },
+  ];
+
+  const radial = document.getElementById('radial');
+  const phoneEl = document.querySelector('.phone');
+  const D2R = Math.PI / 180;
+  const built = [];   // {el, lbl, ring, angle, size}
+  let order = 0;
+
+  RINGS.forEach((ring, ri) => {
+    const band = document.createElement('div');
+    band.className = 'ring-band';
+    band.style.transitionDelay = (ri * 70) + 'ms';
+    radial.insertBefore(band, radial.querySelector('.fab-pulse'));
+    built.push({ el: band, band: true, ring });
+
+    ring.items.forEach((it) => {
+      const btn = document.createElement('button');
+      btn.className = 'nav-item' + (it.active ? ' active' : '');
+      btn.style.width = btn.style.height = ring.size + 'px';
+      const delay = 120 + order * 55;
+      btn.style.transitionDelay = delay + 'ms';
+      btn.innerHTML = '<span class="material-symbols-outlined"' + (it.active ? " style=\"font-variation-settings:'FILL' 1\"" : '') + '>' + it.icon + '</span>';
+      btn.addEventListener('click', () => select(it.label, btn));
+      radial.insertBefore(btn, radial.querySelector('.fab-pulse'));
+
+      const lbl = document.createElement('div');
+      lbl.className = 'nav-label';
+      lbl.textContent = it.label;
+      lbl.style.transitionDelay = (delay + 80) + 'ms';
+      radial.insertBefore(lbl, radial.querySelector('.fab-pulse'));
+
+      built.push({ el: btn, lbl, ring, angle: it.angle, size: ring.size });
+      order++;
+    });
+  });
+
+  // position everything against the live phone size (pivot = bottom-right corner)
+  const MAX_R = 244;
+  function layout() {
+    const W = phoneEl.clientWidth, H = phoneEl.clientHeight;
+    // shrink the rings if the screen is short/narrow so the outer ring always fits
+    const k = Math.min(1, (H - 70) / MAX_R, (W - 40) / MAX_R);
+    built.forEach((b) => {
+      const r = b.ring.r * k;
+      if (b.band) {
+        b.el.style.width = b.el.style.height = (r * 2) + 'px';
+        return;
+      }
+      const size = b.size * Math.max(0.85, k);
+      b.el.style.width = b.el.style.height = size + 'px';
+      const a = b.angle * D2R;                 // 0 = straight up, 90 = straight left
+      const x = W - r * Math.sin(a);
+      const y = H - r * Math.cos(a);
+      b.el.style.left = (x - size / 2) + 'px';
+      b.el.style.top  = (y - size / 2) + 'px';
+      b.el.style.setProperty('--dx', (W - x) + 'px');
+      b.el.style.setProperty('--dy', (H - y) + 'px');
+      b.lbl.style.left = (x - size / 2 - 12) + 'px';
+      b.lbl.style.top  = y + 'px';
+    });
+  }
+  window.addEventListener('resize', layout);
+  layout();
+
+  /* ---------- open / close ---------- */
+  function setOpen(v) {
+    radial.classList.toggle('open', v);
+  }
+  document.getElementById('fab').addEventListener('click', () => setOpen(!radial.classList.contains('open')));
+  document.getElementById('scrim').addEventListener('click', () => setOpen(false));
+
+  /* ---------- selection feedback ---------- */
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toast-text');
+  let toastTimer;
+  function select(label, btn) {
+    document.querySelectorAll('.nav-item').forEach(b => {
+      b.classList.remove('active');
+      const ic = b.querySelector('.material-symbols-outlined');
+      ic.style.fontVariationSettings = "'FILL' 0";
+    });
+    btn.classList.add('active');
+    btn.querySelector('.material-symbols-outlined').style.fontVariationSettings = "'FILL' 1";
+    toastText.textContent = label;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+    setTimeout(() => setOpen(false), 180);
+  }
+</script>
+</body></html>

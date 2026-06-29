@@ -267,8 +267,8 @@
 </div>
 </section>
 </main>
-<!-- BottomNavBar -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center bg-surface dark:bg-surface-dim pb-safe pt-2 px-2 border-t border-outline-variant dark:border-outline flat no shadows">
+<!-- BottomNavBar (desktop only — mobile uses radial nav) -->
+<nav class="hidden md:flex fixed bottom-0 left-0 w-full z-50 justify-around items-center bg-surface dark:bg-surface-dim pb-safe pt-2 px-2 border-t border-outline-variant dark:border-outline">
 <div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant p-2 hover:bg-surface-container-low dark:hover:bg-surface-container-highest cursor-pointer scale-95 transition-transform duration-150">
 <span class="material-symbols-outlined">home</span>
 <span class="font-label-sm text-label-sm">Home</span>
@@ -304,6 +304,6 @@
             });
         });
     </script>
-
+<script src="../shared/radial-nav.js" data-active="search"></script>
 
 </body></html>
