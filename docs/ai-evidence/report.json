@@ -1,28 +1,28 @@
 {
-  "generatedAt": "2026-06-26T14:15:47.330Z",
+  "generatedAt": "2026-06-29T08:02:29.773Z",
   "git": {
-    "totalCommits": 68,
-    "aiCommits": 60,
-    "aiPct": 88,
-    "appCommits": 41,
-    "ins": 36251,
-    "del": 2450,
-    "net": 33801,
-    "aiIns": 23869,
-    "aiDel": 2393,
+    "totalCommits": 69,
+    "aiCommits": 63,
+    "aiPct": 91,
+    "appCommits": 43,
+    "ins": 36621,
+    "del": 2521,
+    "net": 34100,
+    "aiIns": 24239,
+    "aiDel": 2464,
     "filesTouched": 373,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 31,
-        "ins": 17253,
-        "del": 731
+        "commits": 33,
+        "ins": 17544,
+        "del": 736
       },
       {
         "name": "Docs",
-        "commits": 27,
-        "ins": 9629,
-        "del": 1544
+        "commits": 28,
+        "ins": 9708,
+        "del": 1610
       },
       {
         "name": "API (NestJS)",
@@ -56,22 +56,27 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-06-26",
+    "lastDate": "2026-06-29",
     "recent": [
+      {
+        "hash": "6f5f534",
+        "subject": "test(web): cover auth-aware nav-bar (anon vs account, sign-out, cart returnUrl gate)",
+        "ai": true
+      },
+      {
+        "hash": "9ba41ad",
+        "subject": "feat(web): make storefront nav auth-aware (sign-in vs account; cart gates to login)",
+        "ai": true
+      },
+      {
+        "hash": "4fa9c03",
+        "subject": "chore(evidence): recompile AI-evidence report for vs3y5tDJ",
+        "ai": true
+      },
       {
         "hash": "bf4f237",
         "subject": "feat(api): make GET /vendors/:id public, approved-only",
         "ai": true
-      },
-      {
-        "hash": "0fd6050",
-        "subject": "index on main: 79daece Merge pull request #20 from michaeljvr11/feat/eOI6gKpN-returnurl-guard-capture",
-        "ai": false
-      },
-      {
-        "hash": "04ac886",
-        "subject": "untracked files on main: 79daece Merge pull request #20 from michaeljvr11/feat/eOI6gKpN-returnurl-guard-capture",
-        "ai": false
       },
       {
         "hash": "ad702fc",
@@ -112,11 +117,6 @@
         "hash": "a93247e",
         "subject": "chore(evidence): recompile AI-evidence report for AP-11 audit log",
         "ai": true
-      },
-      {
-        "hash": "51d9fe8",
-        "subject": "fix(api): make audit \"to\" filter inclusive of selected day; tighten audit tests",
-        "ai": true
       }
     ]
   },
@@ -135,6 +135,11 @@
       "branch": "feat/DD6Z0NUW-admin-vendor-approvals",
       "cardId": "DD6Z0NUW",
       "slug": "admin-vendor-approvals"
+    },
+    {
+      "branch": "feat/EFXHykuT-auth-aware-nav",
+      "cardId": "EFXHykuT",
+      "slug": "auth-aware-nav"
     },
     {
       "branch": "feat/EXPtZCJL-vendor-portal-shell",
@@ -245,7 +250,7 @@
     {
       "headRefName": "feat/vs3y5tDJ-public-vendor-profile",
       "number": 21,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(api): make GET /vendors/:id public, approved-only (vs3y5tDJ)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/21"
     },
@@ -397,19 +402,19 @@
     },
     {
       "name": "To Do",
-      "cards": 8
+      "cards": 10
     },
     {
       "name": "In Progress",
-      "cards": 0
-    },
-    {
-      "name": "In Review",
       "cards": 1
     },
     {
+      "name": "In Review",
+      "cards": 0
+    },
+    {
       "name": "Done",
-      "cards": 16
+      "cards": 17
     }
   ],
   "notes": []
