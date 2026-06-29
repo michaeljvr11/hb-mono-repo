@@ -27,7 +27,7 @@
       >Logistics</button>
     </nav>
 
-    <!-- Sell on H&B entry (authenticated users) -->
+    <!-- Sell on H&B entry -->
     <a
       class="nav-bar__link nav-bar__link--sell"
       routerLink="/vendor/apply"
@@ -63,11 +63,37 @@
         type="button"
         class="nav-bar__cart-btn"
         aria-label="View cart"
-        (click)="notifyComingSoon('Cart')"
+        (click)="onCartClick()"
       >
         <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
         <span class="nav-bar__cart-label">Cart</span>
       </button>
+
+      <!-- Auth controls: sign-in (anonymous) or account + sign-out (authenticated) -->
+      @if (isAuthenticated()) {
+        <div class="nav-bar__account">
+          <span class="material-symbols-outlined nav-bar__account-icon" aria-hidden="true">person</span>
+          <span class="nav-bar__account-name">{{ accountLabel() }}</span>
+        </div>
+        <button
+          type="button"
+          class="nav-bar__signout"
+          (click)="signOut()"
+          aria-label="Sign out"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+          <span class="nav-bar__signout-label">Sign out</span>
+        </button>
+      } @else {
+        <a
+          class="nav-bar__signin"
+          routerLink="/login"
+          aria-label="Sign in to your account"
+        >
+          <span class="material-symbols-outlined nav-bar__signin-icon" aria-hidden="true">login</span>
+          <span class="nav-bar__signin-label">Sign in</span>
+        </a>
+      }
     </div>
   </div>
 </header>

@@ -199,3 +199,107 @@
     display: inline;
   }
 }
+
+/* ── Auth controls ─────────────────────────────────────────────────────────── */
+
+/* Sign in link */
+.nav-bar__signin {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--hb-on-surface-variant);
+  transition: background 150ms ease, color 150ms ease;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  &:hover {
+    background: var(--hb-surface-container);
+    color: var(--hb-on-surface);
+  }
+}
+
+.nav-bar__signin-icon {
+  flex-shrink: 0;
+}
+
+.nav-bar__signin-label {
+  display: none;
+
+  @media (min-width: 768px) {
+    display: inline;
+  }
+}
+
+/* Account display (authenticated) */
+.nav-bar__account {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--hb-on-surface-variant);
+}
+
+.nav-bar__account-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.nav-bar__account-name {
+  display: none;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--hb-on-surface);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media (min-width: 768px) {
+    display: inline;
+  }
+}
+
+/* Sign out button */
+.nav-bar__signout {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--hb-on-surface-variant);
+  transition: background 150ms ease, color 150ms ease;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  &:hover {
+    background: var(--hb-surface-container);
+    color: var(--hb-on-surface);
+  }
+}
+
+.nav-bar__signout-label {
+  display: none;
+
+  @media (min-width: 768px) {
+    display: inline;
+  }
+}
