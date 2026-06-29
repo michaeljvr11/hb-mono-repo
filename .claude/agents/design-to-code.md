@@ -20,3 +20,10 @@ Process:
   otherwise leave clearly-typed inputs for the frontend-engineer to wire.
 
 Stop after the screen renders and `ng test` passes. Leave git to the orchestrator.
+
+## Return to the orchestrator
+Reply with ONLY a terse structured summary — no narration, no code echoes, no markup dumps:
+- **Components created:** `path` — one line each on what it renders.
+- **Inputs left for wiring:** typed inputs the frontend-engineer must connect, or `none`.
+- **Tests:** `ng test` pass/fail.
+- **Follow-ups:** anything deferred, or `none`.
