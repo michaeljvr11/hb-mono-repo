@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-06-29T08:02:29.773Z",
+  "generatedAt": "2026-06-29T13:23:12.509Z",
   "git": {
-    "totalCommits": 69,
-    "aiCommits": 63,
-    "aiPct": 91,
-    "appCommits": 43,
-    "ins": 36621,
-    "del": 2521,
-    "net": 34100,
-    "aiIns": 24239,
-    "aiDel": 2464,
-    "filesTouched": 373,
+    "totalCommits": 73,
+    "aiCommits": 66,
+    "aiPct": 90,
+    "appCommits": 45,
+    "ins": 37046,
+    "del": 2597,
+    "net": 34449,
+    "aiIns": 24583,
+    "aiDel": 2520,
+    "filesTouched": 374,
     "areaRows": [
       {
         "name": "Web (Angular)",
@@ -20,21 +20,21 @@
       },
       {
         "name": "Docs",
-        "commits": 28,
-        "ins": 9708,
-        "del": 1610
+        "commits": 29,
+        "ins": 9768,
+        "del": 1664
       },
       {
         "name": "API (NestJS)",
-        "commits": 22,
-        "ins": 7357,
-        "del": 126
+        "commits": 24,
+        "ins": 7637,
+        "del": 128
       },
       {
         "name": "AI Factory config",
-        "commits": 25,
-        "ins": 842,
-        "del": 24
+        "commits": 27,
+        "ins": 927,
+        "del": 44
       },
       {
         "name": "Shared contracts",
@@ -58,6 +58,26 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-06-29",
     "recent": [
+      {
+        "hash": "9d79a21",
+        "subject": "test(api): cover approved-vendor visibility filter on public product endpoints",
+        "ai": true
+      },
+      {
+        "hash": "33d6b41",
+        "subject": "feat(api): filter non-approved vendor listings from public product endpoints",
+        "ai": true
+      },
+      {
+        "hash": "48a6691",
+        "subject": "token usage optimization",
+        "ai": false
+      },
+      {
+        "hash": "189200d",
+        "subject": "chore(evidence): recompile AI-evidence report for EFXHykuT",
+        "ai": true
+      },
       {
         "hash": "6f5f534",
         "subject": "test(web): cover auth-aware nav-bar (anon vs account, sign-out, cart returnUrl gate)",
@@ -97,26 +117,6 @@
         "hash": "dfcb573",
         "subject": "ship card trello comment update",
         "ai": false
-      },
-      {
-        "hash": "a8d0e97",
-        "subject": "chore(evidence): recompile AI-evidence report for kYbVZyqV",
-        "ai": true
-      },
-      {
-        "hash": "e71bf7a",
-        "subject": "feat(web): make /shop public and server-rendered",
-        "ai": true
-      },
-      {
-        "hash": "c0d0520",
-        "subject": "fix(auth): resolve SSR race condition blocking admin portal access",
-        "ai": true
-      },
-      {
-        "hash": "a93247e",
-        "subject": "chore(evidence): recompile AI-evidence report for AP-11 audit log",
-        "ai": true
       }
     ]
   },
@@ -155,6 +155,11 @@
       "branch": "feat/ai-evidence-system",
       "cardId": "ai",
       "slug": "evidence-system"
+    },
+    {
+      "branch": "feat/c2o6xfZs-approved-vendor-product-filter",
+      "cardId": "c2o6xfZs",
+      "slug": "approved-vendor-product-filter"
     },
     {
       "branch": "feat/eOI6gKpN-returnurl-guard-capture",
@@ -213,8 +218,8 @@
     }
   ],
   "tests": {
-    "total": 34,
-    "api": 8,
+    "total": 35,
+    "api": 9,
     "web": 26
   },
   "design": {
@@ -241,12 +246,19 @@
     },
     "gatePass": 12,
     "gateFail": 1,
-    "edits": 116,
-    "editsUnfixable": 39,
+    "edits": 119,
+    "editsUnfixable": 40,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-26T14:14:35.458Z"
+    "lastTs": "2026-06-29T13:18:28.331Z"
   },
   "prs": [
+    {
+      "headRefName": "feat/EFXHykuT-auth-aware-nav",
+      "number": 22,
+      "state": "MERGED",
+      "title": "feat(web): auth-aware storefront nav (sign-in vs account; cart gates to login)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/22"
+    },
     {
       "headRefName": "feat/vs3y5tDJ-public-vendor-profile",
       "number": 21,
@@ -402,7 +414,7 @@
     },
     {
       "name": "To Do",
-      "cards": 10
+      "cards": 9
     },
     {
       "name": "In Progress",
@@ -414,7 +426,7 @@
     },
     {
       "name": "Done",
-      "cards": 17
+      "cards": 18
     }
   ],
   "notes": []

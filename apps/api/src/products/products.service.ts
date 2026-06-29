@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { ListingType, ProductDto, UserRole } from '@hb/shared';
+import { ListingType, ProductDto, UserRole, VendorStatus } from '@hb/shared';
 import { Product } from './entities/product.entity';
 import { ProductImage } from './entities/product-image.entity';
 import { ProductCreateDto } from './dto/product-create.dto';
@@ -163,6 +163,10 @@ export class ProductsService {
 
   async findAll(): Promise<ProductDto[]> {
     const products = await this.productsRepository.find({
+      where: [
+        { listingType: ListingType.PLATFORM },
+        { listingType: ListingType.VENDOR, vendor: { status: VendorStatus.APPROVED } },
+      ],
       relations: ['images', 'vendor', 'categories'],
     });
     return products.map(ProductToResponseDto);
@@ -170,7 +174,10 @@ export class ProductsService {
 
   async findOne(id: string): Promise<ProductDto> {
     const product = await this.productsRepository.findOne({
-      where: { id },
+      where: [
+        { id, listingType: ListingType.PLATFORM },
+        { id, listingType: ListingType.VENDOR, vendor: { status: VendorStatus.APPROVED } },
+      ],
       relations: ['images', 'vendor', 'categories'],
     });
     if (!product) throw new NotFoundException('Product not found');
