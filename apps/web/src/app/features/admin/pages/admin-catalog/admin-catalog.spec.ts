@@ -440,6 +440,32 @@ describe('AdminCatalog component', () => {
       component.cancelDeleteCategory();
       expect(component.pendingDeleteCategoryId()).toBeNull();
     });
+
+    it('surfaces the server conflict message when delete fails with 409', async () => {
+      categoriesStub.delete.mockReturnValue(
+        throwError(() => ({
+          status: 409,
+          error: { message: 'Cannot delete a category that has products; reassign them first' },
+        })),
+      );
+
+      component.confirmDeleteCategory('cat1');
+      component.deleteCategory('cat1');
+      await fixture.whenStable();
+
+      expect(component.categoryDeleteError()).toBe(
+        'Cannot delete a category that has products; reassign them first',
+      );
+      // The category must remain in the list — nothing was deleted.
+      expect(component.categories().some(c => c.id === 'cat1')).toBe(true);
+      expect(component.pendingDeleteCategoryId()).toBeNull();
+    });
+
+    it('clears a prior delete error when a new delete is confirmed', () => {
+      component.categoryDeleteError.set('stale error');
+      component.confirmDeleteCategory('cat2');
+      expect(component.categoryDeleteError()).toBeNull();
+    });
   });
 
   // ── General state ──────────────────────────────────────────────────────────

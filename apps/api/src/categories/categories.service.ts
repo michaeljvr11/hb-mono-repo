@@ -65,9 +65,23 @@ export class CategoriesService {
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.categoryRepository.delete(id);
-    if (result.affected === 0) {
+    const category = await this.categoryRepository.findOne({
+      where: { id },
+      relations: { products: true, children: true },
+    });
+    if (!category) {
       throw new NotFoundException('Category not found');
     }
+    if (category.products.length > 0) {
+      throw new ConflictException(
+        'Cannot delete a category that has products; reassign them first',
+      );
+    }
+    if (category.children.length > 0) {
+      throw new ConflictException(
+        'Cannot delete a category with subcategories; delete or reparent them first',
+      );
+    }
+    await this.categoryRepository.remove(category);
   }
 }
