@@ -335,6 +335,14 @@
         </div>
       }
 
+      <!-- Delete conflict (e.g. 409 — category in use or has subcategories) -->
+      @if (categoryDeleteError()) {
+        <div class="error-banner" role="alert">
+          <span class="material-symbols-outlined" aria-hidden="true">error</span>
+          <span>{{ categoryDeleteError() }}</span>
+        </div>
+      }
+
       <!-- Table -->
       @if (!categoriesLoading() && !categoriesError()) {
         @if (categories().length === 0) {

@@ -1,4 +1,5 @@
 import { DecimalPipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import {
@@ -81,6 +82,8 @@ export class AdminCatalog implements OnInit {
   // ─── Delete guard ────────────────────────────────────────────────────────────
   readonly pendingDeleteProductId = signal<string | null>(null);
   readonly pendingDeleteCategoryId = signal<string | null>(null);
+  /** Surfaces a category-delete conflict (e.g. 409 — category in use or has children). */
+  readonly categoryDeleteError = signal<string | null>(null);
 
   // ─── Expose enums to template ─────────────────────────────────────────────
   readonly CurrencyCode = CurrencyCode;
@@ -344,6 +347,7 @@ export class AdminCatalog implements OnInit {
   }
 
   confirmDeleteCategory(id: string): void {
+    this.categoryDeleteError.set(null);
     this.pendingDeleteCategoryId.set(id);
   }
 
@@ -352,12 +356,17 @@ export class AdminCatalog implements OnInit {
   }
 
   deleteCategory(id: string): void {
+    this.categoryDeleteError.set(null);
     this.categoriesService.delete(id).subscribe({
       next: () => {
         this.categories.update(list => list.filter(c => c.id !== id));
         this.pendingDeleteCategoryId.set(null);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        // Surface the server's conflict message (409 — category in use / has children).
+        this.categoryDeleteError.set(
+          err.error?.message ?? 'Failed to delete category. Please try again.',
+        );
         this.pendingDeleteCategoryId.set(null);
       },
     });
