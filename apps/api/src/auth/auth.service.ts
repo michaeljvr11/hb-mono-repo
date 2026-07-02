@@ -52,6 +52,10 @@ export class AuthService {
       email,
       password,
       ...rest,
+      // Defense-in-depth: self-registration is always a CUSTOMER. Even if a `role`
+      // ever leaks back into the DTO/whitelist, it can never elevate here. Elevated
+      // roles are assigned only via the admin-only role endpoint. See docs/security.
+      role: UserRole.CUSTOMER,
     });
 
     // Send the email-verification link (best-effort — registration still

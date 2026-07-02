@@ -12,7 +12,10 @@ export interface RegisterRequest {
   password: string;
   firstName?: string;
   lastName?: string;
-  role?: UserRole;
+  // NOTE: role is intentionally NOT part of self-registration. Public sign-up
+  // always creates a CUSTOMER; the role is set server-side. Elevated roles are
+  // assigned only via the admin-only PATCH /admin/users/:id/role path, and
+  // vendor onboarding sets the role in VendorsService. See docs/security.
   /** When true, the refresh session is long-lived (30d) instead of short (24h). */
   rememberMe?: boolean;
 }

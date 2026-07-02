@@ -109,6 +109,27 @@ describe('AuthService', () => {
       expect(usersService.setEmailVerificationToken).toHaveBeenCalled();
       expect(mailService.sendEmailVerification).toHaveBeenCalledWith('a@b.com', expect.any(String));
     });
+
+    it('always creates a CUSTOMER and ignores any client-supplied role (privilege-escalation guard)', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue({ ...activeUser, isVerified: false });
+
+      // Simulate a hand-crafted request smuggling role: 'admin' past the type system.
+      await service.register({
+        email: 'a@b.com',
+        password: 'password1',
+        role: UserRole.ADMIN,
+      } as Parameters<typeof service.register>[0]);
+
+      // The forced role must win over anything supplied by the caller: create is
+      // called with CUSTOMER, never the smuggled ADMIN.
+      expect(usersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'a@b.com', role: UserRole.CUSTOMER }),
+      );
+      expect(usersService.create).not.toHaveBeenCalledWith(
+        expect.objectContaining({ role: UserRole.ADMIN }),
+      );
+    });
   });
 
   describe('bootstrapAdmin', () => {
