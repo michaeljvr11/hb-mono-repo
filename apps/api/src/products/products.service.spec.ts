@@ -19,6 +19,8 @@ const makeVendor = (status: VendorStatus): Vendor =>
     status,
   }) as Vendor;
 
+const makeCategory = (id: string, name = `Category ${id}`): Category => ({ id, name }) as Category;
+
 const makeProduct = (overrides: Partial<Product> = {}): Product => ({
   id: 'p1',
   name: 'Test Product',
@@ -81,6 +83,57 @@ const ALL_PRODUCTS: Product[] = [
   suspendedVendorProduct,
 ];
 
+// ── Discovery fixtures (categoryId / q / vendorId) ───────────────────────────
+const gadgetsCategory = makeCategory('cat-gadgets', 'Gadgets');
+const homewareCategory = makeCategory('cat-homeware', 'Homeware');
+
+const platformGadget = makeProduct({
+  id: 'platform-gadget',
+  name: 'Solar Charger',
+  description: 'A portable solar-powered charger',
+  listingType: ListingType.PLATFORM,
+  vendor: undefined,
+  vendorId: undefined,
+  categories: [gadgetsCategory],
+});
+
+const approvedGadget = makeProduct({
+  id: 'approved-gadget',
+  name: 'Bluetooth Speaker',
+  description: 'Loud portable speaker',
+  listingType: ListingType.VENDOR,
+  vendor: makeVendor(VendorStatus.APPROVED),
+  vendorId: 'v1',
+  categories: [gadgetsCategory],
+});
+
+const approvedHomeware = makeProduct({
+  id: 'approved-homeware',
+  name: 'Ceramic Mug',
+  description: 'Hand-glazed mug',
+  listingType: ListingType.VENDOR,
+  vendor: makeVendor(VendorStatus.APPROVED),
+  vendorId: 'v1',
+  categories: [homewareCategory],
+});
+
+const pendingGadget = makeProduct({
+  id: 'pending-gadget',
+  name: 'Smart Charger',
+  description: 'A charger from a pending vendor',
+  listingType: ListingType.VENDOR,
+  vendor: makeVendor(VendorStatus.PENDING),
+  vendorId: 'v2',
+  categories: [gadgetsCategory],
+});
+
+const DISCOVERY_PRODUCTS: Product[] = [
+  platformGadget,
+  approvedGadget,
+  approvedHomeware,
+  pendingGadget,
+];
+
 // ── Where-array mock helpers ──────────────────────────────────────────────────
 // Products.findAll / findOne use an array-of-conditions WHERE (OR semantics):
 // a product matches when ALL constraints in at least ONE condition object are met.
@@ -101,17 +154,72 @@ function matchesWhereArray(product: Product, conditions: Record<string, unknown>
   );
 }
 
-/** Simulates `repository.find` — filters the stored list with the real WHERE logic. */
-const respectsWhereFind =
-  (stored: Product[]) =>
-  ({ where }: { where: Record<string, unknown>[] }) =>
-    Promise.resolve(stored.filter((p) => matchesWhereArray(p, where)));
-
 /** Simulates `repository.findOne` — returns the first matching product or null. */
 const respectsWhereFindOne =
   (stored: Product[]) =>
   ({ where }: { where: Record<string, unknown>[] }) =>
     Promise.resolve(stored.find((p) => matchesWhereArray(p, where)) ?? null);
+
+// ── QueryBuilder mock for findAll ─────────────────────────────────────────────
+// findAll composes predicates via createQueryBuilder().where()/.andWhere(). This
+// fake QueryBuilder accumulates the same predicates the real service issues and
+// applies them for real against the fixture set — so a passing test reflects the
+// actual composed query, not a hand-forced result.
+type Predicate = (p: Product) => boolean;
+
+interface FakeQueryBuilder {
+  leftJoinAndSelect: jest.Mock;
+  where: jest.Mock;
+  andWhere: jest.Mock;
+  getMany: jest.Mock;
+}
+
+function interpretPredicate(sql: string, params?: Record<string, unknown>): Predicate {
+  if (sql.includes('vendor.status = :approvedStatus') && sql.includes('platformType')) {
+    return (p) =>
+      p.listingType === ListingType.PLATFORM ||
+      (p.listingType === ListingType.VENDOR && p.vendor?.status === VendorStatus.APPROVED);
+  }
+  if (sql.includes('product_categories')) {
+    const categoryId = params?.categoryId as string;
+    return (p) => (p.categories ?? []).some((c) => c.id === categoryId);
+  }
+  if (sql.includes('ILIKE :q')) {
+    const q = ((params?.q as string) ?? '').replace(/%/g, '').toLowerCase();
+    return (p) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
+  }
+  if (sql.includes('product.vendorId = :vendorId')) {
+    const vendorId = params?.vendorId as string;
+    return (p) => p.vendorId === vendorId;
+  }
+  throw new Error(`Unrecognised predicate in test fake: ${sql}`);
+}
+
+function buildFakeQueryBuilder(stored: Product[]): FakeQueryBuilder {
+  const predicates: Predicate[] = [];
+
+  const qb: FakeQueryBuilder = {
+    leftJoinAndSelect: jest.fn(),
+    where: jest.fn(),
+    andWhere: jest.fn(),
+    getMany: jest.fn(),
+  };
+
+  qb.leftJoinAndSelect.mockReturnValue(qb);
+  qb.where.mockImplementation((sql: string, params?: Record<string, unknown>) => {
+    predicates.push(interpretPredicate(sql, params));
+    return qb;
+  });
+  qb.andWhere.mockImplementation((sql: string, params?: Record<string, unknown>) => {
+    predicates.push(interpretPredicate(sql, params));
+    return qb;
+  });
+  qb.getMany.mockImplementation(() =>
+    Promise.resolve(stored.filter((p) => predicates.every((pred) => pred(p)))),
+  );
+
+  return qb;
+}
 
 // ── Suite ─────────────────────────────────────────────────────────────────────
 describe('ProductsService', () => {
@@ -126,6 +234,7 @@ describe('ProductsService', () => {
       create: jest.fn(),
       delete: jest.fn(),
       findBy: jest.fn(),
+      createQueryBuilder: jest.fn(),
     };
 
     const module = await Test.createTestingModule({
@@ -149,8 +258,14 @@ describe('ProductsService', () => {
   afterEach(() => jest.clearAllMocks());
 
   describe('findAll', () => {
+    function mockQb(stored: Product[]) {
+      const qb = buildFakeQueryBuilder(stored);
+      productRepo.createQueryBuilder.mockReturnValue(qb);
+      return qb;
+    }
+
     it('returns PLATFORM listings regardless of vendor status', async () => {
-      productRepo.find.mockImplementation(respectsWhereFind([platformProduct]));
+      mockQb([platformProduct]);
 
       const result = await service.findAll();
 
@@ -160,7 +275,7 @@ describe('ProductsService', () => {
     });
 
     it('returns APPROVED-vendor listings', async () => {
-      productRepo.find.mockImplementation(respectsWhereFind([approvedVendorProduct]));
+      mockQb([approvedVendorProduct]);
 
       const result = await service.findAll();
 
@@ -169,7 +284,7 @@ describe('ProductsService', () => {
       expect(result[0].listingType).toBe(ListingType.VENDOR);
     });
 
-    // The WHERE mock genuinely excludes these — it is the query's doing, not a hand-forced [].
+    // The fake QueryBuilder genuinely excludes these — it is the query's doing, not a hand-forced [].
     const nonApprovedCases: ReadonlyArray<[VendorStatus, string, Product]> = [
       [VendorStatus.PENDING, 'pending-1', pendingVendorProduct],
       [VendorStatus.REJECTED, 'rejected-1', rejectedVendorProduct],
@@ -179,7 +294,7 @@ describe('ProductsService', () => {
     it.each(nonApprovedCases)(
       'excludes a %s-vendor product from the catalogue',
       async (_status, productId, product) => {
-        productRepo.find.mockImplementation(respectsWhereFind([product]));
+        mockQb([product]);
 
         const result = await service.findAll();
 
@@ -187,22 +302,24 @@ describe('ProductsService', () => {
       },
     );
 
-    it('passes the exact where array-of-conditions and relations to the repository', async () => {
-      productRepo.find.mockResolvedValue([]);
+    it('builds the query with the expected joins and the approved-vendor visibility predicate', async () => {
+      const qb = mockQb([]);
 
       await service.findAll();
 
-      expect(productRepo.find).toHaveBeenCalledWith({
-        where: [
-          { listingType: ListingType.PLATFORM },
-          { listingType: ListingType.VENDOR, vendor: { status: VendorStatus.APPROVED } },
-        ],
-        relations: ['images', 'vendor', 'categories'],
+      expect(productRepo.createQueryBuilder).toHaveBeenCalledWith('product');
+      expect(qb.leftJoinAndSelect).toHaveBeenCalledWith('product.images', 'images');
+      expect(qb.leftJoinAndSelect).toHaveBeenCalledWith('product.vendor', 'vendor');
+      expect(qb.leftJoinAndSelect).toHaveBeenCalledWith('product.categories', 'categories');
+      expect(qb.where).toHaveBeenCalledWith(expect.stringContaining('platformType'), {
+        platformType: ListingType.PLATFORM,
+        vendorType: ListingType.VENDOR,
+        approvedStatus: VendorStatus.APPROVED,
       });
     });
 
     it('returns an empty array when the repository is empty', async () => {
-      productRepo.find.mockResolvedValue([]);
+      mockQb([]);
 
       const result = await service.findAll();
 
@@ -210,7 +327,7 @@ describe('ProductsService', () => {
     });
 
     it('returns only PLATFORM and APPROVED-vendor listings from a mixed fixture set', async () => {
-      productRepo.find.mockImplementation(respectsWhereFind(ALL_PRODUCTS));
+      mockQb(ALL_PRODUCTS);
 
       const result = await service.findAll();
       const ids = result.map((p) => p.id);
@@ -220,6 +337,94 @@ describe('ProductsService', () => {
       expect(ids).not.toContain('pending-1');
       expect(ids).not.toContain('rejected-1');
       expect(ids).not.toContain('suspended-1');
+    });
+
+    it('behaves exactly as before when called with no params', async () => {
+      const qb = mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll();
+
+      expect(qb.andWhere).not.toHaveBeenCalled();
+      const ids = result.map((p) => p.id);
+      expect(ids).toEqual(
+        expect.arrayContaining(['platform-gadget', 'approved-gadget', 'approved-homeware']),
+      );
+      expect(ids).not.toContain('pending-gadget');
+    });
+
+    it('filters by categoryId only', async () => {
+      mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll({ categoryId: 'cat-gadgets' });
+      const ids = result.map((p) => p.id);
+
+      expect(ids).toEqual(expect.arrayContaining(['platform-gadget', 'approved-gadget']));
+      expect(ids).not.toContain('approved-homeware');
+      // Non-approved vendor listing must never resurface even if it matches the category.
+      expect(ids).not.toContain('pending-gadget');
+    });
+
+    it('returns an empty list for an unknown categoryId (not an error)', async () => {
+      mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll({ categoryId: 'does-not-exist' });
+
+      expect(result).toEqual([]);
+    });
+
+    it('filters by q only (case-insensitive, matches name or description)', async () => {
+      mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll({ q: 'SPEAKER' });
+      const ids = result.map((p) => p.id);
+
+      expect(ids).toEqual(['approved-gadget']);
+    });
+
+    it('matches q against description as well as name', async () => {
+      mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll({ q: 'glazed' });
+      const ids = result.map((p) => p.id);
+
+      expect(ids).toEqual(['approved-homeware']);
+    });
+
+    it('filters by vendorId only', async () => {
+      mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll({ vendorId: 'v1' });
+      const ids = result.map((p) => p.id);
+
+      expect(ids).toEqual(expect.arrayContaining(['approved-gadget', 'approved-homeware']));
+      expect(ids).not.toContain('platform-gadget');
+      expect(ids).not.toContain('pending-gadget');
+    });
+
+    it('composes categoryId + q + vendorId together (AND semantics)', async () => {
+      mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll({
+        categoryId: 'cat-gadgets',
+        q: 'speaker',
+        vendorId: 'v1',
+      });
+
+      expect(result.map((p) => p.id)).toEqual(['approved-gadget']);
+    });
+
+    it('never resurfaces a non-approved vendor listing under any param combination', async () => {
+      mockQb(DISCOVERY_PRODUCTS);
+
+      const byCategory = await service.findAll({ categoryId: 'cat-gadgets' });
+      const byQuery = await service.findAll({ q: 'charger' });
+      const byVendor = await service.findAll({ vendorId: 'v2' });
+      const combined = await service.findAll({ categoryId: 'cat-gadgets', q: 'charger' });
+
+      expect(byCategory.map((p) => p.id)).not.toContain('pending-gadget');
+      expect(byQuery.map((p) => p.id)).not.toContain('pending-gadget');
+      expect(byVendor.map((p) => p.id)).not.toContain('pending-gadget');
+      expect(combined.map((p) => p.id)).not.toContain('pending-gadget');
     });
   });
 

@@ -10,3 +10,4 @@ export * from './shipping';
 export * from './cart';
 export * from './dashboard';
 export * from './audit';
+export * from './search';

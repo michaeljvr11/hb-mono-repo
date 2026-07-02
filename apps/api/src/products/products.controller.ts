@@ -9,6 +9,7 @@ import {
   ParseFilePipeBuilder,
   Patch,
   Post,
+  Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { UserRole } from '@hb/shared';
 import { ProductsService } from './products.service';
 import { ProductCreateDto } from './dto/product-create.dto';
 import { ProductUpdateDto } from './dto/product-update.dto';
+import { ProductQueryDto } from './dto/product-query.dto';
 import { productImageMulterOptions } from './upload/multer.config';
 import { Public } from '../common/decorators/public.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
@@ -53,8 +55,8 @@ export class ProductsController {
 
   @Public()
   @Get()
-  getAllProducts() {
-    return this.productsService.findAll();
+  getAllProducts(@Query() query: ProductQueryDto) {
+    return this.productsService.findAll(query);
   }
 
   @Public()

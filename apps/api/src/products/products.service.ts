@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { ListingType, ProductDto, UserRole, VendorStatus } from '@hb/shared';
+import { ListingType, ProductDto, ProductQuery, UserRole, VendorStatus } from '@hb/shared';
 import { Product } from './entities/product.entity';
 import { ProductImage } from './entities/product-image.entity';
 import { ProductCreateDto } from './dto/product-create.dto';
@@ -161,14 +161,44 @@ export class ProductsService {
     return this.imageRepository.save(entities);
   }
 
-  async findAll(): Promise<ProductDto[]> {
-    const products = await this.productsRepository.find({
-      where: [
-        { listingType: ListingType.PLATFORM },
-        { listingType: ListingType.VENDOR, vendor: { status: VendorStatus.APPROVED } },
-      ],
-      relations: ['images', 'vendor', 'categories'],
-    });
+  async findAll(query?: ProductQuery): Promise<ProductDto[]> {
+    const qb = this.productsRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.images', 'images')
+      .leftJoinAndSelect('product.vendor', 'vendor')
+      .leftJoinAndSelect('product.categories', 'categories');
+
+    // Approved-vendor visibility (card c2o6xfZs): platform listings are always
+    // visible; vendor listings only when the owning vendor is approved. Every
+    // other predicate below ANDs onto this — never overwrite or bypass it.
+    qb.where(
+      '(product.listingType = :platformType) OR (product.listingType = :vendorType AND vendor.status = :approvedStatus)',
+      {
+        platformType: ListingType.PLATFORM,
+        vendorType: ListingType.VENDOR,
+        approvedStatus: VendorStatus.APPROVED,
+      },
+    );
+
+    if (query?.categoryId) {
+      // Unknown categoryId legitimately yields no matches — not an error.
+      qb.andWhere(
+        'product.id IN (SELECT pc."productId" FROM product_categories pc WHERE pc."categoryId" = :categoryId)',
+        { categoryId: query.categoryId },
+      );
+    }
+
+    if (query?.q) {
+      qb.andWhere('(product.name ILIKE :q OR product.description ILIKE :q)', {
+        q: `%${query.q}%`,
+      });
+    }
+
+    if (query?.vendorId) {
+      qb.andWhere('product.vendorId = :vendorId', { vendorId: query.vendorId });
+    }
+
+    const products = await qb.getMany();
     return products.map(ProductToResponseDto);
   }
 
