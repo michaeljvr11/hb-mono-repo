@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 import { ListingType, ProductDto, ProductQuery, UserRole, VendorStatus } from '@hb/shared';
 import { Product } from './entities/product.entity';
 import { ProductImage } from './entities/product-image.entity';
@@ -171,13 +171,18 @@ export class ProductsService {
     // Approved-vendor visibility (card c2o6xfZs): platform listings are always
     // visible; vendor listings only when the owning vendor is approved. Every
     // other predicate below ANDs onto this — never overwrite or bypass it.
+    // Wrapped in Brackets so the OR is grouped into a single AND-operand;
+    // otherwise Postgres operator precedence (AND binds tighter than OR) lets
+    // platform listings bypass every filter below.
     qb.where(
-      '(product.listingType = :platformType) OR (product.listingType = :vendorType AND vendor.status = :approvedStatus)',
-      {
-        platformType: ListingType.PLATFORM,
-        vendorType: ListingType.VENDOR,
-        approvedStatus: VendorStatus.APPROVED,
-      },
+      new Brackets((qb) => {
+        qb.where('product.listingType = :platformType', {
+          platformType: ListingType.PLATFORM,
+        }).orWhere('product.listingType = :vendorType AND vendor.status = :approvedStatus', {
+          vendorType: ListingType.VENDOR,
+          approvedStatus: VendorStatus.APPROVED,
+        });
+      }),
     );
 
     if (query?.categoryId) {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import {
   CategorySuggestion,
   ListingType,
@@ -43,14 +43,19 @@ export class SearchService {
       .leftJoinAndSelect('product.vendor', 'vendor')
       // Approved-vendor visibility rule (card c2o6xfZs) — identical semantics to
       // ProductsService.findAll: platform listings always visible, vendor listings
-      // only when the owning vendor is approved. ANDed with the name match below.
+      // only when the owning vendor is approved. Wrapped in Brackets so the OR is
+      // grouped into a single AND-operand before ANDing with the name match below
+      // (AND binds tighter than OR in SQL, so an unbracketed OR would let platform
+      // listings bypass the name filter).
       .where(
-        '(product.listingType = :platformType) OR (product.listingType = :vendorType AND vendor.status = :approvedStatus)',
-        {
-          platformType: ListingType.PLATFORM,
-          vendorType: ListingType.VENDOR,
-          approvedStatus: VendorStatus.APPROVED,
-        },
+        new Brackets((qb) => {
+          qb.where('product.listingType = :platformType', {
+            platformType: ListingType.PLATFORM,
+          }).orWhere('product.listingType = :vendorType AND vendor.status = :approvedStatus', {
+            vendorType: ListingType.VENDOR,
+            approvedStatus: VendorStatus.APPROVED,
+          });
+        }),
       )
       .andWhere('product.name ILIKE :q', { q: `%${q}%` })
       .take(SUGGESTIONS_PER_GROUP)

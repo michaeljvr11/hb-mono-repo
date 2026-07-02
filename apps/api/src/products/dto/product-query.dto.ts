@@ -10,9 +10,11 @@ export class ProductQueryDto implements ProductQuery {
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  @Transform(({ value }: TransformFnParams): unknown =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }: TransformFnParams): unknown => {
+    if (typeof value !== 'string') return value;
+    const trimmed = value.trim();
+    return trimmed === '' ? undefined : trimmed;
+  })
   q?: string;
 
   @IsOptional()

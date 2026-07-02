@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
+import { Brackets } from 'typeorm';
 import { CurrencyCode, CountryCode, ListingType, VendorStatus } from '@hb/shared';
 import { ProductsService } from './products.service';
 import { Product } from './entities/product.entity';
@@ -166,12 +167,42 @@ const respectsWhereFindOne =
 // applies them for real against the fixture set — so a passing test reflects the
 // actual composed query, not a hand-forced result.
 type Predicate = (p: Product) => boolean;
+type WhereArg = string | Brackets;
 
 interface FakeQueryBuilder {
   leftJoinAndSelect: jest.Mock;
   where: jest.Mock;
   andWhere: jest.Mock;
+  orWhere: jest.Mock;
   getMany: jest.Mock;
+}
+
+/**
+ * Minimal WhereExpressionBuilder stand-in used to invoke a Brackets'
+ * whereFactory and capture the inner where/orWhere predicates exactly as
+ * TypeORM would when materialising a bracketed group.
+ */
+function captureBracketPredicates(brackets: Brackets): Predicate[] {
+  const inner: Predicate[] = [];
+  let combined: Predicate | undefined;
+
+  const innerQb = {
+    where: (sql: string, params?: Record<string, unknown>) => {
+      combined = interpretPredicate(sql, params);
+      inner.push(combined);
+      return innerQb;
+    },
+    orWhere: (sql: string, params?: Record<string, unknown>) => {
+      const next = interpretPredicate(sql, params);
+      const prev = combined;
+      combined = prev ? (p: Product) => prev(p) || next(p) : next;
+      inner.push(next);
+      return innerQb;
+    },
+  };
+
+  brackets.whereFactory(innerQb as never);
+  return inner;
 }
 
 function interpretPredicate(sql: string, params?: Record<string, unknown>): Predicate {
@@ -179,6 +210,15 @@ function interpretPredicate(sql: string, params?: Record<string, unknown>): Pred
     return (p) =>
       p.listingType === ListingType.PLATFORM ||
       (p.listingType === ListingType.VENDOR && p.vendor?.status === VendorStatus.APPROVED);
+  }
+  if (sql === 'product.listingType = :platformType') {
+    const platformType = params?.platformType as ListingType;
+    return (p) => p.listingType === platformType;
+  }
+  if (sql.includes('vendor.status = :approvedStatus')) {
+    const vendorType = params?.vendorType as ListingType;
+    const approvedStatus = params?.approvedStatus as VendorStatus;
+    return (p) => p.listingType === vendorType && p.vendor?.status === approvedStatus;
   }
   if (sql.includes('product_categories')) {
     const categoryId = params?.categoryId as string;
@@ -195,6 +235,17 @@ function interpretPredicate(sql: string, params?: Record<string, unknown>): Pred
   throw new Error(`Unrecognised predicate in test fake: ${sql}`);
 }
 
+/** Resolves a where()/andWhere() argument (raw SQL string or Brackets) to a Predicate. */
+function interpretWhereArg(arg: WhereArg, params?: Record<string, unknown>): Predicate {
+  if (arg instanceof Brackets) {
+    const inner = captureBracketPredicates(arg);
+    // A Brackets group ORs together everything registered via where/orWhere
+    // inside its factory — mirror that when composing the group predicate.
+    return (p) => inner.some((pred) => pred(p));
+  }
+  return interpretPredicate(arg, params);
+}
+
 function buildFakeQueryBuilder(stored: Product[]): FakeQueryBuilder {
   const predicates: Predicate[] = [];
 
@@ -202,21 +253,101 @@ function buildFakeQueryBuilder(stored: Product[]): FakeQueryBuilder {
     leftJoinAndSelect: jest.fn(),
     where: jest.fn(),
     andWhere: jest.fn(),
+    orWhere: jest.fn(),
     getMany: jest.fn(),
   };
 
   qb.leftJoinAndSelect.mockReturnValue(qb);
-  qb.where.mockImplementation((sql: string, params?: Record<string, unknown>) => {
-    predicates.push(interpretPredicate(sql, params));
+  qb.where.mockImplementation((arg: WhereArg, params?: Record<string, unknown>) => {
+    predicates.push(interpretWhereArg(arg, params));
     return qb;
   });
-  qb.andWhere.mockImplementation((sql: string, params?: Record<string, unknown>) => {
-    predicates.push(interpretPredicate(sql, params));
+  qb.andWhere.mockImplementation((arg: WhereArg, params?: Record<string, unknown>) => {
+    predicates.push(interpretWhereArg(arg, params));
     return qb;
   });
   qb.getMany.mockImplementation(() =>
     Promise.resolve(stored.filter((p) => predicates.every((pred) => pred(p)))),
   );
+
+  return qb;
+}
+
+// ── SQL-precedence-faithful fake QueryBuilder (regression guard only) ────────
+// The predicate-AND-of-predicates fake above models *intent*, not raw SQL —
+// it would happily "pass" even if the service emitted an unparenthesized
+// `WHERE a OR b AND c` string, because each predicate is still evaluated and
+// ANDed together at the JS level regardless of how the SQL groups them. This
+// fake instead concatenates raw SQL fragments the way the old buggy code did
+// (string concatenation with naive AND/OR precedence: AND binds tighter than
+// OR) so it can actually fail against the pre-fix implementation.
+interface SqlPrecedenceQueryBuilder {
+  leftJoinAndSelect: jest.Mock;
+  where: jest.Mock;
+  andWhere: jest.Mock;
+  getMany: jest.Mock;
+  getSql: () => string;
+}
+
+function buildSqlPrecedenceFakeQueryBuilder(stored: Product[]): SqlPrecedenceQueryBuilder {
+  // Models the *actual* top-level boolean shape of `WHERE <arg1> AND <arg2> AND ...`
+  // for whatever was passed to the initial .where() call:
+  //   - Brackets (fixed code): the visibility check is ONE grouped operand,
+  //     so it participates in the AND chain like any other term:
+  //       (platform OR vendorApproved) AND c1 AND c2 AND ...
+  //   - raw string (old buggy code): the string itself contains a bare
+  //     top-level `t1 OR t2`, so per real SQL/Postgres precedence (AND binds
+  //     tighter than OR) the whole expression groups as:
+  //       t1 OR (t2 AND c1 AND c2 AND ...)
+  //     i.e. the platform term (t1) alone determines a match, bypassing every
+  //     subsequent andWhere filter — reproducing the reported bug exactly.
+  let visibilityShape: 'bracketed' | 'raw';
+  let platformTerm: Predicate = () => false;
+  let vendorApprovedTerm: Predicate = () => false;
+  const filterTerms: Predicate[] = []; // every subsequent .andWhere() clause
+  let sql = '';
+
+  const qb: SqlPrecedenceQueryBuilder = {
+    leftJoinAndSelect: jest.fn(),
+    where: jest.fn(),
+    andWhere: jest.fn(),
+    getMany: jest.fn(),
+    getSql: () => sql,
+  };
+
+  qb.leftJoinAndSelect.mockReturnValue(qb);
+  qb.where.mockImplementation((arg: WhereArg) => {
+    if (arg instanceof Brackets) {
+      visibilityShape = 'bracketed';
+      const inner = captureBracketPredicates(arg);
+      platformTerm = (p) => inner.some((pred) => pred(p));
+      vendorApprovedTerm = () => false; // folded into platformTerm already
+      sql +=
+        '(product.listingType = :platformType OR (product.listingType = :vendorType AND vendor.status = :approvedStatus))';
+    } else {
+      visibilityShape = 'raw';
+      platformTerm = (p) => p.listingType === ListingType.PLATFORM;
+      vendorApprovedTerm = (p) =>
+        p.listingType === ListingType.VENDOR && p.vendor?.status === VendorStatus.APPROVED;
+      sql += arg;
+    }
+    return qb;
+  });
+  qb.andWhere.mockImplementation((arg: WhereArg, params?: Record<string, unknown>) => {
+    const clauseSql = arg as string;
+    sql += ` AND ${clauseSql}`;
+    filterTerms.push(interpretPredicate(clauseSql, params));
+    return qb;
+  });
+  qb.getMany.mockImplementation(() => {
+    const filtersMatch: Predicate = (p) => filterTerms.every((pred) => pred(p));
+    const combined: Predicate =
+      visibilityShape === 'bracketed'
+        ? (p) => platformTerm(p) && filtersMatch(p)
+        : // raw string: t1 OR (t2 AND c1 AND c2 ...) — platform bypasses every filter
+          (p) => platformTerm(p) || (vendorApprovedTerm(p) && filtersMatch(p));
+    return Promise.resolve(stored.filter((p) => combined(p)));
+  });
 
   return qb;
 }
@@ -311,10 +442,81 @@ describe('ProductsService', () => {
       expect(qb.leftJoinAndSelect).toHaveBeenCalledWith('product.images', 'images');
       expect(qb.leftJoinAndSelect).toHaveBeenCalledWith('product.vendor', 'vendor');
       expect(qb.leftJoinAndSelect).toHaveBeenCalledWith('product.categories', 'categories');
-      expect(qb.where).toHaveBeenCalledWith(expect.stringContaining('platformType'), {
-        platformType: ListingType.PLATFORM,
-        vendorType: ListingType.VENDOR,
-        approvedStatus: VendorStatus.APPROVED,
+      expect(qb.where).toHaveBeenCalledTimes(1);
+      const [visibilityArg]: [WhereArg] = qb.where.mock.calls[0] as [WhereArg];
+      expect(visibilityArg).toBeInstanceOf(Brackets);
+    });
+
+    // ── Regression guard: SQL operator precedence ─────────────────────────────
+    // Reproduces the exact bug the fake-QB-with-.every() suite above cannot
+    // catch: passing the visibility clause as a raw string to .where() and
+    // adding filters via .andWhere() emits `WHERE t1 OR t2 AND c1 AND c2 ...`.
+    // Because AND binds tighter than OR, this groups as `t1 OR (t2 AND ...)`,
+    // so a PLATFORM listing (t1) matches regardless of any filter. Wrapping
+    // the visibility clause in Brackets fixes this by making it a single
+    // grouped AND-operand. These assertions operate directly on what the
+    // service passes to .where()/.andWhere(), independent of any fake QB,
+    // so they fail on the old raw-string code and pass on the fixed code.
+    describe('visibility clause structure (regression guard for AND/OR precedence bug)', () => {
+      it('passes the visibility clause to .where() as a Brackets instance, not a raw string', async () => {
+        const qb = mockQb([]);
+
+        await service.findAll();
+
+        const [firstWhereArg]: [WhereArg] = qb.where.mock.calls[0] as [WhereArg];
+        expect(firstWhereArg).toBeInstanceOf(Brackets);
+        expect(typeof firstWhereArg).not.toBe('string');
+      });
+
+      it('the Brackets group ORs exactly the platform and approved-vendor terms', async () => {
+        const qb = mockQb([]);
+
+        await service.findAll();
+
+        const [visibilityArg]: [WhereArg] = qb.where.mock.calls[0] as [WhereArg];
+        const brackets = visibilityArg as Brackets;
+        const innerPredicates = captureBracketPredicates(brackets);
+
+        expect(innerPredicates).toHaveLength(2);
+        expect(innerPredicates[0](platformProduct)).toBe(true);
+        expect(innerPredicates[0](approvedVendorProduct)).toBe(false);
+        expect(innerPredicates[1](approvedVendorProduct)).toBe(true);
+        expect(innerPredicates[1](pendingVendorProduct)).toBe(false);
+      });
+
+      it('every subsequent predicate is registered via .andWhere, never .where', async () => {
+        const qb = mockQb([]);
+
+        await service.findAll({ categoryId: 'cat-gadgets', q: 'speaker', vendorId: 'v1' });
+
+        expect(qb.where).toHaveBeenCalledTimes(1);
+        expect(qb.andWhere).toHaveBeenCalledTimes(3);
+      });
+
+      it('[SQL-precedence fake] fails a platform listing against an unmatched category filter once bracketed (old raw-string code would incorrectly include it)', async () => {
+        const sqlQb = buildSqlPrecedenceFakeQueryBuilder([platformGadget, pendingGadget]);
+        productRepo.createQueryBuilder.mockReturnValue(sqlQb);
+
+        // Neither product matches "Homeware" — platformGadget is tagged
+        // Gadgets, pendingGadget's vendor is not approved. Under real SQL
+        // precedence with an unbracketed visibility clause, the platform
+        // listing would still be returned (it satisfies the bare `t1` OR
+        // term), demonstrating the bug this guard is designed to catch.
+        const result = await service.findAll({ categoryId: 'cat-homeware' });
+
+        expect(result).toEqual([]);
+        expect(sqlQb.getSql()).toContain(
+          '(product.listingType = :platformType OR (product.listingType = :vendorType AND vendor.status = :approvedStatus))',
+        );
+      });
+
+      it('[SQL-precedence fake] a platform listing still matches a satisfied filter (sanity check)', async () => {
+        const sqlQb = buildSqlPrecedenceFakeQueryBuilder([platformGadget]);
+        productRepo.createQueryBuilder.mockReturnValue(sqlQb);
+
+        const result = await service.findAll({ categoryId: 'cat-gadgets' });
+
+        expect(result.map((p) => p.id)).toEqual(['platform-gadget']);
       });
     });
 
