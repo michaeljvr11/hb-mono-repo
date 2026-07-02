@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
@@ -28,6 +29,17 @@ async function bootstrap() {
   // limiting and for req.secure. Trusting only the first hop prevents clients from
   // spoofing X-Forwarded-For to evade the throttler.
   app.set('trust proxy', 1);
+
+  // Security headers (see docs/security M1): HSTS, X-Content-Type-Options,
+  // frameguard, Referrer-Policy, a conservative CSP, etc. HSTS is only emitted
+  // over HTTPS. Product images are served from this origin but embedded by the
+  // web app on another origin, so allow cross-origin resource loads for them.
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      hsts: { maxAge: 15_552_000, includeSubDomains: true },
+    }),
+  );
 
   app.setGlobalPrefix('api');
   app.use(cookieParser());
