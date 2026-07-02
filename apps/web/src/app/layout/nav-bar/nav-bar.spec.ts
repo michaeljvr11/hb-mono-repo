@@ -141,4 +141,15 @@ describe('NavBar', () => {
 
     expect(navigate).not.toHaveBeenCalled();
   });
+
+  it('navigates to /discover when the search icon is clicked', async () => {
+    await hydrate();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const searchBtn = fixture.nativeElement.querySelector('.nav-bar__icon-btn') as HTMLButtonElement;
+    searchBtn.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/discover']);
+  });
 });

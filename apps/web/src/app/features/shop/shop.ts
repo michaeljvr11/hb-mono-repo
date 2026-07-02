@@ -1,13 +1,25 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { CategoryDto, CurrencyCode, ProductDto, VendorDto } from '@hb/shared';
+import { CategoryDto, ProductDto, VendorDto } from '@hb/shared';
+import { AuthService } from '../../core/auth/auth.service';
 import { CategoriesService } from '../../core/api/categories.service';
 import { ProductsService } from '../../core/api/products.service';
 import { VendorsService } from '../../core/api/vendors.service';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
+import { ProductCard } from '../../shared/components/product-card/product-card';
+import { CategoryChips } from '../../shared/components/category-chips/category-chips';
+import { SearchBar } from '../../shared/components/search-bar/search-bar';
+import { TrustBanner } from '../../shared/components/trust-banner/trust-banner';
+import { VendorShowcase } from '../../shared/components/vendor-showcase/vendor-showcase';
+import { RadialNav, RadialNavItemId } from '../../shared/components/radial-nav/radial-nav';
 
 type LoadState = 'loading' | 'loaded' | 'empty' | 'error';
+
+/** Number of products shown in the "New in Namibia" carousel. */
+const CAROUSEL_LIMIT = 8;
 
 export interface CategoryWithCount extends CategoryDto {
   productCount: number;
@@ -33,7 +45,18 @@ export function deriveCategoryCounts(
 
 @Component({
   selector: 'app-shop',
-  imports: [NavBar, Footer, MatSnackBarModule],
+  imports: [
+    NavBar,
+    Footer,
+    RouterLink,
+    MatSnackBarModule,
+    ProductCard,
+    CategoryChips,
+    SearchBar,
+    TrustBanner,
+    VendorShowcase,
+    RadialNav,
+  ],
   templateUrl: './shop.html',
   styleUrl: './shop.scss',
 })
@@ -42,6 +65,9 @@ export class Shop implements OnInit {
   private readonly categoriesService = inject(CategoriesService);
   private readonly vendorsService = inject(VendorsService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
 
   // Products
   readonly products = signal<ProductDto[]>([]);
@@ -55,34 +81,85 @@ export class Shop implements OnInit {
   readonly vendors = signal<VendorDto[]>([]);
   readonly vendorsState = signal<LoadState>('loading');
 
+  /** First page of "New in Namibia" carousel products. */
+  readonly carouselProducts = computed(() => this.products().slice(0, CAROUSEL_LIMIT));
+
   ngOnInit(): void {
     this.loadProducts();
     this.loadCategories();
     this.loadVendors();
   }
 
-  // ── Price formatting ──────────────────────────────────────────────────────
+  // ── Navigation handlers ────────────────────────────────────────────────────
 
-  formatPrice(price: number, currency: CurrencyCode): string {
-    const formatted = new Intl.NumberFormat('en-ZA', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(price);
-
-    return currency === 'NAD' ? `N$ ${formatted}` : `R ${formatted}`;
+  onCategorySelect(categoryId: string | null): void {
+    if (!categoryId) return;
+    void this.router.navigate(['/discover'], { queryParams: { categoryId } });
   }
 
-  // ── Image resolution ──────────────────────────────────────────────────────
-
-  getPrimaryImage(product: ProductDto): string | null {
-    if (!product.images?.length) return null;
-    const primary = product.images.find(i => i.isPrimary);
-    return primary?.url ?? product.images[0]?.url ?? null;
+  onVendorSelect(vendor: VendorDto): void {
+    void this.router.navigate(['/discover'], { queryParams: { vendorId: vendor.id } });
   }
 
-  getImageAlt(product: ProductDto): string {
-    const primary = product.images?.find(i => i.isPrimary) ?? product.images?.[0];
-    return primary?.altText ?? product.name;
+  onMobileSearch(term: string): void {
+    const q = term.trim();
+    if (!q) return;
+    void this.router.navigate(['/discover'], { queryParams: { q } });
+  }
+
+  onHeroShopNow(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const carousel = document.getElementById('new-in-namibia');
+      if (carousel) {
+        carousel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
+    void this.router.navigate(['/discover']);
+  }
+
+  onHeroSmeVerification(): void {
+    this.notifyComingSoon('SME Verification');
+  }
+
+  onNewsletterJoin(): void {
+    this.notifyComingSoon('Newsletter');
+  }
+
+  onAddToCart(_product: ProductDto): void {
+    this.notifyComingSoon('Cart');
+  }
+
+  onRadialNavSelect(itemId: RadialNavItemId): void {
+    if (itemId === 'cart') {
+      this.onCartClick();
+      return;
+    }
+    const labels: Partial<Record<RadialNavItemId, string>> = {
+      orders: 'My Orders',
+      profile: 'Profile',
+      wishlist: 'Wishlist',
+    };
+    this.notifyComingSoon(labels[itemId] ?? 'This feature');
+  }
+
+  private onCartClick(): void {
+    if (this.authService.isLoggedIn()) {
+      this.notifyComingSoon('Cart');
+      return;
+    }
+    void this.router.navigate(['/login'], {
+      queryParams: { returnUrl: this.router.url },
+    });
+  }
+
+  private notifyComingSoon(feature: string): void {
+    this.snackBar.open(`${feature} is coming soon.`, 'Close', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      panelClass: ['hb-info-snackbar'],
+      verticalPosition: 'top',
+    });
   }
 
   // ── Category helpers ──────────────────────────────────────────────────────
@@ -97,59 +174,6 @@ export class Shop implements OnInit {
     if (name.includes('home') || name.includes('furniture')) return 'chair';
     if (name.includes('sport') || name.includes('outdoor')) return 'sports';
     return 'category';
-  }
-
-  // ── Vendor helpers ────────────────────────────────────────────────────────
-
-  getVendorCountry(countryCode: string): string {
-    return countryCode === 'ZA' ? 'South Africa' : countryCode === 'NA' ? 'Namibia' : countryCode;
-  }
-
-  getVendorInitials(businessName: string): string {
-    return businessName
-      .split(/\s+/)
-      .slice(0, 2)
-      .map(w => w[0] ?? '')
-      .join('')
-      .toUpperCase();
-  }
-
-  // ── Presentational actions ────────────────────────────────────────────────
-
-  addToCart(product: ProductDto): void {
-    this.snackBar.open(`Cart is coming soon.`, 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
-    });
-  }
-
-  onHeroShopNow(): void {
-    this.snackBar.open('Product browsing is coming soon.', 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
-    });
-  }
-
-  onHeroSmeVerification(): void {
-    this.snackBar.open('SME Verification is coming soon.', 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
-    });
-  }
-
-  onNewsletterJoin(): void {
-    this.snackBar.open('Newsletter is coming soon.', 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
-    });
   }
 
   // ── Private data loaders ──────────────────────────────────────────────────

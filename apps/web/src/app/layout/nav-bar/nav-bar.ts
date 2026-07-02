@@ -52,6 +52,10 @@ export class NavBar {
     });
   }
 
+  onSearchClick(): void {
+    void this.router.navigate(['/discover']);
+  }
+
   onCartClick(): void {
     if (this.isAuthenticated()) {
       this.notifyComingSoon('Cart');
