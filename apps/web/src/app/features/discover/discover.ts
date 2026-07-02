@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { CategoryDto, ProductDto, SearchSuggestions, VendorDto } from '@hb/shared';
@@ -20,8 +20,9 @@ type LoadState = 'loading' | 'loaded' | 'empty' | 'error';
  * Product discovery / browse page. All filter state lives in the URL query
  * params (q / categoryId / vendorId) so the page is SSR-safe and shareable —
  * user interactions navigate (merging query params via `Router.navigate`),
- * and a single param subscription re-fetches the product list + vendor-chip
- * name on every change.
+ * and a single reactive source (the `paramMap` signal from `toSignal`) drives
+ * the q/categoryId/vendorId signals plus an `effect` that re-fetches the
+ * product list + vendor-chip name on every change.
  */
 @Component({
   selector: 'app-discover',
@@ -80,11 +81,14 @@ export class Discover {
       error: () => this.categories.set([]),
     });
 
-    this.route.queryParamMap.subscribe((paramMap) => {
+    // Single reactive source: the `paramMap` signal (backed by `queryParamMap`
+    // via `toSignal`) drives both the q/categoryId/vendorId signals above and
+    // this fetch effect — re-runs on every URL query param change.
+    effect(() => {
       const query = {
-        q: paramMap.get('q') ?? undefined,
-        categoryId: paramMap.get('categoryId') ?? undefined,
-        vendorId: paramMap.get('vendorId') ?? undefined,
+        q: this.q() || undefined,
+        categoryId: this.categoryId() ?? undefined,
+        vendorId: this.vendorId() ?? undefined,
       };
 
       this.fetchProducts(query);
