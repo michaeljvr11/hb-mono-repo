@@ -104,6 +104,13 @@ export class AuthService {
       throw new UnauthorizedException('Google did not return an email address.');
     }
 
+    // Only link/create on a Google-verified email. Linking on an unverified address
+    // would let someone who controls an unverified Google profile take over an
+    // existing local account by email match (see docs/security M2).
+    if (!profile.emailVerified) {
+      throw new UnauthorizedException('Your Google email address is not verified.');
+    }
+
     let user = await this.usersService.findByEmail(profile.email);
     if (!user) {
       // First Google sign-in creates a verified account. The password is random

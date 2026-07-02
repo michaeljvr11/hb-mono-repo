@@ -314,12 +314,21 @@ describe('AuthService', () => {
       await expect(service.validateOAuthLogin({})).rejects.toThrow(UnauthorizedException);
     });
 
+    it('rejects a Google profile whose email is not verified', async () => {
+      await expect(
+        service.validateOAuthLogin({ email: 'a@b.com', emailVerified: false }),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(usersService.findByEmail).not.toHaveBeenCalled();
+      expect(usersService.create).not.toHaveBeenCalled();
+    });
+
     it('creates a verified account on first Google sign-in', async () => {
       usersService.findByEmail.mockResolvedValue(null);
       usersService.create.mockResolvedValue({ ...activeUser, isVerified: true });
 
       await service.validateOAuthLogin({
         email: 'a@b.com',
+        emailVerified: true,
         firstName: 'Ada',
         lastName: 'Lovelace',
       });
@@ -338,7 +347,7 @@ describe('AuthService', () => {
     it('verifies an existing-but-unverified local account', async () => {
       usersService.findByEmail.mockResolvedValue({ ...activeUser, isVerified: false });
 
-      await service.validateOAuthLogin({ email: 'a@b.com' });
+      await service.validateOAuthLogin({ email: 'a@b.com', emailVerified: true });
 
       expect(usersService.markEmailVerified).toHaveBeenCalledWith('u1');
       expect(usersService.create).not.toHaveBeenCalled();
