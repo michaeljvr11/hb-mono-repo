@@ -1,0 +1,56 @@
+<a
+  class="product-card"
+  [class.product-card--carousel]="variant() === 'carousel'"
+  [routerLink]="['/products', product().id]"
+>
+  <div class="product-card__image-wrap">
+    @if (primaryImage(); as imgUrl) {
+      <img
+        class="product-card__image"
+        [src]="imgUrl"
+        [alt]="imageAlt()"
+        loading="lazy"
+      />
+    } @else {
+      <div class="product-card__placeholder" aria-hidden="true">
+        <span class="material-symbols-outlined product-card__placeholder-icon">inventory_2</span>
+      </div>
+    }
+
+    @if (product().vendor) {
+      <div class="product-card__badge">
+        <span class="material-symbols-outlined product-card__badge-icon" style="font-variation-settings: 'FILL' 1">verified</span>
+        <span class="product-card__badge-label">SME VERIFIED</span>
+      </div>
+    }
+  </div>
+
+  <div class="product-card__body">
+    @if (categoryLabel(); as category) {
+      <p class="product-card__category">{{ category }}</p>
+    }
+    <h3 class="product-card__name">{{ product().name }}</h3>
+    <div class="product-card__footer">
+      <span class="product-card__price">{{ price() }}</span>
+      @if (variant() === 'carousel') {
+        <button
+          type="button"
+          class="product-card__cart-btn product-card__cart-btn--icon"
+          [attr.aria-label]="'Add ' + product().name + ' to cart'"
+          (click)="onAddToCart($event)"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="product-card__cart-btn"
+          [attr.aria-label]="'Add ' + product().name + ' to cart'"
+          (click)="onAddToCart($event)"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">add_shopping_cart</span>
+        </button>
+      }
+    </div>
+  </div>
+</a>

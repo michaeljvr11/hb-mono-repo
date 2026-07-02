@@ -1,0 +1,20 @@
+<section class="trust-banner" aria-label="Why shop with H&amp;B">
+  <div class="trust-banner__grid">
+    @for (item of items(); track item.title) {
+      <div class="trust-card">
+        <div
+          class="trust-card__icon-wrap"
+          [class.trust-card__icon-wrap--secondary]="item.tone === 'secondary'"
+          [class.trust-card__icon-wrap--tertiary]="item.tone === 'tertiary'"
+          aria-hidden="true"
+        >
+          <span class="material-symbols-outlined trust-card__icon">{{ item.icon }}</span>
+        </div>
+        <div class="trust-card__body">
+          <h3 class="trust-card__title">{{ item.title }}</h3>
+          <p class="trust-card__desc">{{ item.description }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</section>

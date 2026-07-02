@@ -1,0 +1,19 @@
+<div class="category-chips" role="list" aria-label="Filter by category">
+  <button
+    type="button"
+    class="category-chips__chip"
+    role="listitem"
+    [class.category-chips__chip--active]="selectedId() === null"
+    (click)="selectAll()"
+  >All</button>
+
+  @for (category of categories(); track category.id) {
+    <button
+      type="button"
+      class="category-chips__chip"
+      role="listitem"
+      [class.category-chips__chip--active]="selectedId() === category.id"
+      (click)="selectCategory(category.id)"
+    >{{ category.name }}</button>
+  }
+</div>

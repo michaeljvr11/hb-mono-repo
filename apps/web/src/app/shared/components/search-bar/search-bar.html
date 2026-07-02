@@ -1,0 +1,73 @@
+<div class="search-bar">
+  <div
+    class="search-bar__field"
+    role="combobox"
+    aria-haspopup="listbox"
+    [attr.aria-expanded]="panelOpen()"
+    [attr.aria-owns]="'search-bar-listbox'"
+    [attr.aria-activedescendant]="activeDescendantId()"
+  >
+    <span class="material-symbols-outlined search-bar__icon" aria-hidden="true">search</span>
+    <input
+      #inputEl
+      class="search-bar__input"
+      type="text"
+      role="searchbox"
+      autocomplete="off"
+      [placeholder]="placeholder()"
+      [value]="term()"
+      (input)="onInput($any($event.target).value)"
+      (focus)="onFocus()"
+      (keydown)="onKeydown($event)"
+    />
+    @if (loading()) {
+      <span class="material-symbols-outlined search-bar__spinner" aria-hidden="true">progress_activity</span>
+    } @else if (term().length > 0) {
+      <button
+        type="button"
+        class="search-bar__clear"
+        aria-label="Clear search"
+        (click)="clear()"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    }
+  </div>
+
+  @if (panelOpen() && suggestions() !== null) {
+    <div class="search-bar__panel" id="search-bar-listbox" role="listbox">
+      @if (hasSuggestions()) {
+        @for (group of suggestions(); track group.label; let gi = $index) {
+          <div class="search-bar__group">
+            <p class="search-bar__group-label">{{ group.label }}</p>
+            @for (item of group.items; track item.id; let ii = $index) {
+              <button
+                type="button"
+                class="search-bar__option"
+                [id]="'search-bar-option-' + (flatIndex(gi, ii))"
+                role="option"
+                [class.search-bar__option--active]="activeIndex() === flatIndex(gi, ii)"
+                [attr.aria-selected]="activeIndex() === flatIndex(gi, ii)"
+                (click)="selectSuggestion({ groupLabel: group.label, item })"
+              >
+                @if (item.imageUrl) {
+                  <img class="search-bar__option-image" [src]="item.imageUrl" alt="" />
+                } @else if (item.icon) {
+                  <span class="material-symbols-outlined search-bar__option-icon" aria-hidden="true">{{ item.icon }}</span>
+                }
+                <span class="search-bar__option-text">
+                  <span class="search-bar__option-label">{{ item.label }}</span>
+                  @if (item.sublabel) {
+                    <span class="search-bar__option-sublabel">{{ item.sublabel }}</span>
+                  }
+                </span>
+              </button>
+            }
+          </div>
+        }
+      } @else {
+        <p class="search-bar__empty">No results found.</p>
+      }
+    </div>
+  }
+</div>
