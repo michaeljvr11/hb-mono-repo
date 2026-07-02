@@ -38,6 +38,12 @@ export interface VerifyEmailRequest {
 export interface BootstrapAdminRequest {
   email: string;
   password: string;
+  /**
+   * One-time setup secret. Must match the server's ADMIN_BOOTSTRAP_SECRET when
+   * one is configured (required in production). Guards the public bootstrap
+   * endpoint against a first-caller-wins race on a fresh database.
+   */
+  secret?: string;
 }
 
 export interface AuthUser {
