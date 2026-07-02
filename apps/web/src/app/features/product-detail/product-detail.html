@@ -1,0 +1,156 @@
+<app-nav-bar />
+
+<main class="pdp" aria-label="Product detail">
+
+  @if (state() === 'loading') {
+    <div class="state-message" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
+      <p>Loading product…</p>
+    </div>
+  } @else if (state() === 'not-found') {
+    <div class="state-message" role="status">
+      <span class="material-symbols-outlined state-message__icon">search_off</span>
+      <p>We couldn't find that product.</p>
+      <a class="pdp__back-link" routerLink="/discover">Back to shop</a>
+    </div>
+  } @else if (state() === 'error') {
+    <div class="state-message state-message--error" role="alert">
+      <span class="material-symbols-outlined state-message__icon">error_outline</span>
+      <p>Could not load this product right now. Please try again later.</p>
+      <a class="pdp__back-link" routerLink="/discover">Back to shop</a>
+    </div>
+  } @else if (product(); as product) {
+    <!-- ── Back header ─────────────────────────────────────────────────── -->
+    <div class="pdp__header">
+      <button type="button" class="pdp__back-btn" aria-label="Go back" (click)="goBack()">
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+      </button>
+    </div>
+
+    <!-- ── Hero image gallery ──────────────────────────────────────────── -->
+    <section class="pdp__hero">
+      @if (activeImage(); as img) {
+        <img class="pdp__hero-image" [src]="img.url" [alt]="img.altText ?? product.name" />
+      } @else {
+        <div class="pdp__hero-placeholder" aria-hidden="true">
+          <span class="material-symbols-outlined">inventory_2</span>
+        </div>
+      }
+
+      @if (hasMultipleImages()) {
+        <button type="button" class="pdp__hero-nav pdp__hero-nav--prev" aria-label="Previous image" (click)="prevImage()">
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+        </button>
+        <button type="button" class="pdp__hero-nav pdp__hero-nav--next" aria-label="Next image" (click)="nextImage()">
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+        <div class="pdp__hero-badge">{{ activeImageIndex() + 1 }} / {{ images().length }}</div>
+      }
+
+      @if (isVendorListing()) {
+        <div class="pdp__sme-badge">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1" aria-hidden="true">verified</span>
+          <span>SME Verified</span>
+        </div>
+      }
+    </section>
+
+    <!-- ── Product header & pricing ────────────────────────────────────── -->
+    <section class="pdp__section">
+      <h1 class="pdp__title">{{ product.name }}</h1>
+      <p class="pdp__price">{{ priceLabel() }}</p>
+    </section>
+
+    <!-- ── Cross-border shipping info (static per design) ──────────────── -->
+    <section class="pdp__section">
+      <div class="pdp__shipping-card">
+        <div class="pdp__shipping-heading">
+          <span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>
+          <h2 class="pdp__shipping-title">Cross-Border Shipping</h2>
+        </div>
+        <div class="pdp__shipping-route">
+          <div class="pdp__shipping-point">
+            <span class="pdp__shipping-label">Origin</span>
+            <span class="pdp__shipping-value">Cape Town, ZA</span>
+          </div>
+          <div class="pdp__shipping-line" aria-hidden="true">
+            <span class="material-symbols-outlined pdp__shipping-line-icon">potted_plant</span>
+          </div>
+          <div class="pdp__shipping-point pdp__shipping-point--end">
+            <span class="pdp__shipping-label">Destination</span>
+            <span class="pdp__shipping-value">Windhoek, NA</span>
+          </div>
+        </div>
+        <div class="pdp__shipping-facts">
+          <p class="pdp__shipping-fact">
+            <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
+            Arrives in 3-5 business days
+          </p>
+          <p class="pdp__shipping-fact pdp__shipping-fact--highlight">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1" aria-hidden="true">verified_user</span>
+            Simplified Customs Included
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Description ──────────────────────────────────────────────────── -->
+    <section class="pdp__section">
+      <h2 class="pdp__section-title">Description</h2>
+      <div class="pdp__description">
+        @for (paragraph of product.description.split('\n'); track $index) {
+          @if (paragraph.trim()) {
+            <p>{{ paragraph }}</p>
+          }
+        }
+      </div>
+    </section>
+
+    <!-- ── Vendor card ──────────────────────────────────────────────────── -->
+    @if (product.vendor; as vendor) {
+      <section class="pdp__section">
+        <div class="pdp__vendor-card">
+          <div class="pdp__vendor-avatar" aria-hidden="true">{{ vendorInitials() }}</div>
+          <div class="pdp__vendor-body">
+            <div class="pdp__vendor-name-row">
+              <h3 class="pdp__vendor-name">{{ vendor.businessName }}</h3>
+              <span class="material-symbols-outlined pdp__vendor-verified" style="font-variation-settings: 'FILL' 1" aria-label="Verified vendor" title="Verified vendor">verified</span>
+            </div>
+            <p class="pdp__vendor-country">
+              <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+              {{ product.originCountry }}
+            </p>
+            <button type="button" class="pdp__vendor-link" (click)="viewStorefront()">
+              View Storefront <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- ── You May Also Like ───────────────────────────────────────────── -->
+    @if (relatedProducts().length) {
+      <section class="pdp__section">
+        <h2 class="pdp__section-title">You May Also Like</h2>
+        <div class="pdp__related-grid">
+          @for (related of relatedProducts(); track related.id) {
+            <app-product-card [product]="related" variant="grid" (addToCart)="onRelatedAddToCart($event)" />
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ── Sticky add-to-cart bar ───────────────────────────────────────── -->
+    <div class="pdp__sticky-bar">
+      <button type="button" class="pdp__add-to-cart-btn" (click)="onAddToCart()">
+        <span class="material-symbols-outlined" aria-hidden="true">add_shopping_cart</span>
+        Add to Cart - {{ priceLabel() }}
+      </button>
+    </div>
+  }
+
+</main>
+
+<app-footer />
+
+<app-radial-nav active="search" />

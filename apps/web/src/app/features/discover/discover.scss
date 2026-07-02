@@ -1,0 +1,288 @@
+/* ── Layout ────────────────────────────────────────────────────────────── */
+
+.discover {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--hb-background);
+  color: var(--hb-on-surface);
+
+  @media (min-width: 768px) {
+    padding: 24px 40px 48px;
+  }
+}
+
+.discover__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Active filter chip (vendor) ──────────────────────────────────────── */
+
+.discover__active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.discover__filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--hb-primary);
+  border-radius: 9999px;
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  &:hover {
+    background: var(--hb-surface-container-low);
+  }
+}
+
+/* ── SME verification toggle ──────────────────────────────────────────── */
+
+.discover__sme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  background: var(--hb-surface-container-low);
+}
+
+.discover__sme-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.discover__sme-icon {
+  color: var(--hb-primary);
+  font-size: 24px;
+}
+
+.discover__sme-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--hb-on-surface);
+}
+
+.discover__sme-sub {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--hb-on-surface-variant);
+}
+
+.discover__switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+}
+
+.discover__switch-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--hb-outline-variant);
+  transition: background 150ms ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 9999px;
+    background: #fff;
+    transition: transform 150ms ease;
+  }
+
+  input:checked + & {
+    background: var(--hb-primary);
+
+    &::after {
+      transform: translateX(20px);
+    }
+  }
+}
+
+/* ── Result count ─────────────────────────────────────────────────────── */
+
+.discover__result-count {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ── Product grid ──────────────────────────────────────────────────────── */
+
+.discover__grid-section {
+  min-height: 200px;
+}
+
+.discover__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ── State messages ───────────────────────────────────────────────────── */
+
+.state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--hb-on-surface-variant);
+
+  p {
+    margin: 0;
+    font-size: 16px;
+  }
+
+  &--error {
+    color: var(--hb-error);
+  }
+}
+
+.state-message__icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.discover__clear-btn {
+  margin-top: 8px;
+  padding: 8px 20px;
+  border: 1px solid var(--hb-primary);
+  border-radius: 8px;
+  background: none;
+  color: var(--hb-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--hb-surface-container-low);
+  }
+}
+
+/* ── Regional logistics banner ────────────────────────────────────────── */
+
+.discover__logistics-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--hb-secondary-fixed);
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+  }
+}
+
+.discover__logistics-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+
+  @media (min-width: 768px) {
+    text-align: left;
+  }
+}
+
+.discover__logistics-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  color: var(--hb-on-secondary-container);
+}
+
+.discover__logistics-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-secondary-container);
+  opacity: 0.8;
+}
+
+.discover__logistics-flags {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.discover__flag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.discover__flag-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hb-on-secondary-container);
+}
+
+.discover__flag-bar {
+  width: 40px;
+  height: 4px;
+  border-radius: 9999px;
+
+  &--primary {
+    background: var(--hb-primary);
+  }
+
+  &--secondary {
+    background: var(--hb-secondary);
+  }
+}
+
+.discover__logistics-arrow {
+  color: var(--hb-on-secondary-container);
+}
