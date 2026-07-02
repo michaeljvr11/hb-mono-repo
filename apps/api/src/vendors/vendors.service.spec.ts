@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CurrencyCode, VendorStatus, UserRole, CountryCode } from '@hb/shared';
 import { VendorsService } from './vendors.service';
 import { AuditService } from '../audit/audit.service';
@@ -88,6 +88,41 @@ describe('VendorsService', () => {
   });
 
   afterEach(() => jest.clearAllMocks());
+
+  describe('update (ownership)', () => {
+    it('lets an admin update any vendor profile', async () => {
+      const admin = mockUser({ id: 'admin1', role: UserRole.ADMIN });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'someone-else' }));
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+
+      const result = await service.update('v1', { businessName: 'Renamed' }, admin);
+
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ businessName: 'Renamed' }),
+      );
+      expect(result.id).toBe('v1');
+    });
+
+    it('forbids a non-owner, non-admin from updating a vendor profile', async () => {
+      const other = mockUser({ id: 'u2', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+
+      await expect(service.update('v1', { businessName: 'x' }, other)).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(vendorRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('lets the owner update their own vendor profile', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+
+      const result = await service.update('v1', { businessName: 'Mine' }, owner);
+
+      expect(result.id).toBe('v1');
+    });
+  });
 
   describe('create', () => {
     it('persists a vendor with status PENDING when the customer has no existing profile', async () => {

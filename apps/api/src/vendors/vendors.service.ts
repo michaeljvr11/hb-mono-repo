@@ -175,7 +175,9 @@ export class VendorsService {
     const vendor = await this.vendorRepository.findOne({ where: { id } });
     if (!vendor) throw new NotFoundException('Vendor not found');
 
-    if (vendor.userId !== currentUser.id) {
+    // Admins may edit any vendor (the controller allows @Roles(VENDOR, ADMIN));
+    // everyone else may only edit their own profile (see docs/security L4).
+    if (currentUser.role !== UserRole.ADMIN && vendor.userId !== currentUser.id) {
       throw new ForbiddenException('You can only update your own vendor profile');
     }
 

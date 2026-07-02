@@ -230,7 +230,9 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_SECRET'),
-      expiresIn: this.config.get('JWT_EXPIRATION'),
+      // Fall back to a short life if JWT_EXPIRATION is unset — never mint a
+      // non-expiring access token by omission (see docs/security L3).
+      expiresIn: this.config.get('JWT_EXPIRATION') || '15m',
     });
 
     const refreshToken = this.jwtService.sign(
