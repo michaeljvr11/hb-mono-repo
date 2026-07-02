@@ -23,6 +23,12 @@ function getAllowedOrigins(): string[] {
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Trust exactly one reverse proxy (the documented deploy topology) so the real
+  // client IP is read from X-Forwarded-For — required for correct per-IP rate
+  // limiting and for req.secure. Trusting only the first hop prevents clients from
+  // spoofing X-Forwarded-For to evade the throttler.
+  app.set('trust proxy', 1);
+
   app.setGlobalPrefix('api');
   app.use(cookieParser());
   app.enableCors({
