@@ -1,34 +1,34 @@
 {
-  "generatedAt": "2026-07-02T17:10:05.527Z",
+  "generatedAt": "2026-07-03T06:08:03.404Z",
   "git": {
-    "totalCommits": 78,
-    "aiCommits": 69,
-    "aiPct": 88,
-    "appCommits": 46,
-    "ins": 38037,
-    "del": 2681,
-    "net": 35356,
-    "aiIns": 24976,
-    "aiDel": 2595,
-    "filesTouched": 378,
+    "totalCommits": 85,
+    "aiCommits": 76,
+    "aiPct": 89,
+    "appCommits": 52,
+    "ins": 44425,
+    "del": 3371,
+    "net": 41054,
+    "aiIns": 31364,
+    "aiDel": 3285,
+    "filesTouched": 423,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 34,
-        "ins": 17588,
-        "del": 737
+        "commits": 38,
+        "ins": 22423,
+        "del": 1259
       },
       {
         "name": "Docs",
-        "commits": 31,
-        "ins": 10451,
-        "del": 1745
+        "commits": 32,
+        "ins": 10578,
+        "del": 1852
       },
       {
         "name": "API (NestJS)",
-        "commits": 25,
-        "ins": 7747,
-        "del": 130
+        "commits": 27,
+        "ins": 9128,
+        "del": 191
       },
       {
         "name": "AI Factory config",
@@ -38,8 +38,8 @@
       },
       {
         "name": "Shared contracts",
-        "commits": 9,
-        "ins": 555,
+        "commits": 10,
+        "ins": 600,
         "del": 3
       },
       {
@@ -56,8 +56,43 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-06-30",
+    "lastDate": "2026-07-02",
     "recent": [
+      {
+        "hash": "689acc0",
+        "subject": "refactor(web): review cleanups - single param source in discover, design tokens",
+        "ai": true
+      },
+      {
+        "hash": "290fbf2",
+        "subject": "fix(api): parenthesize approved-vendor visibility clause so discovery filters apply to platform listings",
+        "ai": true
+      },
+      {
+        "hash": "fabdaf1",
+        "subject": "feat(web): product discovery + product detail pages with unified search",
+        "ai": true
+      },
+      {
+        "hash": "c811612",
+        "subject": "feat(web): rebuild storefront home to updated designs (desktop + mobile)",
+        "ai": true
+      },
+      {
+        "hash": "7bc4320",
+        "subject": "feat(web): storefront shared component foundation",
+        "ai": true
+      },
+      {
+        "hash": "27e16d0",
+        "subject": "feat(api): product discovery filters (categoryId/q/vendorId) + unified search suggest",
+        "ai": true
+      },
+      {
+        "hash": "e4ebb58",
+        "subject": "chore(evidence): regenerate report after syncing main (post-merge hook)",
+        "ai": true
+      },
       {
         "hash": "7b392db",
         "subject": "feat(categories): block deletion of in-use or parent categories",
@@ -81,41 +116,6 @@
       {
         "hash": "33d6b41",
         "subject": "feat(api): filter non-approved vendor listings from public product endpoints",
-        "ai": true
-      },
-      {
-        "hash": "48a6691",
-        "subject": "token usage optimization",
-        "ai": false
-      },
-      {
-        "hash": "189200d",
-        "subject": "chore(evidence): recompile AI-evidence report for EFXHykuT",
-        "ai": true
-      },
-      {
-        "hash": "6f5f534",
-        "subject": "test(web): cover auth-aware nav-bar (anon vs account, sign-out, cart returnUrl gate)",
-        "ai": true
-      },
-      {
-        "hash": "9ba41ad",
-        "subject": "feat(web): make storefront nav auth-aware (sign-in vs account; cart gates to login)",
-        "ai": true
-      },
-      {
-        "hash": "4fa9c03",
-        "subject": "chore(evidence): recompile AI-evidence report for vs3y5tDJ",
-        "ai": true
-      },
-      {
-        "hash": "bf4f237",
-        "subject": "feat(api): make GET /vendors/:id public, approved-only",
-        "ai": true
-      },
-      {
-        "hash": "ad702fc",
-        "subject": "chore(evidence): recompile AI-evidence report for eOI6gKpN",
         "ai": true
       }
     ]
@@ -223,9 +223,9 @@
     }
   ],
   "tests": {
-    "total": 36,
-    "api": 10,
-    "web": 26
+    "total": 49,
+    "api": 12,
+    "web": 37
   },
   "design": {
     "files": 29,
@@ -251,12 +251,19 @@
     },
     "gatePass": 12,
     "gateFail": 1,
-    "edits": 119,
-    "editsUnfixable": 40,
+    "edits": 163,
+    "editsUnfixable": 65,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-06-29T13:18:28.331Z"
+    "lastTs": "2026-07-02T17:59:17.594Z"
   },
   "prs": [
+    {
+      "headRefName": "security/audit-2026-07-02",
+      "number": 25,
+      "state": "OPEN",
+      "title": "security: audit + hardening pass (2026-07-02)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/25"
+    },
     {
       "headRefName": "feat/Sm1kSNO8-safe-category-delete",
       "number": 24,
@@ -433,11 +440,11 @@
     },
     {
       "name": "To Do",
-      "cards": 8
+      "cards": 11
     },
     {
       "name": "In Progress",
-      "cards": 0
+      "cards": 2
     },
     {
       "name": "In Review",
