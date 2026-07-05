@@ -1,0 +1,459 @@
+/* ── Layout ────────────────────────────────────────────────────────────── */
+
+.pdp {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-bottom: 96px;
+  background: var(--hb-background);
+  color: var(--hb-on-surface);
+}
+
+.pdp__section {
+  padding: 24px 16px 0;
+
+  @media (min-width: 768px) {
+    padding: 24px 40px 0;
+  }
+}
+
+.pdp__back-link {
+  margin-top: 8px;
+  color: var(--hb-primary);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ── Back header (mobile-style top bar, sits under NavBar) ───────────── */
+
+.pdp__header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--hb-outline-variant);
+
+  @media (min-width: 768px) {
+    padding: 12px 40px;
+  }
+}
+
+.pdp__back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 9999px;
+  background: none;
+  color: var(--hb-primary);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--hb-surface-container-low);
+  }
+}
+
+/* ── Hero image gallery ────────────────────────────────────────────────── */
+
+.pdp__hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--hb-surface-container-low);
+
+  @media (min-width: 768px) {
+    max-height: 560px;
+    border-radius: 12px;
+    margin-top: 16px;
+  }
+}
+
+.pdp__hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pdp__hero-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--hb-outline-variant);
+
+  .material-symbols-outlined {
+    font-size: 72px;
+  }
+}
+
+.pdp__hero-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--hb-on-surface);
+  cursor: pointer;
+
+  &--prev {
+    left: 16px;
+  }
+
+  &--next {
+    right: 16px;
+  }
+
+  &:hover {
+    background: var(--hb-surface-container-lowest);
+  }
+}
+
+.pdp__hero-badge {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pdp__sme-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--hb-sme-badge-bg);
+  border: 1px solid rgba(1, 83, 0, 0.1);
+  color: var(--hb-primary);
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  span:last-child {
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+/* ── Product header & pricing ──────────────────────────────────────────── */
+
+.pdp__title {
+  margin: 0 0 4px;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 36px;
+  color: var(--hb-on-surface);
+}
+
+.pdp__price {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  color: var(--hb-primary);
+}
+
+/* ── Cross-border shipping card ───────────────────────────────────────── */
+
+.pdp__shipping-card {
+  padding: 16px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  background: var(--hb-surface-container);
+}
+
+.pdp__shipping-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--hb-secondary);
+}
+
+.pdp__shipping-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  color: var(--hb-on-surface);
+}
+
+.pdp__shipping-route {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.pdp__shipping-point {
+  display: flex;
+  flex-direction: column;
+
+  &--end {
+    align-items: flex-end;
+  }
+}
+
+.pdp__shipping-label {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--hb-on-surface-variant);
+}
+
+.pdp__shipping-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--hb-on-surface);
+}
+
+.pdp__shipping-line {
+  position: relative;
+  flex: 1;
+  margin: 0 16px;
+  border-top: 2px dashed var(--hb-outline-variant);
+}
+
+.pdp__shipping-line-icon {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--hb-surface-container);
+  padding: 0 4px;
+  color: var(--hb-primary);
+}
+
+.pdp__shipping-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pdp__shipping-fact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface);
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--hb-primary);
+  }
+
+  &--highlight {
+    font-weight: 500;
+    color: var(--hb-primary);
+  }
+}
+
+/* ── Description ───────────────────────────────────────────────────────── */
+
+.pdp__section-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  color: var(--hb-on-surface);
+}
+
+.pdp__description {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--hb-on-surface-variant);
+
+  p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+  }
+}
+
+/* ── Vendor card ───────────────────────────────────────────────────────── */
+
+.pdp__vendor-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  background: var(--hb-surface-container-low);
+}
+
+.pdp__vendor-avatar {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  border: 2px solid var(--hb-primary);
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.pdp__vendor-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pdp__vendor-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pdp__vendor-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  color: var(--hb-on-surface);
+}
+
+.pdp__vendor-verified {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--hb-primary);
+}
+
+.pdp__vendor-country {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+}
+
+.pdp__vendor-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--hb-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ── Related products ──────────────────────────────────────────────────── */
+
+.pdp__related-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+/* ── Sticky add-to-cart bar ───────────────────────────────────────────── */
+
+.pdp__sticky-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 40;
+  padding: 8px 16px calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--hb-background) 60%, transparent);
+
+  @media (min-width: 768px) {
+    padding: 8px 40px calc(16px + env(safe-area-inset-bottom));
+  }
+}
+
+.pdp__add-to-cart-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(28, 27, 27, 0.16);
+  cursor: pointer;
+  transition: transform 150ms ease, filter 150ms ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:hover {
+    filter: brightness(1.05);
+  }
+}
+
+/* ── State messages ───────────────────────────────────────────────────── */
+
+.state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--hb-on-surface-variant);
+
+  p {
+    margin: 0;
+    font-size: 16px;
+  }
+
+  &--error {
+    color: var(--hb-error);
+  }
+}
+
+.state-message__icon {
+  font-size: 48px;
+  opacity: 0.5;
+}

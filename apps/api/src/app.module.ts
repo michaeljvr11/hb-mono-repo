@@ -19,6 +19,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { ShippingModule } from './shipping/shipping.module';
 import { AdminModule } from './admin/admin.module';
 import { AuditModule } from './audit/audit.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { AuditModule } from './audit/audit.module';
     ShippingModule,
     AdminModule,
     AuditModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

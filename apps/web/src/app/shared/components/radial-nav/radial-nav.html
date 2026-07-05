@@ -1,0 +1,65 @@
+<div class="radial-nav" [class.radial-nav--open]="open()">
+  <div class="radial-nav__scrim" (click)="collapse()"></div>
+
+  @for (item of positionedItems(); track item.id) {
+    <div class="radial-nav__band" [style.width.px]="item.radius * 2" [style.height.px]="item.radius * 2"></div>
+  }
+
+  @for (item of positionedItems(); track item.id; let i = $index) {
+    <div
+      class="radial-nav__label"
+      [style.--dx]="offsetFor(item).dx"
+      [style.--dy]="offsetFor(item).dy"
+      [style.transition-delay.ms]="120 + i * 55 + 80"
+    >{{ item.label }}</div>
+
+    @if (item.routerLink) {
+      <a
+        class="radial-nav__item"
+        [class.radial-nav__item--active]="isActive(item.id)"
+        [routerLink]="item.routerLink"
+        [style.width.px]="item.size"
+        [style.height.px]="item.size"
+        [style.--dx]="offsetFor(item).dx"
+        [style.--dy]="offsetFor(item).dy"
+        [style.transition-delay.ms]="120 + i * 55"
+        [attr.aria-label]="item.label"
+        (click)="collapse()"
+      >
+        <span
+          class="material-symbols-outlined"
+          [style.font-variation-settings]="isActive(item.id) ? &quot;'FILL' 1&quot; : &quot;'FILL' 0&quot;"
+        >{{ item.icon }}</span>
+      </a>
+    } @else {
+      <button
+        type="button"
+        class="radial-nav__item"
+        [class.radial-nav__item--active]="isActive(item.id)"
+        [style.width.px]="item.size"
+        [style.height.px]="item.size"
+        [style.--dx]="offsetFor(item).dx"
+        [style.--dy]="offsetFor(item).dy"
+        [style.transition-delay.ms]="120 + i * 55"
+        [attr.aria-label]="item.label"
+        (click)="selectItem(item)"
+      >
+        <span
+          class="material-symbols-outlined"
+          [style.font-variation-settings]="isActive(item.id) ? &quot;'FILL' 1&quot; : &quot;'FILL' 0&quot;"
+        >{{ item.icon }}</span>
+      </button>
+    }
+  }
+
+  <div class="radial-nav__pulse" aria-hidden="true"></div>
+  <button
+    type="button"
+    class="radial-nav__fab"
+    aria-label="Open navigation"
+    [attr.aria-expanded]="open()"
+    (click)="toggle()"
+  >
+    <span class="material-symbols-outlined radial-nav__fab-icon">add</span>
+  </button>
+</div>

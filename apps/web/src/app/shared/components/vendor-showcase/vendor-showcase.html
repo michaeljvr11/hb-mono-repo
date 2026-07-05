@@ -1,0 +1,39 @@
+<div class="vendor-showcase" role="list" aria-label="Featured SME vendors">
+  @for (vendor of vendors(); track vendor.id) {
+    <button
+      type="button"
+      class="vendor-card"
+      role="listitem"
+      (click)="select(vendor)"
+    >
+      <div class="vendor-card__avatar" aria-hidden="true">{{ initials(vendor) }}</div>
+
+      <div class="vendor-card__body">
+        <div class="vendor-card__name-row">
+          <h3 class="vendor-card__name">{{ displayName(vendor) }}</h3>
+          @if (isVerified(vendor)) {
+            <span
+              class="material-symbols-outlined vendor-card__verified"
+              aria-label="Verified vendor"
+              title="Verified vendor"
+              style="font-variation-settings: 'FILL' 1"
+            >verified</span>
+          }
+        </div>
+
+        <p class="vendor-card__location">
+          <span class="material-symbols-outlined vendor-card__location-icon" aria-hidden="true">location_on</span>
+          {{ countryLabel(vendor.countryCode) }}
+        </p>
+
+        <div class="vendor-card__meta">
+          <span class="vendor-card__rating" aria-label="5 out of 5 stars">
+            @for (star of stars; track star) {
+              <span class="material-symbols-outlined vendor-card__star" style="font-variation-settings: 'FILL' 1">star</span>
+            }
+          </span>
+        </div>
+      </div>
+    </button>
+  }
+</div>

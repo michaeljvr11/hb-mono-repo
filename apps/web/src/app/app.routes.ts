@@ -39,6 +39,16 @@ export const routes: Routes = [
     path: 'shop',
     loadComponent: () => import('./features/shop/shop').then(m => m.Shop)
   },
+  // Product discovery (search/browse) — URL-driven, shareable, no guard.
+  {
+    path: 'discover',
+    loadComponent: () => import('./features/discover/discover').then(m => m.Discover)
+  },
+  // Product detail — public, no guard. Cart action gates on auth inline.
+  {
+    path: 'products/:id',
+    loadComponent: () => import('./features/product-detail/product-detail').then(m => m.ProductDetail)
+  },
 
 
   // Protected routes (require login)

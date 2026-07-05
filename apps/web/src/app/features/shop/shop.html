@@ -2,6 +2,23 @@
 
 <main class="storefront" aria-label="H&amp;B Market storefront">
 
+  <!-- ── Mobile-only: search + category chips row ───────────────────────── -->
+  <section class="mobile-toolbar" aria-label="Search and category filters">
+    <app-search-bar
+      placeholder="Search verified SME products…"
+      [suggestions]="null"
+      (search)="onMobileSearch($event)"
+      (termChange)="onMobileSearch($event)"
+    />
+    @if (categoriesState() === 'loaded') {
+      <app-category-chips
+        [categories]="categories()"
+        [selectedId]="null"
+        (selectedIdChange)="onCategorySelect($event)"
+      />
+    }
+  </section>
+
   <!-- ── Hero ──────────────────────────────────────────────────────────── -->
   <section class="hero" aria-labelledby="hero-heading">
     <div class="hero__overlay" aria-hidden="true"></div>
@@ -31,13 +48,13 @@
   </section>
 
   <!-- ── New in Namibia ─────────────────────────────────────────────────── -->
-  <section class="section section--products" aria-labelledby="products-heading">
+  <section id="new-in-namibia" class="section section--products" aria-labelledby="products-heading">
     <div class="section__header">
       <div>
         <h2 id="products-heading" class="section__title">New in Namibia</h2>
         <p class="section__sub">Fresh arrivals from South African SME partners</p>
       </div>
-      <a class="section__view-all" href="#" aria-label="View all products">
+      <a class="section__view-all" routerLink="/discover" aria-label="View all products">
         View All
         <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
       </a>
@@ -60,80 +77,20 @@
       </div>
     } @else {
       <div class="products-carousel" role="list">
-        @for (product of products(); track product.id) {
-          <article class="product-card" role="listitem">
-            <div class="product-card__image-wrap">
-              @if (getPrimaryImage(product); as imgUrl) {
-                <img
-                  class="product-card__image"
-                  [src]="imgUrl"
-                  [alt]="getImageAlt(product)"
-                  loading="lazy"
-                />
-              } @else {
-                <div class="product-card__placeholder" aria-hidden="true">
-                  <span class="material-symbols-outlined product-card__placeholder-icon">inventory_2</span>
-                </div>
-              }
-            </div>
-            <div class="product-card__body">
-              @if (product.categories.length) {
-                <p class="product-card__category">{{ product.categories[0].name }}</p>
-              }
-              <h3 class="product-card__name">{{ product.name }}</h3>
-              <div class="product-card__footer">
-                <span class="product-card__price">{{ formatPrice(product.price, product.currency) }}</span>
-                <button
-                  type="button"
-                  class="product-card__cart-btn"
-                  [attr.aria-label]="'Add ' + product.name + ' to cart'"
-                  (click)="addToCart(product)"
-                >
-                  <span class="material-symbols-outlined" aria-hidden="true">add_shopping_cart</span>
-                </button>
-              </div>
-            </div>
-          </article>
+        @for (product of carouselProducts(); track product.id) {
+          <app-product-card
+            role="listitem"
+            variant="carousel"
+            [product]="product"
+            (addToCart)="onAddToCart($event)"
+          />
         }
       </div>
     }
   </section>
 
   <!-- ── Trust banner ──────────────────────────────────────────────────── -->
-  <section class="trust-banner" aria-labelledby="trust-heading">
-    <div class="trust-banner__inner">
-      <h2 id="trust-heading" class="visually-hidden">Why shop with H&amp;B</h2>
-      <div class="trust-banner__grid">
-        <div class="trust-card">
-          <div class="trust-card__icon-wrap trust-card__icon-wrap--primary" aria-hidden="true">
-            <span class="material-symbols-outlined trust-card__icon">verified_user</span>
-          </div>
-          <div class="trust-card__body">
-            <h3 class="trust-card__title">Secure Regional Payments</h3>
-            <p class="trust-card__desc">Instant ZAR to NAD settlement with zero cross-border fees for verified users.</p>
-          </div>
-        </div>
-        <div class="trust-card">
-          <div class="trust-card__icon-wrap trust-card__icon-wrap--secondary" aria-hidden="true">
-            <span class="material-symbols-outlined trust-card__icon">local_shipping</span>
-          </div>
-          <div class="trust-card__body">
-            <h3 class="trust-card__title">Express ZA-NA Logistics</h3>
-            <p class="trust-card__desc">Door-to-door tracking from Cape Town or Jo'burg warehouses to Windhoek in 3–5 days.</p>
-          </div>
-        </div>
-        <div class="trust-card">
-          <div class="trust-card__icon-wrap trust-card__icon-wrap--tertiary" aria-hidden="true">
-            <span class="material-symbols-outlined trust-card__icon">policy</span>
-          </div>
-          <div class="trust-card__body">
-            <h3 class="trust-card__title">Simplified Customs</h3>
-            <p class="trust-card__desc">Automated SACU duty calculations and documentation for seamless clearance.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <app-trust-banner />
 
   <!-- ── Explore Categories ─────────────────────────────────────────────── -->
   <section class="section" aria-labelledby="categories-heading">
@@ -159,7 +116,12 @@
     } @else {
       <div class="categories-grid" role="list">
         @for (cat of categories(); track cat.id) {
-          <div class="category-card" role="listitem">
+          <button
+            type="button"
+            class="category-card"
+            role="listitem"
+            (click)="onCategorySelect(cat.id)"
+          >
             <div class="category-card__icon-wrap" aria-hidden="true">
               <span class="material-symbols-outlined category-card__icon">{{ getCategoryIcon(cat.name) }}</span>
             </div>
@@ -167,7 +129,7 @@
               <h3 class="category-card__name">{{ cat.name }}</h3>
               <p class="category-card__count">{{ cat.productCount }} product{{ cat.productCount !== 1 ? 's' : '' }}</p>
             </div>
-          </div>
+          </button>
         }
       </div>
     }
@@ -196,33 +158,10 @@
         <p>No vendors available yet.</p>
       </div>
     } @else {
-      <div class="vendors-grid" role="list">
-        @for (vendor of vendors(); track vendor.id) {
-          <div class="vendor-card" role="listitem">
-            <!-- Avatar initials -->
-            <div class="vendor-card__avatar" aria-hidden="true">
-              {{ getVendorInitials(vendor.businessName) }}
-            </div>
-            <div class="vendor-card__body">
-              <div class="vendor-card__name-row">
-                <h3 class="vendor-card__name">{{ vendor.tradingName ?? vendor.businessName }}</h3>
-                @if (vendor.status === 'approved') {
-                  <span
-                    class="material-symbols-outlined vendor-card__verified"
-                    aria-label="Verified vendor"
-                    title="Verified vendor"
-                    style="font-variation-settings: 'FILL' 1"
-                  >verified</span>
-                }
-              </div>
-              <p class="vendor-card__location">
-                <span class="material-symbols-outlined vendor-card__location-icon" aria-hidden="true">location_on</span>
-                {{ getVendorCountry(vendor.countryCode) }}
-              </p>
-            </div>
-          </div>
-        }
-      </div>
+      <app-vendor-showcase
+        [vendors]="vendors()"
+        (vendorSelected)="onVendorSelect($event)"
+      />
     }
   </section>
 
@@ -254,3 +193,6 @@
 </main>
 
 <app-footer />
+
+<!-- ── Mobile-only: radial nav ─────────────────────────────────────────── -->
+<app-radial-nav active="home" (itemSelected)="onRadialNavSelect($event)" />

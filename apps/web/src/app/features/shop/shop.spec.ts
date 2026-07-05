@@ -1,17 +1,69 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { BehaviorSubject } from 'rxjs';
+import { vi } from 'vitest';
+import { AuthUser, CategoryDto, CountryCode, ProductDto, VendorDto, VendorStatus } from '@hb/shared';
 
 import { Shop, deriveCategoryCounts, CategoryWithCount } from './shop';
-import { ProductDto } from '@hb/shared';
+import { AuthService } from '../../core/auth/auth.service';
+import { environment } from '../../../environments/environment';
 
 describe('Shop', () => {
   let component: Shop;
   let fixture: ComponentFixture<Shop>;
+  let httpMock: HttpTestingController;
+  let authStub: {
+    isLoggedIn: ReturnType<typeof vi.fn>;
+    currentUser$: BehaviorSubject<AuthUser | null>;
+  };
+
+  const categories: CategoryDto[] = [
+    { id: 'c1', name: 'Agriculture', displayOrder: 0 },
+    { id: 'c2', name: 'Handicrafts', displayOrder: 1 },
+  ];
+
+  const products: ProductDto[] = [
+    {
+      id: 'p1',
+      name: 'Organic Dried Fruit Hamper',
+      description: 'Fresh dried fruit',
+      price: '185.00',
+      currency: 'NAD',
+      stockQuantity: 10,
+      images: [],
+      categories: [{ id: 'c1', name: 'Agriculture', displayOrder: 0 }],
+    } as unknown as ProductDto,
+  ];
+
+  const vendors: VendorDto[] = [
+    {
+      id: 'v1',
+      businessName: 'Roots & Shoots Art',
+      status: VendorStatus.APPROVED,
+      countryCode: CountryCode.SOUTH_AFRICA,
+    },
+  ];
+
+  function flushLoads(opts?: {
+    products?: ProductDto[];
+    categories?: CategoryDto[];
+    vendors?: VendorDto[];
+  }): void {
+    httpMock.expectOne(`${environment.apiBaseUrl}/products`).flush(opts?.products ?? products);
+    httpMock.expectOne(`${environment.apiBaseUrl}/categories`).flush(opts?.categories ?? categories);
+    httpMock.expectOne(`${environment.apiBaseUrl}/vendors/directory`).flush(opts?.vendors ?? vendors);
+  }
 
   beforeEach(async () => {
+    authStub = {
+      isLoggedIn: vi.fn().mockReturnValue(false),
+      currentUser$: new BehaviorSubject<AuthUser | null>(null),
+    };
+
     await TestBed.configureTestingModule({
       imports: [Shop],
       providers: [
@@ -19,72 +71,197 @@ describe('Shop', () => {
         provideHttpClientTesting(),
         provideNoopAnimations(),
         provideRouter([]),
+        { provide: AuthService, useValue: authStub },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Shop);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    httpMock = TestBed.inject(HttpTestingController);
+    fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it('should create', () => {
+    flushLoads();
     expect(component).toBeTruthy();
   });
 
   it('renders the "New in Namibia" section heading', () => {
+    flushLoads();
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain('New in Namibia');
   });
 
   it('renders the "Explore Categories" section heading', () => {
+    flushLoads();
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain('Explore Categories');
   });
 
   it('renders the "Featured SME Vendors" section heading', () => {
+    flushLoads();
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain('Featured SME Vendors');
   });
 
-  it('formats ZAR prices with the R prefix', () => {
-    const result = component.formatPrice(1250, 'ZAR');
-    expect(result).toMatch(/^R\s/);
-    expect(result).toContain('250');
+  it('renders a product-card per loaded product in the carousel', () => {
+    flushLoads();
+    fixture.detectChanges();
+    const cards = fixture.nativeElement.querySelectorAll('app-product-card');
+    expect(cards.length).toBe(products.length);
   });
 
-  it('formats NAD prices with the N$ prefix', () => {
-    const result = component.formatPrice(399, 'NAD');
-    expect(result).toMatch(/^N\$\s/);
-    expect(result).toContain('399');
+  it('renders a category tile per loaded category with the derived product count', () => {
+    flushLoads();
+    fixture.detectChanges();
+    const tiles = fixture.nativeElement.querySelectorAll('.category-card');
+    expect(tiles.length).toBe(2);
+    expect(tiles[0].textContent).toContain('Agriculture');
+    expect(tiles[0].textContent).toContain('1 product');
   });
 
-  it('returns null for a product with no images', () => {
-    const product = { images: [] } as never;
-    expect(component.getPrimaryImage(product)).toBeNull();
+  it('shows the empty state when there are no products', () => {
+    flushLoads({ products: [] });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('No products available yet');
   });
 
-  it('returns the primary image url when present', () => {
-    const product = {
-      images: [
-        { id: '1', url: 'http://a.com/img.jpg', isPrimary: true, displayOrder: 0 },
-      ],
-    } as never;
-    expect(component.getPrimaryImage(product)).toBe('http://a.com/img.jpg');
+  it('shows the error state when the products request fails', () => {
+    httpMock.expectOne(`${environment.apiBaseUrl}/products`).error(new ProgressEvent('error'));
+    httpMock.expectOne(`${environment.apiBaseUrl}/categories`).flush(categories);
+    httpMock.expectOne(`${environment.apiBaseUrl}/vendors/directory`).flush(vendors);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Could not load products');
   });
 
-  it('maps ZA countryCode to "South Africa"', () => {
-    expect(component.getVendorCountry('ZA')).toBe('South Africa');
+  it('shows the empty state when there are no vendors', () => {
+    flushLoads({ vendors: [] });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('No vendors available yet');
   });
 
-  it('maps NA countryCode to "Namibia"', () => {
-    expect(component.getVendorCountry('NA')).toBe('Namibia');
+  // ── Navigation handlers ────────────────────────────────────────────────
+
+  it('navigates to /discover with categoryId when a category tile is clicked', () => {
+    flushLoads();
+    fixture.detectChanges();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const tile = fixture.nativeElement.querySelector('.category-card') as HTMLButtonElement;
+    tile.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/discover'], { queryParams: { categoryId: 'c1' } });
   });
 
-  it('derives vendor initials from business name', () => {
-    expect(component.getVendorInitials('Roots Shoots')).toBe('RS');
+  it('navigates to /discover with vendorId when a vendor card is selected', () => {
+    flushLoads();
+    fixture.detectChanges();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const vendorCard = fixture.nativeElement.querySelector('.vendor-card') as HTMLButtonElement;
+    vendorCard.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/discover'], { queryParams: { vendorId: 'v1' } });
+  });
+
+  it('does not navigate when onCategorySelect receives null', () => {
+    flushLoads();
+    fixture.detectChanges();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onCategorySelect(null);
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('navigates to /discover with q on mobile search submit', () => {
+    flushLoads();
+    fixture.detectChanges();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const searchInput = fixture.nativeElement.querySelector('.search-bar__input') as HTMLInputElement;
+    searchInput.value = 'honey';
+    searchInput.dispatchEvent(new Event('input'));
+    searchInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    fixture.detectChanges();
+
+    expect(navigate).toHaveBeenCalledWith(['/discover'], { queryParams: { q: 'honey' } });
+  });
+
+  it('does not navigate on an empty mobile search submit', () => {
+    flushLoads();
+    fixture.detectChanges();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onMobileSearch('   ');
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  // ── Radial nav / cart gating ────────────────────────────────────────────
+
+  it('routes to /login with returnUrl when the radial nav cart item is selected while anonymous', () => {
+    flushLoads();
+    fixture.detectChanges();
+    authStub.isLoggedIn.mockReturnValue(false);
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onRadialNavSelect('cart');
+
+    expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: router.url } });
+  });
+
+  it('does not navigate for the radial nav cart item when authenticated', () => {
+    flushLoads();
+    fixture.detectChanges();
+    authStub.isLoggedIn.mockReturnValue(true);
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onRadialNavSelect('cart');
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('shows a coming-soon notice for orders/profile/wishlist radial nav items', () => {
+    flushLoads();
+    fixture.detectChanges();
+    const snackBar = fixture.debugElement.injector.get(MatSnackBar);
+    const openSpy = vi.spyOn(snackBar, 'open');
+
+    component.onRadialNavSelect('orders');
+    expect(openSpy).toHaveBeenCalledWith(
+      expect.stringContaining('My Orders'),
+      expect.anything(),
+      expect.anything(),
+    );
+
+    component.onRadialNavSelect('profile');
+    expect(openSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Profile'),
+      expect.anything(),
+      expect.anything(),
+    );
+
+    component.onRadialNavSelect('wishlist');
+    expect(openSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Wishlist'),
+      expect.anything(),
+      expect.anything(),
+    );
   });
 });
 

@@ -50,3 +50,11 @@ export interface ProductCreateRequest {
 }
 
 export type ProductUpdateRequest = Partial<ProductCreateRequest>;
+
+/** Discovery query params for GET /products — all optional, all AND-composed. */
+export interface ProductQuery {
+  categoryId?: string;
+  q?: string;
+  /** Vendor drill-down (e.g. a vendor's public storefront page). */
+  vendorId?: string;
+}

@@ -1,9 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   ProductCreateRequest,
   ProductDto as Product,
+  ProductQuery,
   ProductUpdateRequest,
 } from '@hb/shared';
 import { environment } from '../../../environments/environment';
@@ -16,8 +17,19 @@ export class ProductsService {
 
   constructor(private http: HttpClient) {}
 
-  list(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.API_URL);
+  /** Discovery listing. Omits empty/undefined query params rather than sending them blank. */
+  list(query?: ProductQuery): Observable<Product[]> {
+    let params = new HttpParams();
+    if (query?.categoryId) {
+      params = params.set('categoryId', query.categoryId);
+    }
+    if (query?.q) {
+      params = params.set('q', query.q);
+    }
+    if (query?.vendorId) {
+      params = params.set('vendorId', query.vendorId);
+    }
+    return this.http.get<Product[]>(this.API_URL, { params });
   }
 
   getById(id: string): Observable<Product> {

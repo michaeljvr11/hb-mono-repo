@@ -1,0 +1,191 @@
+/* Mobile-only corner radial nav. Auto-hidden at >=768px (desktop uses the top nav bar). */
+
+.radial-nav {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+.radial-nav__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 16, 9, 0.34);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+
+  .radial-nav--open & {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Concentric ring guide bands */
+.radial-nav__band {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  background: radial-gradient(circle at center, rgba(1, 83, 0, 0) 60%, rgba(1, 83, 0, 0.06) 100%);
+  opacity: 0;
+  transform: translate(50%, 50%) scale(0.4);
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+
+  .radial-nav--open & {
+    transform: translate(50%, 50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Nav item buttons/links — pivot from the bottom-right corner */
+.radial-nav__item {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-primary);
+  text-decoration: none;
+  box-shadow: 0 8px 22px -6px rgba(1, 40, 0, 0.45), inset 0 0 0 1px rgba(1, 83, 0, 0.12);
+  transform: translate(var(--dx), var(--dy)) scale(0.2);
+  opacity: 0;
+  pointer-events: none;
+  cursor: pointer;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease, background 0.2s, color 0.2s;
+
+  .material-symbols-outlined {
+    font-size: 26px;
+  }
+
+  .radial-nav--open & {
+    transform: translate(var(--dx), var(--dy)) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &:active,
+  &--active {
+    background: var(--hb-primary);
+    color: var(--hb-on-primary);
+  }
+}
+
+/* Labels */
+.radial-nav__label {
+  position: absolute;
+  right: calc(52px + 12px);
+  bottom: calc(52px - 10px);
+  transform: translate(var(--dx), var(--dy));
+  white-space: nowrap;
+  background: var(--hb-on-surface);
+  color: var(--hb-on-primary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-left-color: var(--hb-on-surface);
+  }
+
+  .radial-nav--open & {
+    opacity: 1;
+  }
+}
+
+/* Corner FAB (quarter disc) */
+.radial-nav__fab {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 92px;
+  height: 92px;
+  border: none;
+  padding: 0;
+  border-top-left-radius: 100%;
+  background: radial-gradient(120% 120% at 100% 100%, var(--hb-primary-container) 0%, var(--hb-primary) 70%);
+  box-shadow: -6px -6px 22px -6px rgba(1, 40, 0, 0.5);
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 5;
+  transition: filter 0.2s;
+
+  &:active {
+    filter: brightness(1.1);
+  }
+}
+
+.radial-nav__fab-icon {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  color: var(--hb-on-primary);
+  font-size: 30px;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  .radial-nav--open & {
+    transform: rotate(135deg);
+  }
+}
+
+.radial-nav__pulse {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 92px;
+  height: 92px;
+  border-top-left-radius: 100%;
+  pointer-events: none;
+  z-index: 4;
+  animation: radial-nav-pulse 2.6s ease-out infinite;
+
+  .radial-nav--open & {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+@keyframes radial-nav-pulse {
+  0% {
+    box-shadow: -2px -2px 0 0 rgba(1, 83, 0, 0.4);
+  }
+  70% {
+    box-shadow: -22px -22px 0 14px rgba(1, 83, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(1, 83, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radial-nav__band,
+  .radial-nav__item,
+  .radial-nav__fab-icon {
+    transition: opacity 0.2s ease !important;
+  }
+
+  .radial-nav__pulse {
+    animation: none;
+  }
+}
