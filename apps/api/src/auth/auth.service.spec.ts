@@ -1,5 +1,10 @@
 import { Test } from '@nestjs/testing';
-import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
@@ -23,6 +28,7 @@ describe('AuthService', () => {
   let jwtService: { sign: jest.Mock };
   let mailService: Record<string, jest.Mock>;
   let auditService: { log: jest.Mock; query: jest.Mock };
+  let configService: { get: jest.Mock };
 
   beforeEach(async () => {
     usersService = {
@@ -41,13 +47,20 @@ describe('AuthService', () => {
     jwtService = { sign: jest.fn().mockReturnValue('signed.jwt') };
     mailService = { sendPasswordReset: jest.fn(), sendEmailVerification: jest.fn() };
     auditService = { log: jest.fn().mockResolvedValue(undefined), query: jest.fn() };
+    // Key-aware config: no ADMIN_BOOTSTRAP_SECRET and non-prod by default, so the
+    // bootstrap gate is a no-op in the baseline cases. Individual tests override.
+    configService = {
+      get: jest.fn((key: string) =>
+        key === 'ADMIN_BOOTSTRAP_SECRET' || key === 'NODE_ENV' ? undefined : 'cfg',
+      ),
+    };
 
     const module = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: UsersService, useValue: usersService },
         { provide: JwtService, useValue: jwtService },
-        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('cfg') } },
+        { provide: ConfigService, useValue: configService },
         { provide: MailService, useValue: mailService },
         { provide: AuditService, useValue: auditService },
       ],
@@ -109,6 +122,27 @@ describe('AuthService', () => {
       expect(usersService.setEmailVerificationToken).toHaveBeenCalled();
       expect(mailService.sendEmailVerification).toHaveBeenCalledWith('a@b.com', expect.any(String));
     });
+
+    it('always creates a CUSTOMER and ignores any client-supplied role (privilege-escalation guard)', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue({ ...activeUser, isVerified: false });
+
+      // Simulate a hand-crafted request smuggling role: 'admin' past the type system.
+      await service.register({
+        email: 'a@b.com',
+        password: 'password1',
+        role: UserRole.ADMIN,
+      } as Parameters<typeof service.register>[0]);
+
+      // The forced role must win over anything supplied by the caller: create is
+      // called with CUSTOMER, never the smuggled ADMIN.
+      expect(usersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'a@b.com', role: UserRole.CUSTOMER }),
+      );
+      expect(usersService.create).not.toHaveBeenCalledWith(
+        expect.objectContaining({ role: UserRole.ADMIN }),
+      );
+    });
   });
 
   describe('bootstrapAdmin', () => {
@@ -161,6 +195,47 @@ describe('AuthService', () => {
 
       await expect(service.bootstrapAdmin(adminDto)).rejects.toThrow(BadRequestException);
       expect(usersService.create).not.toHaveBeenCalled();
+    });
+
+    it('D: is disabled (fails closed) in production when ADMIN_BOOTSTRAP_SECRET is unset', async () => {
+      configService.get.mockImplementation((key: string) =>
+        key === 'NODE_ENV' ? 'production' : undefined,
+      );
+      usersService.countByRole.mockResolvedValue(0);
+
+      await expect(service.bootstrapAdmin(adminDto)).rejects.toThrow(ForbiddenException);
+      expect(usersService.create).not.toHaveBeenCalled();
+      // The gate runs before any DB work — the race window is closed outright.
+      expect(usersService.countByRole).not.toHaveBeenCalled();
+    });
+
+    it('E: rejects a wrong/missing secret when one is configured', async () => {
+      configService.get.mockImplementation((key: string) =>
+        key === 'ADMIN_BOOTSTRAP_SECRET' ? 'the-real-secret' : undefined,
+      );
+      usersService.countByRole.mockResolvedValue(0);
+
+      await expect(service.bootstrapAdmin(adminDto)).rejects.toThrow(ForbiddenException);
+      await expect(service.bootstrapAdmin({ ...adminDto, secret: 'wrong' })).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(usersService.create).not.toHaveBeenCalled();
+    });
+
+    it('F: creates the admin when the configured secret matches', async () => {
+      configService.get.mockImplementation((key: string) =>
+        key === 'ADMIN_BOOTSTRAP_SECRET' ? 'the-real-secret' : undefined,
+      );
+      usersService.countByRole.mockResolvedValue(0);
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue(adminUser);
+
+      const result = await service.bootstrapAdmin({ ...adminDto, secret: 'the-real-secret' });
+
+      expect(result.access_token).toBe('signed.jwt');
+      expect(usersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ role: UserRole.ADMIN, isVerified: true }),
+      );
     });
   });
 
@@ -239,12 +314,21 @@ describe('AuthService', () => {
       await expect(service.validateOAuthLogin({})).rejects.toThrow(UnauthorizedException);
     });
 
+    it('rejects a Google profile whose email is not verified', async () => {
+      await expect(
+        service.validateOAuthLogin({ email: 'a@b.com', emailVerified: false }),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(usersService.findByEmail).not.toHaveBeenCalled();
+      expect(usersService.create).not.toHaveBeenCalled();
+    });
+
     it('creates a verified account on first Google sign-in', async () => {
       usersService.findByEmail.mockResolvedValue(null);
       usersService.create.mockResolvedValue({ ...activeUser, isVerified: true });
 
       await service.validateOAuthLogin({
         email: 'a@b.com',
+        emailVerified: true,
         firstName: 'Ada',
         lastName: 'Lovelace',
       });
@@ -263,7 +347,7 @@ describe('AuthService', () => {
     it('verifies an existing-but-unverified local account', async () => {
       usersService.findByEmail.mockResolvedValue({ ...activeUser, isVerified: false });
 
-      await service.validateOAuthLogin({ email: 'a@b.com' });
+      await service.validateOAuthLogin({ email: 'a@b.com', emailVerified: true });
 
       expect(usersService.markEmailVerified).toHaveBeenCalledWith('u1');
       expect(usersService.create).not.toHaveBeenCalled();

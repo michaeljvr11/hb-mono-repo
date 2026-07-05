@@ -6,7 +6,7 @@ import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { sanitizeReturnUrl } from '../../core/auth/return-url';
 import { environment } from '../../../environments/environment';
-import { RegisterRequest, UserRole } from '@hb/shared';
+import { RegisterRequest } from '@hb/shared';
 
 @Component({
   selector: 'app-register',
@@ -68,7 +68,6 @@ export class Register {
       ...this.splitFullName(this.registerForm.controls.fullName.value),
       email: this.registerForm.controls.email.value,
       password: this.registerForm.controls.password.value,
-      role: UserRole.CUSTOMER,
       rememberMe: this.registerForm.controls.rememberMe.value,
     };
 

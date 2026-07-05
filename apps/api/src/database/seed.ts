@@ -7,6 +7,13 @@ import { User } from '../users/entities/user.entity';
 import dataSource from './data-source';
 
 async function main() {
+  // This seed creates a well-known admin credential (admin@hb.local / Admin1234!)
+  // for local development. Refuse to run in production so it can never plant a
+  // known-password admin on a real database (see docs/security L2).
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Refusing to run the development seed with NODE_ENV=production.');
+  }
+
   await dataSource.initialize();
 
   try {
