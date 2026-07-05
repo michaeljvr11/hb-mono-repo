@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -18,6 +19,12 @@ import { resolveRefreshCookieSecurity } from './refresh-cookie';
 
 const REFRESH_COOKIE = 'RefreshToken';
 
+// Tighter per-route rate limits for sensitive auth endpoints (see docs/security H1).
+// AUTH curbs credential brute-force; EMAIL additionally curbs reset/verification
+// email bombing. Both are per-IP and override the generous global default.
+const AUTH_THROTTLE = { default: { limit: 10, ttl: 60_000 } };
+const EMAIL_THROTTLE = { default: { limit: 5, ttl: 60_000 } };
+
 // Shape attached to req.user by the refresh strategy (decoded JWT + cookie token).
 interface RefreshPayload {
   sub: string;
@@ -34,6 +41,7 @@ export class AuthController {
   ) {}
 
   @Public()
+  @Throttle(EMAIL_THROTTLE)
   @Post('register')
   async register(@Body() registerDto: RegisterDto, @Res({ passthrough: true }) res: Response) {
     const tokens = await this.authService.register(registerDto);
@@ -42,6 +50,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('login')
   @HttpCode(200)
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
@@ -51,6 +60,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(EMAIL_THROTTLE)
   @Post('bootstrap-admin')
   async bootstrapAdmin(@Body() dto: BootstrapAdminDto, @Res({ passthrough: true }) res: Response) {
     const tokens = await this.authService.bootstrapAdmin(dto);
@@ -93,6 +103,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(EMAIL_THROTTLE)
   @Post('forgot-password')
   @HttpCode(200)
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
@@ -100,6 +111,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('reset-password')
   @HttpCode(200)
   async resetPassword(@Body() dto: ResetPasswordDto) {
@@ -107,12 +119,14 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_THROTTLE)
   @Post('verify-email')
   @HttpCode(200)
   async verifyEmail(@Body() dto: VerifyEmailDto) {
     return this.authService.verifyEmail(dto.token);
   }
 
+  @Throttle(EMAIL_THROTTLE)
   @Post('resend-verification')
   @HttpCode(200)
   async resendVerification(@GetUser() user: User) {

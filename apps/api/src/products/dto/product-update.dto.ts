@@ -38,9 +38,9 @@ export class ProductUpdateDto implements ProductUpdateRequest {
   @IsOptional()
   originCountry?: CountryCode;
 
-  @IsOptional()
-  @IsString()
-  vendorId?: string;
+  // No `vendorId`: a product's owning vendor is never client-settable on update.
+  // It was accepted-but-ignored before (see docs/security L1); removing it stops a
+  // future refactor from silently enabling cross-vendor reassignment.
 
   @IsOptional()
   @IsArray()

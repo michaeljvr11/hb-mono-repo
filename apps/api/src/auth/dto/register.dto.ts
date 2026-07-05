@@ -1,5 +1,5 @@
-import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
-import { RegisterRequest, UserRole } from '@hb/shared';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
+import { RegisterRequest } from '@hb/shared';
 
 export class RegisterDto implements RegisterRequest {
   @IsEmail()
@@ -18,9 +18,9 @@ export class RegisterDto implements RegisterRequest {
   @IsNotEmpty()
   lastName?: string;
 
-  @IsEnum(UserRole)
-  @IsOptional()
-  role?: UserRole; // defaults to CUSTOMER; admins create vendors
+  // No `role` field: self-registration must never let a client choose its role.
+  // The global ValidationPipe (whitelist:true) strips any client-supplied `role`,
+  // and AuthService.register forces CUSTOMER regardless. See docs/security.
 
   @IsOptional()
   @IsBoolean()

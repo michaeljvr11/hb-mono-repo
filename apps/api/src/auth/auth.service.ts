@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import * as bcrypt from 'bcryptjs';
 import { UserRole } from '@hb/shared';
 import { UsersService } from '../users/users.service';
@@ -52,6 +52,10 @@ export class AuthService {
       email,
       password,
       ...rest,
+      // Defense-in-depth: self-registration is always a CUSTOMER. Even if a `role`
+      // ever leaks back into the DTO/whitelist, it can never elevate here. Elevated
+      // roles are assigned only via the admin-only role endpoint. See docs/security.
+      role: UserRole.CUSTOMER,
     });
 
     // Send the email-verification link (best-effort — registration still
@@ -100,6 +104,13 @@ export class AuthService {
       throw new UnauthorizedException('Google did not return an email address.');
     }
 
+    // Only link/create on a Google-verified email. Linking on an unverified address
+    // would let someone who controls an unverified Google profile take over an
+    // existing local account by email match (see docs/security M2).
+    if (!profile.emailVerified) {
+      throw new UnauthorizedException('Your Google email address is not verified.');
+    }
+
     let user = await this.usersService.findByEmail(profile.email);
     if (!user) {
       // First Google sign-in creates a verified account. The password is random
@@ -126,6 +137,10 @@ export class AuthService {
   // Self-sealing: once any admin exists this method always throws ConflictException,
   // so it cannot be exploited after initial deployment.
   async bootstrapAdmin(dto: BootstrapAdminDto) {
+    // Gate the public bootstrap endpoint on a server-side secret so a fresh
+    // deployment can't be raced for the first admin account (see docs/security H2).
+    this.assertBootstrapAllowed(dto.secret);
+
     const adminCount = await this.usersService.countByRole(UserRole.ADMIN);
     if (adminCount > 0) {
       throw new ConflictException('An admin account already exists.');
@@ -215,7 +230,9 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_SECRET'),
-      expiresIn: this.config.get('JWT_EXPIRATION'),
+      // Fall back to a short life if JWT_EXPIRATION is unset — never mint a
+      // non-expiring access token by omission (see docs/security L3).
+      expiresIn: this.config.get('JWT_EXPIRATION') || '15m',
     });
 
     const refreshToken = this.jwtService.sign(
@@ -246,6 +263,38 @@ export class AuthService {
       lastName: user.lastName,
       isVerified: user.isVerified ?? false,
     };
+  }
+
+  // Fail-closed gate for the public admin-bootstrap endpoint.
+  // - If ADMIN_BOOTSTRAP_SECRET is configured, the request must present a matching
+  //   secret (constant-time compare) — this closes the "first caller on a fresh DB
+  //   becomes admin" race.
+  // - In production the secret is REQUIRED: if it's unset the endpoint is disabled.
+  // - Outside production, an unset secret keeps the zero-config dev/CI path working.
+  private assertBootstrapAllowed(providedSecret?: string): void {
+    const configuredSecret = this.config.get<string>('ADMIN_BOOTSTRAP_SECRET');
+    const isProduction = this.config.get<string>('NODE_ENV') === 'production';
+
+    if (!configuredSecret) {
+      if (isProduction) {
+        throw new ForbiddenException(
+          'Admin bootstrap is disabled: ADMIN_BOOTSTRAP_SECRET is not configured.',
+        );
+      }
+      return;
+    }
+
+    if (!providedSecret || !this.secretsMatch(providedSecret, configuredSecret)) {
+      throw new ForbiddenException('Invalid or missing bootstrap secret.');
+    }
+  }
+
+  // Constant-time secret comparison. Hashing both sides to a fixed 32 bytes keeps
+  // timingSafeEqual's equal-length requirement without leaking the secret's length.
+  private secretsMatch(a: string, b: string): boolean {
+    const ha = createHash('sha256').update(a).digest();
+    const hb = createHash('sha256').update(b).digest();
+    return timingSafeEqual(ha, hb);
   }
 
   private hashToken(rawToken: string): string {

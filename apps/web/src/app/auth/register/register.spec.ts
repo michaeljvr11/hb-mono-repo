@@ -64,7 +64,6 @@ describe('Register', () => {
       lastName: 'Mokoena Smith',
       email: 'a@b.com',
       password: 'password1',
-      role: 'customer',
       rememberMe: true,
     });
   });
@@ -88,7 +87,6 @@ describe('Register', () => {
       firstName: 'Cher',
       email: 'a@b.com',
       password: 'password1',
-      role: 'customer',
       rememberMe: false,
     });
   });
