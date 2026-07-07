@@ -1,51 +1,51 @@
 {
-  "generatedAt": "2026-07-03T06:08:03.404Z",
+  "generatedAt": "2026-07-07T10:48:53.698Z",
   "git": {
-    "totalCommits": 85,
-    "aiCommits": 76,
-    "aiPct": 89,
-    "appCommits": 52,
-    "ins": 44425,
-    "del": 3371,
-    "net": 41054,
-    "aiIns": 31364,
-    "aiDel": 3285,
-    "filesTouched": 423,
+    "totalCommits": 99,
+    "aiCommits": 91,
+    "aiPct": 92,
+    "appCommits": 65,
+    "ins": 49281,
+    "del": 3582,
+    "net": 45699,
+    "aiIns": 36220,
+    "aiDel": 3496,
+    "filesTouched": 446,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 38,
-        "ins": 22423,
-        "del": 1259
+        "commits": 42,
+        "ins": 24857,
+        "del": 1341
       },
       {
         "name": "Docs",
-        "commits": 32,
-        "ins": 10578,
-        "del": 1852
+        "commits": 35,
+        "ins": 10981,
+        "del": 1946
       },
       {
         "name": "API (NestJS)",
-        "commits": 27,
-        "ins": 9128,
-        "del": 191
+        "commits": 37,
+        "ins": 11083,
+        "del": 224
       },
       {
         "name": "AI Factory config",
         "commits": 29,
-        "ins": 1081,
+        "ins": 974,
         "del": 44
       },
       {
         "name": "Shared contracts",
-        "commits": 10,
-        "ins": 600,
-        "del": 3
+        "commits": 13,
+        "ins": 678,
+        "del": 5
       },
       {
         "name": "Root & config",
-        "commits": 10,
-        "ins": 415,
+        "commits": 11,
+        "ins": 508,
         "del": 20
       },
       {
@@ -56,106 +56,71 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-07-02",
+    "lastDate": "2026-07-07",
     "recent": [
       {
-        "hash": "689acc0",
-        "subject": "refactor(web): review cleanups - single param source in discover, design tokens",
+        "hash": "95513c3",
+        "subject": "feat(web): checkout page with verification/stock error affordances",
         "ai": true
       },
       {
-        "hash": "290fbf2",
-        "subject": "fix(api): parenthesize approved-vendor visibility clause so discovery filters apply to platform listings",
+        "hash": "1abbfec",
+        "subject": "feat(web): cart page + real add-to-cart wiring and cart badges",
         "ai": true
       },
       {
-        "hash": "fabdaf1",
-        "subject": "feat(web): product discovery + product detail pages with unified search",
+        "hash": "c4018b4",
+        "subject": "feat(api): order creation, stub payment capture + state machine",
         "ai": true
       },
       {
-        "hash": "c811612",
-        "subject": "feat(web): rebuild storefront home to updated designs (desktop + mobile)",
+        "hash": "7cec8d2",
+        "subject": "feat(api): server-side cart endpoints with live pricing + ownership",
         "ai": true
       },
       {
-        "hash": "7bc4320",
-        "subject": "feat(web): storefront shared component foundation",
+        "hash": "cb03161",
+        "subject": "feat(shared): add handed_to_hb order state + cart/checkout contracts",
         "ai": true
       },
       {
-        "hash": "27e16d0",
-        "subject": "feat(api): product discovery filters (categoryId/q/vendorId) + unified search suggest",
+        "hash": "8254361",
+        "subject": "chore(evidence): recompile AI-evidence report for fable-storefront-oneshot",
         "ai": true
       },
       {
-        "hash": "e4ebb58",
-        "subject": "chore(evidence): regenerate report after syncing main (post-merge hook)",
+        "hash": "0599e2f",
+        "subject": "docs(security): add SECURITY.md + public-route guardrail test [Phase 3]",
         "ai": true
       },
       {
-        "hash": "7b392db",
-        "subject": "feat(categories): block deletion of in-use or parent categories",
+        "hash": "e03c3dc",
+        "subject": "test(web): drop role from register payload assertions [C1]",
         "ai": true
       },
       {
-        "hash": "38fb450",
-        "subject": "designs now up to date",
-        "ai": false
-      },
-      {
-        "hash": "be43740",
-        "subject": "chore(evidence): recompile AI-evidence report for c2o6xfZs",
+        "hash": "34f5f2a",
+        "subject": "fix(security): low-severity hardening bundle [L1-L4]",
         "ai": true
       },
       {
-        "hash": "9d79a21",
-        "subject": "test(api): cover approved-vendor visibility filter on public product endpoints",
+        "hash": "4c55c73",
+        "subject": "docs(security): mark M3 (multer) deferred to an isolated dep-bump PR",
         "ai": true
       },
       {
-        "hash": "33d6b41",
-        "subject": "feat(api): filter non-approved vendor listings from public product endpoints",
+        "hash": "43361e5",
+        "subject": "fix(auth): harden Google OAuth — state CSRF + verified-email linking [M2]",
+        "ai": true
+      },
+      {
+        "hash": "cc58049",
+        "subject": "feat(security): add helmet security headers [M1]",
         "ai": true
       }
     ]
   },
   "branches": [
-    {
-      "branch": "feat/EXPtZCJL-vendor-portal-shell",
-      "cardId": "EXPtZCJL",
-      "slug": "vendor-portal-shell"
-    },
-    {
-      "branch": "feat/IhTVdNYP-admin-catalog",
-      "cardId": "IhTVdNYP",
-      "slug": "admin-catalog"
-    },
-    {
-      "branch": "feat/L9fM1Gu7-storefront",
-      "cardId": "L9fM1Gu7",
-      "slug": "storefront"
-    },
-    {
-      "branch": "feat/N8P6OPPm-admin-user-mgmt",
-      "cardId": "N8P6OPPm",
-      "slug": "admin-user-mgmt"
-    },
-    {
-      "branch": "feat/RLiauFte-admin-vendor-approvals",
-      "cardId": "RLiauFte",
-      "slug": "admin-vendor-approvals"
-    },
-    {
-      "branch": "feat/oWqIV57s-vendor-dashboard",
-      "cardId": "oWqIV57s",
-      "slug": "vendor-dashboard"
-    },
-    {
-      "branch": "feat/xEOk5i0M-vendor-products",
-      "cardId": "xEOk5i0M",
-      "slug": "vendor-products"
-    },
     {
       "branch": "feat/1fqtc2JF-vendor-onboarding",
       "cardId": "1fqtc2JF",
@@ -175,6 +140,11 @@
       "branch": "feat/EFXHykuT-auth-aware-nav",
       "cardId": "EFXHykuT",
       "slug": "auth-aware-nav"
+    },
+    {
+      "branch": "feat/EXPtZCJL-vendor-portal-shell",
+      "cardId": "EXPtZCJL",
+      "slug": "vendor-portal-shell"
     },
     {
       "branch": "feat/Sm1kSNO8-safe-category-delete",
@@ -202,6 +172,11 @@
       "slug": "returnurl-guard-capture"
     },
     {
+      "branch": "feat/fable-checkout-oneshot",
+      "cardId": "fable",
+      "slug": "checkout-oneshot"
+    },
+    {
       "branch": "feat/kYbVZyqV-shop-public-ssr",
       "cardId": "kYbVZyqV",
       "slug": "shop-public-ssr"
@@ -212,6 +187,11 @@
       "slug": "login-registration-pages"
     },
     {
+      "branch": "feat/oWqIV57s-vendor-dashboard",
+      "cardId": "oWqIV57s",
+      "slug": "vendor-dashboard"
+    },
+    {
       "branch": "feat/sw8qYBV1-admin-orders-dashboard",
       "cardId": "sw8qYBV1",
       "slug": "admin-orders-dashboard"
@@ -220,12 +200,37 @@
       "branch": "feat/vs3y5tDJ-public-vendor-profile",
       "cardId": "vs3y5tDJ",
       "slug": "public-vendor-profile"
+    },
+    {
+      "branch": "feat/IhTVdNYP-admin-catalog",
+      "cardId": "IhTVdNYP",
+      "slug": "admin-catalog"
+    },
+    {
+      "branch": "feat/L9fM1Gu7-storefront",
+      "cardId": "L9fM1Gu7",
+      "slug": "storefront"
+    },
+    {
+      "branch": "feat/N8P6OPPm-admin-user-mgmt",
+      "cardId": "N8P6OPPm",
+      "slug": "admin-user-mgmt"
+    },
+    {
+      "branch": "feat/RLiauFte-admin-vendor-approvals",
+      "cardId": "RLiauFte",
+      "slug": "admin-vendor-approvals"
+    },
+    {
+      "branch": "feat/xEOk5i0M-vendor-products",
+      "cardId": "xEOk5i0M",
+      "slug": "vendor-products"
     }
   ],
   "tests": {
-    "total": 49,
-    "api": 12,
-    "web": 37
+    "total": 55,
+    "api": 15,
+    "web": 40
   },
   "design": {
     "files": 29,
@@ -251,16 +256,23 @@
     },
     "gatePass": 12,
     "gateFail": 1,
-    "edits": 163,
-    "editsUnfixable": 65,
+    "edits": 178,
+    "editsUnfixable": 67,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-02T17:59:17.594Z"
+    "lastTs": "2026-07-07T10:43:38.126Z"
   },
   "prs": [
     {
+      "headRefName": "fable-storefront-oneshot",
+      "number": 26,
+      "state": "MERGED",
+      "title": "feat: complete storefront frontend (desktop + mobile) with unified search (b4VoyjRu + 6qlkwk75)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/26"
+    },
+    {
       "headRefName": "security/audit-2026-07-02",
       "number": 25,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "security: audit + hardening pass (2026-07-02)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/25"
     },
@@ -433,27 +445,8 @@
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/1"
     }
   ],
-  "trello": [
-    {
-      "name": "Documentation",
-      "cards": 8
-    },
-    {
-      "name": "To Do",
-      "cards": 11
-    },
-    {
-      "name": "In Progress",
-      "cards": 2
-    },
-    {
-      "name": "In Review",
-      "cards": 0
-    },
-    {
-      "name": "Done",
-      "cards": 20
-    }
-  ],
-  "notes": []
+  "trello": null,
+  "notes": [
+    "No .mcp.json — Trello card flow skipped."
+  ]
 }
