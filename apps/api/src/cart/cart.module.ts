@@ -2,9 +2,14 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Cart } from './entities/cart.entity';
 import { CartItem } from './entities/cart-item.entity';
+import { Product } from '../products/entities/product.entity';
+import { CartService } from './cart.service';
+import { CartController } from './cart.controller';
 
-// Skeleton: entities registered, cart endpoints come with the checkout flow.
 @Module({
-  imports: [TypeOrmModule.forFeature([Cart, CartItem])],
+  imports: [TypeOrmModule.forFeature([Cart, CartItem, Product])],
+  providers: [CartService],
+  controllers: [CartController],
+  exports: [CartService],
 })
 export class CartModule {}
