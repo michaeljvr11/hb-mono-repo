@@ -16,5 +16,27 @@ services:
       timeout: 5s
       retries: 5
 
+  meilisearch:
+    image: getmeili/meilisearch:v1.15
+    restart: unless-stopped
+    environment:
+      # Deliberately NO :-default — compose must fail loud if the key is unset.
+      # Set MEILI_MASTER_KEY in your shell or a root .env (see apps/api/.env.example).
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:?MEILI_MASTER_KEY is required — no default on purpose, see apps/api/.env.example}
+      MEILI_ENV: ${MEILI_ENV:-development}
+    ports:
+      - '7700:7700'
+    volumes:
+      # Named volume so the index + settings survive container restart/recreate
+      # (index is derived from Postgres, but persistence avoids a cold reindex).
+      - meilidata:/meili_data
+    healthcheck:
+      # Image is Alpine-based: busybox wget is available, curl is not.
+      test: ['CMD-SHELL', 'wget --no-verbose --spider http://localhost:7700/health || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   pgdata:
+  meilidata:
