@@ -1,0 +1,26 @@
+info:
+  name: Admin Create Synonym
+  type: http
+  seq: 23
+
+http:
+  method: POST
+  url: "{{baseurl}}:{{hb_backend}}/admin/search/synonyms"
+  body:
+    type: json
+    data: |-
+      {
+        "term": "spf",
+        "equivalents": ["sunscreen", "sunblock"],
+        "bidirectional": true,
+        "enabled": true
+      }
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

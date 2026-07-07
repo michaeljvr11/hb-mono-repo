@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { CountryCode, CurrencyCode, ListingType, VendorStatus } from '@hb/shared';
 import { SearchIndexerService } from './search-indexer.service';
 import { SearchSettingsService } from './search-settings.service';
+import { SynonymsService } from './synonyms.service';
 import { MEILI_CLIENT, PRODUCTS_INDEX } from './search.constants';
 import { Product } from '../products/entities/product.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
@@ -46,6 +47,7 @@ describe('SearchIndexerService', () => {
   };
   let meiliClient: { index: jest.Mock };
   let settingsService: { applySettings: jest.Mock };
+  let synonymsService: { buildMeilisearchSynonymsMap: jest.Mock };
 
   beforeEach(async () => {
     productRepo = { findOne: jest.fn(), find: jest.fn() };
@@ -59,6 +61,7 @@ describe('SearchIndexerService', () => {
     meiliClient = { index: jest.fn().mockReturnValue(meiliIndex) };
 
     settingsService = { applySettings: jest.fn().mockResolvedValue(undefined) };
+    synonymsService = { buildMeilisearchSynonymsMap: jest.fn().mockResolvedValue({}) };
 
     const module = await Test.createTestingModule({
       providers: [
@@ -66,6 +69,7 @@ describe('SearchIndexerService', () => {
         { provide: getRepositoryToken(Product), useValue: productRepo },
         { provide: MEILI_CLIENT, useValue: meiliClient },
         { provide: SearchSettingsService, useValue: settingsService },
+        { provide: SynonymsService, useValue: synonymsService },
       ],
     }).compile();
 
@@ -173,6 +177,17 @@ describe('SearchIndexerService', () => {
         expect.objectContaining({ id: 'p2' }),
       ]);
       expect(result).toEqual({ indexed: 2, pruned: 0 });
+    });
+
+    it('re-applies the current admin-edited synonyms map on every reindex (card #52 sharing the same settings-write path)', async () => {
+      productRepo.find.mockResolvedValue([]);
+      const synonymsMap = { spf: ['sunscreen'] };
+      synonymsService.buildMeilisearchSynonymsMap.mockResolvedValue(synonymsMap);
+
+      await service.runFullReindex();
+
+      expect(synonymsService.buildMeilisearchSynonymsMap).toHaveBeenCalled();
+      expect(settingsService.applySettings).toHaveBeenCalledWith(synonymsMap);
     });
 
     it('prunes documents that no longer exist in Postgres', async () => {

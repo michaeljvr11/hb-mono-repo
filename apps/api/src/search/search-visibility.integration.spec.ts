@@ -10,6 +10,7 @@ import { SearchService } from './search.service';
 import { ProductSearchService } from './product-search.service';
 import { SearchIndexerService } from './search-indexer.service';
 import { SearchSettingsService } from './search-settings.service';
+import { SynonymsService } from './synonyms.service';
 import { VendorsService } from '../vendors/vendors.service';
 import { AuditService } from '../audit/audit.service';
 import { UsersService } from '../users/users.service';
@@ -158,6 +159,10 @@ describe('Search visibility (integration): query-time approved-vendor gate, live
         SearchSettingsService,
         VendorsService,
         { provide: MEILI_CLIENT, useValue: fakeClient },
+        {
+          provide: SynonymsService,
+          useValue: { buildMeilisearchSynonymsMap: jest.fn().mockResolvedValue({}) },
+        },
         { provide: getRepositoryToken(Product), useValue: productRepo },
         { provide: getRepositoryToken(Vendor), useValue: vendorRepo },
         { provide: getRepositoryToken(Category), useValue: categoryRepo },

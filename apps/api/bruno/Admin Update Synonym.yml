@@ -1,0 +1,23 @@
+info:
+  name: Admin Update Synonym
+  type: http
+  seq: 24
+
+http:
+  method: PATCH
+  url: "{{baseurl}}:{{hb_backend}}/admin/search/synonyms/00000000-0000-0000-0000-000000000000"
+  body:
+    type: json
+    data: |-
+      {
+        "enabled": false
+      }
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

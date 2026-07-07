@@ -10,6 +10,7 @@ import type { ProductChangedEvent, VendorStatusChangedEvent } from '../common/ev
 import { MEILI_CLIENT, PRODUCTS_INDEX } from './search.constants';
 import { mapProductToSearchDocument } from './search-document';
 import { SearchSettingsService } from './search-settings.service';
+import { SynonymsService } from './synonyms.service';
 
 const RELATIONS = ['vendor', 'categories', 'images'];
 
@@ -35,6 +36,7 @@ export class SearchIndexerService {
     @InjectRepository(Product) private readonly productRepository: Repository<Product>,
     @Inject(MEILI_CLIENT) private readonly client: Meilisearch,
     private readonly settingsService: SearchSettingsService,
+    private readonly synonymsService: SynonymsService,
   ) {}
 
   @OnEvent(ProductEvents.CREATED)
@@ -92,10 +94,12 @@ export class SearchIndexerService {
   }
 
   async runFullReindex(): Promise<{ indexed: number; pruned: number }> {
-    // Synonyms are folded into this settings write once card #49/#52 land
-    // (SearchSettingsService.applySettings stays the single writer either
-    // way); until then this reapplies the base ranking/searchable config.
-    await this.settingsService.applySettings();
+    // Re-applies the full settings write (searchable/filterable/sortable
+    // attributes, ranking rules, AND the current admin-edited synonyms map)
+    // — the same shared path an admin save reuses (card #52), never a
+    // second competing writer.
+    const synonyms = await this.synonymsService.buildMeilisearchSynonymsMap();
+    await this.settingsService.applySettings(synonyms);
 
     const products = await this.productRepository.find({ relations: RELATIONS });
     const docs = products.map((p) => mapProductToSearchDocument(p));
