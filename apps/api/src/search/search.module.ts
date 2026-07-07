@@ -6,6 +6,7 @@ import { meilisearchClientProvider } from './meilisearch.provider';
 import { SearchHealthService } from './search-health.service';
 import { SearchSettingsService } from './search-settings.service';
 import { SearchIndexerService } from './search-indexer.service';
+import { ProductSearchService } from './product-search.service';
 import { Product } from '../products/entities/product.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
 import { Category } from '../categories/entities/category.entity';
@@ -19,7 +20,8 @@ import { Category } from '../categories/entities/category.entity';
     SearchHealthService,
     SearchSettingsService,
     SearchIndexerService,
+    ProductSearchService,
   ],
-  exports: [SearchIndexerService],
+  exports: [SearchIndexerService, ProductSearchService],
 })
 export class SearchModule {}
