@@ -11,3 +11,4 @@ export * from './cart';
 export * from './dashboard';
 export * from './audit';
 export * from './search';
+export * from './synonym';
