@@ -1,8 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { User } from '../users/entities/user.entity';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
+/**
+ * Authenticated (global JwtAuthGuard, no @Public). Thin by design: ownership,
+ * verification gating and every state transition live in OrdersService.
+ */
 @Controller('orders')
 export class OrdersController {
   constructor(private ordersService: OrdersService) {}
@@ -10,5 +16,20 @@ export class OrdersController {
   @Get()
   getMyOrders(@GetUser() user: User) {
     return this.ordersService.findAllForUser(user.id);
+  }
+
+  @Get(':id')
+  getOrder(@GetUser() user: User, @Param('id') id: string) {
+    return this.ordersService.findOneForUser(user, id);
+  }
+
+  @Post()
+  create(@GetUser() user: User, @Body() dto: CreateOrderDto) {
+    return this.ordersService.create(user, dto);
+  }
+
+  @Patch(':id/status')
+  updateStatus(@GetUser() user: User, @Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
+    return this.ordersService.updateStatus(user, id, dto.status);
   }
 }
