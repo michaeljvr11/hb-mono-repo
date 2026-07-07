@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CategoryDto, ProductDto, VendorDto } from '@hb/shared';
 import { AuthService } from '../../core/auth/auth.service';
+import { CartService } from '../../core/api/cart.service';
 import { CategoriesService } from '../../core/api/categories.service';
 import { ProductsService } from '../../core/api/products.service';
 import { VendorsService } from '../../core/api/vendors.service';
@@ -66,8 +67,12 @@ export class Shop implements OnInit {
   private readonly vendorsService = inject(VendorsService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly authService = inject(AuthService);
+  private readonly cartService = inject(CartService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+
+  /** Real cart count for the radial-nav badge. */
+  readonly cartCount = this.cartService.itemCount;
 
   // Products
   readonly products = signal<ProductDto[]>([]);
@@ -126,8 +131,18 @@ export class Shop implements OnInit {
     this.notifyComingSoon('Newsletter');
   }
 
-  onAddToCart(_product: ProductDto): void {
-    this.notifyComingSoon('Cart');
+  onAddToCart(product: ProductDto): void {
+    if (!this.authService.isLoggedIn()) {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url },
+      });
+      return;
+    }
+    this.cartService.addItem(product.id).subscribe({
+      next: () => this.notifyAddedToCart(product.name),
+      error: (err: { error?: { message?: string } }) =>
+        this.notifyCartError(err?.error?.message),
+    });
   }
 
   onRadialNavSelect(itemId: RadialNavItemId): void {
@@ -145,7 +160,7 @@ export class Shop implements OnInit {
 
   private onCartClick(): void {
     if (this.authService.isLoggedIn()) {
-      this.notifyComingSoon('Cart');
+      void this.router.navigate(['/cart']);
       return;
     }
     void this.router.navigate(['/login'], {
@@ -158,6 +173,27 @@ export class Shop implements OnInit {
       duration: 4000,
       horizontalPosition: 'end',
       panelClass: ['hb-info-snackbar'],
+      verticalPosition: 'top',
+    });
+  }
+
+  private notifyAddedToCart(productName: string): void {
+    this.snackBar
+      .open(`Added '${productName}' to your cart.`, 'View cart', {
+        duration: 4000,
+        horizontalPosition: 'end',
+        panelClass: ['hb-info-snackbar'],
+        verticalPosition: 'top',
+      })
+      .onAction()
+      .subscribe(() => void this.router.navigate(['/cart']));
+  }
+
+  private notifyCartError(message?: string): void {
+    this.snackBar.open(message ?? 'Could not add this item to your cart.', 'Close', {
+      duration: 5000,
+      horizontalPosition: 'end',
+      panelClass: ['hb-error-snackbar'],
       verticalPosition: 'top',
     });
   }

@@ -82,6 +82,24 @@
   }
 }
 
+.radial-nav__badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--hb-secondary);
+  color: var(--hb-on-primary);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 /* Labels */
 .radial-nav__label {
   position: absolute;

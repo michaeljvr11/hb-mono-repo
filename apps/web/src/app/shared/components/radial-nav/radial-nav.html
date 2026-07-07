@@ -48,6 +48,9 @@
           class="material-symbols-outlined"
           [style.font-variation-settings]="isActive(item.id) ? &quot;'FILL' 1&quot; : &quot;'FILL' 0&quot;"
         >{{ item.icon }}</span>
+        @if (item.id === 'cart' && cartCount() > 0) {
+          <span class="radial-nav__badge" aria-label="Items in cart">{{ cartCount() }}</span>
+        }
       </button>
     }
   }

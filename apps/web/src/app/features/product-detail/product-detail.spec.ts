@@ -1,10 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
-import type { AuthUser, UserDto } from '@hb/shared';
+import type { AuthUser, CartDto, UserDto } from '@hb/shared';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   CountryCode,
@@ -15,7 +16,10 @@ import {
 
 import { ProductDetail } from './product-detail';
 import { ProductsService } from '../../core/api/products.service';
+import { CartService } from '../../core/api/cart.service';
 import { AuthService } from '../../core/auth/auth.service';
+
+const EMPTY_CART: CartDto = { id: 'cart-1', items: [], totals: [], itemCount: 0, updatedAt: '' };
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
 
@@ -71,7 +75,14 @@ interface AuthStub {
   currentUser$: BehaviorSubject<AuthUser | UserDto | null>;
 }
 
-function makeStubs(): { productsStub: ProductsStub; authStub: AuthStub } {
+interface CartStub {
+  addItem: ReturnType<typeof vi.fn>;
+  load: ReturnType<typeof vi.fn>;
+  cart: ReturnType<typeof signal<CartDto | null>>;
+  itemCount: ReturnType<typeof signal<number>>;
+}
+
+function makeStubs(): { productsStub: ProductsStub; authStub: AuthStub; cartStub: CartStub } {
   return {
     productsStub: {
       getById: vi.fn(() => of(HONEY)),
@@ -81,12 +92,19 @@ function makeStubs(): { productsStub: ProductsStub; authStub: AuthStub } {
       isLoggedIn: vi.fn(() => false),
       currentUser$: new BehaviorSubject<AuthUser | UserDto | null>(null),
     },
+    cartStub: {
+      addItem: vi.fn(() => of(EMPTY_CART)),
+      load: vi.fn(() => of(EMPTY_CART)),
+      cart: signal<CartDto | null>(null),
+      itemCount: signal(0),
+    },
   };
 }
 
 async function setupTestBed(
   productsStub: ProductsStub,
   authStub: AuthStub,
+  cartStub: CartStub,
   paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>,
 ): Promise<void> {
   return TestBed.configureTestingModule({
@@ -98,6 +116,7 @@ async function setupTestBed(
       provideRouter([]),
       { provide: ProductsService, useValue: productsStub },
       { provide: AuthService, useValue: authStub },
+      { provide: CartService, useValue: cartStub },
       {
         provide: ActivatedRoute,
         useValue: { paramMap: paramMap$ },
@@ -114,13 +133,14 @@ describe('ProductDetail', () => {
   let router: Router;
   let productsStub: ProductsStub;
   let authStub: AuthStub;
+  let cartStub: CartStub;
   let paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   beforeEach(async () => {
-    ({ productsStub, authStub } = makeStubs());
+    ({ productsStub, authStub, cartStub } = makeStubs());
     paramMap$ = new BehaviorSubject(convertToParamMap({ id: 'p1' }));
 
-    await setupTestBed(productsStub, authStub, paramMap$);
+    await setupTestBed(productsStub, authStub, cartStub, paramMap$);
 
     fixture = TestBed.createComponent(ProductDetail);
     component = fixture.componentInstance;
@@ -231,13 +251,31 @@ describe('ProductDetail', () => {
     });
   });
 
-  it('authenticated add-to-cart does not navigate (shows a coming-soon snackbar instead)', () => {
+  it('authenticated add-to-cart calls the cart API with the product id', () => {
     authStub.isLoggedIn.mockReturnValue(true);
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     component.onAddToCart();
 
+    expect(cartStub.addItem).toHaveBeenCalledWith('p1');
     expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it('related-product add-to-cart adds that product, not the page product', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+
+    component.onRelatedAddToCart(RELATED_SAME_CATEGORY);
+
+    expect(cartStub.addItem).toHaveBeenCalledWith('p2');
+  });
+
+  it('surfaces the API error message when add-to-cart fails', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+    cartStub.addItem.mockReturnValue(
+      throwError(() => ({ status: 409, error: { message: 'out of stock' } })),
+    );
+
+    expect(() => component.onAddToCart()).not.toThrow();
   });
 
   it('viewStorefront navigates to /discover with the vendor id as a query param', () => {

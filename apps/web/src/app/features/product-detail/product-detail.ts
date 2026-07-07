@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { switchMap } from 'rxjs';
 import { ProductDto } from '@hb/shared';
 import { AuthService } from '../../core/auth/auth.service';
+import { CartService } from '../../core/api/cart.service';
 import { ProductsService } from '../../core/api/products.service';
 import { formatPrice } from '../../shared/format-price';
 import { Footer } from '../../layout/footer/footer';
@@ -42,8 +43,12 @@ export class ProductDetail {
   private readonly location = inject(Location);
   private readonly productsService = inject(ProductsService);
   private readonly authService = inject(AuthService);
+  private readonly cartService = inject(CartService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly platformId = inject(PLATFORM_ID);
+
+  /** Real cart count for the radial-nav badge. */
+  readonly cartCount = this.cartService.itemCount;
 
   private readonly productId = toSignal(
     this.route.paramMap.pipe(switchMap((params) => [params.get('id')])),
@@ -161,21 +166,46 @@ export class ProductDetail {
   }
 
   onAddToCart(): void {
+    const product = this.product();
+    if (!product) return;
+    this.addProductToCart(product);
+  }
+
+  onRelatedAddToCart(product: ProductDto): void {
+    this.addProductToCart(product);
+  }
+
+  private addProductToCart(product: ProductDto): void {
     if (!this.authService.isLoggedIn()) {
       void this.router.navigate(['/login'], {
         queryParams: { returnUrl: this.router.url },
       });
       return;
     }
-    this.snackBar.open('Cart is coming soon.', 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
+    this.cartService.addItem(product.id).subscribe({
+      next: () => {
+        this.snackBar
+          .open(`Added '${product.name}' to your cart.`, 'View cart', {
+            duration: 4000,
+            horizontalPosition: 'end',
+            panelClass: ['hb-info-snackbar'],
+            verticalPosition: 'top',
+          })
+          .onAction()
+          .subscribe(() => void this.router.navigate(['/cart']));
+      },
+      error: (err: { error?: { message?: string } }) => {
+        this.snackBar.open(
+          err?.error?.message ?? 'Could not add this item to your cart.',
+          'Close',
+          {
+            duration: 5000,
+            horizontalPosition: 'end',
+            panelClass: ['hb-error-snackbar'],
+            verticalPosition: 'top',
+          },
+        );
+      },
     });
-  }
-
-  onRelatedAddToCart(_product: ProductDto): void {
-    this.onAddToCart();
   }
 }

@@ -67,6 +67,9 @@
       >
         <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
         <span class="nav-bar__cart-label">Cart</span>
+        @if (cartCount() > 0) {
+          <span class="nav-bar__cart-badge" aria-label="Items in cart">{{ cartCount() }}</span>
+        }
       </button>
 
       <!-- Auth controls: sign-in (anonymous) or account + sign-out (authenticated) -->

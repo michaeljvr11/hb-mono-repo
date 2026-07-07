@@ -195,4 +195,4 @@
 <app-footer />
 
 <!-- ── Mobile-only: radial nav ─────────────────────────────────────────── -->
-<app-radial-nav active="home" (itemSelected)="onRadialNavSelect($event)" />
+<app-radial-nav active="home" [cartCount]="cartCount()" (itemSelected)="onRadialNavSelect($event)" />

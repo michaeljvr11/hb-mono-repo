@@ -1,5 +1,20 @@
 import { CountryCode, CurrencyCode, ListingType, OrderStatus } from '../enums';
-import { AddressDto } from './address';
+import { AddressDto, CreateAddressRequest } from './address';
+
+/**
+ * Checkout submission. The order's lines come from the caller's server-side
+ * cart; totals are ALWAYS computed server-side from live product prices —
+ * a client-submitted total is never accepted.
+ */
+export interface CreateOrderRequest {
+  shippingAddress: CreateAddressRequest;
+}
+
+/** Body for PATCH /orders/:id/status. Every transition is validated in the
+ *  service layer against the Order State Machine — no direct status writes. */
+export interface UpdateOrderStatusRequest {
+  status: OrderStatus;
+}
 
 /** One row in the admin order-oversight list (summary, not full detail). */
 export interface AdminOrderListItemDto {

@@ -9,6 +9,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/auth/auth.service';
+import { CartService } from '../../core/api/cart.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -19,6 +20,7 @@ import { AuthService } from '../../core/auth/auth.service';
 export class NavBar {
   private readonly snackBar = inject(MatSnackBar);
   private readonly authService = inject(AuthService);
+  private readonly cartService = inject(CartService);
   private readonly router = inject(Router);
 
   // Raw signal from the auth observable — always starts null (safe for SSR).
@@ -39,8 +41,19 @@ export class NavBar {
     return u ? (u.firstName?.trim() || u.email || '') : '';
   });
 
+  // Real cart badge count — 0 until hydration + first cart load, so the
+  // server render and initial client render always match.
+  readonly cartCount = computed(() => (this.hydrated() ? this.cartService.itemCount() : 0));
+
   constructor() {
-    afterNextRender(() => this.hydrated.set(true));
+    afterNextRender(() => {
+      this.hydrated.set(true);
+      // Prime the badge once per page load for signed-in users; add/update
+      // actions elsewhere keep the shared CartService signal fresh.
+      if (this.authService.isLoggedIn() && this.cartService.cart() === null) {
+        this.cartService.load().subscribe({ error: () => undefined });
+      }
+    });
   }
 
   notifyComingSoon(feature: string): void {
@@ -58,7 +71,7 @@ export class NavBar {
 
   onCartClick(): void {
     if (this.isAuthenticated()) {
-      this.notifyComingSoon('Cart');
+      void this.router.navigate(['/cart']);
       return;
     }
     void this.router.navigate(['/login'], {
