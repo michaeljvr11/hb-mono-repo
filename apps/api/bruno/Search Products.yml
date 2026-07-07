@@ -1,0 +1,15 @@
+info:
+  name: Search Products
+  type: http
+  seq: 20
+
+http:
+  method: GET
+  url: "{{baseurl}}:{{hb_backend}}/search?q=serum&categoryId=&vendorId=&minPrice=0&maxPrice=1000&inStockOnly=true&page=1&pageSize=20&sort=relevance"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

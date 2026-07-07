@@ -1,0 +1,15 @@
+info:
+  name: Search Suggest
+  type: http
+  seq: 21
+
+http:
+  method: GET
+  url: "{{baseurl}}:{{hb_backend}}/search/suggest?q=serum"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
