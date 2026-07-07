@@ -1,11 +1,11 @@
-<app-nav-bar />
+﻿<app-nav-bar />
 
 <main class="pdp" aria-label="Product detail">
 
   @if (state() === 'loading') {
     <div class="state-message" role="status" aria-live="polite">
       <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
-      <p>Loading product…</p>
+      <p>Loading productâ€¦</p>
     </div>
   } @else if (state() === 'not-found') {
     <div class="state-message" role="status">
@@ -20,14 +20,14 @@
       <a class="pdp__back-link" routerLink="/discover">Back to shop</a>
     </div>
   } @else if (product(); as product) {
-    <!-- ── Back header ─────────────────────────────────────────────────── -->
+    <!-- â”€â”€ Back header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <div class="pdp__header">
       <button type="button" class="pdp__back-btn" aria-label="Go back" (click)="goBack()">
         <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
       </button>
     </div>
 
-    <!-- ── Hero image gallery ──────────────────────────────────────────── -->
+    <!-- â”€â”€ Hero image gallery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="pdp__hero">
       @if (activeImage(); as img) {
         <img class="pdp__hero-image" [src]="img.url" [alt]="img.altText ?? product.name" />
@@ -55,13 +55,13 @@
       }
     </section>
 
-    <!-- ── Product header & pricing ────────────────────────────────────── -->
+    <!-- â”€â”€ Product header & pricing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="pdp__section">
       <h1 class="pdp__title">{{ product.name }}</h1>
       <p class="pdp__price">{{ priceLabel() }}</p>
     </section>
 
-    <!-- ── Cross-border shipping info (static per design) ──────────────── -->
+    <!-- â”€â”€ Cross-border shipping info (static per design) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="pdp__section">
       <div class="pdp__shipping-card">
         <div class="pdp__shipping-heading">
@@ -94,7 +94,7 @@
       </div>
     </section>
 
-    <!-- ── Description ──────────────────────────────────────────────────── -->
+    <!-- â”€â”€ Description â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="pdp__section">
       <h2 class="pdp__section-title">Description</h2>
       <div class="pdp__description">
@@ -106,7 +106,7 @@
       </div>
     </section>
 
-    <!-- ── Vendor card ──────────────────────────────────────────────────── -->
+    <!-- â”€â”€ Vendor card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     @if (product.vendor; as vendor) {
       <section class="pdp__section">
         <div class="pdp__vendor-card">
@@ -128,7 +128,7 @@
       </section>
     }
 
-    <!-- ── You May Also Like ───────────────────────────────────────────── -->
+    <!-- â”€â”€ You May Also Like â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     @if (relatedProducts().length) {
       <section class="pdp__section">
         <h2 class="pdp__section-title">You May Also Like</h2>
@@ -140,7 +140,7 @@
       </section>
     }
 
-    <!-- ── Sticky add-to-cart bar ───────────────────────────────────────── -->
+    <!-- â”€â”€ Sticky add-to-cart bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <div class="pdp__sticky-bar">
       <button type="button" class="pdp__add-to-cart-btn" (click)="onAddToCart()">
         <span class="material-symbols-outlined" aria-hidden="true">add_shopping_cart</span>
@@ -153,4 +153,4 @@
 
 <app-footer />
 
-<app-radial-nav active="search" />
+<app-radial-nav active="search" [cartCount]="cartCount()" />

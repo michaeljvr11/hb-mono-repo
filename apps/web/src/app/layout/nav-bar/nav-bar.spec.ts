@@ -1,18 +1,31 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { vi } from 'vitest';
-import { AuthUser, UserDto, UserRole } from '@hb/shared';
+import { AuthUser, CartDto, UserDto, UserRole } from '@hb/shared';
 
 import { NavBar } from './nav-bar';
 import { AuthService } from '../../core/auth/auth.service';
+import { CartService } from '../../core/api/cart.service';
 
 describe('NavBar', () => {
   let component: NavBar;
   let fixture: ComponentFixture<NavBar>;
   let userSubject: BehaviorSubject<AuthUser | UserDto | null>;
-  let authStub: { currentUser$: BehaviorSubject<AuthUser | UserDto | null>; logout: ReturnType<typeof vi.fn> };
+  let authStub: {
+    currentUser$: BehaviorSubject<AuthUser | UserDto | null>;
+    logout: ReturnType<typeof vi.fn>;
+    isLoggedIn: ReturnType<typeof vi.fn>;
+  };
+  let cartSignal: ReturnType<typeof signal<CartDto | null>>;
+  let countSignal: ReturnType<typeof signal<number>>;
+  let cartStub: {
+    cart: ReturnType<typeof signal<CartDto | null>>;
+    itemCount: ReturnType<typeof signal<number>>;
+    load: ReturnType<typeof vi.fn>;
+  };
 
   const jane: AuthUser = {
     id: '1',
@@ -32,7 +45,18 @@ describe('NavBar', () => {
 
   beforeEach(async () => {
     userSubject = new BehaviorSubject<AuthUser | UserDto | null>(null);
-    authStub = { currentUser$: userSubject, logout: vi.fn() };
+    authStub = {
+      currentUser$: userSubject,
+      logout: vi.fn(),
+      isLoggedIn: vi.fn().mockReturnValue(false),
+    };
+    cartSignal = signal<CartDto | null>(null);
+    countSignal = signal(0);
+    cartStub = {
+      cart: cartSignal,
+      itemCount: countSignal,
+      load: vi.fn(() => of({ id: 'c1', items: [], totals: [], itemCount: 0, updatedAt: '' })),
+    };
 
     await TestBed.configureTestingModule({
       imports: [NavBar],
@@ -40,6 +64,7 @@ describe('NavBar', () => {
         provideNoopAnimations(),
         provideRouter([]),
         { provide: AuthService, useValue: authStub },
+        { provide: CartService, useValue: cartStub },
       ],
     }).compileComponents();
 
@@ -131,7 +156,7 @@ describe('NavBar', () => {
     });
   });
 
-  it('does not navigate on cart click when authenticated', async () => {
+  it('navigates to /cart on cart click when authenticated', async () => {
     userSubject.next(jane);
     await hydrate();
     const router = TestBed.inject(Router);
@@ -139,7 +164,34 @@ describe('NavBar', () => {
 
     component.onCartClick();
 
-    expect(navigate).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith(['/cart']);
+  });
+
+  it('shows the real cart item count as a badge once hydrated', async () => {
+    countSignal.set(3);
+    await hydrate();
+
+    const badge = fixture.nativeElement.querySelector('.nav-bar__cart-badge');
+    expect(badge).toBeTruthy();
+    expect(badge?.textContent?.trim()).toBe('3');
+  });
+
+  it('hides the badge when the cart is empty', async () => {
+    countSignal.set(0);
+    await hydrate();
+
+    expect(fixture.nativeElement.querySelector('.nav-bar__cart-badge')).toBeNull();
+  });
+
+  it('primes the cart state for signed-in users on first client render', async () => {
+    // afterNextRender already ran for the shared fixture (anonymous), so
+    // create a fresh NavBar with the signed-in stub in place.
+    authStub.isLoggedIn.mockReturnValue(true);
+    const signedInFixture = TestBed.createComponent(NavBar);
+    signedInFixture.detectChanges();
+    await signedInFixture.whenStable();
+
+    expect(cartStub.load).toHaveBeenCalledTimes(1);
   });
 
   it('navigates to /discover when the search icon is clicked', async () => {

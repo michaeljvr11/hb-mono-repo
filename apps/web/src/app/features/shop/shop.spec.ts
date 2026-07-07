@@ -224,7 +224,7 @@ describe('Shop', () => {
     expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: router.url } });
   });
 
-  it('does not navigate for the radial nav cart item when authenticated', () => {
+  it('navigates to /cart for the radial nav cart item when authenticated', () => {
     flushLoads();
     fixture.detectChanges();
     authStub.isLoggedIn.mockReturnValue(true);
@@ -233,7 +233,62 @@ describe('Shop', () => {
 
     component.onRadialNavSelect('cart');
 
-    expect(navigate).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith(['/cart']);
+  });
+
+  // ── Add to cart ─────────────────────────────────────────────────────────
+
+  it('routes anonymous add-to-cart to /login with the current returnUrl', () => {
+    flushLoads();
+    fixture.detectChanges();
+    authStub.isLoggedIn.mockReturnValue(false);
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onAddToCart(products[0]);
+
+    expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: router.url } });
+  });
+
+  it('authenticated add-to-cart POSTs to the cart API and confirms via snackbar', () => {
+    flushLoads();
+    fixture.detectChanges();
+    authStub.isLoggedIn.mockReturnValue(true);
+    const snackBar = fixture.debugElement.injector.get(MatSnackBar);
+    const openSpy = vi.spyOn(snackBar, 'open');
+
+    component.onAddToCart(products[0]);
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/cart/items`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ productId: 'p1', quantity: 1 });
+    req.flush({ id: 'cart-1', items: [], totals: [], itemCount: 1, updatedAt: '' });
+
+    expect(openSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Organic Dried Fruit Hamper'),
+      'View cart',
+      expect.anything(),
+    );
+  });
+
+  it('surfaces the API error message when add-to-cart fails', () => {
+    flushLoads();
+    fixture.detectChanges();
+    authStub.isLoggedIn.mockReturnValue(true);
+    const snackBar = fixture.debugElement.injector.get(MatSnackBar);
+    const openSpy = vi.spyOn(snackBar, 'open');
+
+    component.onAddToCart(products[0]);
+
+    httpMock
+      .expectOne(`${environment.apiBaseUrl}/cart/items`)
+      .flush({ message: "'Organic Dried Fruit Hamper' is out of stock" }, { status: 409, statusText: 'Conflict' });
+
+    expect(openSpy).toHaveBeenCalledWith(
+      expect.stringContaining('out of stock'),
+      'Close',
+      expect.anything(),
+    );
   });
 
   it('shows a coming-soon notice for orders/profile/wishlist radial nav items', () => {

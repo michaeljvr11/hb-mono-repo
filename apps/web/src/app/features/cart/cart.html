@@ -1,0 +1,105 @@
+<app-nav-bar />
+
+<main class="cart">
+  <h1 class="cart__title">Your Cart</h1>
+
+  @switch (state()) {
+    @case ('loading') {
+      <p class="cart__hint">Loading your cart…</p>
+    }
+    @case ('error') {
+      <p class="cart__hint cart__hint--error">Could not load your cart right now. Please try again.</p>
+    }
+    @case ('loaded') {
+      @if (isEmpty()) {
+        <div class="cart__empty">
+          <span class="material-symbols-outlined cart__empty-icon" aria-hidden="true">shopping_cart</span>
+          <h2 class="cart__empty-title">Your cart is empty</h2>
+          <p class="cart__empty-text">Fresh cross-border finds from ZA are a click away.</p>
+          <a class="cart__empty-cta" routerLink="/discover">Browse products</a>
+        </div>
+      } @else {
+        <div class="cart__layout">
+          <ul class="cart__items">
+            @for (item of items(); track item.id) {
+              <li class="cart__item" [class.cart__item--busy]="busyItemId() === item.id">
+                @if (item.imageUrl) {
+                  <img class="cart__item-image" [src]="item.imageUrl" [alt]="item.productName" />
+                } @else {
+                  <div class="cart__item-image cart__item-image--placeholder" aria-hidden="true">
+                    <span class="material-symbols-outlined">image</span>
+                  </div>
+                }
+
+                <div class="cart__item-body">
+                  <a class="cart__item-name" [routerLink]="['/products', item.productId]">{{ item.productName }}</a>
+                  <span class="cart__item-unit">{{ format(item.unitPrice, item.currency) }} each</span>
+
+                  @if (item.quantity >= item.stockQuantity) {
+                    <span class="cart__item-stock">Only {{ item.stockQuantity }} in stock</span>
+                  }
+
+                  <div class="cart__item-controls">
+                    <div class="cart__stepper" role="group" [attr.aria-label]="'Quantity for ' + item.productName">
+                      <button
+                        type="button"
+                        class="cart__stepper-btn"
+                        [disabled]="item.quantity <= 1 || busyItemId() === item.id"
+                        (click)="decrement(item)"
+                        aria-label="Decrease quantity"
+                      >
+                        <span class="material-symbols-outlined" aria-hidden="true">remove</span>
+                      </button>
+                      <span class="cart__stepper-qty" aria-live="polite">{{ item.quantity }}</span>
+                      <button
+                        type="button"
+                        class="cart__stepper-btn"
+                        [disabled]="item.quantity >= item.stockQuantity || busyItemId() === item.id"
+                        (click)="increment(item)"
+                        aria-label="Increase quantity"
+                      >
+                        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="cart__remove-btn"
+                      [disabled]="busyItemId() === item.id"
+                      (click)="remove(item)"
+                      [attr.aria-label]="'Remove ' + item.productName + ' from cart'"
+                    >
+                      <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+
+                <span class="cart__item-total">{{ format(item.lineTotal, item.currency) }}</span>
+              </li>
+            }
+          </ul>
+
+          <aside class="cart__summary">
+            <h2 class="cart__summary-title">Summary</h2>
+            @for (total of totals(); track total.currency) {
+              <div class="cart__summary-row">
+                <span>Subtotal ({{ total.currency }})</span>
+                <span class="cart__summary-amount">{{ format(total.subtotal, total.currency) }}</span>
+              </div>
+            }
+            <p class="cart__summary-note">
+              Shipping and the final total are confirmed at checkout. 1:1 regional parity guaranteed (ZAR/NAD).
+            </p>
+            <button type="button" class="cart__checkout-btn" (click)="goToCheckout()">
+              Proceed to Checkout
+              <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+            </button>
+          </aside>
+        </div>
+      }
+    }
+  }
+</main>
+
+<app-footer />

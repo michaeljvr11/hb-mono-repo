@@ -168,6 +168,7 @@
 }
 
 .nav-bar__cart-btn {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -187,6 +188,24 @@
   &:hover {
     background: var(--hb-surface-container-low);
   }
+}
+
+.nav-bar__cart-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .nav-bar__cart-label {

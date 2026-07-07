@@ -49,6 +49,9 @@ interface PositionedItem extends RadialNavItem {
 export class RadialNav {
   readonly active = input<RadialNavItemId>('home');
 
+  /** Real cart item count — shows a badge on the cart item when > 0. */
+  readonly cartCount = input(0);
+
   readonly itemSelected = output<RadialNavItemId>();
 
   readonly open = signal(false);

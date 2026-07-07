@@ -1,11 +1,11 @@
-<app-nav-bar />
+﻿<app-nav-bar />
 
 <main class="discover" aria-label="Product discovery">
 
-  <!-- ── Search & filters ──────────────────────────────────────────────── -->
+  <!-- â”€â”€ Search & filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <section class="discover__controls">
     <app-search-bar
-      placeholder="Search for regional products…"
+      placeholder="Search for regional productsâ€¦"
       [value]="q()"
       [suggestions]="suggestionGroups()"
       [loading]="suggestLoading()"
@@ -56,12 +56,12 @@
     }
   </section>
 
-  <!-- ── Product grid ──────────────────────────────────────────────────── -->
+  <!-- â”€â”€ Product grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <section class="discover__grid-section">
     @if (productsState() === 'loading') {
       <div class="state-message" role="status" aria-live="polite">
         <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
-        <p>Loading products…</p>
+        <p>Loading productsâ€¦</p>
       </div>
     } @else if (productsState() === 'error') {
       <div class="state-message state-message--error" role="alert">
@@ -85,7 +85,7 @@
     }
   </section>
 
-  <!-- ── Regional Logistics Banner ─────────────────────────────────────── -->
+  <!-- â”€â”€ Regional Logistics Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <section class="discover__logistics-banner">
     <div class="discover__logistics-copy">
       <h4 class="discover__logistics-title">Seamless Cross-Border Shipping</h4>
@@ -108,4 +108,4 @@
 
 <app-footer />
 
-<app-radial-nav active="search" />
+<app-radial-nav active="search" [cartCount]="cartCount()" />

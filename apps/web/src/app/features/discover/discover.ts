@@ -1,8 +1,11 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CategoryDto, ProductDto, SearchSuggestions, VendorDto } from '@hb/shared';
+import { AuthService } from '../../core/auth/auth.service';
 import { ProductsService } from '../../core/api/products.service';
+import { CartService } from '../../core/api/cart.service';
 import { CategoriesService } from '../../core/api/categories.service';
 import { VendorsService } from '../../core/api/vendors.service';
 import { SearchService } from '../../core/api/search.service';
@@ -26,7 +29,7 @@ type LoadState = 'loading' | 'loaded' | 'empty' | 'error';
  */
 @Component({
   selector: 'app-discover',
-  imports: [NavBar, Footer, ProductCard, CategoryChips, SearchBar, RadialNav],
+  imports: [NavBar, Footer, MatSnackBarModule, ProductCard, CategoryChips, SearchBar, RadialNav],
   templateUrl: './discover.html',
   styleUrl: './discover.scss',
 })
@@ -37,6 +40,12 @@ export class Discover {
   private readonly categoriesService = inject(CategoriesService);
   private readonly vendorsService = inject(VendorsService);
   private readonly searchService = inject(SearchService);
+  private readonly authService = inject(AuthService);
+  private readonly cartService = inject(CartService);
+  private readonly snackBar = inject(MatSnackBar);
+
+  /** Real cart count for the radial-nav badge. */
+  readonly cartCount = this.cartService.itemCount;
 
   // ── URL-driven params (single source of truth) ─────────────────────────
   private readonly paramMap = toSignal<ParamMap | null>(this.route.queryParamMap, {
@@ -187,8 +196,38 @@ export class Discover {
     }
   }
 
-  onAddToCart(_product: ProductDto): void {
-    // Cart wiring is out of scope for discovery — handled at PDP/cart level.
+  onAddToCart(product: ProductDto): void {
+    if (!this.authService.isLoggedIn()) {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url },
+      });
+      return;
+    }
+    this.cartService.addItem(product.id).subscribe({
+      next: () => {
+        this.snackBar
+          .open(`Added '${product.name}' to your cart.`, 'View cart', {
+            duration: 4000,
+            horizontalPosition: 'end',
+            panelClass: ['hb-info-snackbar'],
+            verticalPosition: 'top',
+          })
+          .onAction()
+          .subscribe(() => void this.router.navigate(['/cart']));
+      },
+      error: (err: { error?: { message?: string } }) => {
+        this.snackBar.open(
+          err?.error?.message ?? 'Could not add this item to your cart.',
+          'Close',
+          {
+            duration: 5000,
+            horizontalPosition: 'end',
+            panelClass: ['hb-error-snackbar'],
+            verticalPosition: 'top',
+          },
+        );
+      },
+    });
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
