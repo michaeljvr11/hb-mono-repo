@@ -7,6 +7,10 @@ export const serverRoutes: ServerRoute[] = [
   // Product discovery + detail are public catalogue pages — same SSR treatment.
   { path: 'discover', renderMode: RenderMode.Server },
   { path: 'products/:id', renderMode: RenderMode.Server },
+  // Cart & checkout are authed pages — same localStorage-guard constraint as
+  // the portals below, so they render client-side.
+  { path: 'cart', renderMode: RenderMode.Client },
+  { path: 'checkout', renderMode: RenderMode.Client },
   // Admin & vendor portals stay client-rendered: their route guards depend on
   // localStorage (absent on the server), so SSR would always redirect to /login.
   { path: 'admin', renderMode: RenderMode.Client },

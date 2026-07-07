@@ -50,35 +50,18 @@ export const routes: Routes = [
     loadComponent: () => import('./features/product-detail/product-detail').then(m => m.ProductDetail)
   },
 
-
-  // Protected routes (require login)
-  // {
-  //   path: '',
-  //   canActivate: [authGuard],
-  //   children: [
-  //     {
-  //       path: '',
-  //       redirectTo: 'shop',
-  //       pathMatch: 'full'
-  //     },
-  //     {
-  //       path: 'shop',
-  //       loadComponent: () => import('./features/shop/shop.component').then(m => m.ShopComponent)
-  //     },
-  //     {
-  //       path: 'cart',
-  //       loadComponent: () => import('./features/cart/cart.component').then(m => m.CartComponent)
-  //     },
-  //     {
-  //       path: 'checkout',
-  //       loadComponent: () => import('./features/checkout/checkout.component').then(m => m.CheckoutComponent)
-  //     },
-  //     {
-  //       path: 'account',
-  //       loadComponent: () => import('./features/account/account.component').then(m => m.AccountComponent)
-  //     }
-  //   ]
-  // },
+  // Cart & checkout — the auth boundary of the storefront. Anonymous visits
+  // bounce to /login with a returnUrl (authGuard) and come straight back.
+  {
+    path: 'cart',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/cart/cart').then(m => m.Cart)
+  },
+  {
+    path: 'checkout',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/checkout/checkout').then(m => m.Checkout)
+  },
 
   // Vendor onboarding — auth-only (no roleGuard); must be before the role-gated 'vendor' block
   {
