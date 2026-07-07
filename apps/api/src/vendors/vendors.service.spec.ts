@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CurrencyCode, VendorStatus, UserRole, CountryCode } from '@hb/shared';
 import { VendorsService } from './vendors.service';
@@ -55,6 +56,7 @@ describe('VendorsService', () => {
   let orderItemRepo: Record<string, jest.Mock>;
   let usersService: { update: jest.Mock };
   let auditService: { log: jest.Mock; query: jest.Mock };
+  let eventEmitter: { emit: jest.Mock };
 
   beforeEach(async () => {
     vendorRepo = {
@@ -73,6 +75,8 @@ describe('VendorsService', () => {
 
     auditService = { log: jest.fn().mockResolvedValue(undefined), query: jest.fn() };
 
+    eventEmitter = { emit: jest.fn() };
+
     const module = await Test.createTestingModule({
       providers: [
         VendorsService,
@@ -81,6 +85,7 @@ describe('VendorsService', () => {
         { provide: getRepositoryToken(OrderItem), useValue: orderItemRepo },
         { provide: UsersService, useValue: usersService },
         { provide: AuditService, useValue: auditService },
+        { provide: EventEmitter2, useValue: eventEmitter },
       ],
     }).compile();
 

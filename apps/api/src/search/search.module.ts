@@ -4,6 +4,8 @@ import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
 import { meilisearchClientProvider } from './meilisearch.provider';
 import { SearchHealthService } from './search-health.service';
+import { SearchSettingsService } from './search-settings.service';
+import { SearchIndexerService } from './search-indexer.service';
 import { Product } from '../products/entities/product.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
 import { Category } from '../categories/entities/category.entity';
@@ -11,6 +13,13 @@ import { Category } from '../categories/entities/category.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([Product, Vendor, Category])],
   controllers: [SearchController],
-  providers: [SearchService, meilisearchClientProvider, SearchHealthService],
+  providers: [
+    SearchService,
+    meilisearchClientProvider,
+    SearchHealthService,
+    SearchSettingsService,
+    SearchIndexerService,
+  ],
+  exports: [SearchIndexerService],
 })
 export class SearchModule {}

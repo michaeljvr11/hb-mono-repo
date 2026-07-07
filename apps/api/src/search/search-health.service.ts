@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Meilisearch } from 'meilisearch';
+import type { Meilisearch } from 'meilisearch';
 import { MEILI_CLIENT } from './search.constants';
 
 /**
