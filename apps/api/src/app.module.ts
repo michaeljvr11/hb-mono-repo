@@ -3,6 +3,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { buildTypeOrmOptions } from './config/typeorm.config';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
@@ -24,6 +26,11 @@ import { SearchModule } from './search/search.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    // Search-index sync (card #47): in-process EventEmitter2 for product/vendor
+    // write events, @nestjs/schedule for the daily full reindex cron. No
+    // durable queue in v1 — see the "Product Search Engine" Obsidian spec.
+    EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     // Global rate limiting (see docs/security H1). Default bucket is generous;
     // sensitive auth routes tighten it with @Throttle. In-memory store is fine for
     // a single instance — move to a shared store (e.g. Redis) when scaling out.

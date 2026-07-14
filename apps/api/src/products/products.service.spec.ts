@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NotFoundException } from '@nestjs/common';
 import { Brackets } from 'typeorm';
 import { CurrencyCode, CountryCode, ListingType, VendorStatus } from '@hb/shared';
@@ -380,6 +381,7 @@ describe('ProductsService', () => {
           provide: AuditService,
           useValue: { log: jest.fn().mockResolvedValue(undefined) },
         },
+        { provide: EventEmitter2, useValue: { emit: jest.fn() } },
       ],
     }).compile();
 

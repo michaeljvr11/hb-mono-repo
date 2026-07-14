@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Repository } from 'typeorm';
 import { CurrencyCode, OrderStatus, VendorStatus, UserRole } from '@hb/shared';
 import { Vendor } from './entities/vendor.entity';
@@ -19,6 +20,7 @@ import { VendorDashboardResponseDto } from './dto/vendor-dashboard-response.dto'
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { AuditAction, AuditService } from '../audit/audit.service';
+import { VendorEvents } from '../common/events/domain-events';
 
 @Injectable()
 export class VendorsService {
@@ -31,6 +33,7 @@ export class VendorsService {
     private orderItemRepository: Repository<OrderItem>,
     private usersService: UsersService,
     private auditService: AuditService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   private toResponseDto(vendor: Vendor): VendorResponseDto {
@@ -135,6 +138,10 @@ export class VendorsService {
       entityId: id,
       metadata: { from: previousStatus, to: newStatus },
     });
+
+    // Reconciles vendorStatus on every one of this vendor's indexed product
+    // documents (query-time visibility filter reads this field live).
+    this.eventEmitter.emit(VendorEvents.STATUS_CHANGED, { vendorId: id, status: newStatus });
 
     return this.toResponseDto(updated);
   }

@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Brackets, In, Repository } from 'typeorm';
 import { ListingType, ProductDto, ProductQuery, UserRole, VendorStatus } from '@hb/shared';
 import { Product } from './entities/product.entity';
@@ -18,6 +19,7 @@ import { User } from '../users/entities/user.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
 import { Category } from '../categories/entities/category.entity';
 import { AuditAction, AuditService } from '../audit/audit.service';
+import { ProductEvents } from '../common/events/domain-events';
 
 @Injectable()
 export class ProductsService {
@@ -32,6 +34,7 @@ export class ProductsService {
     private categoryRepository: Repository<Category>,
     private fileUrlService: FileUrlService,
     private auditService: AuditService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async create(
@@ -112,6 +115,9 @@ export class ProductsService {
         entityType: 'product',
         entityId: product.id,
       });
+      // Emitted last, once the product (and any relations) are fully
+      // persisted — the search indexer refetches by id on receipt.
+      this.eventEmitter.emit(ProductEvents.CREATED, { productId: product.id });
       return created;
     }
 
@@ -136,6 +142,9 @@ export class ProductsService {
       entityType: 'product',
       entityId: product.id,
     });
+    // Emitted after images are attached so the indexed document has its
+    // primary image on the very first upsert.
+    this.eventEmitter.emit(ProductEvents.CREATED, { productId: product.id });
     return created;
   }
 
@@ -274,6 +283,7 @@ export class ProductsService {
       entityType: 'product',
       entityId: productId,
     });
+    this.eventEmitter.emit(ProductEvents.UPDATED, { productId: updated.id });
     return this.findOne(updated.id);
   }
 
@@ -300,6 +310,7 @@ export class ProductsService {
       entityType: 'product',
       entityId: id,
     });
+    this.eventEmitter.emit(ProductEvents.DELETED, { productId: id });
   }
 
   private ensureCanManageProduct(product: Product, currentUser: User): void {
