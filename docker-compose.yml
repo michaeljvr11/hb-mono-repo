@@ -31,8 +31,11 @@ services:
       # (index is derived from Postgres, but persistence avoids a cold reindex).
       - meilidata:/meili_data
     healthcheck:
-      # Image is Alpine-based: busybox wget is available, curl is not.
-      test: ['CMD-SHELL', 'wget --no-verbose --spider http://localhost:7700/health || exit 1']
+      # Image is Alpine-based: busybox wget is available, curl is not. Use
+      # 127.0.0.1, not localhost — busybox wget resolves localhost to ::1
+      # first, and the server only binds 0.0.0.0, so it reports unhealthy
+      # forever on hosts without container IPv6 loopback (verified on this repo).
+      test: ['CMD-SHELL', 'wget --no-verbose --spider http://127.0.0.1:7700/health || exit 1']
       interval: 5s
       timeout: 5s
       retries: 5

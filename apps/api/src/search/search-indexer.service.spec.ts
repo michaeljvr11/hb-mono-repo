@@ -89,9 +89,10 @@ describe('SearchIndexerService', () => {
         expect.objectContaining({ where: { id: 'p1' } }),
       );
       expect(meiliClient.index).toHaveBeenCalledWith(PRODUCTS_INDEX);
-      expect(meiliIndex.addDocuments).toHaveBeenCalledWith([
-        expect.objectContaining({ id: 'p1', name: 'Vitamin C Serum' }),
-      ]);
+      expect(meiliIndex.addDocuments).toHaveBeenCalledWith(
+        [expect.objectContaining({ id: 'p1', name: 'Vitamin C Serum' })],
+        { primaryKey: 'id' },
+      );
     });
 
     it('does nothing if the product no longer exists (deleted before the event was processed)', async () => {
@@ -138,10 +139,13 @@ describe('SearchIndexerService', () => {
       expect(productRepo.find).toHaveBeenCalledWith(
         expect.objectContaining({ where: { vendorId: 'v1' } }),
       );
-      expect(meiliIndex.addDocuments).toHaveBeenCalledWith([
-        expect.objectContaining({ id: 'p1', vendorStatus: VendorStatus.SUSPENDED }),
-        expect.objectContaining({ id: 'p2', vendorStatus: VendorStatus.SUSPENDED }),
-      ]);
+      expect(meiliIndex.addDocuments).toHaveBeenCalledWith(
+        [
+          expect.objectContaining({ id: 'p1', vendorStatus: VendorStatus.SUSPENDED }),
+          expect.objectContaining({ id: 'p2', vendorStatus: VendorStatus.SUSPENDED }),
+        ],
+        { primaryKey: 'id' },
+      );
     });
 
     it('does nothing when the vendor has no products', async () => {
@@ -172,10 +176,10 @@ describe('SearchIndexerService', () => {
       const result = await service.runFullReindex();
 
       expect(settingsService.applySettings).toHaveBeenCalled();
-      expect(meiliIndex.addDocuments).toHaveBeenCalledWith([
-        expect.objectContaining({ id: 'p1' }),
-        expect.objectContaining({ id: 'p2' }),
-      ]);
+      expect(meiliIndex.addDocuments).toHaveBeenCalledWith(
+        [expect.objectContaining({ id: 'p1' }), expect.objectContaining({ id: 'p2' })],
+        { primaryKey: 'id' },
+      );
       expect(result).toEqual({ indexed: 2, pruned: 0 });
     });
 

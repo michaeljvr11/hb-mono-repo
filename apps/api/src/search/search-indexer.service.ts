@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -25,11 +25,16 @@ const RELATIONS = ['vendor', 'categories', 'images'];
  *   under live traffic, and heals any event that was lost (process crash
  *   mid-write, transient Meilisearch outage, etc.) — the documented
  *   consistency guarantee since there is no durable queue in v1.
+ * - Also runs once at boot: a fresh Meilisearch volume has no index settings
+ *   (filterable/sortable attributes) until the first reindex applies them, so
+ *   without this every query-time filter — including the approved-vendor
+ *   visibility gate — fails until the next 3am cron. Idempotent, so this is
+ *   safe on every restart, not just the first.
  * - Indexing failures are logged and swallowed: they must never break the
  *   originating Postgres write. The next daily reindex self-heals.
  */
 @Injectable()
-export class SearchIndexerService {
+export class SearchIndexerService implements OnApplicationBootstrap {
   private readonly logger = new Logger(SearchIndexerService.name);
 
   constructor(
@@ -38,6 +43,10 @@ export class SearchIndexerService {
     private readonly settingsService: SearchSettingsService,
     private readonly synonymsService: SynonymsService,
   ) {}
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.safely('boot-time reindex', () => this.runFullReindex());
+  }
 
   @OnEvent(ProductEvents.CREATED)
   @OnEvent(ProductEvents.UPDATED)
@@ -52,7 +61,7 @@ export class SearchIndexerService {
       if (!product) return;
 
       const doc = mapProductToSearchDocument(product);
-      await this.client.index(PRODUCTS_INDEX).addDocuments([doc]);
+      await this.client.index(PRODUCTS_INDEX).addDocuments([doc], { primaryKey: 'id' });
     });
   }
 
@@ -78,7 +87,7 @@ export class SearchIndexerService {
       if (!products.length) return;
 
       const docs = products.map((p) => mapProductToSearchDocument(p));
-      await this.client.index(PRODUCTS_INDEX).addDocuments(docs);
+      await this.client.index(PRODUCTS_INDEX).addDocuments(docs, { primaryKey: 'id' });
     });
   }
 
@@ -106,7 +115,7 @@ export class SearchIndexerService {
 
     const index = this.client.index(PRODUCTS_INDEX);
     if (docs.length) {
-      await index.addDocuments(docs);
+      await index.addDocuments(docs, { primaryKey: 'id' });
     }
 
     const liveIds = new Set(docs.map((d) => d.id));
