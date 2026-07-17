@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { AnalyticsEventType, CountryCode, CreateOrderRequest, OrderDto } from '@hb/shared';
 import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
+import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { CartService } from '../../core/api/cart.service';
 import { OrdersService } from '../../core/api/orders.service';
 import { formatPrice } from '../../shared/format-price';
@@ -43,6 +44,7 @@ export class Checkout implements OnInit {
   private readonly ordersService = inject(OrdersService);
   private readonly authService = inject(AuthService);
   private readonly analyticsService = inject(AnalyticsService);
+  private readonly gaService = inject(GoogleAnalyticsService);
 
   readonly CountryCode = CountryCode;
 
@@ -73,7 +75,15 @@ export class Checkout implements OnInit {
       next: (cart) => {
         const ready = cart.items.length > 0;
         this.state.set(ready ? 'ready' : 'empty');
-        if (ready) this.analyticsService.track(AnalyticsEventType.CHECKOUT_STARTED);
+        if (ready) {
+          this.analyticsService.track(AnalyticsEventType.CHECKOUT_STARTED);
+          const [onlyTotal] = cart.totals.length === 1 ? cart.totals : [];
+          this.gaService.beginCheckout(
+            onlyTotal?.subtotal,
+            onlyTotal?.currency,
+            cart.items.map((item) => ({ productId: item.productId, name: item.productName })),
+          );
+        }
       },
       error: () => this.state.set('error'),
     });
@@ -120,6 +130,7 @@ export class Checkout implements OnInit {
           value: order.total,
           currency: order.currency,
         });
+        this.gaService.purchase(order.id, order.total, order.currency);
         // The server cleared the cart as part of the order — drop local state
         // so the nav badge resets.
         this.cartService.reset();

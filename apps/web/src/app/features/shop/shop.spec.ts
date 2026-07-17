@@ -19,6 +19,7 @@ import {
 import { Shop, deriveCategoryCounts, CategoryWithCount } from './shop';
 import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
+import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { environment } from '../../../environments/environment';
 
 describe('Shop', () => {
@@ -30,6 +31,7 @@ describe('Shop', () => {
     currentUser$: BehaviorSubject<AuthUser | null>;
   };
   let analyticsStub: { track: ReturnType<typeof vi.fn> };
+  let gaStub: { addToCart: ReturnType<typeof vi.fn> };
 
   const categories: CategoryDto[] = [
     { id: 'c1', name: 'Agriculture', displayOrder: 0 },
@@ -74,6 +76,7 @@ describe('Shop', () => {
       currentUser$: new BehaviorSubject<AuthUser | null>(null),
     };
     analyticsStub = { track: vi.fn() };
+    gaStub = { addToCart: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [Shop],
@@ -84,6 +87,7 @@ describe('Shop', () => {
         provideRouter([]),
         { provide: AuthService, useValue: authStub },
         { provide: AnalyticsService, useValue: analyticsStub },
+        { provide: GoogleAnalyticsService, useValue: gaStub },
       ],
     }).compileComponents();
 
@@ -285,6 +289,12 @@ describe('Shop', () => {
       productId: 'p1',
       vendorId: undefined,
     });
+    expect(gaStub.addToCart).toHaveBeenCalledWith(
+      'p1',
+      products[0].name,
+      products[0].price,
+      products[0].currency,
+    );
   });
 
   it('surfaces the API error message when add-to-cart fails', () => {

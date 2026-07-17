@@ -19,6 +19,7 @@ import { ProductDetail } from './product-detail';
 import { ProductsService } from '../../core/api/products.service';
 import { CartService } from '../../core/api/cart.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
+import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { AuthService } from '../../core/auth/auth.service';
 
 const EMPTY_CART: CartDto = { id: 'cart-1', items: [], totals: [], itemCount: 0, updatedAt: '' };
@@ -88,11 +89,17 @@ interface AnalyticsStub {
   track: ReturnType<typeof vi.fn>;
 }
 
+interface GaStub {
+  viewItem: ReturnType<typeof vi.fn>;
+  addToCart: ReturnType<typeof vi.fn>;
+}
+
 function makeStubs(): {
   productsStub: ProductsStub;
   authStub: AuthStub;
   cartStub: CartStub;
   analyticsStub: AnalyticsStub;
+  gaStub: GaStub;
 } {
   return {
     productsStub: {
@@ -112,6 +119,10 @@ function makeStubs(): {
     analyticsStub: {
       track: vi.fn(),
     },
+    gaStub: {
+      viewItem: vi.fn(),
+      addToCart: vi.fn(),
+    },
   };
 }
 
@@ -120,6 +131,7 @@ async function setupTestBed(
   authStub: AuthStub,
   cartStub: CartStub,
   analyticsStub: AnalyticsStub,
+  gaStub: GaStub,
   paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>,
 ): Promise<void> {
   return TestBed.configureTestingModule({
@@ -133,6 +145,7 @@ async function setupTestBed(
       { provide: AuthService, useValue: authStub },
       { provide: CartService, useValue: cartStub },
       { provide: AnalyticsService, useValue: analyticsStub },
+      { provide: GoogleAnalyticsService, useValue: gaStub },
       {
         provide: ActivatedRoute,
         useValue: { paramMap: paramMap$ },
@@ -151,13 +164,14 @@ describe('ProductDetail', () => {
   let authStub: AuthStub;
   let cartStub: CartStub;
   let analyticsStub: AnalyticsStub;
+  let gaStub: GaStub;
   let paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   beforeEach(async () => {
-    ({ productsStub, authStub, cartStub, analyticsStub } = makeStubs());
+    ({ productsStub, authStub, cartStub, analyticsStub, gaStub } = makeStubs());
     paramMap$ = new BehaviorSubject(convertToParamMap({ id: 'p1' }));
 
-    await setupTestBed(productsStub, authStub, cartStub, analyticsStub, paramMap$);
+    await setupTestBed(productsStub, authStub, cartStub, analyticsStub, gaStub, paramMap$);
 
     fixture = TestBed.createComponent(ProductDetail);
     component = fixture.componentInstance;
@@ -180,6 +194,10 @@ describe('ProductDetail', () => {
       productId: 'p1',
       vendorId: 'v1',
     });
+  });
+
+  it('fires GA view_item once the product loads successfully', () => {
+    expect(gaStub.viewItem).toHaveBeenCalledWith('p1', HONEY.name, HONEY.price, HONEY.currency);
   });
 
   it('renders the product name and price', () => {
@@ -295,6 +313,14 @@ describe('ProductDetail', () => {
       productId: 'p1',
       vendorId: 'v1',
     });
+  });
+
+  it('fires GA add_to_cart on a successful add', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+
+    component.onAddToCart();
+
+    expect(gaStub.addToCart).toHaveBeenCalledWith('p1', HONEY.name, HONEY.price, HONEY.currency);
   });
 
   it('related-product add-to-cart adds that product, not the page product', () => {

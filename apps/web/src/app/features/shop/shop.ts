@@ -5,6 +5,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AnalyticsEventType, CategoryDto, ProductDto, VendorDto } from '@hb/shared';
 import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
+import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { CartService } from '../../core/api/cart.service';
 import { CategoriesService } from '../../core/api/categories.service';
 import { ProductsService } from '../../core/api/products.service';
@@ -70,6 +71,7 @@ export class Shop implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
   private readonly analyticsService = inject(AnalyticsService);
+  private readonly gaService = inject(GoogleAnalyticsService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -146,6 +148,7 @@ export class Shop implements OnInit {
           productId: product.id,
           vendorId: product.vendor?.id,
         });
+        this.gaService.addToCart(product.id, product.name, product.price, product.currency);
         this.notifyAddedToCart(product.name);
       },
       error: (err: { error?: { message?: string } }) =>

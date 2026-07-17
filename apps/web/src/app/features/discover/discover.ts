@@ -5,6 +5,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AnalyticsEventType, CategoryDto, ProductDto, SearchSuggestions, VendorDto } from '@hb/shared';
 import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
+import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { ProductsService } from '../../core/api/products.service';
 import { CartService } from '../../core/api/cart.service';
 import { CategoriesService } from '../../core/api/categories.service';
@@ -44,6 +45,7 @@ export class Discover {
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
   private readonly analyticsService = inject(AnalyticsService);
+  private readonly gaService = inject(GoogleAnalyticsService);
   private readonly snackBar = inject(MatSnackBar);
 
   /** Real cart count for the radial-nav badge. */
@@ -211,6 +213,7 @@ export class Discover {
           productId: product.id,
           vendorId: product.vendor?.id,
         });
+        this.gaService.addToCart(product.id, product.name, product.price, product.currency);
         this.snackBar
           .open(`Added '${product.name}' to your cart.`, 'View cart', {
             duration: 4000,

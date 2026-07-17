@@ -25,6 +25,7 @@ import { VendorsService } from '../../core/api/vendors.service';
 import { SearchService } from '../../core/api/search.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
+import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { environment } from '../../../environments/environment';
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
@@ -101,6 +102,10 @@ interface AnalyticsStub {
   track: ReturnType<typeof vi.fn>;
 }
 
+interface GaStub {
+  addToCart: ReturnType<typeof vi.fn>;
+}
+
 function makeStubs(): {
   productsStub: ProductsStub;
   categoriesStub: CategoriesStub;
@@ -108,6 +113,7 @@ function makeStubs(): {
   searchStub: SearchStub;
   authStub: AuthStub;
   analyticsStub: AnalyticsStub;
+  gaStub: GaStub;
 } {
   return {
     productsStub: {
@@ -130,6 +136,9 @@ function makeStubs(): {
     analyticsStub: {
       track: vi.fn(),
     },
+    gaStub: {
+      addToCart: vi.fn(),
+    },
   };
 }
 
@@ -140,6 +149,7 @@ async function setupTestBed(
   searchStub: SearchStub,
   authStub: AuthStub,
   analyticsStub: AnalyticsStub,
+  gaStub: GaStub,
 ): Promise<void> {
   return TestBed.configureTestingModule({
     imports: [Discover],
@@ -154,6 +164,7 @@ async function setupTestBed(
       { provide: SearchService, useValue: searchStub },
       { provide: AuthService, useValue: authStub },
       { provide: AnalyticsService, useValue: analyticsStub },
+      { provide: GoogleAnalyticsService, useValue: gaStub },
     ],
   }).compileComponents();
 }
@@ -171,11 +182,20 @@ describe('Discover', () => {
   let searchStub: SearchStub;
   let authStub: AuthStub;
   let analyticsStub: AnalyticsStub;
+  let gaStub: GaStub;
 
   beforeEach(async () => {
-    ({ productsStub, categoriesStub, vendorsStub, searchStub, authStub, analyticsStub } =
+    ({ productsStub, categoriesStub, vendorsStub, searchStub, authStub, analyticsStub, gaStub } =
       makeStubs());
-    await setupTestBed(productsStub, categoriesStub, vendorsStub, searchStub, authStub, analyticsStub);
+    await setupTestBed(
+      productsStub,
+      categoriesStub,
+      vendorsStub,
+      searchStub,
+      authStub,
+      analyticsStub,
+      gaStub,
+    );
 
     fixture = TestBed.createComponent(Discover);
     component = fixture.componentInstance;
@@ -275,6 +295,12 @@ describe('Discover', () => {
       productId: 'p2',
       vendorId: 'v1',
     });
+    expect(gaStub.addToCart).toHaveBeenCalledWith(
+      'p2',
+      VENDOR_LISTING.name,
+      VENDOR_LISTING.price,
+      VENDOR_LISTING.currency,
+    );
   });
 
   it('anonymous add-to-cart routes to /login and does not fire ADD_TO_CART', () => {

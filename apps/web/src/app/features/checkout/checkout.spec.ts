@@ -23,6 +23,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
 import { OrdersService } from '../../core/api/orders.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
+import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -115,6 +116,10 @@ describe('Checkout', () => {
     resendVerification: ReturnType<typeof vi.fn>;
   };
   let analyticsStub: { track: ReturnType<typeof vi.fn> };
+  let gaStub: {
+    beginCheckout: ReturnType<typeof vi.fn>;
+    purchase: ReturnType<typeof vi.fn>;
+  };
 
   async function setup(cart: CartDto = CART): Promise<void> {
     cartStub = makeCartStub(cart);
@@ -125,6 +130,7 @@ describe('Checkout', () => {
       resendVerification: vi.fn(() => of({ message: 'sent' })),
     };
     analyticsStub = { track: vi.fn() };
+    gaStub = { beginCheckout: vi.fn(), purchase: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [Checkout],
@@ -137,6 +143,7 @@ describe('Checkout', () => {
         { provide: OrdersService, useValue: ordersStub },
         { provide: AuthService, useValue: authStub },
         { provide: AnalyticsService, useValue: analyticsStub },
+        { provide: GoogleAnalyticsService, useValue: gaStub },
       ],
     }).compileComponents();
 
@@ -187,6 +194,28 @@ describe('Checkout', () => {
     await setup({ ...CART, items: [], totals: [], itemCount: 0 });
 
     expect(analyticsStub.track).not.toHaveBeenCalledWith(AnalyticsEventType.CHECKOUT_STARTED);
+  });
+
+  it('fires GA begin_checkout (value/currency/items) once the cart loads with items', async () => {
+    await setup();
+
+    expect(gaStub.beginCheckout).toHaveBeenCalledWith(370, CurrencyCode.ZAR, [
+      { productId: 'p1', name: 'Fynbos Honey' },
+    ]);
+  });
+
+  it('fires GA begin_checkout without value/currency for a mixed-currency cart', async () => {
+    await setup(MIXED_CART);
+
+    expect(gaStub.beginCheckout).toHaveBeenCalledWith(undefined, undefined, [
+      { productId: 'p1', name: 'Fynbos Honey' },
+    ]);
+  });
+
+  it('does not fire GA begin_checkout when the cart is empty', async () => {
+    await setup({ ...CART, items: [], totals: [], itemCount: 0 });
+
+    expect(gaStub.beginCheckout).not.toHaveBeenCalled();
   });
 
   it('blocks submission for mixed-currency carts with a specific explanation', async () => {
@@ -254,6 +283,11 @@ describe('Checkout', () => {
       value: PLACED_ORDER.total,
       currency: PLACED_ORDER.currency,
     });
+    expect(gaStub.purchase).toHaveBeenCalledWith(
+      PLACED_ORDER.id,
+      PLACED_ORDER.total,
+      PLACED_ORDER.currency,
+    );
   });
 
   // ── Error surfacing (distinct, never swallowed) ────────────────────────────
