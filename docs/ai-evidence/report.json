@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-07-17T09:35:34.998Z",
+  "generatedAt": "2026-07-17T11:28:28.995Z",
   "git": {
-    "totalCommits": 114,
-    "aiCommits": 104,
-    "aiPct": 91,
+    "totalCommits": 122,
+    "aiCommits": 112,
+    "aiPct": 92,
     "appCommits": 78,
-    "ins": 55134,
-    "del": 4265,
-    "net": 50869,
-    "aiIns": 41702,
-    "aiDel": 4127,
-    "filesTouched": 497,
+    "ins": 56264,
+    "del": 4733,
+    "net": 51531,
+    "aiIns": 42832,
+    "aiDel": 4595,
+    "filesTouched": 501,
     "areaRows": [
       {
         "name": "Web (Angular)",
@@ -26,15 +26,15 @@
       },
       {
         "name": "Docs",
-        "commits": 37,
-        "ins": 11183,
-        "del": 2151
+        "commits": 41,
+        "ins": 11753,
+        "del": 2609
       },
       {
         "name": "AI Factory config",
-        "commits": 32,
-        "ins": 1147,
-        "del": 58
+        "commits": 38,
+        "ins": 1707,
+        "del": 68
       },
       {
         "name": "Shared contracts",
@@ -59,8 +59,43 @@
     "lastDate": "2026-07-17",
     "recent": [
       {
+        "hash": "c322928",
+        "subject": "chore(evidence): recompile AI evidence report after merging ponytail-minimalism-ladder",
+        "ai": true
+      },
+      {
+        "hash": "6022c1e",
+        "subject": "feat(factory): vendor Ponytail minimalism ladder into backend/frontend/reviewer agents",
+        "ai": true
+      },
+      {
+        "hash": "9cb4a8f",
+        "subject": "feat(factory): add CLARIFY step to /ship-card and /ship-batch",
+        "ai": true
+      },
+      {
+        "hash": "97b6b19",
+        "subject": "chore(evidence): recompile AI evidence report after merging steering-analysis-poc",
+        "ai": true
+      },
+      {
+        "hash": "3286a11",
+        "subject": "feat(factory): add /ship-batch command for multi-card and Fable-offloaded builds",
+        "ai": true
+      },
+      {
+        "hash": "03a4b63",
+        "subject": "chore(evidence): recompile AI evidence report (card VP-4)",
+        "ai": true
+      },
+      {
         "hash": "5769dcb",
         "subject": "feat(web): vendor orders screen with fulfilment actions (card VP-4)",
+        "ai": true
+      },
+      {
+        "hash": "e9a57ef",
+        "subject": "feat(factory): steering-doc alignment + service-extraction analysis POC",
         "ai": true
       },
       {
@@ -82,45 +117,50 @@
         "hash": "74daa24",
         "subject": "feat(web): admin search-synonyms management UI (card #53)",
         "ai": true
-      },
-      {
-        "hash": "56e98fa",
-        "subject": "fix(api): resolve Meilisearch integration bugs found in live verification",
-        "ai": true
-      },
-      {
-        "hash": "ce0386a",
-        "subject": "feat(api): synonyms admin CRUD endpoint + Meilisearch reload (card #52)",
-        "ai": true
-      },
-      {
-        "hash": "744653a",
-        "subject": "feat(api): GET /search + GET /search/suggest endpoints (card #50)",
-        "ai": true
-      },
-      {
-        "hash": "5f4a8c0",
-        "subject": "feat(api): ProductSearchService — ranking, faceted filters, autocomplete (card #48)",
-        "ai": true
-      },
-      {
-        "hash": "a69826a",
-        "subject": "feat(api): synonyms data model — entity, migration, shared contract, seed (card #49)",
-        "ai": true
-      },
-      {
-        "hash": "be31d6b",
-        "subject": "feat(api): SearchIndexerService — event listeners + scheduled full reindex (card #47)",
-        "ai": true
-      },
-      {
-        "hash": "c74caaf",
-        "subject": "feat(shared): product search contracts + validated query DTO (card #46)",
-        "ai": true
       }
     ]
   },
   "branches": [
+    {
+      "branch": "feat/EXPtZCJL-vendor-portal-shell",
+      "cardId": "EXPtZCJL",
+      "slug": "vendor-portal-shell"
+    },
+    {
+      "branch": "feat/IhTVdNYP-admin-catalog",
+      "cardId": "IhTVdNYP",
+      "slug": "admin-catalog"
+    },
+    {
+      "branch": "feat/L9fM1Gu7-storefront",
+      "cardId": "L9fM1Gu7",
+      "slug": "storefront"
+    },
+    {
+      "branch": "feat/N8P6OPPm-admin-user-mgmt",
+      "cardId": "N8P6OPPm",
+      "slug": "admin-user-mgmt"
+    },
+    {
+      "branch": "feat/RLiauFte-admin-vendor-approvals",
+      "cardId": "RLiauFte",
+      "slug": "admin-vendor-approvals"
+    },
+    {
+      "branch": "feat/oWqIV57s-vendor-dashboard",
+      "cardId": "oWqIV57s",
+      "slug": "vendor-dashboard"
+    },
+    {
+      "branch": "feat/ship-batch-command",
+      "cardId": "ship",
+      "slug": "batch-command"
+    },
+    {
+      "branch": "feat/xEOk5i0M-vendor-products",
+      "cardId": "xEOk5i0M",
+      "slug": "vendor-products"
+    },
     {
       "branch": "feat/1fqtc2JF-vendor-onboarding",
       "cardId": "1fqtc2JF",
@@ -140,11 +180,6 @@
       "branch": "feat/EFXHykuT-auth-aware-nav",
       "cardId": "EFXHykuT",
       "slug": "auth-aware-nav"
-    },
-    {
-      "branch": "feat/EXPtZCJL-vendor-portal-shell",
-      "cardId": "EXPtZCJL",
-      "slug": "vendor-portal-shell"
     },
     {
       "branch": "feat/MkRjnkvv-admin-synonyms-ui",
@@ -197,11 +232,6 @@
       "slug": "login-registration-pages"
     },
     {
-      "branch": "feat/oWqIV57s-vendor-dashboard",
-      "cardId": "oWqIV57s",
-      "slug": "vendor-dashboard"
-    },
-    {
       "branch": "feat/sKd1xhQl-vendor-orders-fulfilment",
       "cardId": "sKd1xhQl",
       "slug": "vendor-orders-fulfilment"
@@ -215,31 +245,6 @@
       "branch": "feat/vs3y5tDJ-public-vendor-profile",
       "cardId": "vs3y5tDJ",
       "slug": "public-vendor-profile"
-    },
-    {
-      "branch": "feat/IhTVdNYP-admin-catalog",
-      "cardId": "IhTVdNYP",
-      "slug": "admin-catalog"
-    },
-    {
-      "branch": "feat/L9fM1Gu7-storefront",
-      "cardId": "L9fM1Gu7",
-      "slug": "storefront"
-    },
-    {
-      "branch": "feat/N8P6OPPm-admin-user-mgmt",
-      "cardId": "N8P6OPPm",
-      "slug": "admin-user-mgmt"
-    },
-    {
-      "branch": "feat/RLiauFte-admin-vendor-approvals",
-      "cardId": "RLiauFte",
-      "slug": "admin-vendor-approvals"
-    },
-    {
-      "branch": "feat/xEOk5i0M-vendor-products",
-      "cardId": "xEOk5i0M",
-      "slug": "vendor-products"
     }
   ],
   "tests": {
@@ -262,21 +267,49 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 16,
+    "prodBlocks": 17,
     "blockReasons": {
-      "push names a protected branch": 12,
+      "push names a protected branch": 13,
       "force push": 1,
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 14,
+    "gatePass": 16,
     "gateFail": 1,
     "edits": 270,
     "editsUnfixable": 101,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-17T09:20:45.560Z"
+    "lastTs": "2026-07-17T11:19:10.427Z",
+    "agentTokens": {
+      "present": false,
+      "byAgent": [],
+      "recent": []
+    }
   },
+  "steeringAudit": null,
+  "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/ponytail-minimalism-ladder",
+      "number": 32,
+      "state": "CLOSED",
+      "title": "feat(factory): vendor Ponytail minimalism ladder into backend/frontend/reviewer agents",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/32"
+    },
+    {
+      "headRefName": "feat/ship-batch-command",
+      "number": 31,
+      "state": "OPEN",
+      "title": "feat(factory): steering-doc alignment analysis + /ship-batch multi-card command",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/31"
+    },
+    {
+      "headRefName": "feat/sKd1xhQl-vendor-orders-fulfilment",
+      "number": 30,
+      "state": "MERGED",
+      "title": "feat: vendor orders view + fulfilment read endpoint (VP-4)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/30"
+    },
     {
       "headRefName": "feat/MkRjnkvv-admin-synonyms-ui",
       "number": 29,
@@ -488,24 +521,27 @@
     },
     {
       "name": "To Do",
-      "cards": 17
+      "cards": 16
     },
     {
       "name": "In Progress",
-      "cards": 1
+      "cards": 0
     },
     {
       "name": "In Review",
-      "cards": 1
+      "cards": 0
     },
     {
       "name": "Done",
-      "cards": 33
+      "cards": 36
     },
     {
       "name": "Fable Documentation",
       "cards": 0
     }
   ],
-  "notes": []
+  "notes": [
+    "No steering-audit.json yet — run the align-steering-docs skill to populate it.",
+    "No extraction-candidates.json yet — run the service-extraction-analysis skill to populate it."
+  ]
 }

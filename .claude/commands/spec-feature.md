@@ -5,6 +5,14 @@ Turn the feature request "$ARGUMENTS" into implementable requirements. Dispatch 
 `product-planner` agent (or do this directly for a small request). Stop before coding —
 `/ship-card` owns implementation.
 
+0. PULL — before doing anything else, `git pull` both repos: this project and the Obsidian
+   vault. Specs get written against stale state easily since this command runs less often
+   than `/ship-card` and has no built-in refresh point. Then check `origin/main` (`git log
+   origin/main --oneline -20` or similar) and the vault for work that already covers this
+   request under a different card or branch — Michael ships in parallel, so a request that
+   sounds new may already be merged or mid-flight. If it is, say so and scope down to the
+   real gap instead of speccing duplicate work.
+
 1. RESEARCH — search the Obsidian vault (`obsidian` tools) for the business rules, domain
    model, and decisions this feature touches. Read `libs/shared` + `README.md` for the
    current contract. Note conflicts or gaps; do not invent rules.

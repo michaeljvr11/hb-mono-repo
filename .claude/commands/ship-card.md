@@ -1,5 +1,5 @@
 ---
-description: Take a Trello card through the full pipeline — context → plan → implement → test → review → PR. Stops before merge; a human owns prod.
+description: Take a Trello card through the full pipeline — context → plan → clarify → implement → test → review → PR. Stops before merge; a human owns prod.
 ---
 Take Trello card $ARGUMENTS through the full pipeline. For dependent API+UI work run as
 an Agent Team; for a single-layer card one subagent is enough — don't over-orchestrate.
@@ -21,7 +21,22 @@ an Agent Team; for a single-layer card one subagent is enough — don't over-orc
    - Write a short plan and post it as a comment on the card. Move the card to "In Progress".
    - Create branch `feat/<card-id>-<slug>` from up-to-date main.
 
-3. IMPLEMENT (dispatch specialists, in dependency order — work in a loop, one slice at a time)
+3. CLARIFY — the interactive boundary before any code gets written
+   - Check the plan against the CONTEXT MANIFEST and the card's acceptance criteria for genuine
+     ambiguity: an acceptance criterion that admits more than one reasonable implementation, a
+     business rule the Obsidian search didn't actually resolve, a contract shape the card leaves
+     underspecified, or a scope edge (what happens on X error, does this apply to vendor listings
+     too, etc.) the card doesn't address.
+   - If everything needed to implement is already settled, skip this step silently — do not
+     manufacture questions to seem thorough, and do not re-ask something CONTEXT already answered.
+   - If something is genuinely unclear: **stop here.** Do not guess and quietly note the guess as
+     an assumption, and do not carry it into IMPLEMENT hoping it comes out right. Ask the developer
+     directly — `AskUserQuestion` for a short closed set of concrete resolutions, plain text when
+     the answer is open-ended. Ask only what's actually blocking implementation; if several things
+     are unclear, batch them into one turn rather than trickling questions out one at a time. Wait
+     for the answer, fold it into the plan and the card comment, then continue to IMPLEMENT.
+
+4. IMPLEMENT (dispatch specialists, in dependency order — work in a loop, one slice at a time)
    The Obsidian vault and this project are both git repos shared via git. For each slice of
    work, run the same loop and don't move on until it closes:
    - PULL: `git pull` the latest changes for BOTH repos first — the Obsidian vault repo and
@@ -39,15 +54,15 @@ an Agent Team; for a single-layer card one subagent is enough — don't over-orc
      card, not per slice, is the saving here.
    Then start the next slice from PULL again.
 
-4. TEST
+5. TEST
    - test-engineer writes/updates tests.
    - Run: `npm run test:api`, `npm run test -w @hb/web`, `npm run lint:api`, `npm run build`.
    - Fix failures before proceeding.
 
-5. REVIEW
+6. REVIEW
    - Run code-reviewer on the diff. Address every FAIL. Re-run affected tests.
 
-6. DELIVER
+7. DELIVER
    - Commit any remaining changes (Conventional Commits). End every commit body with the
      AI-authorship trailer `Co-Authored-By: Claude <noreply@anthropic.com>` — this is the
      auditable record of AI authorship (see `docs/ai-evidence/`). The per-slice code commits

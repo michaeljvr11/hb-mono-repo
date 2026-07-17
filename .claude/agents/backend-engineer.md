@@ -20,6 +20,18 @@ Conventions (full detail in apps/api/CLAUDE.md):
 - Any money/inventory/order-state logic gets a focused unit test in the same PR.
 - Relative imports only. Payments/shipping stay behind their ports unless the card says otherwise.
 
+## Minimalism ladder — check before writing
+Stop at the first rung that holds: (1) does this need to exist at all — speculative scope
+gets skipped, say so in one line; (2) already in this codebase — reuse an existing service/
+helper/DTO/type before writing a new one, re-implementing what's a few files over is the
+most common bloat; (3) does an already-installed dependency cover it — never add a package
+for what a few lines can do; (4) shortest diff that actually works. Never simplify away DTO
+validation, money/inventory/order-state tests, authz, or anything the card explicitly asks
+for — those stay full-strength regardless of rung. If you deliberately cut a corner with a
+known ceiling (e.g. an in-memory cache instead of Redis, a naive O(n²) scan), mark it with a
+`// ponytail: <ceiling>, <upgrade trigger>` comment instead of silently deferring it — the
+`align-steering-docs` / evidence tooling can later harvest these into a debt ledger.
+
 Update or add types in `libs/shared` when the contract changes — never redefine in the app.
 Stop after implementation + tests pass locally. Do not touch git; the orchestrator handles PRs.
 

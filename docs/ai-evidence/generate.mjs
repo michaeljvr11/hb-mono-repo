@@ -164,11 +164,17 @@ function collectDesign() {
   } catch { return { files: 0, screens: [] }; }
 }
 
-// ── 2. Guardrail telemetry ──────────────────────────────────────────────────
+// ── 2. Guardrail telemetry + per-agent token usage ──────────────────────────
 function collectTelemetry() {
   const logPath = join(ROOT, '.claude', 'factory-log.jsonl');
   const out = { present: false, prodBlocks: 0, blockReasons: {}, gatePass: 0, gateFail: 0, edits: 0, editsUnfixable: 0, firstTs: null, lastTs: null };
-  if (!existsSync(logPath)) { note('No telemetry yet (.claude/factory-log.jsonl absent) — the hooks populate it as the factory runs.'); return out; }
+  const agents = new Map(); // agentType -> { invocations, inputTokens, outputTokens, cacheReadTokens, cacheCreationTokens }
+  const recentTokenEvents = [];
+  if (!existsSync(logPath)) {
+    note('No telemetry yet (.claude/factory-log.jsonl absent) — the hooks populate it as the factory runs.');
+    out.agentTokens = { present: false, byAgent: [], recent: [] };
+    return out;
+  }
   out.present = true;
   for (const line of readFileSync(logPath, 'utf8').split('\n')) {
     const l = line.trim();
@@ -178,7 +184,25 @@ function collectTelemetry() {
     if (e.type === 'prod_fence_block') { out.prodBlocks++; out.blockReasons[e.reason] = (out.blockReasons[e.reason] || 0) + 1; }
     else if (e.type === 'pr_gate') { e.result === 'pass' ? out.gatePass++ : out.gateFail++; }
     else if (e.type === 'edit_lint') { out.edits++; if (e.autofixed === false) out.editsUnfixable++; }
+    else if (e.type === 'agent_token_usage') {
+      const a = agents.get(e.agentType) || { invocations: 0, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0 };
+      a.invocations++;
+      a.inputTokens += e.inputTokens || 0;
+      a.outputTokens += e.outputTokens || 0;
+      a.cacheReadTokens += e.cacheReadInputTokens || 0;
+      a.cacheCreationTokens += e.cacheCreationInputTokens || 0;
+      agents.set(e.agentType, a);
+      recentTokenEvents.push({ ts: e.ts, agentType: e.agentType, totalTokens: (e.inputTokens || 0) + (e.outputTokens || 0) });
+    }
   }
+  const byAgent = [...agents.entries()]
+    .map(([agentType, v]) => ({ agentType, ...v, totalTokens: v.inputTokens + v.outputTokens }))
+    .sort((a, b) => b.totalTokens - a.totalTokens);
+  out.agentTokens = {
+    present: byAgent.length > 0,
+    byAgent,
+    recent: recentTokenEvents.slice(-20),
+  };
   return out;
 }
 
@@ -190,7 +214,23 @@ function collectPRs() {
   } catch { note('gh CLI not available/authed — PR list skipped.'); return null; }
 }
 
-// ── 4. Trello (REST, optional) ──────────────────────────────────────────────
+// ── 4. Steering-doc audit (optional, produced by /align-steering-docs) ─────
+function collectSteeringAudit() {
+  const p = join(ROOT, 'docs', 'ai-evidence', 'steering-audit.json');
+  if (!existsSync(p)) { note('No steering-audit.json yet — run the align-steering-docs skill to populate it.'); return null; }
+  try { return JSON.parse(readFileSync(p, 'utf8')); }
+  catch (e) { note('steering-audit.json unreadable — ' + e.message.split('\n')[0]); return null; }
+}
+
+// ── 5. Extraction candidates (optional, produced by /service-extraction-analysis)
+function collectExtractionCandidates() {
+  const p = join(ROOT, 'docs', 'ai-evidence', 'extraction-candidates.json');
+  if (!existsSync(p)) { note('No extraction-candidates.json yet — run the service-extraction-analysis skill to populate it.'); return null; }
+  try { return JSON.parse(readFileSync(p, 'utf8')); }
+  catch (e) { note('extraction-candidates.json unreadable — ' + e.message.split('\n')[0]); return null; }
+}
+
+// ── 6. Trello (REST, optional) ──────────────────────────────────────────────
 async function collectTrello() {
   const mcpPath = join(ROOT, '.mcp.json');
   if (!existsSync(mcpPath)) { note('No .mcp.json — Trello card flow skipped.'); return null; }
@@ -208,7 +248,7 @@ async function collectTrello() {
 
 // ── Report rendering ────────────────────────────────────────────────────────
 function md(data) {
-  const { git: g, branches, tests, design, telemetry: t, prs, trello, generatedAt } = data;
+  const { git: g, branches, tests, design, telemetry: t, prs, trello, steeringAudit, extractionCandidates, generatedAt } = data;
   const L = [];
   L.push('# AI Factory — Evidence Report');
   L.push('');
@@ -283,6 +323,28 @@ function md(data) {
   }
   L.push('');
 
+  // Token usage by agent
+  L.push('## Token usage by agent');
+  L.push('');
+  if (!t.agentTokens || !t.agentTokens.present) {
+    L.push('_No agent-token telemetry yet — `log-agent-tokens.js` (SubagentStop hook) populates this as specialist');
+    L.push('agents (backend-engineer, frontend-engineer, etc.) run. Re-run `npm run evidence` after a `/ship-card`');
+    L.push('or `/ship-batch` cycle to populate this section._');
+  } else {
+    const ba = t.agentTokens.byAgent;
+    const totalAll = ba.reduce((s, a) => s + a.totalTokens, 0);
+    L.push('| Agent | Invocations | Input tokens | Output tokens | Cache read | Cache write | Total |');
+    L.push('|---|--:|--:|--:|--:|--:|--:|');
+    for (const a of ba) {
+      L.push(`| ${a.agentType} | ${a.invocations} | ${a.inputTokens.toLocaleString()} | ${a.outputTokens.toLocaleString()} | ${a.cacheReadTokens.toLocaleString()} | ${a.cacheCreationTokens.toLocaleString()} | ${a.totalTokens.toLocaleString()} |`);
+    }
+    L.push(`| **Total** | **${ba.reduce((s, a) => s + a.invocations, 0)}** |  |  |  |  | **${totalAll.toLocaleString()}** |`);
+    L.push('');
+    L.push('_Tracks whether changes to agent definitions (e.g. the ponytail minimalism ladder) actually move token');
+    L.push('spend — compare this table\'s totals across evidence snapshots taken before and after such a change._');
+  }
+  L.push('');
+
   // Traceability
   L.push('## Traceability — card → branch → PR');
   L.push('');
@@ -316,6 +378,46 @@ function md(data) {
     L.push('');
   }
 
+  // Steering doc health
+  if (steeringAudit) {
+    L.push('## Steering doc health');
+    L.push('');
+    L.push(`Last audited: ${steeringAudit.generatedAt || '—'} · ${(steeringAudit.docsScanned || []).length} doc(s) scanned`);
+    L.push('');
+    const findings = steeringAudit.findings || [];
+    if (findings.length) {
+      L.push('| Doc | Severity | Claim vs reality | Recommendation |');
+      L.push('|---|---|---|---|');
+      for (const f of findings) {
+        L.push(`| \`${f.doc}\`${f.line ? `:${f.line}` : ''} | ${f.severity} | ${f.claim} → ${f.reality} | ${f.recommendation} |`);
+      }
+    } else {
+      L.push('_No drift found in the last audit._');
+    }
+    L.push('');
+  }
+
+  // Service extraction candidates
+  if (extractionCandidates) {
+    L.push('## Monorepo extraction candidates');
+    L.push('');
+    L.push(`Last analysed: ${extractionCandidates.generatedAt || '—'}`);
+    L.push('');
+    const candidates = extractionCandidates.candidates || [];
+    if (candidates.length) {
+      L.push('| Module | Rank | Commits | Authors | LOC | Coupling (in/out) | Rationale |');
+      L.push('|---|---|--:|--:|--:|---|---|');
+      for (const c of candidates) {
+        L.push(`| \`${c.module}\` | ${c.rank} | ${c.commits ?? '—'} | ${c.authors ?? '—'} | ${c.loc ?? '—'} | ${c.inboundCoupling ?? '—'}/${c.outboundCoupling ?? '—'} | ${c.rationale} |`);
+      }
+    } else {
+      L.push('_No candidates surfaced in the last analysis._');
+    }
+    L.push('');
+    L.push('_Analytical input only — extraction has real operational cost this table doesn\'t price._');
+    L.push('');
+  }
+
   if (notes.length) {
     L.push('## Provenance / data-source notes');
     L.push('');
@@ -333,6 +435,8 @@ const data = {
   tests: collectTests(),
   design: collectDesign(),
   telemetry: collectTelemetry(),
+  steeringAudit: collectSteeringAudit(),
+  extractionCandidates: collectExtractionCandidates(),
   prs: collectPRs(),
   trello: await collectTrello(),
   notes,
