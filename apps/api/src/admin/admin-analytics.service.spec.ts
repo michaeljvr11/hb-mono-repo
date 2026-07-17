@@ -161,6 +161,43 @@ describe('AdminAnalyticsService', () => {
     });
   });
 
+  // ─── gross line GMV (unitPrice * quantity, not order.total) ─────────────
+
+  describe('getSummary — gross line GMV', () => {
+    it('multiplies unitPrice by quantity per line rather than counting unitPrice once', async () => {
+      const order = makeOrder({
+        id: 'o1',
+        createdAt: new Date('2026-01-10T00:00:00.000Z'),
+        items: [makeItem({ id: 'item-1', unitPrice: '25.00' as never, quantity: 3 })],
+      });
+      ordersRepo.find.mockResolvedValue([order]);
+
+      const result = await service.getSummary({ from: '2026-01-01', to: '2026-01-31' });
+
+      // 25.00 * 3, NOT 25.00 flat.
+      expect(result.revenueByCurrency).toEqual([{ currency: CurrencyCode.ZAR, amount: 75 }]);
+    });
+
+    it('rounds accumulated floating-point drift to exactly 2dp across multiple lines', async () => {
+      const order = makeOrder({
+        id: 'o1',
+        createdAt: new Date('2026-01-10T00:00:00.000Z'),
+        items: [
+          makeItem({ id: 'item-1', unitPrice: '10.10' as never, quantity: 1 }),
+          makeItem({ id: 'item-2', unitPrice: '10.10' as never, quantity: 1 }),
+          makeItem({ id: 'item-3', unitPrice: '10.10' as never, quantity: 1 }),
+        ],
+      });
+      ordersRepo.find.mockResolvedValue([order]);
+
+      const result = await service.getSummary({ from: '2026-01-01', to: '2026-01-31' });
+
+      // 10.10 + 10.10 + 10.10 === 30.299999999999997 in raw floating point —
+      // must round cleanly to 30.3, not leak the drift into the response.
+      expect(result.revenueByCurrency).toEqual([{ currency: CurrencyCode.ZAR, amount: 30.3 }]);
+    });
+  });
+
   // ─── conversion rate ──────────────────────────────────────────────────────
 
   describe('getSummary — conversion rate', () => {

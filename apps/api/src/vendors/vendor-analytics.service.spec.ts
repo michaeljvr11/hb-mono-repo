@@ -236,6 +236,46 @@ describe('VendorAnalyticsService', () => {
     });
   });
 
+  // ─── gross line GMV (unitPrice * quantity, not order.total) ─────────────
+
+  describe('getAnalytics — gross line GMV', () => {
+    it('multiplies unitPrice by quantity per line rather than counting unitPrice once', async () => {
+      vendorRepo.findOne.mockResolvedValue(makeVendor());
+
+      const items = [
+        makeItem({
+          id: 'item-1',
+          vendorId: 'v1',
+          unitPrice: '25.00' as never,
+          quantity: 3,
+        }),
+      ];
+      orderItemRepo.createQueryBuilder.mockReturnValue(makeItemsQb(items));
+
+      const result = await service.getAnalytics('u1', { from: '2026-01-01', to: '2026-01-31' });
+
+      // 25.00 * 3, NOT 25.00 flat.
+      expect(result.revenueByCurrency).toEqual([{ currency: CurrencyCode.ZAR, amount: 75 }]);
+    });
+
+    it('rounds accumulated floating-point drift to exactly 2dp across multiple lines', async () => {
+      vendorRepo.findOne.mockResolvedValue(makeVendor());
+
+      const items = [
+        makeItem({ id: 'item-1', orderId: 'o1', vendorId: 'v1', unitPrice: '10.10' as never }),
+        makeItem({ id: 'item-2', orderId: 'o1', vendorId: 'v1', unitPrice: '10.10' as never }),
+        makeItem({ id: 'item-3', orderId: 'o1', vendorId: 'v1', unitPrice: '10.10' as never }),
+      ];
+      orderItemRepo.createQueryBuilder.mockReturnValue(makeItemsQb(items));
+
+      const result = await service.getAnalytics('u1', { from: '2026-01-01', to: '2026-01-31' });
+
+      // 10.10 + 10.10 + 10.10 === 30.299999999999997 in raw floating point —
+      // must round cleanly to 30.3, not leak the drift into the response.
+      expect(result.revenueByCurrency).toEqual([{ currency: CurrencyCode.ZAR, amount: 30.3 }]);
+    });
+  });
+
   // ─── cancelled orders excluded ───────────────────────────────────────────
 
   describe('getAnalytics — cancelled orders excluded', () => {

@@ -45,6 +45,16 @@ describe('CreateAnalyticsEventDto', () => {
     expect(errors.map((e) => e.property)).toContain('currency');
   });
 
+  it('treats value: 0 as present — currency still required (falsy is not "absent")', async () => {
+    const { errors } = await validateDto({ ...BASE, value: 0 });
+    expect(errors.map((e) => e.property)).toContain('currency');
+  });
+
+  it('accepts value: 0 with currency present (a free/zero-value event is valid)', async () => {
+    const { errors } = await validateDto({ ...BASE, value: 0, currency: CurrencyCode.ZAR });
+    expect(errors).toHaveLength(0);
+  });
+
   it('rejects a negative value', async () => {
     const { errors } = await validateDto({ ...BASE, value: -5, currency: CurrencyCode.ZAR });
     expect(errors.map((e) => e.property)).toContain('value');
