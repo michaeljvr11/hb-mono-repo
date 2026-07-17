@@ -98,6 +98,7 @@ export const routes: Routes = [
       { path: 'catalog',   loadComponent: () => import('./features/admin/pages/admin-catalog/admin-catalog').then(m => m.AdminCatalog) },
       { path: 'users',     loadComponent: () => import('./features/admin/pages/admin-users/admin-users').then(m => m.AdminUsers) },
       { path: 'orders',    loadComponent: () => import('./features/admin/pages/admin-orders/admin-orders').then(m => m.AdminOrders) },
+      { path: 'search-synonyms', loadComponent: () => import('./features/admin/pages/admin-search-synonyms/admin-search-synonyms').then(m => m.AdminSearchSynonyms) },
       { path: 'logs',      loadComponent: () => import('./features/admin/pages/admin-logs/admin-logs').then(m => m.AdminLogs) },
     ],
   },

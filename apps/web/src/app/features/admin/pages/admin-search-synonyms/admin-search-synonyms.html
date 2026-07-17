@@ -1,0 +1,192 @@
+<section class="synonyms-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Search synonyms</h1>
+    <p class="page-sub">Map equivalent search terms so shoppers find the same products either way.</p>
+  </header>
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading synonyms…</p>
+    </div>
+  }
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+    <div class="split-layout">
+      <!-- Synonym list -->
+      <div class="synonym-list" role="list" aria-label="Search synonyms">
+        @if (synonyms().length === 0) {
+          <div class="list-empty">
+            <span class="material-symbols-outlined" aria-hidden="true">find_replace</span>
+            <p>No synonyms configured yet.</p>
+          </div>
+        }
+
+        @for (synonym of synonyms(); track synonym.id) {
+          <div class="synonym-row" role="listitem" [class.synonym-row--selected]="editingId() === synonym.id">
+            <div class="synonym-row-main">
+              <div class="synonym-term-line">
+                <span class="synonym-term">{{ synonym.term }}</span>
+                @if (!synonym.enabled) {
+                  <span class="inactive-badge" aria-label="Disabled">disabled</span>
+                }
+                @if (synonym.bidirectional) {
+                  <span class="bidirectional-badge" aria-label="Bidirectional">
+                    <span class="material-symbols-outlined" aria-hidden="true">sync_alt</span>
+                    bidirectional
+                  </span>
+                }
+              </div>
+              <div class="equivalents-chips">
+                @for (equivalent of synonym.equivalents; track equivalent) {
+                  <span class="chip">{{ equivalent }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="synonym-row-actions">
+              @if (confirmDeleteId() === synonym.id) {
+                <span class="confirm-label">Delete this synonym?</span>
+                <button
+                  class="action-btn action-btn--danger"
+                  type="button"
+                  [disabled]="deletingId() === synonym.id"
+                  (click)="confirmDelete(synonym.id)"
+                >
+                  @if (deletingId() === synonym.id) {
+                    <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+                  }
+                  Confirm
+                </button>
+                <button class="action-btn action-btn--ghost" type="button" (click)="cancelDelete()">Cancel</button>
+              } @else {
+                <button class="icon-btn" type="button" aria-label="Edit synonym" (click)="startEdit(synonym)">
+                  <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                </button>
+                <button class="icon-btn icon-btn--danger" type="button" aria-label="Delete synonym" (click)="requestDelete(synonym.id)">
+                  <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Form panel -->
+      <div class="form-panel">
+        <div class="form-card">
+          <h2 class="form-title">{{ editingId() ? 'Edit synonym' : 'Add synonym' }}</h2>
+
+          <form [formGroup]="form" (ngSubmit)="submit()">
+            <div class="field">
+              <label class="field-label" for="term">Term</label>
+              <input
+                id="term"
+                class="text-input"
+                type="text"
+                formControlName="term"
+                maxlength="100"
+                placeholder="e.g. moisturiser"
+              />
+              @if (form.controls.term.invalid && form.controls.term.touched) {
+                <p class="field-error">
+                  @if (form.controls.term.hasError('required')) {
+                    Term is required.
+                  } @else if (form.controls.term.hasError('maxlength')) {
+                    Term must be 100 characters or fewer.
+                  }
+                </p>
+              }
+            </div>
+
+            <div class="field" formArrayName="equivalents">
+              <label class="field-label">Equivalents</label>
+              @for (control of equivalents.controls; track $index) {
+                <div class="equivalent-row">
+                  <input
+                    class="text-input"
+                    type="text"
+                    [formControlName]="$index"
+                    maxlength="100"
+                    placeholder="e.g. moisturizer"
+                    [attr.aria-label]="'Equivalent ' + ($index + 1)"
+                  />
+                  <button
+                    class="icon-btn"
+                    type="button"
+                    aria-label="Remove equivalent"
+                    [disabled]="equivalents.length <= 1"
+                    (click)="removeEquivalent($index)"
+                  >
+                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                  </button>
+                </div>
+                @if (control.invalid && control.touched) {
+                  <p class="field-error">
+                    @if (control.hasError('required')) {
+                      Equivalent is required.
+                    } @else if (control.hasError('maxlength')) {
+                      Equivalent must be 100 characters or fewer.
+                    }
+                  </p>
+                }
+              }
+
+              <button class="add-btn" type="button" (click)="addEquivalent()">
+                <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                Add equivalent
+              </button>
+
+              @if (equivalents.hasError('minEquivalents')) {
+                <p class="field-error">At least one equivalent is required.</p>
+              }
+              @if (equivalents.hasError('duplicateEquivalents')) {
+                <p class="field-error">Equivalents must be unique.</p>
+              }
+            </div>
+
+            <div class="field field--row">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="bidirectional" />
+                Bidirectional
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="enabled" />
+                Enabled
+              </label>
+            </div>
+
+            @if (actionError()) {
+              <div class="error-banner error-banner--inline" role="alert">
+                <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                <span>{{ actionError() }}</span>
+              </div>
+            }
+
+            <div class="form-actions">
+              <button class="action-btn action-btn--primary" type="submit" [disabled]="saving()">
+                @if (saving()) {
+                  <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+                }
+                {{ editingId() ? 'Save changes' : 'Add synonym' }}
+              </button>
+              @if (editingId()) {
+                <button class="action-btn action-btn--ghost" type="button" (click)="cancelEdit()">Cancel</button>
+              }
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+</section>
