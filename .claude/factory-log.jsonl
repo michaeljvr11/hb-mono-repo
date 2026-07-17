@@ -289,3 +289,13 @@
 {"ts":"2026-07-14T17:56:11.563Z","type":"edit_lint","file":"apps/api/src/search/search-indexer.service.spec.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-07-14T17:56:22.754Z","type":"edit_lint","file":"apps/api/src/search/search-indexer.service.spec.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-07-14T17:56:33.788Z","type":"edit_lint","file":"apps/api/src/search/search-indexer.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-07-17T07:34:01.424Z","type":"pr_gate","result":"pass","durationMs":12991}
+{"ts":"2026-07-17T09:19:13.928Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-07-17T09:19:22.312Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-07-17T09:19:36.287Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-07-17T09:19:47.797Z","type":"edit_lint","file":"apps/api/src/orders/orders.controller.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-07-17T09:19:59.196Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-07-17T09:20:06.034Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-07-17T09:20:13.220Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-07-17T09:20:34.576Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-07-17T09:20:45.560Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":true,"tool":"Edit"}
