@@ -28,6 +28,7 @@ export class AdminShell {
     { label: 'Catalog',   path: 'catalog',   icon: 'inventory_2' },
     { label: 'Users',     path: 'users',     icon: 'group' },
     { label: 'Orders',    path: 'orders',    icon: 'shopping_bag' },
+    { label: 'Synonyms',  path: 'search-synonyms', icon: 'find_replace' },
     { label: 'Logs',      path: 'logs',      icon: 'receipt_long' },
   ] as const;
 

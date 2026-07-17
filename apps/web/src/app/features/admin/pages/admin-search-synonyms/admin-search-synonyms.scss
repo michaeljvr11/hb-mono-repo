@@ -1,0 +1,411 @@
+/* Admin Search Synonyms page — tokens from docs/design/DESIGN.md */
+:host {
+  display: block;
+}
+
+/* ─── Page header ─────────────────────────────────────────────── */
+.synonyms-page {
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  margin: 0 0 4px;
+  font: 600 32px/40px Inter, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--hb-on-surface);
+}
+
+.page-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ─── Loading / error states ─────────────────────────────────── */
+.state-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: var(--hb-on-surface-variant);
+  font-size: 14px;
+
+  p {
+    margin: 0;
+  }
+
+  .state-icon {
+    font-size: 40px;
+    opacity: 0.5;
+  }
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background: color-mix(in srgb, var(--hb-error) 10%, transparent);
+  color: var(--hb-error);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  &--inline {
+    margin-bottom: 0;
+    margin-top: 16px;
+  }
+}
+
+/* ─── Split layout ────────────────────────────────────────────── */
+.split-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Synonym list ───────────────────────────────────────────── */
+.synonym-list {
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.list-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 16px;
+  color: var(--hb-on-surface-variant);
+  font-size: 14px;
+
+  p {
+    margin: 0;
+  }
+
+  .material-symbols-outlined {
+    font-size: 36px;
+    opacity: 0.45;
+  }
+}
+
+.synonym-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  border-bottom: 1px solid var(--hb-outline-variant);
+  transition: background 140ms ease;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &--selected {
+    background: color-mix(in srgb, var(--hb-primary) 8%, transparent);
+  }
+}
+
+.synonym-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.synonym-term-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.synonym-term {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--hb-on-surface);
+}
+
+.equivalents-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: var(--hb-surface-container);
+  color: var(--hb-on-surface-variant);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.bidirectional-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 9px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: color-mix(in srgb, var(--hb-primary) 14%, transparent);
+  color: var(--hb-primary);
+
+  .material-symbols-outlined {
+    font-size: 14px;
+  }
+}
+
+.inactive-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.03em;
+  background: var(--hb-outline-variant);
+  color: var(--hb-on-surface-variant);
+  border: 1px solid var(--hb-outline-variant);
+}
+
+.synonym-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.confirm-label {
+  font-size: 12px;
+  color: var(--hb-on-surface-variant);
+  margin-right: 4px;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-on-surface-variant);
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--hb-surface-container-low);
+    color: var(--hb-on-surface);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &--danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--hb-error) 12%, transparent);
+    color: var(--hb-error);
+    border-color: color-mix(in srgb, var(--hb-error) 30%, transparent);
+  }
+}
+
+/* ─── Form panel ──────────────────────────────────────────────── */
+.form-panel {
+  position: sticky;
+  top: 80px;
+}
+
+.form-card {
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.form-title {
+  margin: 0 0 16px;
+  font: 600 18px/26px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+}
+
+.field {
+  margin-bottom: 16px;
+
+  &--row {
+    display: flex;
+    gap: 20px;
+  }
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hb-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.text-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-on-surface);
+  font: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--hb-primary);
+    box-shadow: 0 0 0 2px rgba(1, 83, 0, 0.1);
+  }
+}
+
+.equivalent-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.field-error {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--hb-error);
+}
+
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px dashed var(--hb-outline-variant);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--hb-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--hb-primary) 8%, transparent);
+  }
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--hb-on-surface);
+  cursor: pointer;
+}
+
+/* ─── Action buttons ──────────────────────────────────────────── */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease, opacity 150ms ease;
+
+  &:disabled {
+    cursor: progress;
+    opacity: 0.6;
+  }
+
+  &--primary {
+    background: var(--hb-primary);
+    color: var(--hb-on-primary);
+
+    &:hover:not(:disabled) {
+      background: var(--hb-primary-container);
+    }
+  }
+
+  &--danger {
+    background: color-mix(in srgb, var(--hb-error) 12%, transparent);
+    color: var(--hb-error);
+    border: 1px solid color-mix(in srgb, var(--hb-error) 30%, transparent);
+
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--hb-error) 20%, transparent);
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: var(--hb-on-surface-variant);
+    border: 1px solid var(--hb-outline-variant);
+
+    &:hover:not(:disabled) {
+      background: var(--hb-surface-container-low);
+    }
+  }
+}
+
+.btn-spinner {
+  font-size: 18px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
