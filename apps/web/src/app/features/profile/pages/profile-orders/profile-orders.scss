@@ -1,0 +1,354 @@
+/* Profile Orders page — tokens from docs/design/DESIGN.md */
+:host {
+  display: block;
+}
+
+.orders-page {
+  padding: 24px 16px 48px;
+  max-width: 40rem;
+
+  @media (min-width: 768px) {
+    padding: 40px 40px 64px;
+  }
+}
+
+.page-head {
+  margin-bottom: 24px;
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 36px;
+    letter-spacing: -0.01em;
+    color: var(--hb-on-surface);
+  }
+
+  p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--hb-on-surface-variant);
+  }
+}
+
+.loading-text {
+  margin: 0;
+  font-size: 16px;
+  color: var(--hb-on-surface-variant);
+}
+
+.status-error {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(186, 26, 26, 0.06);
+  border: 1px solid rgba(186, 26, 26, 0.2);
+  color: var(--hb-error);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* ── Empty state ───────────────────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 16px;
+  color: var(--hb-on-surface-variant);
+  font-size: 14px;
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  text-align: center;
+
+  p {
+    margin: 0;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--hb-on-surface);
+  }
+
+  .material-symbols-outlined {
+    font-size: 40px;
+    opacity: 0.45;
+  }
+
+  a {
+    color: var(--hb-primary);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.empty-sub {
+  font-size: 12px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ── Order list ────────────────────────────────────────────────────────── */
+.order-list {
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.order-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  border: 0;
+  border-bottom: 1px solid var(--hb-outline-variant);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:hover {
+    background: var(--hb-surface-container-low);
+  }
+}
+
+.order-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.order-id {
+  font: 600 14px/20px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+}
+
+.order-date {
+  font-size: 12px;
+  color: var(--hb-on-surface-variant);
+}
+
+.order-row-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.order-total {
+  font: 600 13px/20px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+}
+
+.chevron {
+  color: var(--hb-on-surface-variant);
+  flex-shrink: 0;
+}
+
+/* ── Status badge ──────────────────────────────────────────────────────── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.03em;
+
+  &--pending {
+    background: var(--hb-secondary-fixed);
+    color: var(--hb-on-secondary-container);
+  }
+
+  &--confirmed,
+  &--processing,
+  &--handed_to_hb {
+    background: color-mix(in srgb, var(--hb-primary) 12%, transparent);
+    color: var(--hb-primary);
+  }
+
+  &--shipped {
+    background: color-mix(in srgb, var(--hb-primary) 20%, transparent);
+    color: var(--hb-primary);
+  }
+
+  &--delivered {
+    background: var(--hb-primary);
+    color: var(--hb-on-primary);
+  }
+
+  &--cancelled {
+    background: color-mix(in srgb, var(--hb-error) 12%, transparent);
+    color: var(--hb-error);
+  }
+}
+
+/* ── Detail view ───────────────────────────────────────────────────────── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--hb-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.detail-card {
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.detail-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detail-heading {
+  margin: 0;
+  font: 600 20px/28px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+}
+
+.detail-sub {
+  margin: 4px 0 20px;
+  font-size: 13px;
+  color: var(--hb-on-surface-variant);
+}
+
+.section-heading {
+  margin: 24px 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hb-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
+/* ── Line items ────────────────────────────────────────────────────────── */
+.line-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.line-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hb-outline-variant);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.line-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.line-item-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--hb-on-surface);
+}
+
+.line-item-qty {
+  font-size: 12px;
+  color: var(--hb-on-surface-variant);
+}
+
+.line-item-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--hb-on-surface);
+  flex-shrink: 0;
+}
+
+/* ── Shipping address ──────────────────────────────────────────────────── */
+.shipping-address {
+  margin: 0;
+  font-style: normal;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--hb-on-surface);
+}
+
+/* ── Totals ────────────────────────────────────────────────────────────── */
+.totals-list {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.totals-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+
+  dt {
+    font-size: 14px;
+    color: var(--hb-on-surface-variant);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 14px;
+    color: var(--hb-on-surface);
+  }
+
+  &--total {
+    padding-top: 10px;
+    margin-top: 4px;
+    border-top: 1px solid var(--hb-outline-variant);
+
+    dt,
+    dd {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--hb-on-surface);
+    }
+  }
+}

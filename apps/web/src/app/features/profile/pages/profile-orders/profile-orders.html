@@ -1,0 +1,111 @@
+<section class="orders-page">
+  <header class="page-head">
+    <h1>Order history</h1>
+    <p>View your past orders and their status.</p>
+  </header>
+
+  @if (error()) {
+    <p class="status-error" role="alert">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="loading-text">Loading your orders…</p>
+  } @else if (!selectedId()) {
+    <!-- ── List view ────────────────────────────────────────────────── -->
+    @if (!hasOrders()) {
+      <div class="empty-state">
+        <span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span>
+        <p>No orders yet.</p>
+        <span class="empty-sub">
+          Browse the <a routerLink="/shop">shop</a> to place your first order.
+        </span>
+      </div>
+    } @else {
+      <div class="order-list" role="list" aria-label="Your orders">
+        @for (order of orders(); track order.id) {
+          <button
+            class="order-row"
+            role="listitem"
+            type="button"
+            (click)="selectOrder(order.id)"
+          >
+            <div class="order-row-main">
+              <span class="order-id" title="{{ order.id }}">Order #{{ shortId(order.id) }}</span>
+              <span class="order-date">{{ order.createdAt | date:'d MMM y' }}</span>
+            </div>
+            <div class="order-row-meta">
+              <span class="status-badge status-badge--{{ order.status }}">{{ humanizeStatus(order.status) }}</span>
+              <span class="order-total">{{ formatMoney(order.total, order.currency) }}</span>
+            </div>
+            <span class="material-symbols-outlined chevron" aria-hidden="true">chevron_right</span>
+          </button>
+        }
+      </div>
+    }
+  } @else {
+    <!-- ── Detail view ──────────────────────────────────────────────── -->
+    <button class="back-link" type="button" (click)="backToList()">
+      <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+      Back to orders
+    </button>
+
+    @if (detailLoading()) {
+      <p class="loading-text">Loading order…</p>
+    } @else if (detailError()) {
+      <p class="status-error" role="alert">{{ detailError() }}</p>
+    } @else if (selectedOrder(); as order) {
+      <div class="detail-card">
+        <div class="detail-heading-row">
+          <h2 class="detail-heading">Order #{{ shortId(order.id) }}</h2>
+          <span class="status-badge status-badge--{{ order.status }}">{{ humanizeStatus(order.status) }}</span>
+        </div>
+        <p class="detail-sub">Placed {{ order.createdAt | date:'d MMM y, HH:mm' }}</p>
+
+        <!-- Line items -->
+        <h3 class="section-heading">Items</h3>
+        <div class="line-items" role="list">
+          @for (item of order.items; track item.id) {
+            <div class="line-item" role="listitem">
+              <div class="line-item-main">
+                <span class="line-item-name">{{ item.productName }}</span>
+                <span class="line-item-qty">Qty {{ item.quantity }} × {{ formatMoney(item.unitPrice, item.currency) }}</span>
+              </div>
+              <span class="line-item-total">{{ formatMoney(lineTotal(item.unitPrice, item.quantity), item.currency) }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Shipping address -->
+        @if (order.shippingAddress; as address) {
+          <h3 class="section-heading">Shipping address</h3>
+          <address class="shipping-address">
+            {{ address.recipientName }}<br />
+            {{ address.line1 }}<br />
+            @if (address.line2) {
+              {{ address.line2 }}<br />
+            }
+            {{ address.city }}@if (address.region) {, {{ address.region }}}@if (address.postalCode) { {{ address.postalCode }}}<br />
+            {{ address.countryCode }}
+          </address>
+        }
+
+        <!-- Totals -->
+        <h3 class="section-heading">Totals</h3>
+        <dl class="totals-list">
+          <div class="totals-row">
+            <dt>Subtotal</dt>
+            <dd>{{ formatMoney(order.subtotal, order.currency) }}</dd>
+          </div>
+          <div class="totals-row">
+            <dt>Shipping</dt>
+            <dd>{{ formatMoney(order.shippingTotal, order.currency) }}</dd>
+          </div>
+          <div class="totals-row totals-row--total">
+            <dt>Total</dt>
+            <dd>{{ formatMoney(order.total, order.currency) }}</dd>
+          </div>
+        </dl>
+      </div>
+    }
+  }
+</section>
