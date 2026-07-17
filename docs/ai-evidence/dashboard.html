@@ -113,6 +113,22 @@
 
       html += '</div>'; // grid2
 
+      // Token usage by agent
+      const at = t.agentTokens || {};
+      if (at.present) {
+        const ba = at.byAgent || [];
+        const totalAll = ba.reduce((s, a) => s + a.totalTokens, 0);
+        const maxTok = Math.max(1, ...ba.map((a) => a.totalTokens));
+        html += '<h2>Token usage by agent</h2><table><tr><th>Agent</th><th class="num">Invocations</th><th class="num">Input</th><th class="num">Output</th><th class="num">Cache read</th><th class="num">Cache write</th><th class="num">Total</th><th></th></tr>';
+        html += ba.map((a) => `<tr><td>${a.agentType}</td><td class="num">${n(a.invocations)}</td><td class="num">${n(a.inputTokens)}</td>
+          <td class="num">${n(a.outputTokens)}</td><td class="num">${n(a.cacheReadTokens)}</td><td class="num">${n(a.cacheCreationTokens)}</td>
+          <td class="num">${n(a.totalTokens)}</td><td><div class="bartrack"><div class="barfill" style="width:${Math.round((a.totalTokens / maxTok) * 100)}%"></div></div></td></tr>`).join('');
+        html += `<tr><td><strong>Total</strong></td><td class="num"><strong>${n(ba.reduce((s, a) => s + a.invocations, 0))}</strong></td><td></td><td></td><td></td><td></td><td class="num"><strong>${n(totalAll)}</strong></td><td></td></tr>`;
+        html += '</table><p class="note">Tracks whether agent-definition changes (e.g. the ponytail minimalism ladder) move token spend — compare across evidence snapshots taken before/after.</p>';
+      } else {
+        html += '<h2>Token usage by agent</h2><p class="note">No agent-token telemetry yet — populated by the SubagentStop hook as specialist agents run.</p>';
+      }
+
       // Traceability
       if (E.branches?.length) {
         html += '<h2>Traceability — card → branch → PR</h2><table><tr><th>Card</th><th>Branch</th><th>PR</th></tr>';

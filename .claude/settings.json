@@ -28,6 +28,13 @@
           { "type": "command", "command": "node .claude/hooks/post-edit-lint.js" }
         ]
       }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node .claude/hooks/log-agent-tokens.js" }
+        ]
+      }
     ]
   }
 }

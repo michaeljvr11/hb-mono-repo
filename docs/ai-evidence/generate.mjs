@@ -164,11 +164,17 @@ function collectDesign() {
   } catch { return { files: 0, screens: [] }; }
 }
 
-// ── 2. Guardrail telemetry ──────────────────────────────────────────────────
+// ── 2. Guardrail telemetry + per-agent token usage ──────────────────────────
 function collectTelemetry() {
   const logPath = join(ROOT, '.claude', 'factory-log.jsonl');
   const out = { present: false, prodBlocks: 0, blockReasons: {}, gatePass: 0, gateFail: 0, edits: 0, editsUnfixable: 0, firstTs: null, lastTs: null };
-  if (!existsSync(logPath)) { note('No telemetry yet (.claude/factory-log.jsonl absent) — the hooks populate it as the factory runs.'); return out; }
+  const agents = new Map(); // agentType -> { invocations, inputTokens, outputTokens, cacheReadTokens, cacheCreationTokens }
+  const recentTokenEvents = [];
+  if (!existsSync(logPath)) {
+    note('No telemetry yet (.claude/factory-log.jsonl absent) — the hooks populate it as the factory runs.');
+    out.agentTokens = { present: false, byAgent: [], recent: [] };
+    return out;
+  }
   out.present = true;
   for (const line of readFileSync(logPath, 'utf8').split('\n')) {
     const l = line.trim();
@@ -178,7 +184,25 @@ function collectTelemetry() {
     if (e.type === 'prod_fence_block') { out.prodBlocks++; out.blockReasons[e.reason] = (out.blockReasons[e.reason] || 0) + 1; }
     else if (e.type === 'pr_gate') { e.result === 'pass' ? out.gatePass++ : out.gateFail++; }
     else if (e.type === 'edit_lint') { out.edits++; if (e.autofixed === false) out.editsUnfixable++; }
+    else if (e.type === 'agent_token_usage') {
+      const a = agents.get(e.agentType) || { invocations: 0, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0 };
+      a.invocations++;
+      a.inputTokens += e.inputTokens || 0;
+      a.outputTokens += e.outputTokens || 0;
+      a.cacheReadTokens += e.cacheReadInputTokens || 0;
+      a.cacheCreationTokens += e.cacheCreationInputTokens || 0;
+      agents.set(e.agentType, a);
+      recentTokenEvents.push({ ts: e.ts, agentType: e.agentType, totalTokens: (e.inputTokens || 0) + (e.outputTokens || 0) });
+    }
   }
+  const byAgent = [...agents.entries()]
+    .map(([agentType, v]) => ({ agentType, ...v, totalTokens: v.inputTokens + v.outputTokens }))
+    .sort((a, b) => b.totalTokens - a.totalTokens);
+  out.agentTokens = {
+    present: byAgent.length > 0,
+    byAgent,
+    recent: recentTokenEvents.slice(-20),
+  };
   return out;
 }
 
@@ -296,6 +320,28 @@ function md(data) {
     L.push(`| Lint-on-edit | ${t.edits} | ${t.editsUnfixable} needed agent rework |`);
     L.push('');
     L.push('> **Zero unreviewed prod merges** is not a promise — it is enforced by `block-prod-git.js` and logged above.');
+  }
+  L.push('');
+
+  // Token usage by agent
+  L.push('## Token usage by agent');
+  L.push('');
+  if (!t.agentTokens || !t.agentTokens.present) {
+    L.push('_No agent-token telemetry yet — `log-agent-tokens.js` (SubagentStop hook) populates this as specialist');
+    L.push('agents (backend-engineer, frontend-engineer, etc.) run. Re-run `npm run evidence` after a `/ship-card`');
+    L.push('or `/ship-batch` cycle to populate this section._');
+  } else {
+    const ba = t.agentTokens.byAgent;
+    const totalAll = ba.reduce((s, a) => s + a.totalTokens, 0);
+    L.push('| Agent | Invocations | Input tokens | Output tokens | Cache read | Cache write | Total |');
+    L.push('|---|--:|--:|--:|--:|--:|--:|');
+    for (const a of ba) {
+      L.push(`| ${a.agentType} | ${a.invocations} | ${a.inputTokens.toLocaleString()} | ${a.outputTokens.toLocaleString()} | ${a.cacheReadTokens.toLocaleString()} | ${a.cacheCreationTokens.toLocaleString()} | ${a.totalTokens.toLocaleString()} |`);
+    }
+    L.push(`| **Total** | **${ba.reduce((s, a) => s + a.invocations, 0)}** |  |  |  |  | **${totalAll.toLocaleString()}** |`);
+    L.push('');
+    L.push('_Tracks whether changes to agent definitions (e.g. the ponytail minimalism ladder) actually move token');
+    L.push('spend — compare this table\'s totals across evidence snapshots taken before and after such a change._');
   }
   L.push('');
 

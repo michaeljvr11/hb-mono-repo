@@ -59,6 +59,15 @@ Event types: `prod_fence_block` (with reason), `pr_gate` (pass/fail + duration),
 `edit_lint` (file + whether eslint auto-fixed it). Logging is wrapped so a failure can
 never alter a hook's decision — the prod fence cannot fail open.
 
+A fourth event type, `agent_token_usage`, is written by a `SubagentStop` hook
+([`log-agent-tokens.js`](../../.claude/hooks/log-agent-tokens.js)) every time a specialist
+agent (`backend-engineer`, `frontend-engineer`, `code-reviewer`, etc.) finishes — Claude
+Code hands the hook the agent's type and its token usage (input/output/cache) directly, no
+transcript parsing involved. This makes agent-definition changes measurable rather than
+asserted: run `npm run evidence` before and after a change like the ponytail minimalism
+ladder (see `.claude/agents/backend-engineer.md`) and compare the **Token usage by agent**
+table's totals to see whether it actually moved token spend.
+
 ### 3. Existing system-of-record data
 The generator also reads what the team already produces in the normal workflow:
 git history (churn by area), the Trello board (card flow through the pipeline), and
@@ -73,6 +82,7 @@ GitHub PRs (traceability). No extra logging required — it's mined, not manufac
 | Churn by area | path prefix → API / Web / Shared / Docs / Factory / CI / Root |
 | Test specs | `git ls-files "*.spec.ts" "*.test.ts"` |
 | Guardrail counts | tallied from `.claude/factory-log.jsonl` |
+| Token usage by agent | `agent_token_usage` events in `.claude/factory-log.jsonl`, written by the `SubagentStop` hook |
 | Card → branch → PR | `feat/<card-id>-<slug>` branch names joined to `gh pr list` |
 | Trello card flow | Trello REST API (creds read from gitignored `.mcp.json`) |
 

@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-07-17T11:20:15.588Z",
+  "generatedAt": "2026-07-17T11:28:28.995Z",
   "git": {
-    "totalCommits": 121,
-    "aiCommits": 111,
+    "totalCommits": 122,
+    "aiCommits": 112,
     "aiPct": 92,
     "appCommits": 78,
-    "ins": 56199,
-    "del": 4682,
-    "net": 51517,
-    "aiIns": 42767,
-    "aiDel": 4544,
+    "ins": 56264,
+    "del": 4733,
+    "net": 51531,
+    "aiIns": 42832,
+    "aiDel": 4595,
     "filesTouched": 501,
     "areaRows": [
       {
@@ -26,9 +26,9 @@
       },
       {
         "name": "Docs",
-        "commits": 40,
-        "ins": 11688,
-        "del": 2558
+        "commits": 41,
+        "ins": 11753,
+        "del": 2609
       },
       {
         "name": "AI Factory config",
@@ -59,9 +59,9 @@
     "lastDate": "2026-07-17",
     "recent": [
       {
-        "hash": "57688be",
-        "subject": "index on feat/ponytail-minimalism-ladder: 6022c1e feat(factory): vendor Ponytail minimalism ladder into backend/frontend/reviewer agents",
-        "ai": false
+        "hash": "c322928",
+        "subject": "chore(evidence): recompile AI evidence report after merging ponytail-minimalism-ladder",
+        "ai": true
       },
       {
         "hash": "6022c1e",
@@ -150,11 +150,6 @@
       "branch": "feat/oWqIV57s-vendor-dashboard",
       "cardId": "oWqIV57s",
       "slug": "vendor-dashboard"
-    },
-    {
-      "branch": "feat/ponytail-minimalism-ladder",
-      "cardId": "ponytail",
-      "slug": "minimalism-ladder"
     },
     {
       "branch": "feat/ship-batch-command",
@@ -272,19 +267,24 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 16,
+    "prodBlocks": 17,
     "blockReasons": {
-      "push names a protected branch": 12,
+      "push names a protected branch": 13,
       "force push": 1,
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 14,
+    "gatePass": 16,
     "gateFail": 1,
     "edits": 270,
     "editsUnfixable": 101,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-17T09:20:45.560Z"
+    "lastTs": "2026-07-17T11:19:10.427Z",
+    "agentTokens": {
+      "present": false,
+      "byAgent": [],
+      "recent": []
+    }
   },
   "steeringAudit": null,
   "extractionCandidates": null,
@@ -292,7 +292,7 @@
     {
       "headRefName": "feat/ponytail-minimalism-ladder",
       "number": 32,
-      "state": "OPEN",
+      "state": "CLOSED",
       "title": "feat(factory): vendor Ponytail minimalism ladder into backend/frontend/reviewer agents",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/32"
     },
