@@ -220,6 +220,7 @@ describe('ProfileOrders — detail view', () => {
     expect(items[0].textContent).toContain('Qty 3');
     expect(items[0].textContent).toContain('400');
     expect(items[0].textContent).toContain('200,00'); // 400 * 3 = 1200 line total, en-ZA formatted
+    expect(component.lineTotal(400, 3)).toBe(1200);
   });
 
   it('renders the shipping address', async () => {

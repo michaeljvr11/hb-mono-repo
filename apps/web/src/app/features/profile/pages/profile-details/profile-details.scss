@@ -100,14 +100,14 @@ form {
 
   &:focus-within {
     border-color: var(--hb-primary);
-    box-shadow: 0 0 0 2px rgba(1, 83, 0, 0.1);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--hb-primary) 10%, transparent);
   }
 
   &.invalid {
     border-color: var(--hb-error);
 
     &:focus-within {
-      box-shadow: 0 0 0 2px rgba(186, 26, 26, 0.1);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--hb-error) 10%, transparent);
     }
   }
 
@@ -149,8 +149,8 @@ form {
   margin: 0;
   padding: 12px 14px;
   border-radius: 8px;
-  background: rgba(186, 26, 26, 0.06);
-  border: 1px solid rgba(186, 26, 26, 0.2);
+  background: color-mix(in srgb, var(--hb-error) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hb-error) 20%, transparent);
   color: var(--hb-error);
   font-size: 14px;
   line-height: 20px;
@@ -160,8 +160,8 @@ form {
   margin: 0;
   padding: 12px 14px;
   border-radius: 8px;
-  background: rgba(1, 83, 0, 0.06);
-  border: 1px solid rgba(1, 83, 0, 0.2);
+  background: color-mix(in srgb, var(--hb-primary) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hb-primary) 20%, transparent);
   color: var(--hb-primary);
   font-size: 14px;
   line-height: 20px;

@@ -4,6 +4,7 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { finalize } from 'rxjs';
 import { AddressDto, CountryCode, CreateAddressRequest } from '@hb/shared';
 import { AddressesService } from '../../../../core/api/addresses.service';
+import { extractErrorMessage } from '../../../../shared/extract-error-message';
 
 type AddressFormMode = 'create' | 'edit';
 
@@ -141,7 +142,7 @@ export class ProfileAddresses implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.formError.set(
-          err.error?.message ??
+          extractErrorMessage(err) ??
             `Could not ${mode === 'create' ? 'add' : 'update'} the address. Please try again.`,
         );
       },
@@ -165,7 +166,9 @@ export class ProfileAddresses implements OnInit {
         this.pendingDeleteId.set(null);
       },
       error: (err: HttpErrorResponse) => {
-        this.deleteError.set(err.error?.message ?? 'Failed to delete address. Please try again.');
+        this.deleteError.set(
+          extractErrorMessage(err) ?? 'Failed to delete address. Please try again.',
+        );
         this.pendingDeleteId.set(null);
       },
     });

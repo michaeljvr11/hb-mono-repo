@@ -42,8 +42,8 @@
   margin: 0 0 20px;
   padding: 12px 14px;
   border-radius: 8px;
-  background: rgba(186, 26, 26, 0.06);
-  border: 1px solid rgba(186, 26, 26, 0.2);
+  background: color-mix(in srgb, var(--hb-error) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hb-error) 20%, transparent);
   color: var(--hb-error);
   font-size: 14px;
   line-height: 20px;

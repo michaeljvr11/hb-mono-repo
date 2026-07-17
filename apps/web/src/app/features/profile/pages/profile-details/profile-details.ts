@@ -4,6 +4,7 @@ import { finalize } from 'rxjs';
 import { UpdateProfileRequest, UserDto } from '@hb/shared';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ProfileService } from '../../../../core/api/profile.service';
+import { extractErrorMessage } from '../../../../shared/extract-error-message';
 
 /** Delay (ms) between showing the "password changed" message and forcing sign-out,
  *  so the user has a moment to read why they're being logged out. */
@@ -103,7 +104,7 @@ export class ProfileDetails implements OnInit {
         },
         error: (err: unknown) => {
           this.detailsError.set(
-            this.extractErrorMessage(err) ?? 'Could not save your details. Please try again.',
+            extractErrorMessage(err) ?? 'Could not save your details. Please try again.',
           );
         },
       });
@@ -134,20 +135,9 @@ export class ProfileDetails implements OnInit {
         },
         error: (err: unknown) => {
           this.passwordError.set(
-            this.extractErrorMessage(err) ?? 'Could not change your password. Please try again.',
+            extractErrorMessage(err) ?? 'Could not change your password. Please try again.',
           );
         },
       });
-  }
-
-  private extractErrorMessage(error: unknown): string | null {
-    // NestJS returns `message` as a string (e.g. 400/401) or a string[] for
-    // DTO validation failures — normalise both to the first useful line.
-    if (typeof error === 'object' && error !== null && 'error' in error) {
-      const inner = (error as { error?: { message?: unknown } }).error;
-      if (inner && typeof inner.message === 'string') return inner.message;
-      if (inner && Array.isArray(inner.message)) return inner.message[0] ?? null;
-    }
-    return null;
   }
 }
