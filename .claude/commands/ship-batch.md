@@ -1,7 +1,7 @@
 ---
 description: >
   Take multiple Trello cards through the full AI-factory pipeline in one run —
-  context → plan → implement (parallel or sequential) → test → review → PR.
+  context → plan → clarify → implement (parallel or sequential) → test → review → PR.
   For large, well-specified work, offload implementation to Claude Fable 5.
   Stops before merge; a human owns prod.
 ---
@@ -79,7 +79,26 @@ for this command for a one-line change.
      every card to "In Progress". Create branch `feat/<primary-card-id>-<slug>`
      from up-to-date main (primary = the first/most-significant card id).
 
-3. IMPLEMENT — same PULL-then-build loop as `/ship-card`, extended for the batch
+3. CLARIFY — the interactive boundary before any code gets written
+   - Check the plan against every card's CONTEXT MANIFEST and acceptance criteria, **and** against
+     the batch-level decisions from PLAN: is the bundling justification actually solid for every
+     card, is the parallel-vs-sequential split defensible, is a Fable-5 offload decision resting on
+     a task spec that's actually complete? Look for the same per-card ambiguity `/ship-card` checks
+     for (acceptance criteria with more than one reasonable reading, an unresolved business rule, an
+     underspecified contract shape), plus batch-specific ambiguity: do two cards imply conflicting
+     shapes for the same shared contract, does the mode decision hinge on a coupling assumption that
+     isn't actually confirmed, is the "large enough for Fable" call actually justified.
+   - If everything needed to implement the whole batch is already settled, skip this step silently
+     — don't manufacture questions to seem thorough.
+   - If something is genuinely unclear on any card or at the batch level: **stop here.** Do not
+     guess and quietly note it as an assumption, and do not carry an unresolved conflict into
+     IMPLEMENT hoping the slices reconcile themselves. Ask the developer directly —
+     `AskUserQuestion` for a short closed set of concrete resolutions, plain text for open-ended
+     answers. Batch every open question from every card into one turn rather than trickling them
+     out card by card. Wait for the answer, fold it into the plan and every affected card's comment,
+     then continue to IMPLEMENT.
+
+4. IMPLEMENT — same PULL-then-build loop as `/ship-card`, extended for the batch
    For each slice of work (a slice may span multiple cards or be one card broken
    into vertical slices — one commit per slice either way):
    - PULL: `git pull` this project and the Obsidian vault before every slice —
@@ -99,18 +118,18 @@ for this command for a one-line change.
      DELIVER, not per slice.
    Then start the next slice from PULL again.
 
-4. TEST
+5. TEST
    - test-engineer writes/updates tests for the whole batch.
    - Run: `npm run test:api`, `npm run test -w @hb/web`, `npm run lint:api`,
      `npm run build`. Fix failures before proceeding.
 
-5. REVIEW
+6. REVIEW
    - Run code-reviewer on the full diff. Address every FAIL. Re-run affected
      tests. A bundled diff is bigger than a single-card diff — expect the
      reviewer to need the cross-card manifest from step 1 to judge integration
      points correctly; pass it in.
 
-6. DELIVER
+7. DELIVER
    - Commit any remaining changes, same AI-authorship trailer as step 3.
    - DOCUMENT (once): dispatch docs-writer with the CONTEXT MANIFEST(s) plus
      accumulated slice notes for the whole batch. It appends Implementation
