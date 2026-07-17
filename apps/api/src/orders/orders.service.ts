@@ -18,6 +18,7 @@ import {
   OrderStatus,
   PaymentStatus,
   UserRole,
+  VendorOrderLineDto,
 } from '@hb/shared';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
@@ -69,6 +70,8 @@ export class OrdersService {
     private paymentsRepository: Repository<Payment>,
     @InjectRepository(Vendor)
     private vendorsRepository: Repository<Vendor>,
+    @InjectRepository(OrderItem)
+    private orderItemsRepository: Repository<OrderItem>,
     @Inject(PAYMENT_PROVIDER)
     private readonly paymentProvider: PaymentProviderPort,
     private readonly dataSource: DataSource,
@@ -94,6 +97,36 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
     return this.toDto(order);
+  }
+
+  /**
+   * Vendor's own order lines across all orders — the read model behind the
+   * vendor portal fulfilment queue. Ownership is enforced by `vendorId` on
+   * `order_items`, mirroring {@link assertActorMayTransition}'s vendor-row
+   * lookup. 404s if the caller has no vendor row (mirrors that pattern too).
+   */
+  async findAllForVendor(userId: string): Promise<VendorOrderLineDto[]> {
+    const vendor = await this.vendorsRepository.findOne({ where: { userId } });
+    if (!vendor) {
+      throw new NotFoundException('Vendor not found');
+    }
+
+    const items = await this.orderItemsRepository.find({
+      where: { vendorId: vendor.id },
+      relations: ['order'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return items.map((item) => ({
+      id: item.id,
+      orderId: item.orderId,
+      orderStatus: item.order.status,
+      orderCreatedAt: item.order.createdAt.toISOString(),
+      productName: item.productName,
+      unitPrice: Number(item.unitPrice),
+      currency: item.currency,
+      quantity: item.quantity,
+    }));
   }
 
   /**
