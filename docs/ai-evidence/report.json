@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-07-17T11:01:50.722Z",
+  "generatedAt": "2026-07-17T11:20:15.588Z",
   "git": {
-    "totalCommits": 118,
-    "aiCommits": 108,
+    "totalCommits": 121,
+    "aiCommits": 111,
     "aiPct": 92,
     "appCommits": 78,
-    "ins": 56056,
-    "del": 4487,
-    "net": 51569,
-    "aiIns": 42624,
-    "aiDel": 4349,
+    "ins": 56199,
+    "del": 4682,
+    "net": 51517,
+    "aiIns": 42767,
+    "aiDel": 4544,
     "filesTouched": 501,
     "areaRows": [
       {
@@ -26,15 +26,15 @@
       },
       {
         "name": "Docs",
-        "commits": 39,
-        "ins": 11625,
-        "del": 2373
+        "commits": 40,
+        "ins": 11688,
+        "del": 2558
       },
       {
         "name": "AI Factory config",
-        "commits": 36,
-        "ins": 1627,
-        "del": 58
+        "commits": 38,
+        "ins": 1707,
+        "del": 68
       },
       {
         "name": "Shared contracts",
@@ -59,9 +59,24 @@
     "lastDate": "2026-07-17",
     "recent": [
       {
-        "hash": "d64957a",
-        "subject": "index on feat/ship-batch-command: 3286a11 feat(factory): add /ship-batch command for multi-card and Fable-offloaded builds",
+        "hash": "57688be",
+        "subject": "index on feat/ponytail-minimalism-ladder: 6022c1e feat(factory): vendor Ponytail minimalism ladder into backend/frontend/reviewer agents",
         "ai": false
+      },
+      {
+        "hash": "6022c1e",
+        "subject": "feat(factory): vendor Ponytail minimalism ladder into backend/frontend/reviewer agents",
+        "ai": true
+      },
+      {
+        "hash": "9cb4a8f",
+        "subject": "feat(factory): add CLARIFY step to /ship-card and /ship-batch",
+        "ai": true
+      },
+      {
+        "hash": "97b6b19",
+        "subject": "chore(evidence): recompile AI evidence report after merging steering-analysis-poc",
+        "ai": true
       },
       {
         "hash": "3286a11",
@@ -102,21 +117,6 @@
         "hash": "74daa24",
         "subject": "feat(web): admin search-synonyms management UI (card #53)",
         "ai": true
-      },
-      {
-        "hash": "56e98fa",
-        "subject": "fix(api): resolve Meilisearch integration bugs found in live verification",
-        "ai": true
-      },
-      {
-        "hash": "ce0386a",
-        "subject": "feat(api): synonyms admin CRUD endpoint + Meilisearch reload (card #52)",
-        "ai": true
-      },
-      {
-        "hash": "744653a",
-        "subject": "feat(api): GET /search + GET /search/suggest endpoints (card #50)",
-        "ai": true
       }
     ]
   },
@@ -152,14 +152,14 @@
       "slug": "vendor-dashboard"
     },
     {
+      "branch": "feat/ponytail-minimalism-ladder",
+      "cardId": "ponytail",
+      "slug": "minimalism-ladder"
+    },
+    {
       "branch": "feat/ship-batch-command",
       "cardId": "ship",
       "slug": "batch-command"
-    },
-    {
-      "branch": "feat/steering-analysis-poc",
-      "cardId": "steering",
-      "slug": "analysis-poc"
     },
     {
       "branch": "feat/xEOk5i0M-vendor-products",
@@ -289,6 +289,20 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/ponytail-minimalism-ladder",
+      "number": 32,
+      "state": "OPEN",
+      "title": "feat(factory): vendor Ponytail minimalism ladder into backend/frontend/reviewer agents",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/32"
+    },
+    {
+      "headRefName": "feat/ship-batch-command",
+      "number": 31,
+      "state": "OPEN",
+      "title": "feat(factory): steering-doc alignment analysis + /ship-batch multi-card command",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/31"
+    },
     {
       "headRefName": "feat/sKd1xhQl-vendor-orders-fulfilment",
       "number": 30,
