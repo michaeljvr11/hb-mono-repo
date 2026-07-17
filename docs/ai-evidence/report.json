@@ -1,52 +1,52 @@
 {
-  "generatedAt": "2026-07-07T10:48:53.698Z",
+  "generatedAt": "2026-07-17T09:22:38.511Z",
   "git": {
-    "totalCommits": 99,
-    "aiCommits": 91,
-    "aiPct": 92,
-    "appCommits": 65,
-    "ins": 49281,
-    "del": 3582,
-    "net": 45699,
-    "aiIns": 36220,
-    "aiDel": 3496,
-    "filesTouched": 446,
+    "totalCommits": 113,
+    "aiCommits": 103,
+    "aiPct": 91,
+    "appCommits": 76,
+    "ins": 54467,
+    "del": 4260,
+    "net": 50207,
+    "aiIns": 41035,
+    "aiDel": 4122,
+    "filesTouched": 494,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 42,
-        "ins": 24857,
-        "del": 1341
-      },
-      {
-        "name": "Docs",
-        "commits": 35,
-        "ins": 10981,
-        "del": 1946
+        "commits": 44,
+        "ins": 26042,
+        "del": 1344
       },
       {
         "name": "API (NestJS)",
+        "commits": 46,
+        "ins": 14172,
+        "del": 677
+      },
+      {
+        "name": "Docs",
         "commits": 37,
-        "ins": 11083,
-        "del": 224
+        "ins": 11183,
+        "del": 2151
       },
       {
         "name": "AI Factory config",
-        "commits": 29,
-        "ins": 974,
-        "del": 44
-      },
-      {
-        "name": "Shared contracts",
-        "commits": 13,
-        "ins": 678,
-        "del": 5
+        "commits": 33,
+        "ins": 1298,
+        "del": 58
       },
       {
         "name": "Root & config",
-        "commits": 11,
-        "ins": 508,
-        "del": 20
+        "commits": 14,
+        "ins": 782,
+        "del": 22
+      },
+      {
+        "name": "Shared contracts",
+        "commits": 15,
+        "ins": 790,
+        "del": 6
       },
       {
         "name": "CI / templates",
@@ -56,71 +56,111 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-07-07",
+    "lastDate": "2026-07-17",
     "recent": [
       {
-        "hash": "95513c3",
-        "subject": "feat(web): checkout page with verification/stock error affordances",
+        "hash": "188fa83",
+        "subject": "improvements to project run skill and db backups",
+        "ai": false
+      },
+      {
+        "hash": "5884367",
+        "subject": "fix(web): per-input aria-labels on synonym equivalents (card #53)",
         "ai": true
       },
       {
-        "hash": "1abbfec",
-        "subject": "feat(web): cart page + real add-to-cart wiring and cart badges",
+        "hash": "74daa24",
+        "subject": "feat(web): admin search-synonyms management UI (card #53)",
         "ai": true
       },
       {
-        "hash": "c4018b4",
-        "subject": "feat(api): order creation, stub payment capture + state machine",
+        "hash": "56e98fa",
+        "subject": "fix(api): resolve Meilisearch integration bugs found in live verification",
         "ai": true
       },
       {
-        "hash": "7cec8d2",
-        "subject": "feat(api): server-side cart endpoints with live pricing + ownership",
+        "hash": "ce0386a",
+        "subject": "feat(api): synonyms admin CRUD endpoint + Meilisearch reload (card #52)",
         "ai": true
       },
       {
-        "hash": "cb03161",
-        "subject": "feat(shared): add handed_to_hb order state + cart/checkout contracts",
+        "hash": "744653a",
+        "subject": "feat(api): GET /search + GET /search/suggest endpoints (card #50)",
         "ai": true
       },
       {
-        "hash": "8254361",
-        "subject": "chore(evidence): recompile AI-evidence report for fable-storefront-oneshot",
+        "hash": "5f4a8c0",
+        "subject": "feat(api): ProductSearchService — ranking, faceted filters, autocomplete (card #48)",
         "ai": true
       },
       {
-        "hash": "0599e2f",
-        "subject": "docs(security): add SECURITY.md + public-route guardrail test [Phase 3]",
+        "hash": "a69826a",
+        "subject": "feat(api): synonyms data model — entity, migration, shared contract, seed (card #49)",
         "ai": true
       },
       {
-        "hash": "e03c3dc",
-        "subject": "test(web): drop role from register payload assertions [C1]",
+        "hash": "be31d6b",
+        "subject": "feat(api): SearchIndexerService — event listeners + scheduled full reindex (card #47)",
         "ai": true
       },
       {
-        "hash": "34f5f2a",
-        "subject": "fix(security): low-severity hardening bundle [L1-L4]",
+        "hash": "c74caaf",
+        "subject": "feat(shared): product search contracts + validated query DTO (card #46)",
         "ai": true
       },
       {
-        "hash": "4c55c73",
-        "subject": "docs(security): mark M3 (multer) deferred to an isolated dep-bump PR",
+        "hash": "b6e27c8",
+        "subject": "feat(api): SearchModule scaffold + Meilisearch in Docker Compose (card #45)",
         "ai": true
       },
       {
-        "hash": "43361e5",
-        "subject": "fix(auth): harden Google OAuth — state CSRF + verified-email linking [M2]",
-        "ai": true
-      },
-      {
-        "hash": "cc58049",
-        "subject": "feat(security): add helmet security headers [M1]",
+        "hash": "1cc7c15",
+        "subject": "chore(evidence): recompile AI-evidence report for fable-checkout-oneshot",
         "ai": true
       }
     ]
   },
   "branches": [
+    {
+      "branch": "feat/EXPtZCJL-vendor-portal-shell",
+      "cardId": "EXPtZCJL",
+      "slug": "vendor-portal-shell"
+    },
+    {
+      "branch": "feat/IhTVdNYP-admin-catalog",
+      "cardId": "IhTVdNYP",
+      "slug": "admin-catalog"
+    },
+    {
+      "branch": "feat/L9fM1Gu7-storefront",
+      "cardId": "L9fM1Gu7",
+      "slug": "storefront"
+    },
+    {
+      "branch": "feat/N8P6OPPm-admin-user-mgmt",
+      "cardId": "N8P6OPPm",
+      "slug": "admin-user-mgmt"
+    },
+    {
+      "branch": "feat/RLiauFte-admin-vendor-approvals",
+      "cardId": "RLiauFte",
+      "slug": "admin-vendor-approvals"
+    },
+    {
+      "branch": "feat/oWqIV57s-vendor-dashboard",
+      "cardId": "oWqIV57s",
+      "slug": "vendor-dashboard"
+    },
+    {
+      "branch": "feat/steering-analysis-poc",
+      "cardId": "steering",
+      "slug": "analysis-poc"
+    },
+    {
+      "branch": "feat/xEOk5i0M-vendor-products",
+      "cardId": "xEOk5i0M",
+      "slug": "vendor-products"
+    },
     {
       "branch": "feat/1fqtc2JF-vendor-onboarding",
       "cardId": "1fqtc2JF",
@@ -142,9 +182,9 @@
       "slug": "auth-aware-nav"
     },
     {
-      "branch": "feat/EXPtZCJL-vendor-portal-shell",
-      "cardId": "EXPtZCJL",
-      "slug": "vendor-portal-shell"
+      "branch": "feat/MkRjnkvv-admin-synonyms-ui",
+      "cardId": "MkRjnkvv",
+      "slug": "admin-synonyms-ui"
     },
     {
       "branch": "feat/Sm1kSNO8-safe-category-delete",
@@ -177,6 +217,11 @@
       "slug": "checkout-oneshot"
     },
     {
+      "branch": "feat/fable-search-oneshot",
+      "cardId": "fable",
+      "slug": "search-oneshot"
+    },
+    {
       "branch": "feat/kYbVZyqV-shop-public-ssr",
       "cardId": "kYbVZyqV",
       "slug": "shop-public-ssr"
@@ -187,11 +232,6 @@
       "slug": "login-registration-pages"
     },
     {
-      "branch": "feat/oWqIV57s-vendor-dashboard",
-      "cardId": "oWqIV57s",
-      "slug": "vendor-dashboard"
-    },
-    {
       "branch": "feat/sw8qYBV1-admin-orders-dashboard",
       "cardId": "sw8qYBV1",
       "slug": "admin-orders-dashboard"
@@ -200,37 +240,12 @@
       "branch": "feat/vs3y5tDJ-public-vendor-profile",
       "cardId": "vs3y5tDJ",
       "slug": "public-vendor-profile"
-    },
-    {
-      "branch": "feat/IhTVdNYP-admin-catalog",
-      "cardId": "IhTVdNYP",
-      "slug": "admin-catalog"
-    },
-    {
-      "branch": "feat/L9fM1Gu7-storefront",
-      "cardId": "L9fM1Gu7",
-      "slug": "storefront"
-    },
-    {
-      "branch": "feat/N8P6OPPm-admin-user-mgmt",
-      "cardId": "N8P6OPPm",
-      "slug": "admin-user-mgmt"
-    },
-    {
-      "branch": "feat/RLiauFte-admin-vendor-approvals",
-      "cardId": "RLiauFte",
-      "slug": "admin-vendor-approvals"
-    },
-    {
-      "branch": "feat/xEOk5i0M-vendor-products",
-      "cardId": "xEOk5i0M",
-      "slug": "vendor-products"
     }
   ],
   "tests": {
-    "total": 55,
-    "api": 15,
-    "web": 40
+    "total": 68,
+    "api": 26,
+    "web": 42
   },
   "design": {
     "files": 29,
@@ -254,14 +269,37 @@
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 12,
+    "gatePass": 13,
     "gateFail": 1,
-    "edits": 178,
-    "editsUnfixable": 67,
+    "edits": 261,
+    "editsUnfixable": 96,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-07T10:43:38.126Z"
+    "lastTs": "2026-07-14T17:56:33.788Z"
   },
+  "steeringAudit": null,
+  "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/MkRjnkvv-admin-synonyms-ui",
+      "number": 29,
+      "state": "MERGED",
+      "title": "feat(web): admin search-synonyms management UI (card #53)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/29"
+    },
+    {
+      "headRefName": "feat/fable-search-oneshot",
+      "number": 28,
+      "state": "MERGED",
+      "title": "feat: product search engine (Meilisearch) — v1",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/28"
+    },
+    {
+      "headRefName": "feat/fable-checkout-oneshot",
+      "number": 27,
+      "state": "MERGED",
+      "title": "feat: full purchase flow — cart, orders + state machine, checkout, isVerified gate (cards #41/#43/#42/#15)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/27"
+    },
     {
       "headRefName": "fable-storefront-oneshot",
       "number": 26,
@@ -445,8 +483,34 @@
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/1"
     }
   ],
-  "trello": null,
+  "trello": [
+    {
+      "name": "Documentation",
+      "cards": 8
+    },
+    {
+      "name": "To Do",
+      "cards": 17
+    },
+    {
+      "name": "In Progress",
+      "cards": 1
+    },
+    {
+      "name": "In Review",
+      "cards": 1
+    },
+    {
+      "name": "Done",
+      "cards": 33
+    },
+    {
+      "name": "Fable Documentation",
+      "cards": 0
+    }
+  ],
   "notes": [
-    "No .mcp.json — Trello card flow skipped."
+    "No steering-audit.json yet — run the align-steering-docs skill to populate it.",
+    "No extraction-candidates.json yet — run the service-extraction-analysis skill to populate it."
   ]
 }
