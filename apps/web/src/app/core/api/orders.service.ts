@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CreateOrderRequest, OrderDto } from '@hb/shared';
+import { CreateOrderRequest, OrderDto, OrderStatus, VendorOrderLineDto } from '@hb/shared';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -26,5 +26,15 @@ export class OrdersService {
 
   getById(id: string): Observable<OrderDto> {
     return this.http.get<OrderDto>(`${this.API_URL}/${id}`);
+  }
+
+  /** Order lines owned by the calling vendor (GET /orders/vendor). */
+  listForVendor(): Observable<VendorOrderLineDto[]> {
+    return this.http.get<VendorOrderLineDto[]>(`${this.API_URL}/vendor`);
+  }
+
+  /** Generic status transition, validated server-side against the Order State Machine. */
+  updateStatus(id: string, status: OrderStatus): Observable<OrderDto> {
+    return this.http.patch<OrderDto>(`${this.API_URL}/${id}/status`, { status });
   }
 }
