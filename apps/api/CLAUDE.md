@@ -18,6 +18,10 @@
 - **Relative imports only.** `src/...` absolute imports break `node dist/main` in prod.
 - Schema changes: write/generate a migration (`npm run migration:generate`, then review it).
   `synchronize` is off everywhere; keep it off.
+- New non-nullable columns need a `DEFAULT` (or a backfill `UPDATE` in the same migration)
+  so `migration:run` never fails against an existing dev/prod database. A migration that
+  only succeeds on an empty schema is a bug in the migration, not a reason to reset the DB —
+  see "Never wipe the dev database" in the root `README.md`.
 - Money: `numeric(12,2)` + currency column. Country/currency via the shared Postgres
   enums (`country_code`, `currency_code`). Orders/shipments carry origin/destination —
   that pair is the cross-border seam (`at_border`, `customs_cleared` are first-class).

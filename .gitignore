@@ -6,6 +6,7 @@ coverage/
 *.log
 .env
 uploads/
+backups/*.sql
 .claude/settings.local.json
 .mcp.json
 .design-sync/config.json

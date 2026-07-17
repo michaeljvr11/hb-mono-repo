@@ -43,6 +43,29 @@ npm run dev:web                            # web on http://localhost:4200
 npm run build                              # builds shared → api → web
 ```
 
+### Never wipe the dev database
+
+Postgres data lives in the named `pgdata` Docker volume and survives `db:down`,
+container restarts, and `migration:run` — none of those touch it. If a migration fails
+against your existing data, **don't** reach for `docker compose down -v` or drop/recreate
+the database as a fix; that's the thing that's been costing you all your seeded data.
+Fix the migration instead (new non-nullable columns need a `DEFAULT` or a backfill step —
+see `apps/api/CLAUDE.md`).
+
+```bash
+npm run db:backup                # dumps to backups/<db>-<timestamp>.sql (git-ignored)
+npm run db:restore               # restores the most recent backup (prompts to confirm)
+npm run db:restore -- <file>     # restore a specific dump
+npm run db:reset                 # last resort: backs up, then wipes ONLY the Postgres
+                                  # volume and rebuilds via migrations + seed. Requires
+                                  # typed confirmation (--yes to skip, --no-backup to skip
+                                  # the safety dump).
+```
+
+`db:reset` deliberately never touches the `meilidata` volume or runs `docker compose down
+-v` — it resolves and removes just the Postgres volume via `docker inspect`, so it can't
+take Meilisearch's index down with it.
+
 Both apps stay **separately buildable/deployable**: `apps/api/dist` runs with
 `node dist/main`; `apps/web/dist/web` contains `browser/` + `server/server.mjs`
 (`npm run serve:ssr -w @hb/web`).
