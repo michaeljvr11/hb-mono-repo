@@ -1,0 +1,164 @@
+<div class="profile-addresses">
+  <header class="page-head">
+    <h1>Addresses</h1>
+    <p>Manage the delivery addresses saved on your account.</p>
+  </header>
+
+  @if (loading()) {
+    <p class="loading-text">Loading your addresses…</p>
+  } @else {
+    @if (loadError()) {
+      <p class="status-error" role="alert">{{ loadError() }}</p>
+    }
+
+    @if (deleteError()) {
+      <div class="error-banner" role="alert">
+        <span class="material-symbols-outlined" aria-hidden="true">error</span>
+        <span>{{ deleteError() }}</span>
+      </div>
+    }
+
+    @if (!formOpen()) {
+      <button class="primary-action" type="button" (click)="openAddForm()">
+        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        Add address
+      </button>
+    }
+
+    @if (formOpen()) {
+      <section class="card">
+        <h2>{{ formMode() === 'create' ? 'Add address' : 'Edit address' }}</h2>
+
+        <form [formGroup]="form" (ngSubmit)="submitForm()" novalidate>
+          <div class="field">
+            <label for="recipientName">Recipient name</label>
+            <div class="input-wrap">
+              <input id="recipientName" type="text" formControlName="recipientName" autocomplete="name" />
+            </div>
+            @if (form.controls.recipientName.hasError('required') && form.controls.recipientName.touched) {
+              <small class="field-error">Recipient name is required.</small>
+            }
+          </div>
+
+          <div class="field">
+            <label for="line1">Address line 1</label>
+            <div class="input-wrap">
+              <input id="line1" type="text" formControlName="line1" autocomplete="address-line1" />
+            </div>
+            @if (form.controls.line1.hasError('required') && form.controls.line1.touched) {
+              <small class="field-error">Address line 1 is required.</small>
+            }
+          </div>
+
+          <div class="field">
+            <label for="line2">Address line 2 (optional)</label>
+            <div class="input-wrap">
+              <input id="line2" type="text" formControlName="line2" autocomplete="address-line2" />
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="city">City</label>
+              <div class="input-wrap">
+                <input id="city" type="text" formControlName="city" autocomplete="address-level2" />
+              </div>
+              @if (form.controls.city.hasError('required') && form.controls.city.touched) {
+                <small class="field-error">City is required.</small>
+              }
+            </div>
+
+            <div class="field">
+              <label for="region">Region / Province (optional)</label>
+              <div class="input-wrap">
+                <input id="region" type="text" formControlName="region" autocomplete="address-level1" />
+              </div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="postalCode">Postal code (optional)</label>
+              <div class="input-wrap">
+                <input id="postalCode" type="text" formControlName="postalCode" autocomplete="postal-code" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="countryCode">Country</label>
+              <div class="input-wrap">
+                <select id="countryCode" formControlName="countryCode" autocomplete="country">
+                  <option [value]="CountryCode.SOUTH_AFRICA">South Africa (ZA)</option>
+                  <option [value]="CountryCode.NAMIBIA">Namibia (NA)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="phone">Phone (optional)</label>
+            <div class="input-wrap">
+              <input id="phone" type="tel" formControlName="phone" autocomplete="tel" />
+            </div>
+          </div>
+
+          @if (formError()) {
+            <p class="status-error" role="alert">{{ formError() }}</p>
+          }
+
+          <div class="form-actions">
+            <button class="primary-action" type="submit" [disabled]="formPending()">
+              {{ formPending() ? 'Saving…' : formMode() === 'create' ? 'Save address' : 'Save changes' }}
+            </button>
+            <button class="secondary-action" type="button" (click)="closeForm()">Cancel</button>
+          </div>
+        </form>
+      </section>
+    }
+
+    @if (addresses().length === 0) {
+      <p class="empty-text">You haven't added any addresses yet.</p>
+    } @else {
+      <div class="address-list">
+        @for (address of addresses(); track address.id) {
+          <section class="card address-card">
+            <div class="address-card__body">
+              <p class="address-card__name">{{ address.recipientName }}</p>
+              <p>{{ address.line1 }}</p>
+              @if (address.line2) {
+                <p>{{ address.line2 }}</p>
+              }
+              <p>
+                {{ address.city }}@if (address.region) {, {{ address.region }}}@if (address.postalCode) {&nbsp;{{ address.postalCode }}}
+              </p>
+              <p>{{ countryLabel(address.countryCode) }}</p>
+              @if (address.phone) {
+                <p>{{ address.phone }}</p>
+              }
+            </div>
+
+            <div class="address-card__actions">
+              @if (pendingDeleteId() === address.id) {
+                <span class="confirm-text">Delete this address?</span>
+                <button class="row-btn row-btn--danger" type="button" (click)="deleteAddress(address.id)">
+                  Yes, delete
+                </button>
+                <button class="row-btn" type="button" (click)="cancelDelete()">Cancel</button>
+              } @else {
+                <button class="row-btn" type="button" (click)="openEditForm(address)">Edit</button>
+                <button
+                  class="row-btn row-btn--danger"
+                  type="button"
+                  (click)="confirmDelete(address.id)"
+                  aria-label="Delete address for {{ address.recipientName }}"
+                >
+                  Delete
+                </button>
+              }
+            </div>
+          </section>
+        }
+      </div>
+    }
+  }
+</div>
