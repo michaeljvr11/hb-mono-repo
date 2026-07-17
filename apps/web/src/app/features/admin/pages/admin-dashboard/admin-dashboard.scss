@@ -258,3 +258,123 @@
   font: 600 16px/24px Inter, system-ui, sans-serif;
   color: var(--hb-on-surface);
 }
+
+/* ─── Analytics section ───────────────────────────────────────── */
+.analytics-section {
+  margin-top: 32px;
+}
+
+.section-header {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  margin: 0 0 4px;
+  font: 600 24px/32px Inter, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--hb-on-surface);
+}
+
+.section-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+.metric-card--full {
+  grid-column: 1 / -1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* ─── Funnel ──────────────────────────────────────────────────── */
+.funnel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.funnel-item {
+  display: grid;
+  grid-template-columns: 140px 1fr 48px;
+  align-items: center;
+  gap: 12px;
+
+  @media (max-width: 560px) {
+    grid-template-columns: 100px 1fr 40px;
+  }
+}
+
+.funnel-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--hb-on-surface-variant);
+  text-transform: capitalize;
+}
+
+.funnel-bar-track {
+  display: block;
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--hb-surface-container);
+  overflow: hidden;
+}
+
+.funnel-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--hb-primary);
+  transition: width 200ms ease;
+}
+
+.funnel-count {
+  font: 600 14px/20px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+  text-align: right;
+}
+
+/* ─── Time series table ──────────────────────────────────────── */
+.timeseries-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th,
+  td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--hb-outline-variant);
+  }
+
+  th {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--hb-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  td {
+    color: var(--hb-on-surface);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.timeseries-revenue-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.timeseries-revenue {
+  font-weight: 500;
+}
