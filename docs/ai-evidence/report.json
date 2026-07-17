@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-07-17T09:35:34.998Z",
+  "generatedAt": "2026-07-17T11:01:50.722Z",
   "git": {
-    "totalCommits": 114,
-    "aiCommits": 104,
-    "aiPct": 91,
+    "totalCommits": 118,
+    "aiCommits": 108,
+    "aiPct": 92,
     "appCommits": 78,
-    "ins": 55134,
-    "del": 4265,
-    "net": 50869,
-    "aiIns": 41702,
-    "aiDel": 4127,
-    "filesTouched": 497,
+    "ins": 56056,
+    "del": 4487,
+    "net": 51569,
+    "aiIns": 42624,
+    "aiDel": 4349,
+    "filesTouched": 501,
     "areaRows": [
       {
         "name": "Web (Angular)",
@@ -22,41 +22,18 @@
         "name": "API (NestJS)",
         "commits": 47,
         "ins": 14280,
-  "generatedAt": "2026-07-17T09:22:38.511Z",
-  "git": {
-    "totalCommits": 113,
-    "aiCommits": 103,
-    "aiPct": 91,
-    "appCommits": 76,
-    "ins": 54467,
-    "del": 4260,
-    "net": 50207,
-    "aiIns": 41035,
-    "aiDel": 4122,
-    "filesTouched": 494,
-    "areaRows": [
-      {
-        "name": "Web (Angular)",
-        "commits": 44,
-        "ins": 26042,
-        "del": 1344
-      },
-      {
-        "name": "API (NestJS)",
-        "commits": 46,
-        "ins": 14172,
         "del": 677
       },
       {
         "name": "Docs",
-        "commits": 37,
-        "ins": 11183,
-        "del": 2151
+        "commits": 39,
+        "ins": 11625,
+        "del": 2373
       },
       {
         "name": "AI Factory config",
-        "commits": 32,
-        "ins": 1147,
+        "commits": 36,
+        "ins": 1627,
         "del": 58
       },
       {
@@ -64,21 +41,12 @@
         "commits": 16,
         "ins": 808,
         "del": 6
-        "commits": 33,
-        "ins": 1298,
-        "del": 58
       },
       {
         "name": "Root & config",
         "commits": 14,
         "ins": 782,
         "del": 22
-      },
-      {
-        "name": "Shared contracts",
-        "commits": 15,
-        "ins": 790,
-        "del": 6
       },
       {
         "name": "CI / templates",
@@ -91,8 +59,28 @@
     "lastDate": "2026-07-17",
     "recent": [
       {
+        "hash": "d64957a",
+        "subject": "index on feat/ship-batch-command: 3286a11 feat(factory): add /ship-batch command for multi-card and Fable-offloaded builds",
+        "ai": false
+      },
+      {
+        "hash": "3286a11",
+        "subject": "feat(factory): add /ship-batch command for multi-card and Fable-offloaded builds",
+        "ai": true
+      },
+      {
+        "hash": "03a4b63",
+        "subject": "chore(evidence): recompile AI evidence report (card VP-4)",
+        "ai": true
+      },
+      {
         "hash": "5769dcb",
         "subject": "feat(web): vendor orders screen with fulfilment actions (card VP-4)",
+        "ai": true
+      },
+      {
+        "hash": "e9a57ef",
+        "subject": "feat(factory): steering-doc alignment + service-extraction analysis POC",
         "ai": true
       },
       {
@@ -129,83 +117,6 @@
         "hash": "744653a",
         "subject": "feat(api): GET /search + GET /search/suggest endpoints (card #50)",
         "ai": true
-      },
-      {
-        "hash": "5f4a8c0",
-        "subject": "feat(api): ProductSearchService — ranking, faceted filters, autocomplete (card #48)",
-        "ai": true
-      },
-      {
-        "hash": "a69826a",
-        "subject": "feat(api): synonyms data model — entity, migration, shared contract, seed (card #49)",
-        "ai": true
-      },
-      {
-        "hash": "be31d6b",
-        "subject": "feat(api): SearchIndexerService — event listeners + scheduled full reindex (card #47)",
-        "ai": true
-      },
-      {
-        "hash": "c74caaf",
-        "subject": "feat(shared): product search contracts + validated query DTO (card #46)",
-        "hash": "188fa83",
-        "subject": "improvements to project run skill and db backups",
-        "ai": false
-      },
-      {
-        "hash": "5884367",
-        "subject": "fix(web): per-input aria-labels on synonym equivalents (card #53)",
-        "ai": true
-      },
-      {
-        "hash": "74daa24",
-        "subject": "feat(web): admin search-synonyms management UI (card #53)",
-        "ai": true
-      },
-      {
-        "hash": "56e98fa",
-        "subject": "fix(api): resolve Meilisearch integration bugs found in live verification",
-        "ai": true
-      },
-      {
-        "hash": "ce0386a",
-        "subject": "feat(api): synonyms admin CRUD endpoint + Meilisearch reload (card #52)",
-        "ai": true
-      },
-      {
-        "hash": "744653a",
-        "subject": "feat(api): GET /search + GET /search/suggest endpoints (card #50)",
-        "ai": true
-      },
-      {
-        "hash": "5f4a8c0",
-        "subject": "feat(api): ProductSearchService — ranking, faceted filters, autocomplete (card #48)",
-        "ai": true
-      },
-      {
-        "hash": "a69826a",
-        "subject": "feat(api): synonyms data model — entity, migration, shared contract, seed (card #49)",
-        "ai": true
-      },
-      {
-        "hash": "be31d6b",
-        "subject": "feat(api): SearchIndexerService — event listeners + scheduled full reindex (card #47)",
-        "ai": true
-      },
-      {
-        "hash": "c74caaf",
-        "subject": "feat(shared): product search contracts + validated query DTO (card #46)",
-        "ai": true
-      },
-      {
-        "hash": "b6e27c8",
-        "subject": "feat(api): SearchModule scaffold + Meilisearch in Docker Compose (card #45)",
-        "ai": true
-      },
-      {
-        "hash": "1cc7c15",
-        "subject": "chore(evidence): recompile AI-evidence report for fable-checkout-oneshot",
-        "ai": true
       }
     ]
   },
@@ -241,6 +152,11 @@
       "slug": "vendor-dashboard"
     },
     {
+      "branch": "feat/ship-batch-command",
+      "cardId": "ship",
+      "slug": "batch-command"
+    },
+    {
       "branch": "feat/steering-analysis-poc",
       "cardId": "steering",
       "slug": "analysis-poc"
@@ -269,11 +185,6 @@
       "branch": "feat/EFXHykuT-auth-aware-nav",
       "cardId": "EFXHykuT",
       "slug": "auth-aware-nav"
-    },
-    {
-      "branch": "feat/MkRjnkvv-admin-synonyms-ui",
-      "cardId": "MkRjnkvv",
-      "slug": "admin-synonyms-ui"
     },
     {
       "branch": "feat/MkRjnkvv-admin-synonyms-ui",
@@ -326,11 +237,6 @@
       "slug": "login-registration-pages"
     },
     {
-      "branch": "feat/oWqIV57s-vendor-dashboard",
-      "cardId": "oWqIV57s",
-      "slug": "vendor-dashboard"
-    },
-    {
       "branch": "feat/sKd1xhQl-vendor-orders-fulfilment",
       "cardId": "sKd1xhQl",
       "slug": "vendor-orders-fulfilment"
@@ -350,9 +256,6 @@
     "total": 69,
     "api": 26,
     "web": 43
-    "total": 68,
-    "api": 26,
-    "web": 42
   },
   "design": {
     "files": 29,
@@ -382,16 +285,17 @@
     "editsUnfixable": 101,
     "firstTs": "2026-06-18T12:14:47.925Z",
     "lastTs": "2026-07-17T09:20:45.560Z"
-    "gatePass": 13,
-    "gateFail": 1,
-    "edits": 261,
-    "editsUnfixable": 96,
-    "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-14T17:56:33.788Z"
   },
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/sKd1xhQl-vendor-orders-fulfilment",
+      "number": 30,
+      "state": "MERGED",
+      "title": "feat: vendor orders view + fulfilment read endpoint (VP-4)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/30"
+    },
     {
       "headRefName": "feat/MkRjnkvv-admin-synonyms-ui",
       "number": 29,
@@ -603,26 +507,25 @@
     },
     {
       "name": "To Do",
-      "cards": 17
+      "cards": 16
     },
     {
       "name": "In Progress",
-      "cards": 1
+      "cards": 0
     },
     {
       "name": "In Review",
-      "cards": 1
+      "cards": 0
     },
     {
       "name": "Done",
-      "cards": 33
+      "cards": 36
     },
     {
       "name": "Fable Documentation",
       "cards": 0
     }
   ],
-  "notes": []
   "notes": [
     "No steering-audit.json yet — run the align-steering-docs skill to populate it.",
     "No extraction-candidates.json yet — run the service-extraction-analysis skill to populate it."
