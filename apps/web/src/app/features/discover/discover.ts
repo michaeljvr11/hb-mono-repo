@@ -2,8 +2,9 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { CategoryDto, ProductDto, SearchSuggestions, VendorDto } from '@hb/shared';
+import { AnalyticsEventType, CategoryDto, ProductDto, SearchSuggestions, VendorDto } from '@hb/shared';
 import { AuthService } from '../../core/auth/auth.service';
+import { AnalyticsService } from '../../core/api/analytics.service';
 import { ProductsService } from '../../core/api/products.service';
 import { CartService } from '../../core/api/cart.service';
 import { CategoriesService } from '../../core/api/categories.service';
@@ -42,6 +43,7 @@ export class Discover {
   private readonly searchService = inject(SearchService);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
+  private readonly analyticsService = inject(AnalyticsService);
   private readonly snackBar = inject(MatSnackBar);
 
   /** Real cart count for the radial-nav badge. */
@@ -205,6 +207,10 @@ export class Discover {
     }
     this.cartService.addItem(product.id).subscribe({
       next: () => {
+        this.analyticsService.track(AnalyticsEventType.ADD_TO_CART, {
+          productId: product.id,
+          vendorId: product.vendor?.id,
+        });
         this.snackBar
           .open(`Added '${product.name}' to your cart.`, 'View cart', {
             duration: 4000,

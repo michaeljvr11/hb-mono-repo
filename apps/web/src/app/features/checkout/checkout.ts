@@ -1,8 +1,9 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { CountryCode, CreateOrderRequest, OrderDto } from '@hb/shared';
+import { AnalyticsEventType, CountryCode, CreateOrderRequest, OrderDto } from '@hb/shared';
 import { AuthService } from '../../core/auth/auth.service';
+import { AnalyticsService } from '../../core/api/analytics.service';
 import { CartService } from '../../core/api/cart.service';
 import { OrdersService } from '../../core/api/orders.service';
 import { formatPrice } from '../../shared/format-price';
@@ -41,6 +42,7 @@ export class Checkout implements OnInit {
   private readonly cartService = inject(CartService);
   private readonly ordersService = inject(OrdersService);
   private readonly authService = inject(AuthService);
+  private readonly analyticsService = inject(AnalyticsService);
 
   readonly CountryCode = CountryCode;
 
@@ -68,7 +70,11 @@ export class Checkout implements OnInit {
 
   ngOnInit(): void {
     this.cartService.load().subscribe({
-      next: (cart) => this.state.set(cart.items.length ? 'ready' : 'empty'),
+      next: (cart) => {
+        const ready = cart.items.length > 0;
+        this.state.set(ready ? 'ready' : 'empty');
+        if (ready) this.analyticsService.track(AnalyticsEventType.CHECKOUT_STARTED);
+      },
       error: () => this.state.set('error'),
     });
   }
@@ -88,6 +94,7 @@ export class Checkout implements OnInit {
 
     this.checkoutError.set(null);
     this.state.set('submitting');
+    this.analyticsService.track(AnalyticsEventType.SHIPPING_SUBMITTED);
 
     const value = this.form.getRawValue();
     const request: CreateOrderRequest = {
@@ -103,10 +110,16 @@ export class Checkout implements OnInit {
       },
     };
 
+    this.analyticsService.track(AnalyticsEventType.PAYMENT_ATTEMPTED);
     this.ordersService.create(request).subscribe({
       next: (order) => {
         this.placedOrder.set(order);
         this.state.set('success');
+        this.analyticsService.track(AnalyticsEventType.ORDER_COMPLETED, {
+          orderId: order.id,
+          value: order.total,
+          currency: order.currency,
+        });
         // The server cleared the cart as part of the order — drop local state
         // so the nav badge resets.
         this.cartService.reset();
@@ -115,6 +128,7 @@ export class Checkout implements OnInit {
         const mapped = this.mapError(err);
         this.state.set('ready');
         this.checkoutError.set(mapped);
+        this.analyticsService.track(AnalyticsEventType.PAYMENT_FAILED);
         if (mapped.kind === 'stock') {
           // Stock changed under us — refresh the summary to the live truth.
           this.cartService.load().subscribe({ error: () => undefined });

@@ -2,8 +2,9 @@ import { isPlatformBrowser } from '@angular/common';
 import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { CategoryDto, ProductDto, VendorDto } from '@hb/shared';
+import { AnalyticsEventType, CategoryDto, ProductDto, VendorDto } from '@hb/shared';
 import { AuthService } from '../../core/auth/auth.service';
+import { AnalyticsService } from '../../core/api/analytics.service';
 import { CartService } from '../../core/api/cart.service';
 import { CategoriesService } from '../../core/api/categories.service';
 import { ProductsService } from '../../core/api/products.service';
@@ -68,6 +69,7 @@ export class Shop implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
+  private readonly analyticsService = inject(AnalyticsService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -139,7 +141,13 @@ export class Shop implements OnInit {
       return;
     }
     this.cartService.addItem(product.id).subscribe({
-      next: () => this.notifyAddedToCart(product.name),
+      next: () => {
+        this.analyticsService.track(AnalyticsEventType.ADD_TO_CART, {
+          productId: product.id,
+          vendorId: product.vendor?.id,
+        });
+        this.notifyAddedToCart(product.name);
+      },
       error: (err: { error?: { message?: string } }) =>
         this.notifyCartError(err?.error?.message),
     });

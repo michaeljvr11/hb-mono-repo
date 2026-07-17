@@ -6,10 +6,19 @@ import { Router, provideRouter } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject } from 'rxjs';
 import { vi } from 'vitest';
-import { AuthUser, CategoryDto, CountryCode, ProductDto, VendorDto, VendorStatus } from '@hb/shared';
+import {
+  AnalyticsEventType,
+  AuthUser,
+  CategoryDto,
+  CountryCode,
+  ProductDto,
+  VendorDto,
+  VendorStatus,
+} from '@hb/shared';
 
 import { Shop, deriveCategoryCounts, CategoryWithCount } from './shop';
 import { AuthService } from '../../core/auth/auth.service';
+import { AnalyticsService } from '../../core/api/analytics.service';
 import { environment } from '../../../environments/environment';
 
 describe('Shop', () => {
@@ -20,6 +29,7 @@ describe('Shop', () => {
     isLoggedIn: ReturnType<typeof vi.fn>;
     currentUser$: BehaviorSubject<AuthUser | null>;
   };
+  let analyticsStub: { track: ReturnType<typeof vi.fn> };
 
   const categories: CategoryDto[] = [
     { id: 'c1', name: 'Agriculture', displayOrder: 0 },
@@ -63,6 +73,7 @@ describe('Shop', () => {
       isLoggedIn: vi.fn().mockReturnValue(false),
       currentUser$: new BehaviorSubject<AuthUser | null>(null),
     };
+    analyticsStub = { track: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [Shop],
@@ -72,6 +83,7 @@ describe('Shop', () => {
         provideNoopAnimations(),
         provideRouter([]),
         { provide: AuthService, useValue: authStub },
+        { provide: AnalyticsService, useValue: analyticsStub },
       ],
     }).compileComponents();
 
@@ -269,6 +281,10 @@ describe('Shop', () => {
       'View cart',
       expect.anything(),
     );
+    expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.ADD_TO_CART, {
+      productId: 'p1',
+      vendorId: undefined,
+    });
   });
 
   it('surfaces the API error message when add-to-cart fails', () => {

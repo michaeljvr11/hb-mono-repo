@@ -10,7 +10,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { switchMap } from 'rxjs';
-import { ProductDto } from '@hb/shared';
+import { AnalyticsEventType, ProductDto } from '@hb/shared';
+import { AnalyticsService } from '../../core/api/analytics.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
 import { ProductsService } from '../../core/api/products.service';
@@ -44,6 +45,7 @@ export class ProductDetail {
   private readonly productsService = inject(ProductsService);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
+  private readonly analyticsService = inject(AnalyticsService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -110,6 +112,10 @@ export class ProductDetail {
       next: (product) => {
         this.product.set(product);
         this.state.set('loaded');
+        this.analyticsService.track(AnalyticsEventType.PRODUCT_VIEWED, {
+          productId: product.id,
+          vendorId: product.vendor?.id,
+        });
         this.loadRelated(product);
       },
       error: (err) => {
@@ -184,6 +190,10 @@ export class ProductDetail {
     }
     this.cartService.addItem(product.id).subscribe({
       next: () => {
+        this.analyticsService.track(AnalyticsEventType.ADD_TO_CART, {
+          productId: product.id,
+          vendorId: product.vendor?.id,
+        });
         this.snackBar
           .open(`Added '${product.name}' to your cart.`, 'View cart', {
             duration: 4000,
