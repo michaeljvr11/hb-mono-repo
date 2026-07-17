@@ -263,7 +263,7 @@ describe('VendorDashboard — analytics (with data)', () => {
   it('renders zero-width bar + count for a zero-session stage (checkout)', () => {
     const rows: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.funnel-row');
     const checkoutRow = Array.from(rows).find((row) =>
-      row.textContent?.includes('Checkout Started'),
+      row.textContent?.includes('Checkout started'),
     );
     expect(checkoutRow).toBeTruthy();
     expect(checkoutRow?.textContent).toContain('0');

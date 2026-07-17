@@ -12,7 +12,7 @@
   padding: 16px;
   background: var(--hb-surface-container-lowest);
   border-top: 1px solid var(--hb-outline-variant);
-  box-shadow: 0 -2px 8px rgba(28, 27, 27, 0.08);
+  box-shadow: 0 -2px 8px color-mix(in srgb, var(--hb-on-surface) 8%, transparent);
 
   @media (min-width: 768px) {
     padding: 16px 40px;
@@ -45,7 +45,7 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(1, 83, 0, 0.35);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--hb-primary) 35%, transparent);
   }
 }
 

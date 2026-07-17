@@ -5,14 +5,15 @@ import { AnalyticsEventType, CurrencyCode, VendorAnalyticsDto, VendorDashboardDt
 import { VendorsService } from '../../../../core/api/vendors.service';
 
 /** Human-readable labels for the funnel widget, in enum declaration order. */
+/** Sentence case to match the admin dashboard's funnel labels. */
 const STAGE_LABELS: Record<AnalyticsEventType, string> = {
-  [AnalyticsEventType.PRODUCT_VIEWED]: 'Product Viewed',
-  [AnalyticsEventType.ADD_TO_CART]: 'Added to Cart',
-  [AnalyticsEventType.CHECKOUT_STARTED]: 'Checkout Started',
-  [AnalyticsEventType.SHIPPING_SUBMITTED]: 'Shipping Submitted',
-  [AnalyticsEventType.PAYMENT_ATTEMPTED]: 'Payment Attempted',
-  [AnalyticsEventType.PAYMENT_FAILED]: 'Payment Failed',
-  [AnalyticsEventType.ORDER_COMPLETED]: 'Order Completed',
+  [AnalyticsEventType.PRODUCT_VIEWED]: 'Product viewed',
+  [AnalyticsEventType.ADD_TO_CART]: 'Add to cart',
+  [AnalyticsEventType.CHECKOUT_STARTED]: 'Checkout started',
+  [AnalyticsEventType.SHIPPING_SUBMITTED]: 'Shipping submitted',
+  [AnalyticsEventType.PAYMENT_ATTEMPTED]: 'Payment attempted',
+  [AnalyticsEventType.PAYMENT_FAILED]: 'Payment failed',
+  [AnalyticsEventType.ORDER_COMPLETED]: 'Order completed',
 };
 
 @Component({

@@ -10,9 +10,29 @@ import {
   IsUUID,
   MaxLength,
   Min,
+  registerDecorator,
   ValidateIf,
+  ValidationOptions,
 } from 'class-validator';
 import { AnalyticsEventType, CreateAnalyticsEventRequest, CurrencyCode } from '@hb/shared';
+
+/** metadata lands in a jsonb column via a @Public endpoint — cap the
+ *  serialized size so anonymous callers can't spam multi-kilobyte blobs. */
+const METADATA_MAX_BYTES = 2048;
+
+function MaxJsonBytes(maxBytes: number, validationOptions?: ValidationOptions) {
+  return (object: object, propertyName: string) => {
+    registerDecorator({
+      name: 'maxJsonBytes',
+      target: object.constructor,
+      propertyName,
+      options: validationOptions,
+      validator: {
+        validate: (value: unknown) => JSON.stringify(value).length <= maxBytes,
+      },
+    });
+  };
+}
 
 /**
  * Ingestion payload for POST /analytics/events. No PII fields exist here —
@@ -59,6 +79,7 @@ export class CreateAnalyticsEventDto implements CreateAnalyticsEventRequest {
 
   @IsOptional()
   @IsObject({ message: 'metadata must be an object' })
+  @MaxJsonBytes(METADATA_MAX_BYTES, { message: 'metadata is too large' })
   metadata?: Record<string, unknown>;
 
   @IsDateString({}, { message: 'occurredAt must be an ISO timestamp' })
