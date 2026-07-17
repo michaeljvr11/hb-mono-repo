@@ -258,3 +258,159 @@
   color: var(--hb-on-surface-variant);
   margin-left: auto;
 }
+
+/* ─── Analytics ───────────────────────────────────────────────── */
+.analytics-section { margin-bottom: 0; }
+
+.section-card__hint {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--hb-on-surface-variant);
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  padding: 20px 24px;
+
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+.analytics-block {
+  &--full { padding: 0 24px 20px; }
+}
+
+.analytics-block__title {
+  margin: 0 0 12px;
+  font: 600 14px/20px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.analytics-block__empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* Funnel — horizontal CSS bars, width vs the busiest stage */
+.funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.funnel-row {
+  display: grid;
+  grid-template-columns: 128px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+}
+
+.funnel-row__label {
+  font-size: 13px;
+  color: var(--hb-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.funnel-row__track {
+  height: 10px;
+  background: var(--hb-surface-container-low);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.funnel-row__bar {
+  height: 100%;
+  min-width: 2px;
+  background: var(--hb-primary);
+  border-radius: 999px;
+  transition: width 200ms ease;
+}
+
+.funnel-row__count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hb-on-surface);
+  text-align: right;
+}
+
+/* Revenue by currency */
+.currency-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.currency-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--hb-surface-container-low);
+  border-radius: 8px;
+}
+
+.currency-row__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hb-on-surface-variant);
+}
+
+.currency-row__value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--hb-primary);
+}
+
+/* Orders + revenue over time */
+.timeseries-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.timeseries-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 2fr;
+  gap: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--hb-on-surface);
+
+  &:not(:last-child) { border-bottom: 1px solid var(--hb-outline-variant); }
+
+  &--head {
+    background: var(--hb-surface-container-low);
+    font-weight: 600;
+    color: var(--hb-on-surface-variant);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+  }
+}
+
+.timeseries-row__revenue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.timeseries-row__zero {
+  color: var(--hb-on-surface-variant);
+}
+
+.revenue-chip {
+  padding: 2px 8px;
+  background: var(--hb-surface-container-low);
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--hb-primary);
+}

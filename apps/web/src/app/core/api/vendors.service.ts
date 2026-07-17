@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
@@ -7,6 +7,8 @@ import {
   CreateVendorRequest,
   UpdateVendorRequest,
   UpdateVendorStatusRequest,
+  VendorAnalyticsDto,
+  VendorAnalyticsQuery,
   VendorDashboardDto,
   VendorDto as Vendor,
 } from '@hb/shared';
@@ -54,6 +56,24 @@ export class VendorsService {
 
   getDashboard(): Observable<VendorDashboardDto> {
     return this.http.get<VendorDashboardDto>(`${this.API_URL}/me/dashboard`);
+  }
+
+  getAnalytics(query?: VendorAnalyticsQuery): Observable<VendorAnalyticsDto> {
+    let params = new HttpParams();
+
+    if (query) {
+      if (query.from !== undefined) {
+        params = params.set('from', query.from);
+      }
+      if (query.to !== undefined) {
+        params = params.set('to', query.to);
+      }
+      if (query.granularity !== undefined) {
+        params = params.set('granularity', query.granularity);
+      }
+    }
+
+    return this.http.get<VendorAnalyticsDto>(`${this.API_URL}/me/analytics`, { params });
   }
 
   delete(id: string): Observable<void> {
