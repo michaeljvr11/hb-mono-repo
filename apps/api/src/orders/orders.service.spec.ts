@@ -99,6 +99,7 @@ describe('OrdersService', () => {
   let ordersRepo: Record<string, jest.Mock>;
   let paymentsRepo: Record<string, jest.Mock>;
   let vendorsRepo: Record<string, jest.Mock>;
+  let orderItemsRepo: Record<string, jest.Mock>;
   let paymentProvider: Record<string, jest.Mock>;
   let manager: Record<string, jest.Mock>;
 
@@ -139,6 +140,7 @@ describe('OrdersService', () => {
       save: jest.fn((p: Payment) => Promise.resolve(p)),
     };
     vendorsRepo = { findOne: jest.fn() };
+    orderItemsRepo = { find: jest.fn() };
     paymentProvider = {
       initiatePayment: jest.fn(() =>
         Promise.resolve({ provider: 'stub', providerRef: 'stub_ref_1' }),
@@ -159,6 +161,7 @@ describe('OrdersService', () => {
         { provide: getRepositoryToken(Order), useValue: ordersRepo },
         { provide: getRepositoryToken(Payment), useValue: paymentsRepo },
         { provide: getRepositoryToken(Vendor), useValue: vendorsRepo },
+        { provide: getRepositoryToken(OrderItem), useValue: orderItemsRepo },
         { provide: PAYMENT_PROVIDER, useValue: paymentProvider },
         { provide: DataSource, useValue: dataSource },
       ],
@@ -554,6 +557,71 @@ describe('OrdersService', () => {
       expect(ordersRepo.findOne).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 'order-1' } }),
       );
+    });
+  });
+
+  describe('findAllForVendor', () => {
+    it("returns only order lines belonging to the caller's vendor", async () => {
+      vendorsRepo.findOne.mockResolvedValue({ id: 'vendor-1', userId: 'vendor-user-1' });
+      const line = makeOrderItem({
+        vendorId: 'vendor-1',
+        order: makeOrder({ status: OrderStatus.CONFIRMED }),
+      });
+      orderItemsRepo.find.mockResolvedValue([line]);
+
+      const result = await service.findAllForVendor('vendor-user-1');
+
+      expect(orderItemsRepo.find).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { vendorId: 'vendor-1' } }),
+      );
+      expect(result).toHaveLength(1);
+    });
+
+    it('404s when the caller has no vendor row', async () => {
+      vendorsRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.findAllForVendor('not-a-vendor')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(orderItemsRepo.find).not.toHaveBeenCalled();
+    });
+
+    it('returns an empty array when the vendor has no order lines yet', async () => {
+      vendorsRepo.findOne.mockResolvedValue({ id: 'vendor-1', userId: 'vendor-user-1' });
+      orderItemsRepo.find.mockResolvedValue([]);
+
+      const result = await service.findAllForVendor('vendor-user-1');
+
+      expect(result).toEqual([]);
+    });
+
+    it('maps the DTO shape correctly', async () => {
+      vendorsRepo.findOne.mockResolvedValue({ id: 'vendor-1', userId: 'vendor-user-1' });
+      const order = makeOrder({ id: 'order-7', status: OrderStatus.PROCESSING });
+      const line = makeOrderItem({
+        id: 'line-7',
+        orderId: 'order-7',
+        vendorId: 'vendor-1',
+        productName: 'Kalahari Salt',
+        unitPrice: '42.50' as never,
+        currency: CurrencyCode.ZAR,
+        quantity: 3,
+        order,
+      });
+      orderItemsRepo.find.mockResolvedValue([line]);
+
+      const result = await service.findAllForVendor('vendor-user-1');
+
+      expect(result[0]).toEqual({
+        id: 'line-7',
+        orderId: 'order-7',
+        orderStatus: OrderStatus.PROCESSING,
+        orderCreatedAt: NOW.toISOString(),
+        productName: 'Kalahari Salt',
+        unitPrice: 42.5,
+        currency: CurrencyCode.ZAR,
+        quantity: 3,
+      });
     });
   });
 });

@@ -1,0 +1,82 @@
+<section class="orders-page">
+
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Orders</h1>
+    <p class="page-sub">Order lines for your products, and the fulfilment actions you can take.</p>
+  </header>
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading orders…</p>
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+
+    <!-- Action error banner -->
+    @if (actionError()) {
+      <div class="error-banner" role="alert">
+        <span class="material-symbols-outlined" aria-hidden="true">error</span>
+        <span>{{ actionError() }}</span>
+      </div>
+    }
+
+    @if (lines().length === 0) {
+      <div class="empty-state">
+        <span class="material-symbols-outlined empty-state__icon" aria-hidden="true">package_2</span>
+        <p>No orders yet — check back once customers start buying your products.</p>
+      </div>
+    } @else {
+      <div class="orders-list" role="list" aria-label="Order lines">
+        @for (line of lines(); track line.id) {
+          <div class="order-row" role="listitem">
+            <div class="order-row__main">
+              <span class="order-product">{{ line.productName }}</span>
+              <span class="order-meta">
+                Qty {{ line.quantity }} · {{ line.currency === CurrencyCode.ZAR ? 'R' : 'N$' }}&nbsp;{{ line.unitPrice | number:'1.2-2' }}
+                · Ordered {{ line.orderCreatedAt | date:'d MMM y' }}
+              </span>
+            </div>
+
+            <div class="order-row__side">
+              <span class="status-pill status-pill--{{ line.orderStatus }}" aria-label="Status: {{ line.orderStatus }}">
+                {{ line.orderStatus }}
+              </span>
+
+              @let actions = actionsFor(line.orderStatus);
+              @if (actions.length > 0) {
+                <div class="action-bar">
+                  @for (target of actions; track target) {
+                    <button
+                      class="action-btn"
+                      type="button"
+                      [disabled]="pendingId() === line.id"
+                      (click)="applyAction(line, target)"
+                    >
+                      @if (pendingId() === line.id) {
+                        <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+                      }
+                      {{ labelFor(target) }}
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+</section>

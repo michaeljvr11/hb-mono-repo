@@ -18,6 +18,13 @@ export class OrdersController {
     return this.ordersService.findAllForUser(user.id);
   }
 
+  // Declared before ':id' — a literal segment must precede a param route or
+  // Nest will treat 'vendor' as an :id value.
+  @Get('vendor')
+  getVendorOrders(@GetUser() user: User) {
+    return this.ordersService.findAllForVendor(user.id);
+  }
+
   @Get(':id')
   getOrder(@GetUser() user: User, @Param('id') id: string) {
     return this.ordersService.findOneForUser(user, id);

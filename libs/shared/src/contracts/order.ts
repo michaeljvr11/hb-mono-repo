@@ -64,6 +64,24 @@ export interface OrderItemDto {
   vendorId?: string;
 }
 
+/**
+ * One order-line row scoped to the calling vendor — the read model behind
+ * GET /orders/vendor (Vendor & Admin Portals: "own order lines" ownership).
+ * Status changes reuse PATCH /orders/:id/status (UpdateOrderStatusRequest);
+ * there is no separate vendor-fulfilment update DTO.
+ */
+export interface VendorOrderLineDto {
+  /** order_items row id. */
+  id: string;
+  orderId: string;
+  orderStatus: OrderStatus;
+  orderCreatedAt: string;
+  productName: string;
+  unitPrice: number;
+  currency: CurrencyCode;
+  quantity: number;
+}
+
 export interface OrderDto {
   id: string;
   status: OrderStatus;
