@@ -131,6 +131,38 @@
         html += '</div>';
       }
 
+      // Steering doc health
+      if (E.steeringAudit) {
+        const sa = E.steeringAudit;
+        const findings = sa.findings || [];
+        html += `<h2>Steering doc health</h2><div class="note">last audited ${sa.generatedAt ? new Date(sa.generatedAt).toLocaleString() : '—'} · ${(sa.docsScanned || []).length} doc(s) scanned</div>`;
+        if (findings.length) {
+          html += '<table><tr><th>Doc</th><th>Severity</th><th>Claim → reality</th><th>Recommendation</th></tr>' +
+            findings.map((f) => `<tr><td><code>${f.doc}${f.line ? ':' + f.line : ''}</code></td>
+              <td><span class="pill ${f.severity === 'broken' ? 'warn' : 'good'}">${f.severity}</span></td>
+              <td>${f.claim} → ${f.reality}</td><td>${f.recommendation}</td></tr>`).join('') + '</table>';
+        } else {
+          html += '<p class="note">No drift found in the last audit.</p>';
+        }
+      }
+
+      // Extraction candidates
+      if (E.extractionCandidates) {
+        const ec = E.extractionCandidates;
+        const candidates = ec.candidates || [];
+        html += `<h2>Monorepo extraction candidates</h2><div class="note">last analysed ${ec.generatedAt ? new Date(ec.generatedAt).toLocaleString() : '—'}</div>`;
+        if (candidates.length) {
+          html += '<table><tr><th>Module</th><th>Rank</th><th class="num">Commits</th><th class="num">Authors</th><th class="num">LOC</th><th>Coupling in/out</th><th>Rationale</th></tr>' +
+            candidates.map((c) => `<tr><td><code>${c.module}</code></td>
+              <td><span class="pill ${c.rank === 'strong' ? 'good' : 'warn'}">${c.rank}</span></td>
+              <td class="num">${n(c.commits)}</td><td class="num">${n(c.authors)}</td><td class="num">${n(c.loc)}</td>
+              <td>${c.inboundCoupling ?? '—'}/${c.outboundCoupling ?? '—'}</td><td>${c.rationale}</td></tr>`).join('') + '</table>';
+        } else {
+          html += '<p class="note">No candidates surfaced in the last analysis.</p>';
+        }
+        html += '<p class="note">Analytical input only — extraction has real operational cost this table doesn\'t price.</p>';
+      }
+
       html += `<p class="note">Methodology: <code>docs/ai-evidence/README.md</code>. This page renders <code>report.js</code> — re-run the generator to refresh.</p>`;
       app.innerHTML = html;
     }

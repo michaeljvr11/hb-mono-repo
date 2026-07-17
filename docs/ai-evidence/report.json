@@ -22,6 +22,29 @@
         "name": "API (NestJS)",
         "commits": 47,
         "ins": 14280,
+  "generatedAt": "2026-07-17T09:22:38.511Z",
+  "git": {
+    "totalCommits": 113,
+    "aiCommits": 103,
+    "aiPct": 91,
+    "appCommits": 76,
+    "ins": 54467,
+    "del": 4260,
+    "net": 50207,
+    "aiIns": 41035,
+    "aiDel": 4122,
+    "filesTouched": 494,
+    "areaRows": [
+      {
+        "name": "Web (Angular)",
+        "commits": 44,
+        "ins": 26042,
+        "del": 1344
+      },
+      {
+        "name": "API (NestJS)",
+        "commits": 46,
+        "ins": 14172,
         "del": 677
       },
       {
@@ -41,12 +64,21 @@
         "commits": 16,
         "ins": 808,
         "del": 6
+        "commits": 33,
+        "ins": 1298,
+        "del": 58
       },
       {
         "name": "Root & config",
         "commits": 14,
         "ins": 782,
         "del": 22
+      },
+      {
+        "name": "Shared contracts",
+        "commits": 15,
+        "ins": 790,
+        "del": 6
       },
       {
         "name": "CI / templates",
@@ -116,11 +148,108 @@
       {
         "hash": "c74caaf",
         "subject": "feat(shared): product search contracts + validated query DTO (card #46)",
+        "hash": "188fa83",
+        "subject": "improvements to project run skill and db backups",
+        "ai": false
+      },
+      {
+        "hash": "5884367",
+        "subject": "fix(web): per-input aria-labels on synonym equivalents (card #53)",
+        "ai": true
+      },
+      {
+        "hash": "74daa24",
+        "subject": "feat(web): admin search-synonyms management UI (card #53)",
+        "ai": true
+      },
+      {
+        "hash": "56e98fa",
+        "subject": "fix(api): resolve Meilisearch integration bugs found in live verification",
+        "ai": true
+      },
+      {
+        "hash": "ce0386a",
+        "subject": "feat(api): synonyms admin CRUD endpoint + Meilisearch reload (card #52)",
+        "ai": true
+      },
+      {
+        "hash": "744653a",
+        "subject": "feat(api): GET /search + GET /search/suggest endpoints (card #50)",
+        "ai": true
+      },
+      {
+        "hash": "5f4a8c0",
+        "subject": "feat(api): ProductSearchService — ranking, faceted filters, autocomplete (card #48)",
+        "ai": true
+      },
+      {
+        "hash": "a69826a",
+        "subject": "feat(api): synonyms data model — entity, migration, shared contract, seed (card #49)",
+        "ai": true
+      },
+      {
+        "hash": "be31d6b",
+        "subject": "feat(api): SearchIndexerService — event listeners + scheduled full reindex (card #47)",
+        "ai": true
+      },
+      {
+        "hash": "c74caaf",
+        "subject": "feat(shared): product search contracts + validated query DTO (card #46)",
+        "ai": true
+      },
+      {
+        "hash": "b6e27c8",
+        "subject": "feat(api): SearchModule scaffold + Meilisearch in Docker Compose (card #45)",
+        "ai": true
+      },
+      {
+        "hash": "1cc7c15",
+        "subject": "chore(evidence): recompile AI-evidence report for fable-checkout-oneshot",
         "ai": true
       }
     ]
   },
   "branches": [
+    {
+      "branch": "feat/EXPtZCJL-vendor-portal-shell",
+      "cardId": "EXPtZCJL",
+      "slug": "vendor-portal-shell"
+    },
+    {
+      "branch": "feat/IhTVdNYP-admin-catalog",
+      "cardId": "IhTVdNYP",
+      "slug": "admin-catalog"
+    },
+    {
+      "branch": "feat/L9fM1Gu7-storefront",
+      "cardId": "L9fM1Gu7",
+      "slug": "storefront"
+    },
+    {
+      "branch": "feat/N8P6OPPm-admin-user-mgmt",
+      "cardId": "N8P6OPPm",
+      "slug": "admin-user-mgmt"
+    },
+    {
+      "branch": "feat/RLiauFte-admin-vendor-approvals",
+      "cardId": "RLiauFte",
+      "slug": "admin-vendor-approvals"
+    },
+    {
+      "branch": "feat/oWqIV57s-vendor-dashboard",
+      "cardId": "oWqIV57s",
+      "slug": "vendor-dashboard"
+    },
+    {
+      "branch": "feat/steering-analysis-poc",
+      "cardId": "steering",
+      "slug": "analysis-poc"
+    },
+    {
+      "branch": "feat/xEOk5i0M-vendor-products",
+      "cardId": "xEOk5i0M",
+      "slug": "vendor-products"
+    },
     {
       "branch": "feat/1fqtc2JF-vendor-onboarding",
       "cardId": "1fqtc2JF",
@@ -142,9 +271,9 @@
       "slug": "auth-aware-nav"
     },
     {
-      "branch": "feat/EXPtZCJL-vendor-portal-shell",
-      "cardId": "EXPtZCJL",
-      "slug": "vendor-portal-shell"
+      "branch": "feat/MkRjnkvv-admin-synonyms-ui",
+      "cardId": "MkRjnkvv",
+      "slug": "admin-synonyms-ui"
     },
     {
       "branch": "feat/MkRjnkvv-admin-synonyms-ui",
@@ -215,37 +344,15 @@
       "branch": "feat/vs3y5tDJ-public-vendor-profile",
       "cardId": "vs3y5tDJ",
       "slug": "public-vendor-profile"
-    },
-    {
-      "branch": "feat/IhTVdNYP-admin-catalog",
-      "cardId": "IhTVdNYP",
-      "slug": "admin-catalog"
-    },
-    {
-      "branch": "feat/L9fM1Gu7-storefront",
-      "cardId": "L9fM1Gu7",
-      "slug": "storefront"
-    },
-    {
-      "branch": "feat/N8P6OPPm-admin-user-mgmt",
-      "cardId": "N8P6OPPm",
-      "slug": "admin-user-mgmt"
-    },
-    {
-      "branch": "feat/RLiauFte-admin-vendor-approvals",
-      "cardId": "RLiauFte",
-      "slug": "admin-vendor-approvals"
-    },
-    {
-      "branch": "feat/xEOk5i0M-vendor-products",
-      "cardId": "xEOk5i0M",
-      "slug": "vendor-products"
     }
   ],
   "tests": {
     "total": 69,
     "api": 26,
     "web": 43
+    "total": 68,
+    "api": 26,
+    "web": 42
   },
   "design": {
     "files": 29,
@@ -275,7 +382,15 @@
     "editsUnfixable": 101,
     "firstTs": "2026-06-18T12:14:47.925Z",
     "lastTs": "2026-07-17T09:20:45.560Z"
+    "gatePass": 13,
+    "gateFail": 1,
+    "edits": 261,
+    "editsUnfixable": 96,
+    "firstTs": "2026-06-18T12:14:47.925Z",
+    "lastTs": "2026-07-14T17:56:33.788Z"
   },
+  "steeringAudit": null,
+  "extractionCandidates": null,
   "prs": [
     {
       "headRefName": "feat/MkRjnkvv-admin-synonyms-ui",
@@ -508,4 +623,8 @@
     }
   ],
   "notes": []
+  "notes": [
+    "No steering-audit.json yet — run the align-steering-docs skill to populate it.",
+    "No extraction-candidates.json yet — run the service-extraction-analysis skill to populate it."
+  ]
 }

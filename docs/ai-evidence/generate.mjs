@@ -190,7 +190,23 @@ function collectPRs() {
   } catch { note('gh CLI not available/authed — PR list skipped.'); return null; }
 }
 
-// ── 4. Trello (REST, optional) ──────────────────────────────────────────────
+// ── 4. Steering-doc audit (optional, produced by /align-steering-docs) ─────
+function collectSteeringAudit() {
+  const p = join(ROOT, 'docs', 'ai-evidence', 'steering-audit.json');
+  if (!existsSync(p)) { note('No steering-audit.json yet — run the align-steering-docs skill to populate it.'); return null; }
+  try { return JSON.parse(readFileSync(p, 'utf8')); }
+  catch (e) { note('steering-audit.json unreadable — ' + e.message.split('\n')[0]); return null; }
+}
+
+// ── 5. Extraction candidates (optional, produced by /service-extraction-analysis)
+function collectExtractionCandidates() {
+  const p = join(ROOT, 'docs', 'ai-evidence', 'extraction-candidates.json');
+  if (!existsSync(p)) { note('No extraction-candidates.json yet — run the service-extraction-analysis skill to populate it.'); return null; }
+  try { return JSON.parse(readFileSync(p, 'utf8')); }
+  catch (e) { note('extraction-candidates.json unreadable — ' + e.message.split('\n')[0]); return null; }
+}
+
+// ── 6. Trello (REST, optional) ──────────────────────────────────────────────
 async function collectTrello() {
   const mcpPath = join(ROOT, '.mcp.json');
   if (!existsSync(mcpPath)) { note('No .mcp.json — Trello card flow skipped.'); return null; }
@@ -208,7 +224,7 @@ async function collectTrello() {
 
 // ── Report rendering ────────────────────────────────────────────────────────
 function md(data) {
-  const { git: g, branches, tests, design, telemetry: t, prs, trello, generatedAt } = data;
+  const { git: g, branches, tests, design, telemetry: t, prs, trello, steeringAudit, extractionCandidates, generatedAt } = data;
   const L = [];
   L.push('# AI Factory — Evidence Report');
   L.push('');
@@ -316,6 +332,46 @@ function md(data) {
     L.push('');
   }
 
+  // Steering doc health
+  if (steeringAudit) {
+    L.push('## Steering doc health');
+    L.push('');
+    L.push(`Last audited: ${steeringAudit.generatedAt || '—'} · ${(steeringAudit.docsScanned || []).length} doc(s) scanned`);
+    L.push('');
+    const findings = steeringAudit.findings || [];
+    if (findings.length) {
+      L.push('| Doc | Severity | Claim vs reality | Recommendation |');
+      L.push('|---|---|---|---|');
+      for (const f of findings) {
+        L.push(`| \`${f.doc}\`${f.line ? `:${f.line}` : ''} | ${f.severity} | ${f.claim} → ${f.reality} | ${f.recommendation} |`);
+      }
+    } else {
+      L.push('_No drift found in the last audit._');
+    }
+    L.push('');
+  }
+
+  // Service extraction candidates
+  if (extractionCandidates) {
+    L.push('## Monorepo extraction candidates');
+    L.push('');
+    L.push(`Last analysed: ${extractionCandidates.generatedAt || '—'}`);
+    L.push('');
+    const candidates = extractionCandidates.candidates || [];
+    if (candidates.length) {
+      L.push('| Module | Rank | Commits | Authors | LOC | Coupling (in/out) | Rationale |');
+      L.push('|---|---|--:|--:|--:|---|---|');
+      for (const c of candidates) {
+        L.push(`| \`${c.module}\` | ${c.rank} | ${c.commits ?? '—'} | ${c.authors ?? '—'} | ${c.loc ?? '—'} | ${c.inboundCoupling ?? '—'}/${c.outboundCoupling ?? '—'} | ${c.rationale} |`);
+      }
+    } else {
+      L.push('_No candidates surfaced in the last analysis._');
+    }
+    L.push('');
+    L.push('_Analytical input only — extraction has real operational cost this table doesn\'t price._');
+    L.push('');
+  }
+
   if (notes.length) {
     L.push('## Provenance / data-source notes');
     L.push('');
@@ -333,6 +389,8 @@ const data = {
   tests: collectTests(),
   design: collectDesign(),
   telemetry: collectTelemetry(),
+  steeringAudit: collectSteeringAudit(),
+  extractionCandidates: collectExtractionCandidates(),
   prs: collectPRs(),
   trello: await collectTrello(),
   notes,
