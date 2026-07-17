@@ -107,3 +107,48 @@ export interface AdminAnalyticsSummaryDto {
   /** Ordered ascending by `date`. Buckets with no orders/revenue may be omitted. */
   timeSeries: TimeSeriesPointDto[];
 }
+
+// ─── Analytics 5 — vendor-scoped aggregation/reporting ───
+
+/**
+ * Query params for the vendor analytics endpoint. Same range/granularity
+ * semantics as `AdminAnalyticsQuery` (inclusive range, 30-day default,
+ * 'day' granularity default) — kept as its own interface rather than a type
+ * alias so the admin and vendor query contracts can diverge independently
+ * later without a breaking rename of either.
+ */
+export interface VendorAnalyticsQuery {
+  /** ISO date (yyyy-mm-dd), inclusive. Defaults to 30 days before `to`. */
+  from?: string;
+  /** ISO date (yyyy-mm-dd), inclusive. Defaults to today. */
+  to?: string;
+  /** Time-series bucket width. Defaults to 'day'. */
+  granularity?: AnalyticsGranularity;
+}
+
+/**
+ * Vendor-scoped analytics read-model — funnel reach, orders, and revenue for
+ * ONE vendor's own listings/lines over a date range. The server always
+ * resolves the vendor from the authenticated user; a client-supplied
+ * vendorId is never accepted.
+ *
+ * Funnel caveat: `analytics_events.vendorId` is only populated on
+ * PRODUCT_VIEWED and ADD_TO_CART (the client attaches it from the product
+ * page/cart line) — checkout/shipping/payment/order-completed events are
+ * basket-level and carry no vendorId. All 7 `AnalyticsEventType` stages are
+ * still present (zero-filled), but in practice only the first two are ever
+ * non-zero for a vendor-scoped funnel.
+ */
+export interface VendorAnalyticsDto {
+  /** All 7 AnalyticsEventType stages, zero-filled — see funnel caveat above. */
+  funnel: FunnelStageCountDto[];
+  /** Distinct orders in range containing >= 1 of this vendor's lines. Cancelled orders excluded. */
+  orderCount: number;
+  /**
+   * Gross GMV of this vendor's OWN order lines only, grouped by currency.
+   * Cancelled orders excluded. Net-of-commission is out of scope for this slice.
+   */
+  revenueByCurrency: CurrencyTotalDto[];
+  /** Ordered ascending by `date`. `orders`/`revenueByCurrency` scoped to this vendor's lines only. */
+  timeSeries: TimeSeriesPointDto[];
+}

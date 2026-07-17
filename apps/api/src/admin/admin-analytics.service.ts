@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import {
@@ -15,8 +15,7 @@ import {
 import { Order } from '../orders/entities/order.entity';
 import { AnalyticsEvent } from '../analytics/entities/analytics-event.entity';
 import { AdminAnalyticsResponseDto } from './dto/admin-analytics-response.dto';
-
-const DEFAULT_RANGE_DAYS = 30;
+import { analyticsBucketKey, resolveAnalyticsRange } from '../common/utils/analytics-range.utils';
 
 /**
  * Aggregation rules (mirrors AP-10's `AdminOrdersService.getDashboard`):
@@ -64,7 +63,7 @@ export class AdminAnalyticsService {
   ) {}
 
   async getSummary(query: AdminAnalyticsQuery): Promise<AdminAnalyticsSummaryDto> {
-    const { from, to } = this.resolveRange(query);
+    const { from, to } = resolveAnalyticsRange(query);
     const granularity: AnalyticsGranularity = query.granularity ?? 'day';
 
     const [funnel, sessionsByType] = await this.getFunnel(from, to);
@@ -77,21 +76,6 @@ export class AdminAnalyticsService {
     result.revenueByCurrency = revenueByCurrency;
     result.timeSeries = timeSeries;
     return result;
-  }
-
-  /** Resolves the inclusive [from, to] UTC range, applying the 30-day default. */
-  private resolveRange(query: AdminAnalyticsQuery): { from: Date; to: Date } {
-    const toStr = query.to ?? this.todayIsoDate();
-    const to = this.endOfDayUTC(toStr);
-
-    const fromStr = query.from ?? this.addDaysIsoDate(toStr, -(DEFAULT_RANGE_DAYS - 1));
-    const from = this.startOfDayUTC(fromStr);
-
-    if (from.getTime() > to.getTime()) {
-      throw new BadRequestException('`from` must be before or equal to `to`');
-    }
-
-    return { from, to };
   }
 
   private async getFunnel(
@@ -147,7 +131,7 @@ export class AdminAnalyticsService {
         continue;
       }
 
-      const bucketDate = this.bucketKey(order.createdAt, granularity);
+      const bucketDate = analyticsBucketKey(order.createdAt, granularity);
       let bucket = bucketMap.get(bucketDate);
       if (!bucket) {
         bucket = { orders: 0, revenueMap: new Map<CurrencyCode, number>() };
@@ -184,47 +168,5 @@ export class AdminAnalyticsService {
       currency,
       amount: Math.round(amount * 100) / 100,
     }));
-  }
-
-  /** Bucket start, as an ISO yyyy-mm-dd string, per the requested granularity (UTC). */
-  private bucketKey(date: Date, granularity: AnalyticsGranularity): string {
-    if (granularity === 'month') {
-      const y = date.getUTCFullYear();
-      const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-      return `${y}-${m}-01`;
-    }
-
-    if (granularity === 'week') {
-      const monday = new Date(
-        Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
-      );
-      const day = monday.getUTCDay(); // 0 = Sunday .. 6 = Saturday
-      const diffToMonday = day === 0 ? -6 : 1 - day;
-      monday.setUTCDate(monday.getUTCDate() + diffToMonday);
-      return monday.toISOString().slice(0, 10);
-    }
-
-    // day
-    return date.toISOString().slice(0, 10);
-  }
-
-  private todayIsoDate(): string {
-    return new Date().toISOString().slice(0, 10);
-  }
-
-  private addDaysIsoDate(isoDate: string, days: number): string {
-    const d = this.startOfDayUTC(isoDate);
-    d.setUTCDate(d.getUTCDate() + days);
-    return d.toISOString().slice(0, 10);
-  }
-
-  private startOfDayUTC(isoDate: string): Date {
-    const datePart = isoDate.slice(0, 10);
-    return new Date(`${datePart}T00:00:00.000Z`);
-  }
-
-  private endOfDayUTC(isoDate: string): Date {
-    const datePart = isoDate.slice(0, 10);
-    return new Date(`${datePart}T23:59:59.999Z`);
   }
 }
