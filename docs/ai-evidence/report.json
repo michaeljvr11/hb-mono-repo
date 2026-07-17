@@ -1,45 +1,45 @@
 {
-  "generatedAt": "2026-07-17T11:28:28.995Z",
+  "generatedAt": "2026-07-17T13:38:41.138Z",
   "git": {
-    "totalCommits": 122,
-    "aiCommits": 112,
-    "aiPct": 92,
-    "appCommits": 78,
-    "ins": 56264,
-    "del": 4733,
-    "net": 51531,
-    "aiIns": 42832,
-    "aiDel": 4595,
-    "filesTouched": 501,
+    "totalCommits": 139,
+    "aiCommits": 129,
+    "aiPct": 93,
+    "appCommits": 93,
+    "ins": 64667,
+    "del": 5080,
+    "net": 59587,
+    "aiIns": 51235,
+    "aiDel": 4942,
+    "filesTouched": 561,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 45,
-        "ins": 26734,
-        "del": 1349
+        "commits": 54,
+        "ins": 32055,
+        "del": 1441
       },
       {
         "name": "API (NestJS)",
-        "commits": 47,
-        "ins": 14280,
-        "del": 677
+        "commits": 54,
+        "ins": 16713,
+        "del": 748
       },
       {
         "name": "Docs",
-        "commits": 41,
-        "ins": 11753,
-        "del": 2609
+        "commits": 43,
+        "ins": 12153,
+        "del": 2793
       },
       {
         "name": "AI Factory config",
-        "commits": 38,
-        "ins": 1707,
+        "commits": 40,
+        "ins": 1775,
         "del": 68
       },
       {
         "name": "Shared contracts",
-        "commits": 16,
-        "ins": 808,
+        "commits": 20,
+        "ins": 989,
         "del": 6
       },
       {
@@ -59,63 +59,63 @@
     "lastDate": "2026-07-17",
     "recent": [
       {
-        "hash": "c322928",
-        "subject": "chore(evidence): recompile AI evidence report after merging ponytail-minimalism-ladder",
+        "hash": "e671be7",
+        "subject": "fix: address review WARNs — token-derived focus rings, metadata size cap",
         "ai": true
       },
       {
-        "hash": "6022c1e",
-        "subject": "feat(factory): vendor Ponytail minimalism ladder into backend/frontend/reviewer agents",
+        "hash": "c2b8eb6",
+        "subject": "test(api): pin analytics money + bucketing edges for the batch",
         "ai": true
       },
       {
-        "hash": "9cb4a8f",
-        "subject": "feat(factory): add CLARIFY step to /ship-card and /ship-batch",
+        "hash": "a111384",
+        "subject": "feat(web): vendor dashboard analytics view (ezkaNtbZ)",
         "ai": true
       },
       {
-        "hash": "97b6b19",
-        "subject": "chore(evidence): recompile AI evidence report after merging steering-analysis-poc",
+        "hash": "61c6e01",
+        "subject": "feat(web): admin dashboard analytics widgets (UC508IB6)",
         "ai": true
       },
       {
-        "hash": "3286a11",
-        "subject": "feat(factory): add /ship-batch command for multi-card and Fable-offloaded builds",
+        "hash": "bcb80f0",
+        "subject": "feat(api): vendor-scoped analytics endpoint with strict tenant isolation (ezkaNtbZ)",
         "ai": true
       },
       {
-        "hash": "03a4b63",
-        "subject": "chore(evidence): recompile AI evidence report (card VP-4)",
+        "hash": "becdc0b",
+        "subject": "feat(api): admin analytics aggregation endpoint (UC508IB6)",
         "ai": true
       },
       {
-        "hash": "5769dcb",
-        "subject": "feat(web): vendor orders screen with fulfilment actions (card VP-4)",
+        "hash": "96c91f3",
+        "subject": "feat(web): consent-gated GA4 integration, inert until a measurement id lands (p0kVZMii)",
         "ai": true
       },
       {
-        "hash": "e9a57ef",
-        "subject": "feat(factory): steering-doc alignment + service-extraction analysis POC",
+        "hash": "08cd8f5",
+        "subject": "chore(evidence): recompile AI evidence report for the customer-profile batch",
         "ai": true
       },
       {
-        "hash": "9721f64",
-        "subject": "feat(api): add GET /orders/vendor read endpoint (card VP-4)",
+        "hash": "83a9217",
+        "subject": "feat(web): instrument storefront funnel with bespoke analytics events (FRtcp2dg)",
         "ai": true
       },
       {
-        "hash": "188fa83",
-        "subject": "improvements to project run skill and db backups",
-        "ai": false
-      },
-      {
-        "hash": "5884367",
-        "subject": "fix(web): per-input aria-labels on synonym equivalents (card #53)",
+        "hash": "e78420d",
+        "subject": "refactor(web): address review WARNs on the profile batch",
         "ai": true
       },
       {
-        "hash": "74daa24",
-        "subject": "feat(web): admin search-synonyms management UI (card #53)",
+        "hash": "5928da3",
+        "subject": "feat(api): add analytics contracts + bespoke event ingestion (LKIGKUVM)",
+        "ai": true
+      },
+      {
+        "hash": "4ca3de8",
+        "subject": "feat(web): address book management in /profile (uGvvSURk)",
         "ai": true
       }
     ]
@@ -135,6 +135,11 @@
       "branch": "feat/L9fM1Gu7-storefront",
       "cardId": "L9fM1Gu7",
       "slug": "storefront"
+    },
+    {
+      "branch": "feat/LKIGKUVM-analytics-reporting",
+      "cardId": "LKIGKUVM",
+      "slug": "analytics-reporting"
     },
     {
       "branch": "feat/N8P6OPPm-admin-user-mgmt",
@@ -212,6 +217,11 @@
       "slug": "returnurl-guard-capture"
     },
     {
+      "branch": "feat/eq7ybOyS-customer-profile",
+      "cardId": "eq7ybOyS",
+      "slug": "customer-profile"
+    },
+    {
       "branch": "feat/fable-checkout-oneshot",
       "cardId": "fable",
       "slug": "checkout-oneshot"
@@ -248,9 +258,9 @@
     }
   ],
   "tests": {
-    "total": 69,
-    "api": 26,
-    "web": 43
+    "total": 80,
+    "api": 31,
+    "web": 49
   },
   "design": {
     "files": 29,
@@ -274,21 +284,132 @@
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 16,
+    "gatePass": 17,
     "gateFail": 1,
-    "edits": 270,
-    "editsUnfixable": 101,
+    "edits": 314,
+    "editsUnfixable": 114,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-17T11:19:10.427Z",
+    "lastTs": "2026-07-17T13:38:07.502Z",
     "agentTokens": {
-      "present": false,
-      "byAgent": [],
-      "recent": []
+      "present": true,
+      "byAgent": [
+        {
+          "agentType": "unknown",
+          "invocations": 1,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheCreationTokens": 0,
+          "totalTokens": 0
+        },
+        {
+          "agentType": "backend-engineer",
+          "invocations": 3,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheCreationTokens": 0,
+          "totalTokens": 0
+        },
+        {
+          "agentType": "frontend-engineer",
+          "invocations": 4,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheCreationTokens": 0,
+          "totalTokens": 0
+        },
+        {
+          "agentType": "test-engineer",
+          "invocations": 1,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheCreationTokens": 0,
+          "totalTokens": 0
+        },
+        {
+          "agentType": "code-reviewer",
+          "invocations": 1,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheCreationTokens": 0,
+          "totalTokens": 0
+        }
+      ],
+      "recent": [
+        {
+          "ts": "2026-07-17T11:29:59.993Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T12:32:26.079Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T12:41:49.035Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T12:54:28.701Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T13:03:24.368Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T13:13:26.933Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T13:18:45.646Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T13:19:17.284Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T13:25:33.051Z",
+          "agentType": "test-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T13:32:31.849Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        }
+      ]
     }
   },
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/LKIGKUVM-analytics-reporting",
+      "number": 34,
+      "state": "OPEN",
+      "title": "feat: Analytics & Reporting — bespoke funnel + GA4 + admin/vendor analytics (5-card batch)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/34"
+    },
+    {
+      "headRefName": "feat/eq7ybOyS-customer-profile",
+      "number": 33,
+      "state": "OPEN",
+      "title": "feat: customer profile — details, password, order history, address book",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/33"
+    },
     {
       "headRefName": "feat/ponytail-minimalism-ladder",
       "number": 32,
@@ -299,7 +420,7 @@
     {
       "headRefName": "feat/ship-batch-command",
       "number": 31,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(factory): steering-doc alignment analysis + /ship-batch multi-card command",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/31"
     },
@@ -521,7 +642,7 @@
     },
     {
       "name": "To Do",
-      "cards": 16
+      "cards": 6
     },
     {
       "name": "In Progress",
@@ -529,7 +650,7 @@
     },
     {
       "name": "In Review",
-      "cards": 0
+      "cards": 10
     },
     {
       "name": "Done",
