@@ -121,7 +121,7 @@ function makeStubs(): {
       getById: vi.fn(() => of(MOCK_VENDOR)),
     },
     productsStub: {
-      list: vi.fn(() => of([HONEY, TEA])),
+      list: vi.fn(() => of({ items: [HONEY, TEA], total: 2, page: 1, limit: 100 })),
     },
     authStub: {
       isLoggedIn: vi.fn(() => false),
@@ -221,8 +221,8 @@ describe('PublicVendorProfile', () => {
     expect(el.querySelectorAll('app-product-card').length).toBe(2);
   });
 
-  it('fetches products filtered by vendorId, never unfiltered', () => {
-    expect(productsStub.list).toHaveBeenCalledWith({ vendorId: 'v1' });
+  it('fetches products filtered by vendorId, never unfiltered, capped at the server max page size', () => {
+    expect(productsStub.list).toHaveBeenCalledWith({ vendorId: 'v1', limit: 100 });
   });
 
   it('renders a not-found state without a product grid when getById 404s', async () => {
@@ -258,7 +258,7 @@ describe('PublicVendorProfile', () => {
   });
 
   it('renders an empty state when the vendor has no products', async () => {
-    productsStub.list.mockReturnValue(of([]));
+    productsStub.list.mockReturnValue(of({ items: [], total: 0, page: 1, limit: 100 }));
     paramMap$.next(convertToParamMap({ id: 'v1' }));
     fixture.detectChanges();
     await fixture.whenStable();
@@ -275,7 +275,7 @@ describe('PublicVendorProfile', () => {
 
   it('maps NAMIBIA country code to the "Namibia" label', async () => {
     vendorsStub.getById.mockReturnValue(of(NAMIBIAN_VENDOR));
-    productsStub.list.mockReturnValue(of([]));
+    productsStub.list.mockReturnValue(of({ items: [], total: 0, page: 1, limit: 100 }));
     paramMap$.next(convertToParamMap({ id: 'v2' }));
     fixture.detectChanges();
     await fixture.whenStable();

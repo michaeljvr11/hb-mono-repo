@@ -24,6 +24,9 @@ type LoadState = 'loading' | 'loaded' | 'empty' | 'error';
 /** Number of products shown in the "New in Namibia" carousel. */
 const CAROUSEL_LIMIT = 8;
 
+/** Server-side max page size — used to avoid truncating the storefront's product list. */
+const PRODUCT_LIST_MAX = 100;
+
 export interface CategoryWithCount extends CategoryDto {
   productCount: number;
 }
@@ -227,10 +230,10 @@ export class Shop implements OnInit {
 
   private loadProducts(): void {
     this.productsState.set('loading');
-    this.productsService.list().subscribe({
-      next: (list) => {
-        this.products.set(list);
-        this.productsState.set(list.length ? 'loaded' : 'empty');
+    this.productsService.list({ limit: PRODUCT_LIST_MAX }).subscribe({
+      next: (res) => {
+        this.products.set(res.items);
+        this.productsState.set(res.items.length ? 'loaded' : 'empty');
         // Rebuild category counts once products are known
         this.rebuildCategoryCounts();
       },

@@ -58,6 +58,26 @@
 
   <!-- â”€â”€ Product grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <section class="discover__grid-section">
+    @if (productsState() === 'loaded' || productsState() === 'empty') {
+      <div class="discover__toolbar">
+        <p class="discover__total-count">{{ total() }} product{{ total() === 1 ? '' : 's' }}</p>
+
+        <label class="discover__sort" for="discover-sort">
+          <span class="discover__sort-label">Sort by</span>
+          <select
+            id="discover-sort"
+            class="discover__sort-select"
+            [value]="sort()"
+            (change)="onSortChange($any($event.target).value)"
+          >
+            @for (option of sortOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </label>
+      </div>
+    }
+
     @if (productsState() === 'loading') {
       <div class="state-message" role="status" aria-live="polite">
         <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
@@ -82,6 +102,30 @@
           <app-product-card [product]="product" variant="grid" (addToCart)="onAddToCart($event)" />
         }
       </div>
+    }
+
+    @if (productsState() === 'loaded') {
+      <nav class="discover__pager" aria-label="Product pages">
+        <button
+          type="button"
+          class="discover__pager-btn discover__pager-btn--prev"
+          [disabled]="currentPage() <= 1"
+          (click)="onPrevPage()"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+          Prev
+        </button>
+        <span class="discover__pager-status">Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <button
+          type="button"
+          class="discover__pager-btn discover__pager-btn--next"
+          [disabled]="currentPage() >= totalPages()"
+          (click)="onNextPage()"
+        >
+          Next
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </button>
+      </nav>
     }
   </section>
 

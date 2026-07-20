@@ -102,7 +102,9 @@ describe('AdminCatalog component', () => {
 
   beforeEach(async () => {
     productsStub = {
-      list: vi.fn(() => of([...MOCK_PRODUCTS])),
+      list: vi.fn(() =>
+        of({ items: [...MOCK_PRODUCTS], total: MOCK_PRODUCTS.length, page: 1, limit: 100 }),
+      ),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -132,6 +134,7 @@ describe('AdminCatalog component', () => {
   describe('platform product filtering', () => {
     it('loads both products from service but only shows platform listings', () => {
       expect(productsStub.list).toHaveBeenCalledTimes(1);
+      expect(productsStub.list).toHaveBeenCalledWith({ limit: 100 });
       // allProducts contains both
       expect(component.allProducts().length).toBe(2);
       // platformProducts filters to only platform type
@@ -531,7 +534,7 @@ describe('AdminCatalog — products load error', () => {
 describe('AdminCatalog — categories load error', () => {
   it('sets categoriesError and clears categoriesLoading when list() fails', async () => {
     const productsStub: ProductsServiceStub = {
-      list: vi.fn(() => of([])),
+      list: vi.fn(() => of({ items: [], total: 0, page: 1, limit: 100 })),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),

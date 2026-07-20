@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
+  PagedResponse,
   ProductCreateRequest,
   ProductDto as Product,
   ProductQuery,
@@ -18,7 +19,7 @@ export class ProductsService {
   constructor(private http: HttpClient) {}
 
   /** Discovery listing. Omits empty/undefined query params rather than sending them blank. */
-  list(query?: ProductQuery): Observable<Product[]> {
+  list(query?: ProductQuery): Observable<PagedResponse<Product>> {
     let params = new HttpParams();
     if (query?.categoryId) {
       params = params.set('categoryId', query.categoryId);
@@ -29,7 +30,16 @@ export class ProductsService {
     if (query?.vendorId) {
       params = params.set('vendorId', query.vendorId);
     }
-    return this.http.get<Product[]>(this.API_URL, { params });
+    if (query?.page) {
+      params = params.set('page', String(query.page));
+    }
+    if (query?.limit) {
+      params = params.set('limit', String(query.limit));
+    }
+    if (query?.sort) {
+      params = params.set('sort', query.sort);
+    }
+    return this.http.get<PagedResponse<Product>>(this.API_URL, { params });
   }
 
   getById(id: string): Observable<Product> {

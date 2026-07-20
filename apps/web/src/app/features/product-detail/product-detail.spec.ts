@@ -104,7 +104,9 @@ function makeStubs(): {
   return {
     productsStub: {
       getById: vi.fn(() => of(HONEY)),
-      list: vi.fn(() => of([HONEY, RELATED_SAME_CATEGORY])),
+      list: vi.fn(() =>
+        of({ items: [HONEY, RELATED_SAME_CATEGORY], total: 2, page: 1, limit: 24 }),
+      ),
     },
     authStub: {
       isLoggedIn: vi.fn(() => false),

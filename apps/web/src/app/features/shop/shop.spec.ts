@@ -65,7 +65,10 @@ describe('Shop', () => {
     categories?: CategoryDto[];
     vendors?: VendorDto[];
   }): void {
-    httpMock.expectOne(`${environment.apiBaseUrl}/products`).flush(opts?.products ?? products);
+    const items = opts?.products ?? products;
+    httpMock
+      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/products`))
+      .flush({ items, total: items.length, page: 1, limit: 100 });
     httpMock.expectOne(`${environment.apiBaseUrl}/categories`).flush(opts?.categories ?? categories);
     httpMock.expectOne(`${environment.apiBaseUrl}/vendors/directory`).flush(opts?.vendors ?? vendors);
   }
@@ -150,7 +153,9 @@ describe('Shop', () => {
   });
 
   it('shows the error state when the products request fails', () => {
-    httpMock.expectOne(`${environment.apiBaseUrl}/products`).error(new ProgressEvent('error'));
+    httpMock
+      .expectOne((r) => r.url.startsWith(`${environment.apiBaseUrl}/products`))
+      .error(new ProgressEvent('error'));
     httpMock.expectOne(`${environment.apiBaseUrl}/categories`).flush(categories);
     httpMock.expectOne(`${environment.apiBaseUrl}/vendors/directory`).flush(vendors);
     fixture.detectChanges();
