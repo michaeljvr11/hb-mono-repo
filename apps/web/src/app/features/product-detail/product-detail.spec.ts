@@ -340,9 +340,9 @@ describe('ProductDetail', () => {
     expect(() => component.onAddToCart()).not.toThrow();
   });
 
-  it('viewStorefront navigates to /discover with the vendor id as a query param', () => {
+  it('viewStorefront navigates to /vendors/:id', () => {
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
     component.viewStorefront();
-    expect(navigateSpy).toHaveBeenCalledWith(['/discover'], { queryParams: { vendorId: 'v1' } });
+    expect(navigateSpy).toHaveBeenCalledWith(['/vendors', 'v1']);
   });
 });
