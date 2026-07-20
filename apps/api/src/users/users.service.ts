@@ -1,9 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
 import { UserRole } from '@hb/shared';
 import { User } from './entities/user.entity';
 import { UserResponseDto } from './dto/user-response.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserToResponseDto } from '../common/utils/mappers.utils';
 
 @Injectable()
@@ -100,5 +103,31 @@ export class UsersService {
     const user = await this.findOneFull(id);
     if (!user) throw new NotFoundException('User not found');
     return UserToResponseDto(user);
+  }
+
+  // Deliberately writes only firstName/lastName — no path here can touch
+  // email/role/isActive/isVerified. See users.controller.ts PATCH /users/me.
+  async updateProfile(id: string, dto: UpdateProfileDto): Promise<UserResponseDto> {
+    return this.update(id, {
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+    });
+  }
+
+  async changePassword(id: string, dto: ChangePasswordDto): Promise<void> {
+    const user = await this.findOneFull(id);
+    if (!user) throw new NotFoundException('User not found');
+
+    const isMatch = await bcrypt.compare(dto.currentPassword, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    // Pre-hash here: setPassword uses repository.update, which bypasses the
+    // entity's @BeforeInsert hashing hook (same reasoning as auth.service.ts
+    // resetPassword). setPassword also clears the refresh session and reset
+    // tokens, logging the user out everywhere (owner-confirmed 2026-07-17).
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 12);
+    await this.setPassword(id, hashedPassword);
   }
 }

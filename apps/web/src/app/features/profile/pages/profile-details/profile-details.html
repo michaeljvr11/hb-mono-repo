@@ -1,0 +1,113 @@
+<div class="profile-details">
+  <header class="page-head">
+    <h1>Account details</h1>
+    <p>Update your name and manage your password.</p>
+  </header>
+
+  @if (loadingUser()) {
+    <p class="loading-text">Loading your account…</p>
+  } @else if (userLoadError()) {
+    <p class="status-error" role="alert">{{ userLoadError() }}</p>
+  } @else {
+    <!-- ── Profile details ─────────────────────────────────────────── -->
+    <section class="card">
+      <h2>Profile</h2>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <div class="input-wrap input-wrap--readonly">
+          <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+          <span id="email" class="readonly-value">{{ user()!.email }}</span>
+        </div>
+      </div>
+
+      <form [formGroup]="detailsForm" (ngSubmit)="saveDetails()" novalidate>
+        <div class="field">
+          <label for="firstName">First name</label>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined" aria-hidden="true">badge</span>
+            <input id="firstName" type="text" formControlName="firstName" autocomplete="given-name" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="lastName">Last name</label>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined" aria-hidden="true">badge</span>
+            <input id="lastName" type="text" formControlName="lastName" autocomplete="family-name" />
+          </div>
+        </div>
+
+        @if (detailsError()) {
+          <p class="status-error" role="alert">{{ detailsError() }}</p>
+        }
+        @if (detailsSuccess()) {
+          <p class="status-success" role="status">{{ detailsSuccess() }}</p>
+        }
+
+        <button class="primary-action" type="submit" [disabled]="detailsSubmitting()">
+          {{ detailsSubmitting() ? 'Saving…' : 'Save changes' }}
+        </button>
+      </form>
+    </section>
+
+    <!-- ── Change password ─────────────────────────────────────────── -->
+    <section class="card">
+      <h2>Change password</h2>
+      <p class="card-hint">Changing your password signs you out of every device, including this one.</p>
+
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate>
+        <div class="field">
+          <label for="currentPassword">Current password</label>
+          <div
+            class="input-wrap"
+            [class.invalid]="currentPasswordControl.invalid && currentPasswordControl.touched"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+            <input
+              id="currentPassword"
+              type="password"
+              formControlName="currentPassword"
+              autocomplete="current-password"
+            />
+          </div>
+          @if (currentPasswordControl.hasError('required') && currentPasswordControl.touched) {
+            <small class="field-error">Current password is required.</small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="newPassword">New password</label>
+          <div
+            class="input-wrap"
+            [class.invalid]="newPasswordControl.invalid && newPasswordControl.touched"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">lock_reset</span>
+            <input
+              id="newPassword"
+              type="password"
+              formControlName="newPassword"
+              autocomplete="new-password"
+            />
+          </div>
+          @if (newPasswordControl.hasError('required') && newPasswordControl.touched) {
+            <small class="field-error">New password is required.</small>
+          } @else if (newPasswordControl.hasError('minlength') && newPasswordControl.touched) {
+            <small class="field-error">New password must be at least 8 characters.</small>
+          }
+        </div>
+
+        @if (passwordError()) {
+          <p class="status-error" role="alert">{{ passwordError() }}</p>
+        }
+        @if (passwordSuccess()) {
+          <p class="status-success" role="status">{{ passwordSuccess() }}</p>
+        }
+
+        <button class="primary-action" type="submit" [disabled]="passwordSubmitting()">
+          {{ passwordSubmitting() ? 'Changing password…' : 'Change password' }}
+        </button>
+      </form>
+    </section>
+  }
+</div>
