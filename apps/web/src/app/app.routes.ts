@@ -53,7 +53,7 @@ export const routes: Routes = [
   // vendors are ever returned by the underlying endpoint.
   {
     path: 'vendors/:id',
-    loadComponent: () => import('./features/vendors/vendor-profile/vendor-profile').then(m => m.VendorProfile)
+    loadComponent: () => import('./features/vendors/vendor-profile/vendor-profile').then(m => m.PublicVendorProfile)
   },
 
   // Cart & checkout — the auth boundary of the storefront. Anonymous visits

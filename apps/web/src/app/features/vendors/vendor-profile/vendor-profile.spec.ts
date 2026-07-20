@@ -16,7 +16,7 @@ import {
   VendorStatus,
 } from '@hb/shared';
 
-import { VendorProfile } from './vendor-profile';
+import { PublicVendorProfile } from './vendor-profile';
 import { VendorsService } from '../../../core/api/vendors.service';
 import { ProductsService } from '../../../core/api/products.service';
 import { CartService } from '../../../core/api/cart.service';
@@ -151,7 +151,7 @@ async function setupTestBed(
   paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>,
 ): Promise<void> {
   return TestBed.configureTestingModule({
-    imports: [VendorProfile],
+    imports: [PublicVendorProfile],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -173,9 +173,9 @@ async function setupTestBed(
 
 // ─── Main suite ───────────────────────────────────────────────────────────────
 
-describe('VendorProfile', () => {
-  let fixture: ComponentFixture<VendorProfile>;
-  let component: VendorProfile;
+describe('PublicVendorProfile', () => {
+  let fixture: ComponentFixture<PublicVendorProfile>;
+  let component: PublicVendorProfile;
   let router: Router;
   let vendorsStub: VendorsStub;
   let productsStub: ProductsStub;
@@ -199,7 +199,7 @@ describe('VendorProfile', () => {
       paramMap$,
     );
 
-    fixture = TestBed.createComponent(VendorProfile);
+    fixture = TestBed.createComponent(PublicVendorProfile);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
     fixture.detectChanges();

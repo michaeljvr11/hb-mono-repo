@@ -47,7 +47,7 @@
   padding: 4px 12px;
   border-radius: 9999px;
   background: var(--hb-sme-badge-bg);
-  border: 1px solid rgba(1, 83, 0, 0.1);
+  border: 1px solid color-mix(in srgb, var(--hb-primary) 10%, transparent);
   color: var(--hb-primary);
 
   .material-symbols-outlined {

@@ -31,7 +31,7 @@ type ProductsState = 'loading' | 'loaded' | 'empty' | 'error';
   styleUrl: './vendor-profile.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class VendorProfile {
+export class PublicVendorProfile {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly vendorsService = inject(VendorsService);
