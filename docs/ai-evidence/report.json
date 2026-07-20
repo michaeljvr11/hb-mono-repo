@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-07-17T13:38:41.138Z",
+  "generatedAt": "2026-07-20T20:30:03.035Z",
   "git": {
-    "totalCommits": 139,
-    "aiCommits": 129,
+    "totalCommits": 142,
+    "aiCommits": 132,
     "aiPct": 93,
-    "appCommits": 93,
-    "ins": 64667,
-    "del": 5080,
-    "net": 59587,
-    "aiIns": 51235,
-    "aiDel": 4942,
-    "filesTouched": 561,
+    "appCommits": 96,
+    "ins": 66058,
+    "del": 5202,
+    "net": 60856,
+    "aiIns": 52626,
+    "aiDel": 5064,
+    "filesTouched": 566,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 54,
-        "ins": 32055,
-        "del": 1441
+        "commits": 57,
+        "ins": 32785,
+        "del": 1462
       },
       {
         "name": "API (NestJS)",
@@ -26,57 +26,20 @@
       },
       {
         "name": "Docs",
+        "commits": 45,
+        "ins": 12907,
+        "del": 2894
+      },
+      {
+        "name": "AI Factory config",
         "commits": 43,
-        "ins": 12153,
-        "del": 2793
-      },
-      {
-        "name": "AI Factory config",
-        "commits": 40,
-        "ins": 1775,
-  "generatedAt": "2026-07-17T12:43:13.526Z",
-  "git": {
-    "totalCommits": 128,
-    "aiCommits": 118,
-    "aiPct": 92,
-    "appCommits": 84,
-    "ins": 59648,
-    "del": 4813,
-    "net": 54835,
-    "aiIns": 46216,
-    "aiDel": 4675,
-    "filesTouched": 527,
-    "areaRows": [
-      {
-        "name": "Web (Angular)",
-        "commits": 49,
-        "ins": 29596,
-        "del": 1383
-      },
-      {
-        "name": "API (NestJS)",
-        "commits": 49,
-        "ins": 14782,
-        "del": 680
-      },
-      {
-        "name": "Docs",
-        "commits": 42,
-        "ins": 11873,
-        "del": 2652
-      },
-      {
-        "name": "AI Factory config",
-        "commits": 38,
-        "ins": 1597,
+        "ins": 1682,
         "del": 68
       },
       {
         "name": "Shared contracts",
         "commits": 20,
         "ins": 989,
-        "commits": 17,
-        "ins": 818,
         "del": 6
       },
       {
@@ -93,48 +56,31 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-07-17",
+    "lastDate": "2026-07-20",
     "recent": [
+      {
+        "hash": "cd617c6",
+        "subject": "refactor(web): address review NITs on vendor profile page (UG5UFyxy)",
+        "ai": true
+      },
+      {
+        "hash": "7efa101",
+        "subject": "test(web): specs for vendor profile page + re-point assertions (UG5UFyxy)",
+        "ai": true
+      },
+      {
+        "hash": "871d6d4",
+        "subject": "feat(web): public vendor profile page at /vendors/:id (UG5UFyxy)",
+        "ai": true
+      },
+      {
+        "hash": "3194c67",
+        "subject": "chore(evidence): recompile AI evidence report after the analytics batch",
+        "ai": true
+      },
       {
         "hash": "e671be7",
         "subject": "fix: address review WARNs — token-derived focus rings, metadata size cap",
-        "hash": "e78420d",
-        "subject": "refactor(web): address review WARNs on the profile batch",
-        "ai": true
-      },
-      {
-        "hash": "4ca3de8",
-        "subject": "feat(web): address book management in /profile (uGvvSURk)",
-        "ai": true
-      },
-      {
-        "hash": "8d9b579",
-        "subject": "feat(web): order history section in /profile (xkD93Anr)",
-        "ai": true
-      },
-      {
-        "hash": "3c72b4c",
-        "subject": "feat(web): /profile shell + details section (1StR8MKR)",
-        "ai": true
-      },
-      {
-        "hash": "b2dd003",
-        "subject": "feat(addresses): owner-scoped address book CRUD (U9C8764Y)",
-        "ai": true
-      },
-      {
-        "hash": "9f57ae7",
-        "subject": "feat(users): profile update + password change endpoints (eq7ybOyS)",
-        "ai": true
-      },
-      {
-        "hash": "f2ec5cc",
-        "subject": "feat(factory): track per-agent token usage in the AI Factory Evidence Dashboard",
-        "ai": true
-      },
-      {
-        "hash": "c322928",
-        "subject": "chore(evidence): recompile AI evidence report after merging ponytail-minimalism-ladder",
         "ai": true
       },
       {
@@ -171,75 +117,10 @@
         "hash": "08cd8f5",
         "subject": "chore(evidence): recompile AI evidence report for the customer-profile batch",
         "ai": true
-      },
-      {
-        "hash": "83a9217",
-        "subject": "feat(web): instrument storefront funnel with bespoke analytics events (FRtcp2dg)",
-        "ai": true
-      },
-      {
-        "hash": "e78420d",
-        "subject": "refactor(web): address review WARNs on the profile batch",
-        "ai": true
-      },
-      {
-        "hash": "5928da3",
-        "subject": "feat(api): add analytics contracts + bespoke event ingestion (LKIGKUVM)",
-        "ai": true
-      },
-      {
-        "hash": "4ca3de8",
-        "subject": "feat(web): address book management in /profile (uGvvSURk)",
-        "ai": true
       }
     ]
   },
   "branches": [
-    {
-      "branch": "feat/EXPtZCJL-vendor-portal-shell",
-      "cardId": "EXPtZCJL",
-      "slug": "vendor-portal-shell"
-    },
-    {
-      "branch": "feat/IhTVdNYP-admin-catalog",
-      "cardId": "IhTVdNYP",
-      "slug": "admin-catalog"
-    },
-    {
-      "branch": "feat/L9fM1Gu7-storefront",
-      "cardId": "L9fM1Gu7",
-      "slug": "storefront"
-    },
-    {
-      "branch": "feat/LKIGKUVM-analytics-reporting",
-      "cardId": "LKIGKUVM",
-      "slug": "analytics-reporting"
-    },
-    {
-      "branch": "feat/N8P6OPPm-admin-user-mgmt",
-      "cardId": "N8P6OPPm",
-      "slug": "admin-user-mgmt"
-    },
-    {
-      "branch": "feat/RLiauFte-admin-vendor-approvals",
-      "cardId": "RLiauFte",
-      "slug": "admin-vendor-approvals"
-    },
-    {
-      "branch": "feat/oWqIV57s-vendor-dashboard",
-      "cardId": "oWqIV57s",
-      "slug": "vendor-dashboard"
-    },
-    {
-      "branch": "feat/ship-batch-command",
-      "cardId": "ship",
-      "slug": "batch-command"
-    },
-    {
-      "branch": "feat/xEOk5i0M-vendor-products",
-      "cardId": "xEOk5i0M",
-      "slug": "vendor-products"
-    },
     {
       "branch": "feat/1fqtc2JF-vendor-onboarding",
       "cardId": "1fqtc2JF",
@@ -266,6 +147,11 @@
       "slug": "vendor-portal-shell"
     },
     {
+      "branch": "feat/LKIGKUVM-analytics-reporting",
+      "cardId": "LKIGKUVM",
+      "slug": "analytics-reporting"
+    },
+    {
       "branch": "feat/MkRjnkvv-admin-synonyms-ui",
       "cardId": "MkRjnkvv",
       "slug": "admin-synonyms-ui"
@@ -274,6 +160,11 @@
       "branch": "feat/Sm1kSNO8-safe-category-delete",
       "cardId": "Sm1kSNO8",
       "slug": "safe-category-delete"
+    },
+    {
+      "branch": "feat/UG5UFyxy-vendor-profile-page",
+      "cardId": "UG5UFyxy",
+      "slug": "vendor-profile-page"
     },
     {
       "branch": "feat/Z1ADCLQm-admin-portal-shell",
@@ -377,15 +268,12 @@
     }
   ],
   "tests": {
-    "total": 80,
-    "api": 31,
-    "web": 49
-    "total": 75,
-    "api": 28,
-    "web": 47
+    "total": 87,
+    "api": 33,
+    "web": 54
   },
   "design": {
-    "files": 29,
+    "files": 31,
     "screens": [
       "checkout",
       "claude-design",
@@ -394,7 +282,8 @@
       "product-discovery",
       "register",
       "storefront",
-      "vendor-dashboard"
+      "vendor-dashboard",
+      "vendor-profile"
     ]
   },
   "telemetry": {
@@ -406,23 +295,18 @@
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 17,
+    "gatePass": 19,
     "gateFail": 1,
-    "edits": 314,
-    "editsUnfixable": 114,
+    "edits": 327,
+    "editsUnfixable": 116,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-17T13:38:07.502Z",
-    "edits": 283,
-    "editsUnfixable": 103,
-    "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-17T12:43:02.060Z",
+    "lastTs": "2026-07-20T20:29:42.413Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 1,
-          "invocations": 6,
+          "invocations": 7,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -431,8 +315,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 3,
-          "invocations": 2,
+          "invocations": 5,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -441,8 +324,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 4,
-          "invocations": 3,
+          "invocations": 7,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -451,7 +333,7 @@
         },
         {
           "agentType": "test-engineer",
-          "invocations": 1,
+          "invocations": 3,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -460,6 +342,15 @@
         },
         {
           "agentType": "code-reviewer",
+          "invocations": 3,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheCreationTokens": 0,
+          "totalTokens": 0
+        },
+        {
+          "agentType": "design-to-code",
           "invocations": 1,
           "inputTokens": 0,
           "outputTokens": 0,
@@ -470,40 +361,41 @@
       ],
       "recent": [
         {
-          "ts": "2026-07-17T11:29:59.993Z",
+          "ts": "2026-07-17T13:18:45.646Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T13:19:17.284Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T13:25:33.051Z",
+          "agentType": "test-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T13:32:31.849Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
           "ts": "2026-07-17T12:18:30.988Z",
           "agentType": "unknown",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-17T12:32:26.079Z",
           "ts": "2026-07-17T12:20:05.708Z",
           "agentType": "backend-engineer",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-17T12:41:49.035Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:54:28.701Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T13:03:24.368Z",
           "ts": "2026-07-17T12:20:09.998Z",
           "agentType": "backend-engineer",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-17T13:13:26.933Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T13:18:45.646Z",
           "ts": "2026-07-17T12:21:40.118Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -519,7 +411,6 @@
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-17T13:19:17.284Z",
           "ts": "2026-07-17T12:28:57.627Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -530,7 +421,6 @@
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-17T13:25:33.051Z",
           "ts": "2026-07-17T12:32:25.138Z",
           "agentType": "frontend-engineer",
           "totalTokens": 0
@@ -546,13 +436,27 @@
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-17T13:32:31.849Z",
           "ts": "2026-07-17T12:36:03.780Z",
           "agentType": "unknown",
           "totalTokens": 0
         },
         {
           "ts": "2026-07-17T12:39:21.999Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-20T20:19:31.553Z",
+          "agentType": "design-to-code",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-20T20:22:30.240Z",
+          "agentType": "test-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-20T20:26:21.432Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
         }
@@ -563,16 +467,23 @@
   "extractionCandidates": null,
   "prs": [
     {
+      "headRefName": "feat/UG5UFyxy-vendor-profile-page",
+      "number": 35,
+      "state": "OPEN",
+      "title": "feat(web): public vendor profile page at /vendors/:id (UG5UFyxy)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/35"
+    },
+    {
       "headRefName": "feat/LKIGKUVM-analytics-reporting",
       "number": 34,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat: Analytics & Reporting — bespoke funnel + GA4 + admin/vendor analytics (5-card batch)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/34"
     },
     {
       "headRefName": "feat/eq7ybOyS-customer-profile",
       "number": 33,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat: customer profile — details, password, order history, address book",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/33"
     },
@@ -808,11 +719,11 @@
     },
     {
       "name": "To Do",
-      "cards": 6
+      "cards": 5
     },
     {
       "name": "In Progress",
-      "cards": 10
+      "cards": 1
     },
     {
       "name": "In Review",
