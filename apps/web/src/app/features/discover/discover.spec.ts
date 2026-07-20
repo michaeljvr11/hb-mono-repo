@@ -556,5 +556,21 @@ describe('Discover', () => {
       const el: HTMLElement = fixture.nativeElement;
       expect(el.querySelector('.discover__pager-status')?.textContent).toContain('Page 2 of 3');
     });
+
+    it('self-heals an out-of-range ?page= by redirecting to the last valid page', async () => {
+      // total 50 / limit 24 → last page is 3; requesting page 99 must redirect.
+      productsStub.list.mockReturnValue(
+        of({ items: [], total: 50, page: 99, limit: 24 }),
+      );
+      const navigateSpy = vi.spyOn(router, 'navigate');
+      await router.navigate([], { queryParams: { page: '99' } });
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
+        queryParams: { page: 3 },
+        queryParamsHandling: 'merge',
+      }));
+    });
   });
 });

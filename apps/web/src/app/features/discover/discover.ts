@@ -159,6 +159,14 @@ export class Discover {
     this.productsState.set('loading');
     this.productsService.list(query).subscribe({
       next: (res) => {
+        // Self-heal an out-of-range ?page= (e.g. a shared/stale deep link past
+        // the last page): redirect to the last valid page rather than stranding
+        // the user on an empty grid with no pager to navigate back.
+        const lastPage = Math.max(1, Math.ceil(res.total / res.limit));
+        if (res.total > 0 && this.page() > lastPage) {
+          this.navigateMerge({ page: lastPage === 1 ? null : lastPage });
+          return;
+        }
         this.products.set(res.items);
         this.total.set(res.total);
         this.pageSize.set(res.limit);
