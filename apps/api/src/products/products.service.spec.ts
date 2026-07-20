@@ -175,7 +175,30 @@ interface FakeQueryBuilder {
   where: jest.Mock;
   andWhere: jest.Mock;
   orWhere: jest.Mock;
+  orderBy: jest.Mock;
+  addOrderBy: jest.Mock;
+  skip: jest.Mock;
+  take: jest.Mock;
   getMany: jest.Mock;
+  getManyAndCount: jest.Mock;
+}
+
+type SortDirection = 'ASC' | 'DESC';
+
+/** Resolves the raw value used to compare two products for a given orderBy() column string. */
+function orderableValue(product: Product, column: string): string | number {
+  switch (column) {
+    case 'product.createdAt':
+      return product.createdAt.getTime();
+    case 'product.price':
+      return product.price;
+    case 'product.name':
+      return product.name;
+    case 'product.id':
+      return product.id;
+    default:
+      throw new Error(`Unrecognised order column in test fake: ${column}`);
+  }
 }
 
 /**
@@ -249,13 +272,21 @@ function interpretWhereArg(arg: WhereArg, params?: Record<string, unknown>): Pre
 
 function buildFakeQueryBuilder(stored: Product[]): FakeQueryBuilder {
   const predicates: Predicate[] = [];
+  const orderTerms: Array<{ column: string; direction: SortDirection }> = [];
+  let skipValue = 0;
+  let takeValue: number | undefined;
 
   const qb: FakeQueryBuilder = {
     leftJoinAndSelect: jest.fn(),
     where: jest.fn(),
     andWhere: jest.fn(),
     orWhere: jest.fn(),
+    orderBy: jest.fn(),
+    addOrderBy: jest.fn(),
+    skip: jest.fn(),
+    take: jest.fn(),
     getMany: jest.fn(),
+    getManyAndCount: jest.fn(),
   };
 
   qb.leftJoinAndSelect.mockReturnValue(qb);
@@ -267,9 +298,54 @@ function buildFakeQueryBuilder(stored: Product[]): FakeQueryBuilder {
     predicates.push(interpretWhereArg(arg, params));
     return qb;
   });
-  qb.getMany.mockImplementation(() =>
-    Promise.resolve(stored.filter((p) => predicates.every((pred) => pred(p)))),
-  );
+  // orderBy() resets any prior ordering (mirrors real TypeORM); addOrderBy() appends.
+  qb.orderBy.mockImplementation((column: string, direction: SortDirection) => {
+    orderTerms.length = 0;
+    orderTerms.push({ column, direction });
+    return qb;
+  });
+  qb.addOrderBy.mockImplementation((column: string, direction: SortDirection) => {
+    orderTerms.push({ column, direction });
+    return qb;
+  });
+  qb.skip.mockImplementation((value: number) => {
+    skipValue = value;
+    return qb;
+  });
+  qb.take.mockImplementation((value: number) => {
+    takeValue = value;
+    return qb;
+  });
+
+  function matched(): Product[] {
+    return stored.filter((p) => predicates.every((pred) => pred(p)));
+  }
+
+  function sorted(products: Product[]): Product[] {
+    if (!orderTerms.length) return products;
+    return [...products].sort((a, b) => {
+      for (const { column, direction } of orderTerms) {
+        const av = orderableValue(a, column);
+        const bv = orderableValue(b, column);
+        if (av === bv) continue;
+        const cmp = av < bv ? -1 : 1;
+        return direction === 'ASC' ? cmp : -cmp;
+      }
+      return 0;
+    });
+  }
+
+  function page(products: Product[]): Product[] {
+    return takeValue !== undefined
+      ? products.slice(skipValue, skipValue + takeValue)
+      : products.slice(skipValue);
+  }
+
+  qb.getMany.mockImplementation(() => Promise.resolve(page(sorted(matched()))));
+  qb.getManyAndCount.mockImplementation(() => {
+    const all = matched();
+    return Promise.resolve([page(sorted(all)), all.length]);
+  });
 
   return qb;
 }
@@ -286,7 +362,12 @@ interface SqlPrecedenceQueryBuilder {
   leftJoinAndSelect: jest.Mock;
   where: jest.Mock;
   andWhere: jest.Mock;
+  orderBy: jest.Mock;
+  addOrderBy: jest.Mock;
+  skip: jest.Mock;
+  take: jest.Mock;
   getMany: jest.Mock;
+  getManyAndCount: jest.Mock;
   getSql: () => string;
 }
 
@@ -312,11 +393,21 @@ function buildSqlPrecedenceFakeQueryBuilder(stored: Product[]): SqlPrecedenceQue
     leftJoinAndSelect: jest.fn(),
     where: jest.fn(),
     andWhere: jest.fn(),
+    orderBy: jest.fn(),
+    addOrderBy: jest.fn(),
+    skip: jest.fn(),
+    take: jest.fn(),
     getMany: jest.fn(),
+    getManyAndCount: jest.fn(),
     getSql: () => sql,
   };
 
   qb.leftJoinAndSelect.mockReturnValue(qb);
+  // Ordering/pagination aren't the concern of this fake — chainable no-ops.
+  qb.orderBy.mockReturnValue(qb);
+  qb.addOrderBy.mockReturnValue(qb);
+  qb.skip.mockReturnValue(qb);
+  qb.take.mockReturnValue(qb);
   qb.where.mockImplementation((arg: WhereArg) => {
     if (arg instanceof Brackets) {
       visibilityShape = 'bracketed';
@@ -340,14 +431,22 @@ function buildSqlPrecedenceFakeQueryBuilder(stored: Product[]): SqlPrecedenceQue
     filterTerms.push(interpretPredicate(clauseSql, params));
     return qb;
   });
-  qb.getMany.mockImplementation(() => {
+  function matched(): Product[] {
     const filtersMatch: Predicate = (p) => filterTerms.every((pred) => pred(p));
     const combined: Predicate =
       visibilityShape === 'bracketed'
         ? (p) => platformTerm(p) && filtersMatch(p)
         : // raw string: t1 OR (t2 AND c1 AND c2 ...) — platform bypasses every filter
           (p) => platformTerm(p) || (vendorApprovedTerm(p) && filtersMatch(p));
-    return Promise.resolve(stored.filter((p) => combined(p)));
+    return stored.filter((p) => combined(p));
+  }
+
+  qb.getMany.mockImplementation(() => Promise.resolve(matched()));
+  // Ordering/pagination aren't the concern of this fake (regression guard for
+  // AND/OR precedence only) — return the full matched set alongside its count.
+  qb.getManyAndCount.mockImplementation(() => {
+    const all = matched();
+    return Promise.resolve([all, all.length]);
   });
 
   return qb;
@@ -402,9 +501,9 @@ describe('ProductsService', () => {
 
       const result = await service.findAll();
 
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBe('platform-1');
-      expect(result[0].listingType).toBe(ListingType.PLATFORM);
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].id).toBe('platform-1');
+      expect(result.items[0].listingType).toBe(ListingType.PLATFORM);
     });
 
     it('returns APPROVED-vendor listings', async () => {
@@ -412,9 +511,9 @@ describe('ProductsService', () => {
 
       const result = await service.findAll();
 
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBe('approved-1');
-      expect(result[0].listingType).toBe(ListingType.VENDOR);
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].id).toBe('approved-1');
+      expect(result.items[0].listingType).toBe(ListingType.VENDOR);
     });
 
     // The fake QueryBuilder genuinely excludes these — it is the query's doing, not a hand-forced [].
@@ -431,7 +530,7 @@ describe('ProductsService', () => {
 
         const result = await service.findAll();
 
-        expect(result.map((p) => p.id)).not.toContain(productId);
+        expect(result.items.map((p) => p.id)).not.toContain(productId);
       },
     );
 
@@ -506,7 +605,7 @@ describe('ProductsService', () => {
         // term), demonstrating the bug this guard is designed to catch.
         const result = await service.findAll({ categoryId: 'cat-homeware' });
 
-        expect(result).toEqual([]);
+        expect(result.items).toEqual([]);
         expect(sqlQb.getSql()).toContain(
           '(product.listingType = :platformType OR (product.listingType = :vendorType AND vendor.status = :approvedStatus))',
         );
@@ -518,7 +617,7 @@ describe('ProductsService', () => {
 
         const result = await service.findAll({ categoryId: 'cat-gadgets' });
 
-        expect(result.map((p) => p.id)).toEqual(['platform-gadget']);
+        expect(result.items.map((p) => p.id)).toEqual(['platform-gadget']);
       });
     });
 
@@ -527,14 +626,14 @@ describe('ProductsService', () => {
 
       const result = await service.findAll();
 
-      expect(result).toEqual([]);
+      expect(result.items).toEqual([]);
     });
 
     it('returns only PLATFORM and APPROVED-vendor listings from a mixed fixture set', async () => {
       mockQb(ALL_PRODUCTS);
 
       const result = await service.findAll();
-      const ids = result.map((p) => p.id);
+      const ids = result.items.map((p) => p.id);
 
       expect(ids).toContain('platform-1');
       expect(ids).toContain('approved-1');
@@ -549,7 +648,7 @@ describe('ProductsService', () => {
       const result = await service.findAll();
 
       expect(qb.andWhere).not.toHaveBeenCalled();
-      const ids = result.map((p) => p.id);
+      const ids = result.items.map((p) => p.id);
       expect(ids).toEqual(
         expect.arrayContaining(['platform-gadget', 'approved-gadget', 'approved-homeware']),
       );
@@ -560,7 +659,7 @@ describe('ProductsService', () => {
       mockQb(DISCOVERY_PRODUCTS);
 
       const result = await service.findAll({ categoryId: 'cat-gadgets' });
-      const ids = result.map((p) => p.id);
+      const ids = result.items.map((p) => p.id);
 
       expect(ids).toEqual(expect.arrayContaining(['platform-gadget', 'approved-gadget']));
       expect(ids).not.toContain('approved-homeware');
@@ -573,14 +672,14 @@ describe('ProductsService', () => {
 
       const result = await service.findAll({ categoryId: 'does-not-exist' });
 
-      expect(result).toEqual([]);
+      expect(result.items).toEqual([]);
     });
 
     it('filters by q only (case-insensitive, matches name or description)', async () => {
       mockQb(DISCOVERY_PRODUCTS);
 
       const result = await service.findAll({ q: 'SPEAKER' });
-      const ids = result.map((p) => p.id);
+      const ids = result.items.map((p) => p.id);
 
       expect(ids).toEqual(['approved-gadget']);
     });
@@ -589,7 +688,7 @@ describe('ProductsService', () => {
       mockQb(DISCOVERY_PRODUCTS);
 
       const result = await service.findAll({ q: 'glazed' });
-      const ids = result.map((p) => p.id);
+      const ids = result.items.map((p) => p.id);
 
       expect(ids).toEqual(['approved-homeware']);
     });
@@ -598,7 +697,7 @@ describe('ProductsService', () => {
       mockQb(DISCOVERY_PRODUCTS);
 
       const result = await service.findAll({ vendorId: 'v1' });
-      const ids = result.map((p) => p.id);
+      const ids = result.items.map((p) => p.id);
 
       expect(ids).toEqual(expect.arrayContaining(['approved-gadget', 'approved-homeware']));
       expect(ids).not.toContain('platform-gadget');
@@ -614,7 +713,7 @@ describe('ProductsService', () => {
         vendorId: 'v1',
       });
 
-      expect(result.map((p) => p.id)).toEqual(['approved-gadget']);
+      expect(result.items.map((p) => p.id)).toEqual(['approved-gadget']);
     });
 
     it('never resurfaces a non-approved vendor listing under any param combination', async () => {
@@ -625,10 +724,148 @@ describe('ProductsService', () => {
       const byVendor = await service.findAll({ vendorId: 'v2' });
       const combined = await service.findAll({ categoryId: 'cat-gadgets', q: 'charger' });
 
-      expect(byCategory.map((p) => p.id)).not.toContain('pending-gadget');
-      expect(byQuery.map((p) => p.id)).not.toContain('pending-gadget');
-      expect(byVendor.map((p) => p.id)).not.toContain('pending-gadget');
-      expect(combined.map((p) => p.id)).not.toContain('pending-gadget');
+      expect(byCategory.items.map((p) => p.id)).not.toContain('pending-gadget');
+      expect(byQuery.items.map((p) => p.id)).not.toContain('pending-gadget');
+      expect(byVendor.items.map((p) => p.id)).not.toContain('pending-gadget');
+      expect(combined.items.map((p) => p.id)).not.toContain('pending-gadget');
+    });
+
+    it('never resurfaces a non-approved vendor listing when pagination or sort params are combined with a filter', async () => {
+      mockQb(DISCOVERY_PRODUCTS);
+
+      const paged = await service.findAll({ categoryId: 'cat-gadgets', page: 1, limit: 1 });
+      const sortedByPrice = await service.findAll({ vendorId: 'v2', sort: 'price_asc' });
+      const pagedAndSorted = await service.findAll({
+        q: 'charger',
+        page: 1,
+        limit: 10,
+        sort: 'name',
+      });
+
+      expect(paged.items.map((p) => p.id)).not.toContain('pending-gadget');
+      expect(sortedByPrice.items.map((p) => p.id)).not.toContain('pending-gadget');
+      expect(pagedAndSorted.items.map((p) => p.id)).not.toContain('pending-gadget');
+    });
+  });
+
+  describe('findAll — pagination and sort', () => {
+    function mockQb(stored: Product[]) {
+      const qb = buildFakeQueryBuilder(stored);
+      productRepo.createQueryBuilder.mockReturnValue(qb);
+      return qb;
+    }
+
+    it('applies the default page (1) and default limit (24) when omitted', async () => {
+      const qb = mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll();
+
+      expect(qb.skip).toHaveBeenCalledWith(0);
+      expect(qb.take).toHaveBeenCalledWith(24);
+      expect(result.page).toBe(1);
+      expect(result.limit).toBe(24);
+    });
+
+    it('clamps a limit above MAX_LIMIT (100) down to 100', async () => {
+      const qb = mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll({ limit: 500 });
+
+      expect(qb.take).toHaveBeenCalledWith(100);
+      expect(result.limit).toBe(100);
+    });
+
+    it('computes skip/take from page and limit', async () => {
+      const qb = mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll({ page: 3, limit: 2 });
+
+      expect(qb.skip).toHaveBeenCalledWith(4); // (page - 1) * limit
+      expect(qb.take).toHaveBeenCalledWith(2);
+      expect(result.page).toBe(3);
+      expect(result.limit).toBe(2);
+    });
+
+    it('defaults to newest (createdAt DESC, id DESC tiebreak) when sort is omitted', async () => {
+      const qb = mockQb(DISCOVERY_PRODUCTS);
+
+      await service.findAll();
+
+      expect(qb.orderBy).toHaveBeenCalledWith('product.createdAt', 'DESC');
+      expect(qb.addOrderBy).toHaveBeenCalledWith('product.id', 'DESC');
+    });
+
+    it("applies 'newest' explicitly the same as the default", async () => {
+      const qb = mockQb(DISCOVERY_PRODUCTS);
+
+      await service.findAll({ sort: 'newest' });
+
+      expect(qb.orderBy).toHaveBeenCalledWith('product.createdAt', 'DESC');
+      expect(qb.addOrderBy).toHaveBeenCalledWith('product.id', 'DESC');
+    });
+
+    it("applies 'price_asc' with an id ASC tiebreaker", async () => {
+      const qb = mockQb(DISCOVERY_PRODUCTS);
+
+      await service.findAll({ sort: 'price_asc' });
+
+      expect(qb.orderBy).toHaveBeenCalledWith('product.price', 'ASC');
+      expect(qb.addOrderBy).toHaveBeenCalledWith('product.id', 'ASC');
+    });
+
+    it("applies 'price_desc' with an id DESC tiebreaker", async () => {
+      const qb = mockQb(DISCOVERY_PRODUCTS);
+
+      await service.findAll({ sort: 'price_desc' });
+
+      expect(qb.orderBy).toHaveBeenCalledWith('product.price', 'DESC');
+      expect(qb.addOrderBy).toHaveBeenCalledWith('product.id', 'DESC');
+    });
+
+    it("applies 'name' with an id ASC tiebreaker", async () => {
+      const qb = mockQb(DISCOVERY_PRODUCTS);
+
+      await service.findAll({ sort: 'name' });
+
+      expect(qb.orderBy).toHaveBeenCalledWith('product.name', 'ASC');
+      expect(qb.addOrderBy).toHaveBeenCalledWith('product.id', 'ASC');
+    });
+
+    it('slices the correct page of results for page=2', async () => {
+      mockQb(DISCOVERY_PRODUCTS);
+
+      // 3 visible products (platform-gadget, approved-gadget, approved-homeware) sorted by name ASC.
+      const page1 = await service.findAll({ sort: 'name', page: 1, limit: 2 });
+      const page2 = await service.findAll({ sort: 'name', page: 2, limit: 2 });
+
+      expect(page1.items).toHaveLength(2);
+      expect(page2.items).toHaveLength(1);
+      const allIds = [...page1.items, ...page2.items].map((p) => p.id);
+      expect(allIds).toEqual(
+        expect.arrayContaining(['platform-gadget', 'approved-gadget', 'approved-homeware']),
+      );
+      // No overlap between pages.
+      expect(new Set(allIds).size).toBe(3);
+    });
+
+    it('reports total as the full match count, independent of the page slice', async () => {
+      mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll({ page: 1, limit: 1 });
+
+      expect(result.items).toHaveLength(1);
+      // 3 visible products total (platform-gadget, approved-gadget, approved-homeware);
+      // pending-gadget is excluded by approved-vendor visibility, not by pagination.
+      expect(result.total).toBe(3);
+    });
+
+    it('total reflects the AND-composed filters, not just visibility', async () => {
+      mockQb(DISCOVERY_PRODUCTS);
+
+      const result = await service.findAll({ categoryId: 'cat-gadgets', limit: 1 });
+
+      expect(result.total).toBe(2); // platform-gadget + approved-gadget
+      expect(result.items).toHaveLength(1);
     });
   });
 
