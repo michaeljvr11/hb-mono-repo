@@ -1,0 +1,261 @@
+<!-- @dsCard group="Screens" name="Vendor Profile" -->
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ZANAM Market | Vendor Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "background": "#fcf9f8",
+                    "on-primary-fixed-variant": "#015300",
+                    "on-primary-fixed": "#002200",
+                    "surface-dim": "#dcd9d9",
+                    "surface-container-high": "#eae7e7",
+                    "error-container": "#ffdad6",
+                    "primary": "#015300",
+                    "secondary-fixed": "#ffdcc7",
+                    "on-surface-variant": "#404a3b",
+                    "on-secondary-fixed": "#311300",
+                    "secondary-fixed-dim": "#ffb787",
+                    "tertiary-fixed": "#77ff61",
+                    "surface-variant": "#e5e2e1",
+                    "surface-container": "#f0eded",
+                    "outline": "#707a6a",
+                    "primary-fixed-dim": "#7ddc69",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#015300",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#98f982",
+                    "outline-variant": "#bfcab7",
+                    "on-secondary-fixed-variant": "#723600",
+                    "on-tertiary-container": "#33f925",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#fe9b53",
+                    "secondary": "#964900",
+                    "inverse-primary": "#7ddc69",
+                    "error": "#ba1a1a",
+                    "on-secondary-container": "#703500",
+                    "on-tertiary-fixed": "#002200",
+                    "primary-container": "#026e00",
+                    "surface-tint": "#036e00",
+                    "surface": "#fcf9f8",
+                    "surface-container-low": "#f6f3f2",
+                    "on-tertiary-fixed-variant": "#015300",
+                    "surface-container-highest": "#e5e2e1",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#313030",
+                    "on-error-container": "#93000a",
+                    "on-primary-container": "#8eee78",
+                    "tertiary-fixed-dim": "#03e600",
+                    "on-background": "#1c1b1b",
+                    "inverse-on-surface": "#f3f0ef",
+                    "surface-bright": "#fcf9f8",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#026e00",
+                    "on-surface": "#1c1b1b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "24px",
+                    "stack-xl": "48px",
+                    "stack-xs": "4px",
+                    "margin-mobile": "16px",
+                    "unit": "8px",
+                    "margin-desktop": "40px",
+                    "gutter": "24px",
+                    "stack-sm": "8px",
+                    "container-max": "1280px",
+                    "stack-md": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden pb-32">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-40 bg-surface border-b border-outline-variant flex justify-between items-center px-margin-mobile py-stack-md max-w-container-max mx-auto">
+<div class="flex items-center gap-stack-sm cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</div>
+<h1 class="text-headline-md font-headline-md font-bold text-primary">H&amp;B Market</h1>
+<div class="flex items-center gap-stack-sm cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined text-primary">shopping_cart</span>
+</div>
+</header>
+<main class="max-w-container-max mx-auto">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     STATE: Loaded — hero + category chips + product grid
+     ══════════════════════════════════════════════════════════════════ -->
+
+<!-- Vendor Hero -->
+<section class="px-margin-mobile pt-stack-lg">
+<div class="flex flex-col items-start gap-stack-sm p-stack-lg rounded-xl border border-outline-variant bg-surface-container-low">
+<div class="flex items-center gap-1 bg-[#e8f5e9] px-stack-sm py-1 rounded-full border border-primary/10">
+<span class="material-symbols-outlined text-[#015300] text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[#015300] font-label-lg text-label-lg">Verified SME</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Leko Organics</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Trading as Leko Organics Co-op</p>
+<p class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="font-body-sm text-body-sm">South Africa</span>
+</p>
+</div>
+</section>
+
+<!-- Category chips (derived from the vendor's product categories) -->
+<section class="px-margin-mobile pt-stack-lg">
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+<span class="bg-surface-container text-on-surface-variant px-stack-md py-2 rounded-full font-label-lg text-label-lg whitespace-nowrap">Agriculture</span>
+<span class="bg-surface-container text-on-surface-variant px-stack-md py-2 rounded-full font-label-lg text-label-lg whitespace-nowrap">Health &amp; Beauty</span>
+<span class="bg-surface-container text-on-surface-variant px-stack-md py-2 rounded-full font-label-lg text-label-lg whitespace-nowrap">Handicrafts</span>
+</div>
+</section>
+
+<!-- Product grid -->
+<section class="px-margin-mobile pt-stack-lg">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-gutter">
+<!-- Product Card 1 -->
+<div class="flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
+<div class="relative aspect-square bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="A professional studio product shot of premium organic honey in a glass jar, set against a clean white background with soft natural lighting, reflecting reliability and regional trade quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcKqx6kqKpEsicTEXmjvIqdKe1QNPP1U7uKTw5APqplECoM7Zm2WNqny1DBWU_KME12K6K17mHSL2TNEXF3ioBcwomTNVi4RZHlGLiiSEyfzo-QYG9ZLiybpaW6lI8u0t6okV7aJ2-L_QPrm02BQZd22ZM0p8lZavOfY5CkeECvz2ePXFbKjIZhfaPPO2inau73w6mzok-vSvrzmJCq1mYXI0nXs4FSe6dmCt6AtZ5WAeXByGwD83bKdWIpERzDFaN8OU_C1CtqqYc">
+</div>
+<div class="p-stack-md flex flex-col flex-grow">
+<h3 class="font-body-md text-on-surface line-clamp-2 mb-1">Organic Fynbos Honey 500g</h3>
+<p class="font-headline-md text-primary mb-2">R 145.00</p>
+<button class="w-full bg-primary text-on-primary py-2 rounded-lg font-label-lg hover:opacity-90 active:scale-95 transition-all">Add to Cart</button>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
+<div class="relative aspect-square bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="A luxurious bottle of cold-pressed marula oil presented on a stone pedestal with soft, diffused sunlight, emphasizing the premium quality of regional health and beauty products." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuPdNvO7itC8xO4wsQClXZZlmZvZhNl695t2OWY6zoJGavcqMTCtjzrp5kzTkSau4jDOyQWXL1lMbX1FfUHswjeKeOCny70wIhzroWXbLGlK4BRcaCdsPbLv9BlWtvOP23zHyBjIjw70YD4sq8VS847l2NcablcZUxP7EUkfjQPgzfs6zBFRdbc0b4EV3wXV9aIKB30S98xOSBNJR7xFnXecklogWM-CIdEzNZdzjcYKYfawBaW2NKJXvPw5BN6sEYYmy12ND7zMeZ">
+</div>
+<div class="p-stack-md flex flex-col flex-grow">
+<h3 class="font-body-md text-on-surface line-clamp-2 mb-1">Pure Marula Face Oil 30ml</h3>
+<p class="font-headline-md text-primary mb-2">R 285.00</p>
+<button class="w-full bg-primary text-on-primary py-2 rounded-lg font-label-lg hover:opacity-90 active:scale-95 transition-all">Add to Cart</button>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
+<div class="relative aspect-square bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="High-quality artisanal woven basket, warm directional lighting, earthy palette, professional commercial aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQkq0En_YsXbgf-M8_NPgKPsPJxTd26Ai76pWzSXTEgAoj2ci6TSsNv-f7wQuX0nODnr2l1ysLIvHEK7NWsfGB697h26-30MZq_VpCx4QfTn73e_WdLvw8Or5l04eMquF5Nee5LLybm4ISyvgiGdbgo2bXEFfSXbEEHscAquyPL3_0gQaxl5cl_J1MB6MVTSpWxDNDBLyqjNAn5bYvVk3HqV2ujpDWzL4XzqsCjyDg20s_NJECZEAdLrTYxpW0l4CcDOKAAb2rGeIK">
+</div>
+<div class="p-stack-md flex flex-col flex-grow">
+<h3 class="font-body-md text-on-surface line-clamp-2 mb-1">Handwoven Kavango Basket</h3>
+<p class="font-headline-md text-primary mb-2">R 320.00</p>
+<button class="w-full bg-primary text-on-primary py-2 rounded-lg font-label-lg hover:opacity-90 active:scale-95 transition-all">Add to Cart</button>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
+<div class="relative aspect-square bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Traditional Shweshwe fabric folded neatly in a bright modern studio, high-key professional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCg0-UdaV0DaAPErIMHbdbDVjsC_XRwC0oPRxzYQsoCwiF08jWD8iDjYISPpBSdvQZTF6h5PyeOJrz1R4Z7nUSIViy9ThKsIfGJ5XqMOnFNOXQ3bkaNFs8KxvtiDlqm8JD4FImXddXXi782iGWJvkhWvPsmNp2iuixqOIZ5LzDWHk98t_MPnmkMA-30BslFcmqTROhU1nfvB0GMZ4o1cetdpR8lMPqvGs_NeAzmJe9ps1QDwu3XArSXZKBE3_71MvO9ZUT9GKiPUe7i">
+</div>
+<div class="p-stack-md flex flex-col flex-grow">
+<h3 class="font-body-md text-on-surface line-clamp-2 mb-1">Traditional Shweshwe Fabric</h3>
+<p class="font-headline-md text-primary mb-2">R 95.00</p>
+<button class="w-full bg-primary text-on-primary py-2 rounded-lg font-label-lg hover:opacity-90 active:scale-95 transition-all">Add to Cart</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     STATE: Empty — vendor has zero live listings
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="px-margin-mobile pt-stack-xl">
+<div class="flex flex-col items-center gap-stack-sm text-center py-stack-xl text-on-surface-variant">
+<span class="material-symbols-outlined text-[48px] opacity-50">inventory_2</span>
+<p class="font-body-md text-body-md">Leko Organics doesn't have any listings yet.</p>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     STATE: Not found — unknown or non-approved vendor id
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="px-margin-mobile pt-stack-xl">
+<div class="flex flex-col items-center gap-stack-sm text-center py-stack-xl text-on-surface-variant">
+<span class="material-symbols-outlined text-[48px] opacity-50">storefront</span>
+<p class="font-body-md text-body-md">We couldn't find that vendor.</p>
+<a class="text-primary font-label-lg text-label-lg" href="#">Back to shop</a>
+</div>
+</section>
+
+</main>
+<!-- BottomNavBar Component (desktop only — mobile uses radial nav) -->
+<nav class="hidden md:flex fixed bottom-0 left-0 w-full z-50 justify-around items-center bg-surface pb-safe pt-2 px-2 border-t border-outline-variant">
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-sm text-label-sm">Search</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">package_2</span>
+<span class="font-label-sm text-label-sm">Orders</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 cursor-pointer scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</div>
+</nav>
+<script src="../shared/radial-nav.js" data-active="search"></script>
+
+</body></html>

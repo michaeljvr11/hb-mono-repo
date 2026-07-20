@@ -49,6 +49,12 @@ export const routes: Routes = [
     path: 'products/:id',
     loadComponent: () => import('./features/product-detail/product-detail').then(m => m.ProductDetail)
   },
+  // Public vendor profile / storefront — public, no guard. Only APPROVED
+  // vendors are ever returned by the underlying endpoint.
+  {
+    path: 'vendors/:id',
+    loadComponent: () => import('./features/vendors/vendor-profile/vendor-profile').then(m => m.VendorProfile)
+  },
 
   // Cart & checkout — the auth boundary of the storefront. Anonymous visits
   // bounce to /login with a returnUrl (authGuard) and come straight back.

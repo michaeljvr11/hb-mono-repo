@@ -192,7 +192,7 @@ export class Discover {
         void this.router.navigate(['/products', event.item.id]);
         break;
       case 'Vendors':
-        this.navigateMerge({ vendorId: event.item.id, q: null });
+        void this.router.navigate(['/vendors', event.item.id]);
         break;
       case 'Categories':
         this.navigateMerge({ categoryId: event.item.id, q: null });
