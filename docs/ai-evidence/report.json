@@ -34,12 +34,49 @@
         "name": "AI Factory config",
         "commits": 40,
         "ins": 1775,
+  "generatedAt": "2026-07-17T12:43:13.526Z",
+  "git": {
+    "totalCommits": 128,
+    "aiCommits": 118,
+    "aiPct": 92,
+    "appCommits": 84,
+    "ins": 59648,
+    "del": 4813,
+    "net": 54835,
+    "aiIns": 46216,
+    "aiDel": 4675,
+    "filesTouched": 527,
+    "areaRows": [
+      {
+        "name": "Web (Angular)",
+        "commits": 49,
+        "ins": 29596,
+        "del": 1383
+      },
+      {
+        "name": "API (NestJS)",
+        "commits": 49,
+        "ins": 14782,
+        "del": 680
+      },
+      {
+        "name": "Docs",
+        "commits": 42,
+        "ins": 11873,
+        "del": 2652
+      },
+      {
+        "name": "AI Factory config",
+        "commits": 38,
+        "ins": 1597,
         "del": 68
       },
       {
         "name": "Shared contracts",
         "commits": 20,
         "ins": 989,
+        "commits": 17,
+        "ins": 818,
         "del": 6
       },
       {
@@ -61,6 +98,43 @@
       {
         "hash": "e671be7",
         "subject": "fix: address review WARNs — token-derived focus rings, metadata size cap",
+        "hash": "e78420d",
+        "subject": "refactor(web): address review WARNs on the profile batch",
+        "ai": true
+      },
+      {
+        "hash": "4ca3de8",
+        "subject": "feat(web): address book management in /profile (uGvvSURk)",
+        "ai": true
+      },
+      {
+        "hash": "8d9b579",
+        "subject": "feat(web): order history section in /profile (xkD93Anr)",
+        "ai": true
+      },
+      {
+        "hash": "3c72b4c",
+        "subject": "feat(web): /profile shell + details section (1StR8MKR)",
+        "ai": true
+      },
+      {
+        "hash": "b2dd003",
+        "subject": "feat(addresses): owner-scoped address book CRUD (U9C8764Y)",
+        "ai": true
+      },
+      {
+        "hash": "9f57ae7",
+        "subject": "feat(users): profile update + password change endpoints (eq7ybOyS)",
+        "ai": true
+      },
+      {
+        "hash": "f2ec5cc",
+        "subject": "feat(factory): track per-agent token usage in the AI Factory Evidence Dashboard",
+        "ai": true
+      },
+      {
+        "hash": "c322928",
+        "subject": "chore(evidence): recompile AI evidence report after merging ponytail-minimalism-ladder",
         "ai": true
       },
       {
@@ -187,6 +261,11 @@
       "slug": "auth-aware-nav"
     },
     {
+      "branch": "feat/EXPtZCJL-vendor-portal-shell",
+      "cardId": "EXPtZCJL",
+      "slug": "vendor-portal-shell"
+    },
+    {
       "branch": "feat/MkRjnkvv-admin-synonyms-ui",
       "cardId": "MkRjnkvv",
       "slug": "admin-synonyms-ui"
@@ -242,6 +321,11 @@
       "slug": "login-registration-pages"
     },
     {
+      "branch": "feat/oWqIV57s-vendor-dashboard",
+      "cardId": "oWqIV57s",
+      "slug": "vendor-dashboard"
+    },
+    {
       "branch": "feat/sKd1xhQl-vendor-orders-fulfilment",
       "cardId": "sKd1xhQl",
       "slug": "vendor-orders-fulfilment"
@@ -255,12 +339,50 @@
       "branch": "feat/vs3y5tDJ-public-vendor-profile",
       "cardId": "vs3y5tDJ",
       "slug": "public-vendor-profile"
+    },
+    {
+      "branch": "feat/IhTVdNYP-admin-catalog",
+      "cardId": "IhTVdNYP",
+      "slug": "admin-catalog"
+    },
+    {
+      "branch": "feat/L9fM1Gu7-storefront",
+      "cardId": "L9fM1Gu7",
+      "slug": "storefront"
+    },
+    {
+      "branch": "feat/N8P6OPPm-admin-user-mgmt",
+      "cardId": "N8P6OPPm",
+      "slug": "admin-user-mgmt"
+    },
+    {
+      "branch": "feat/RLiauFte-admin-vendor-approvals",
+      "cardId": "RLiauFte",
+      "slug": "admin-vendor-approvals"
+    },
+    {
+      "branch": "feat/ship-batch-command",
+      "cardId": "ship",
+      "slug": "batch-command"
+    },
+    {
+      "branch": "feat/steering-analysis-poc",
+      "cardId": "steering",
+      "slug": "analysis-poc"
+    },
+    {
+      "branch": "feat/xEOk5i0M-vendor-products",
+      "cardId": "xEOk5i0M",
+      "slug": "vendor-products"
     }
   ],
   "tests": {
     "total": 80,
     "api": 31,
     "web": 49
+    "total": 75,
+    "api": 28,
+    "web": 47
   },
   "design": {
     "files": 29,
@@ -290,12 +412,17 @@
     "editsUnfixable": 114,
     "firstTs": "2026-06-18T12:14:47.925Z",
     "lastTs": "2026-07-17T13:38:07.502Z",
+    "edits": 283,
+    "editsUnfixable": 103,
+    "firstTs": "2026-06-18T12:14:47.925Z",
+    "lastTs": "2026-07-17T12:43:02.060Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
           "invocations": 1,
+          "invocations": 6,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -305,6 +432,7 @@
         {
           "agentType": "backend-engineer",
           "invocations": 3,
+          "invocations": 2,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -314,6 +442,7 @@
         {
           "agentType": "frontend-engineer",
           "invocations": 4,
+          "invocations": 3,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -342,11 +471,13 @@
       "recent": [
         {
           "ts": "2026-07-17T11:29:59.993Z",
+          "ts": "2026-07-17T12:18:30.988Z",
           "agentType": "unknown",
           "totalTokens": 0
         },
         {
           "ts": "2026-07-17T12:32:26.079Z",
+          "ts": "2026-07-17T12:20:05.708Z",
           "agentType": "backend-engineer",
           "totalTokens": 0
         },
@@ -362,6 +493,7 @@
         },
         {
           "ts": "2026-07-17T13:03:24.368Z",
+          "ts": "2026-07-17T12:20:09.998Z",
           "agentType": "backend-engineer",
           "totalTokens": 0
         },
@@ -372,21 +504,55 @@
         },
         {
           "ts": "2026-07-17T13:18:45.646Z",
+          "ts": "2026-07-17T12:21:40.118Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T12:26:22.743Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T12:27:57.327Z",
           "agentType": "frontend-engineer",
           "totalTokens": 0
         },
         {
           "ts": "2026-07-17T13:19:17.284Z",
+          "ts": "2026-07-17T12:28:57.627Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T12:32:19.968Z",
           "agentType": "frontend-engineer",
           "totalTokens": 0
         },
         {
           "ts": "2026-07-17T13:25:33.051Z",
+          "ts": "2026-07-17T12:32:25.138Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T12:34:22.063Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T12:35:21.983Z",
           "agentType": "test-engineer",
           "totalTokens": 0
         },
         {
           "ts": "2026-07-17T13:32:31.849Z",
+          "ts": "2026-07-17T12:36:03.780Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T12:39:21.999Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
         }
@@ -646,7 +812,7 @@
     },
     {
       "name": "In Progress",
-      "cards": 0
+      "cards": 10
     },
     {
       "name": "In Review",

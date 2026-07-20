@@ -103,6 +103,19 @@ export const routes: Routes = [
     ],
   },
 
+  // Customer Profile — authenticated, any role (no roleGuard: owner-confirmed).
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/profile/profile-shell/profile-shell').then(m => m.ProfileShell),
+    children: [
+      { path: '', redirectTo: 'details', pathMatch: 'full' },
+      { path: 'details',   loadComponent: () => import('./features/profile/pages/profile-details/profile-details').then(m => m.ProfileDetails) },
+      { path: 'orders',    loadComponent: () => import('./features/profile/pages/profile-orders/profile-orders').then(m => m.ProfileOrders) },
+      { path: 'addresses', loadComponent: () => import('./features/profile/pages/profile-addresses/profile-addresses').then(m => m.ProfileAddresses) },
+    ],
+  },
+
   // Catch-all route
   {
     path: '**',
