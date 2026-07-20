@@ -177,7 +177,7 @@ describe('Shop', () => {
     expect(navigate).toHaveBeenCalledWith(['/discover'], { queryParams: { categoryId: 'c1' } });
   });
 
-  it('navigates to /discover with vendorId when a vendor card is selected', () => {
+  it('navigates to /vendors/:id when a vendor card is selected', () => {
     flushLoads();
     fixture.detectChanges();
     const router = TestBed.inject(Router);
@@ -186,7 +186,7 @@ describe('Shop', () => {
     const vendorCard = fixture.nativeElement.querySelector('.vendor-card') as HTMLButtonElement;
     vendorCard.click();
 
-    expect(navigate).toHaveBeenCalledWith(['/discover'], { queryParams: { vendorId: 'v1' } });
+    expect(navigate).toHaveBeenCalledWith(['/vendors', 'v1']);
   });
 
   it('does not navigate when onCategorySelect receives null', () => {

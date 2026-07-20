@@ -107,7 +107,7 @@ export class Shop implements OnInit {
   }
 
   onVendorSelect(vendor: VendorDto): void {
-    void this.router.navigate(['/discover'], { queryParams: { vendorId: vendor.id } });
+    void this.router.navigate(['/vendors', vendor.id]);
   }
 
   onMobileSearch(term: string): void {

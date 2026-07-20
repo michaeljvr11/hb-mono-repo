@@ -171,7 +171,7 @@ export class ProductDetail {
   viewStorefront(): void {
     const vendorId = this.product()?.vendor?.id;
     if (!vendorId) return;
-    void this.router.navigate(['/discover'], { queryParams: { vendorId } });
+    void this.router.navigate(['/vendors', vendorId]);
   }
 
   onAddToCart(): void {

@@ -363,13 +363,10 @@ describe('Discover', () => {
       expect(navigateSpy).toHaveBeenCalledWith(['/products', 'sp1']);
     });
 
-    it('sets vendorId and clears q on a Vendors suggestion selection', () => {
+    it('navigates to /vendors/:id on a Vendors suggestion selection', () => {
       const navigateSpy = vi.spyOn(router, 'navigate');
       component.onSuggestionSelected({ group: 'Vendors', item: { id: 'sv1', label: 'Leko Organics' } });
-      expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
-        queryParams: { vendorId: 'sv1', q: null },
-        queryParamsHandling: 'merge',
-      }));
+      expect(navigateSpy).toHaveBeenCalledWith(['/vendors', 'sv1']);
     });
 
     it('sets categoryId and clears q on a Categories suggestion selection', () => {
