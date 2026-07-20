@@ -108,4 +108,114 @@
 
     </div>
   }
+
+  <!-- Analytics section -->
+  <section class="analytics-section">
+    <header class="section-header">
+      <h2 class="section-title">Analytics</h2>
+      <p class="section-sub">Funnel reach, conversion, and revenue over the last 30 days.</p>
+    </header>
+
+    @if (analyticsLoading()) {
+      <div class="state-placeholder" role="status" aria-live="polite">
+        <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+        <p>Loading analytics…</p>
+      </div>
+    }
+
+    @if (analyticsError()) {
+      <div class="error-banner" role="alert">
+        <span class="material-symbols-outlined" aria-hidden="true">error</span>
+        <span>{{ analyticsError() }}</span>
+      </div>
+    }
+
+    @if (!analyticsLoading() && !analyticsError() && analytics(); as stats) {
+      <div class="metrics-grid">
+
+        <!-- Conversion rate stat tile -->
+        <div class="metric-card">
+          <div class="metric-card-icon">
+            <span class="material-symbols-outlined" aria-hidden="true">trending_up</span>
+          </div>
+          <div class="metric-card-body">
+            <span class="metric-value">{{ formatPercent(stats.conversionRate) }}</span>
+            <span class="metric-label">Conversion rate</span>
+          </div>
+        </div>
+
+        <!-- Revenue by currency -->
+        <div class="metric-card metric-card--wide">
+          <h3 class="metric-card-title">Revenue by currency</h3>
+          @if (stats.revenueByCurrency.length === 0) {
+            <p class="metric-empty">No revenue recorded for this range.</p>
+          } @else {
+            <ul class="revenue-list" aria-label="Revenue by currency">
+              @for (entry of stats.revenueByCurrency; track entry.currency) {
+                <li class="revenue-item">
+                  <span class="revenue-currency">{{ entry.currency }}</span>
+                  <span class="revenue-amount">{{ formatMoney(entry.amount, entry.currency) }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <!-- Conversion funnel -->
+        <div class="metric-card metric-card--full">
+          <h3 class="metric-card-title">Conversion funnel</h3>
+          <ul class="funnel-list" aria-label="Funnel stage session counts">
+            @for (item of stats.funnel; track item.stage) {
+              <li class="funnel-item">
+                <span class="funnel-label">{{ stageLabel(item.stage) }}</span>
+                <span class="funnel-bar-track">
+                  <span
+                    class="funnel-bar-fill"
+                    [style.width.%]="funnelBarWidth(item.sessions, funnelMax(stats.funnel))"
+                  ></span>
+                </span>
+                <span class="funnel-count" aria-label="{{ item.sessions }} sessions">{{ item.sessions }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <!-- Orders + revenue over time -->
+        <div class="metric-card metric-card--full">
+          <h3 class="metric-card-title">Orders &amp; revenue over time</h3>
+          @if (stats.timeSeries.length === 0) {
+            <p class="metric-empty">No orders in this range.</p>
+          } @else {
+            <table class="timeseries-table">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Orders</th>
+                  <th scope="col">Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (point of stats.timeSeries; track point.date) {
+                  <tr>
+                    <td>{{ point.date }}</td>
+                    <td>{{ point.orders }}</td>
+                    <td class="timeseries-revenue-cell">
+                      @if (point.revenueByCurrency.length === 0) {
+                        <span class="metric-empty">—</span>
+                      } @else {
+                        @for (entry of point.revenueByCurrency; track entry.currency) {
+                          <span class="timeseries-revenue">{{ formatMoney(entry.amount, entry.currency) }}</span>
+                        }
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+
+      </div>
+    }
+  </section>
 </section>

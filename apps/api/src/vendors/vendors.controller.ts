@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { UserRole } from '@hb/shared';
 import { VendorsService } from './vendors.service';
+import { VendorAnalyticsService } from './vendor-analytics.service';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { AdminCreateVendorDto } from './dto/admin-create-vendor.dto';
 import { UpdateVendorStatusDto } from './dto/update-vendor-status.dto';
+import { VendorAnalyticsQueryDto } from './dto/vendor-analytics-query.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
@@ -12,7 +14,10 @@ import { User } from '../users/entities/user.entity';
 
 @Controller('vendors')
 export class VendorsController {
-  constructor(private readonly vendorsService: VendorsService) {}
+  constructor(
+    private readonly vendorsService: VendorsService,
+    private readonly vendorAnalyticsService: VendorAnalyticsService,
+  ) {}
 
   // Admin only for now; public vendor directory later
   @Get()
@@ -60,6 +65,12 @@ export class VendorsController {
   @Roles(UserRole.VENDOR)
   getMyDashboard(@GetUser() user: User) {
     return this.vendorsService.getDashboard(user.id);
+  }
+
+  @Get('me/analytics')
+  @Roles(UserRole.VENDOR)
+  getMyAnalytics(@Query() query: VendorAnalyticsQueryDto, @GetUser() user: User) {
+    return this.vendorAnalyticsService.getAnalytics(user.id, query);
   }
 
   // Public so anonymous/SSR-rendered vendor-profile pages can fetch without a token

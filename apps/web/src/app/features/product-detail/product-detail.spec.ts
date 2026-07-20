@@ -8,6 +8,7 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 import type { AuthUser, CartDto, UserDto } from '@hb/shared';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
+  AnalyticsEventType,
   CountryCode,
   CurrencyCode,
   ListingType,
@@ -17,6 +18,8 @@ import {
 import { ProductDetail } from './product-detail';
 import { ProductsService } from '../../core/api/products.service';
 import { CartService } from '../../core/api/cart.service';
+import { AnalyticsService } from '../../core/api/analytics.service';
+import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { AuthService } from '../../core/auth/auth.service';
 
 const EMPTY_CART: CartDto = { id: 'cart-1', items: [], totals: [], itemCount: 0, updatedAt: '' };
@@ -82,7 +85,22 @@ interface CartStub {
   itemCount: ReturnType<typeof signal<number>>;
 }
 
-function makeStubs(): { productsStub: ProductsStub; authStub: AuthStub; cartStub: CartStub } {
+interface AnalyticsStub {
+  track: ReturnType<typeof vi.fn>;
+}
+
+interface GaStub {
+  viewItem: ReturnType<typeof vi.fn>;
+  addToCart: ReturnType<typeof vi.fn>;
+}
+
+function makeStubs(): {
+  productsStub: ProductsStub;
+  authStub: AuthStub;
+  cartStub: CartStub;
+  analyticsStub: AnalyticsStub;
+  gaStub: GaStub;
+} {
   return {
     productsStub: {
       getById: vi.fn(() => of(HONEY)),
@@ -98,6 +116,13 @@ function makeStubs(): { productsStub: ProductsStub; authStub: AuthStub; cartStub
       cart: signal<CartDto | null>(null),
       itemCount: signal(0),
     },
+    analyticsStub: {
+      track: vi.fn(),
+    },
+    gaStub: {
+      viewItem: vi.fn(),
+      addToCart: vi.fn(),
+    },
   };
 }
 
@@ -105,6 +130,8 @@ async function setupTestBed(
   productsStub: ProductsStub,
   authStub: AuthStub,
   cartStub: CartStub,
+  analyticsStub: AnalyticsStub,
+  gaStub: GaStub,
   paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>,
 ): Promise<void> {
   return TestBed.configureTestingModule({
@@ -117,6 +144,8 @@ async function setupTestBed(
       { provide: ProductsService, useValue: productsStub },
       { provide: AuthService, useValue: authStub },
       { provide: CartService, useValue: cartStub },
+      { provide: AnalyticsService, useValue: analyticsStub },
+      { provide: GoogleAnalyticsService, useValue: gaStub },
       {
         provide: ActivatedRoute,
         useValue: { paramMap: paramMap$ },
@@ -134,13 +163,15 @@ describe('ProductDetail', () => {
   let productsStub: ProductsStub;
   let authStub: AuthStub;
   let cartStub: CartStub;
+  let analyticsStub: AnalyticsStub;
+  let gaStub: GaStub;
   let paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   beforeEach(async () => {
-    ({ productsStub, authStub, cartStub } = makeStubs());
+    ({ productsStub, authStub, cartStub, analyticsStub, gaStub } = makeStubs());
     paramMap$ = new BehaviorSubject(convertToParamMap({ id: 'p1' }));
 
-    await setupTestBed(productsStub, authStub, cartStub, paramMap$);
+    await setupTestBed(productsStub, authStub, cartStub, analyticsStub, gaStub, paramMap$);
 
     fixture = TestBed.createComponent(ProductDetail);
     component = fixture.componentInstance;
@@ -156,6 +187,17 @@ describe('ProductDetail', () => {
 
   it('fetches the product by the :id route param', () => {
     expect(productsStub.getById).toHaveBeenCalledWith('p1');
+  });
+
+  it('fires PRODUCT_VIEWED once the product loads successfully', () => {
+    expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.PRODUCT_VIEWED, {
+      productId: 'p1',
+      vendorId: 'v1',
+    });
+  });
+
+  it('fires GA view_item once the product loads successfully', () => {
+    expect(gaStub.viewItem).toHaveBeenCalledWith('p1', HONEY.name, HONEY.price, HONEY.currency);
   });
 
   it('renders the product name and price', () => {
@@ -259,6 +301,26 @@ describe('ProductDetail', () => {
 
     expect(cartStub.addItem).toHaveBeenCalledWith('p1');
     expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it('fires ADD_TO_CART on a successful add', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+    analyticsStub.track.mockClear();
+
+    component.onAddToCart();
+
+    expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.ADD_TO_CART, {
+      productId: 'p1',
+      vendorId: 'v1',
+    });
+  });
+
+  it('fires GA add_to_cart on a successful add', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+
+    component.onAddToCart();
+
+    expect(gaStub.addToCart).toHaveBeenCalledWith('p1', HONEY.name, HONEY.price, HONEY.currency);
   });
 
   it('related-product add-to-cart adds that product, not the page product', () => {

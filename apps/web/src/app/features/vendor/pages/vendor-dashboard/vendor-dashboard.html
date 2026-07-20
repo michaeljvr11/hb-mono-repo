@@ -105,4 +105,98 @@
 
   }
 
+  <!-- Analytics -->
+  <div class="section-card analytics-section">
+    <header class="section-card__header">
+      <h2 class="section-card__title">Analytics</h2>
+      <span class="section-card__hint">Last 30 days</span>
+    </header>
+
+    @if (analyticsError()) {
+      <div class="error-banner" role="alert">
+        <span class="material-symbols-outlined" aria-hidden="true">error</span>
+        <span>{{ analyticsError() }}</span>
+      </div>
+    }
+
+    @if (analyticsLoading()) {
+      <div class="state-placeholder" role="status" aria-live="polite">
+        <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+        <p>Loading analytics…</p>
+      </div>
+    }
+
+    @if (!analyticsLoading() && !analyticsError() && analytics(); as stats) {
+
+      <div class="analytics-grid">
+
+        <!-- Own funnel -->
+        <div class="analytics-block">
+          <h3 class="analytics-block__title">Funnel</h3>
+          <div class="funnel">
+            @for (stage of stats.funnel; track stage.stage) {
+              <div class="funnel-row">
+                <span class="funnel-row__label">{{ stageLabel(stage.stage) }}</span>
+                <div class="funnel-row__track">
+                  <div class="funnel-row__bar" [style.width.%]="funnelWidth(stage.sessions)"></div>
+                </div>
+                <span class="funnel-row__count">{{ stage.sessions }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Revenue by currency -->
+        <div class="analytics-block">
+          <h3 class="analytics-block__title">Revenue by Currency</h3>
+          @if (stats.revenueByCurrency.length === 0) {
+            <p class="analytics-block__empty">No revenue in this range yet.</p>
+          } @else {
+            <div class="currency-rows">
+              @for (row of stats.revenueByCurrency; track row.currency) {
+                <div class="currency-row">
+                  <span class="currency-row__label">{{ row.currency }}</span>
+                  <span class="currency-row__value">{{ currencySymbol(row.currency) }}&nbsp;{{ row.amount | number:'1.2-2' }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <!-- Orders + revenue over time -->
+      <div class="analytics-block analytics-block--full">
+        <h3 class="analytics-block__title">Orders &amp; Revenue Over Time</h3>
+        @if (stats.timeSeries.length === 0) {
+          <p class="analytics-block__empty">No orders in this range yet.</p>
+        } @else {
+          <div class="timeseries-table" role="table" aria-label="Orders and revenue over time">
+            <div class="timeseries-row timeseries-row--head" role="row">
+              <span role="columnheader">Date</span>
+              <span role="columnheader">Orders</span>
+              <span role="columnheader">Revenue</span>
+            </div>
+            @for (point of stats.timeSeries; track point.date) {
+              <div class="timeseries-row" role="row">
+                <span role="cell">{{ point.date }}</span>
+                <span role="cell">{{ point.orders }}</span>
+                <span role="cell" class="timeseries-row__revenue">
+                  @if (point.revenueByCurrency.length === 0) {
+                    <span class="timeseries-row__zero">&mdash;</span>
+                  } @else {
+                    @for (rev of point.revenueByCurrency; track rev.currency) {
+                      <span class="revenue-chip">{{ currencySymbol(rev.currency) }}&nbsp;{{ rev.amount | number:'1.2-2' }}</span>
+                    }
+                  }
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    }
+  </div>
+
 </section>

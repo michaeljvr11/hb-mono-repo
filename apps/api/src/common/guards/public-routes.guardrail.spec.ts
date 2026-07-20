@@ -8,6 +8,7 @@ import { VendorsController } from '../../vendors/vendors.controller';
 import { AdminController } from '../../admin/admin.controller';
 import { UsersController } from '../../users/users.controller';
 import { OrdersController } from '../../orders/orders.controller';
+import { AnalyticsController } from '../../analytics/analytics.controller';
 
 /**
  * Guardrail: authentication is on by default (global JwtAuthGuard), and a route only
@@ -27,9 +28,11 @@ const CONTROLLERS = [
   AdminController,
   UsersController,
   OrdersController,
+  AnalyticsController,
 ];
 
 const EXPECTED_PUBLIC = [
+  'AnalyticsController.ingest',
   'AppController.health',
   'AuthController.bootstrapAdmin',
   'AuthController.forgotPassword',

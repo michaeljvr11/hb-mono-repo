@@ -6,7 +6,15 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AuthUser, CartDto, CountryCode, CurrencyCode, OrderDto, OrderStatus } from '@hb/shared';
+import {
+  AnalyticsEventType,
+  AuthUser,
+  CartDto,
+  CountryCode,
+  CurrencyCode,
+  OrderDto,
+  OrderStatus,
+} from '@hb/shared';
 
 import { Checkout } from './checkout';
 import { routes } from '../../app.routes';
@@ -14,6 +22,8 @@ import { authGuard } from '../../core/auth/auth-guard';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
 import { OrdersService } from '../../core/api/orders.service';
+import { AnalyticsService } from '../../core/api/analytics.service';
+import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -105,6 +115,11 @@ describe('Checkout', () => {
     currentUser$: BehaviorSubject<AuthUser | null>;
     resendVerification: ReturnType<typeof vi.fn>;
   };
+  let analyticsStub: { track: ReturnType<typeof vi.fn> };
+  let gaStub: {
+    beginCheckout: ReturnType<typeof vi.fn>;
+    purchase: ReturnType<typeof vi.fn>;
+  };
 
   async function setup(cart: CartDto = CART): Promise<void> {
     cartStub = makeCartStub(cart);
@@ -114,6 +129,8 @@ describe('Checkout', () => {
       currentUser$: new BehaviorSubject<AuthUser | null>(null),
       resendVerification: vi.fn(() => of({ message: 'sent' })),
     };
+    analyticsStub = { track: vi.fn() };
+    gaStub = { beginCheckout: vi.fn(), purchase: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [Checkout],
@@ -125,6 +142,8 @@ describe('Checkout', () => {
         { provide: CartService, useValue: cartStub },
         { provide: OrdersService, useValue: ordersStub },
         { provide: AuthService, useValue: authStub },
+        { provide: AnalyticsService, useValue: analyticsStub },
+        { provide: GoogleAnalyticsService, useValue: gaStub },
       ],
     }).compileComponents();
 
@@ -163,6 +182,40 @@ describe('Checkout', () => {
     await setup({ ...CART, items: [], totals: [], itemCount: 0 });
 
     expect(fixture.nativeElement.textContent).toContain('Nothing to check out');
+  });
+
+  it('fires CHECKOUT_STARTED once the cart loads with items', async () => {
+    await setup();
+
+    expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.CHECKOUT_STARTED);
+  });
+
+  it('does not fire CHECKOUT_STARTED when the cart is empty', async () => {
+    await setup({ ...CART, items: [], totals: [], itemCount: 0 });
+
+    expect(analyticsStub.track).not.toHaveBeenCalledWith(AnalyticsEventType.CHECKOUT_STARTED);
+  });
+
+  it('fires GA begin_checkout (value/currency/items) once the cart loads with items', async () => {
+    await setup();
+
+    expect(gaStub.beginCheckout).toHaveBeenCalledWith(370, CurrencyCode.ZAR, [
+      { productId: 'p1', name: 'Fynbos Honey' },
+    ]);
+  });
+
+  it('fires GA begin_checkout without value/currency for a mixed-currency cart', async () => {
+    await setup(MIXED_CART);
+
+    expect(gaStub.beginCheckout).toHaveBeenCalledWith(undefined, undefined, [
+      { productId: 'p1', name: 'Fynbos Honey' },
+    ]);
+  });
+
+  it('does not fire GA begin_checkout when the cart is empty', async () => {
+    await setup({ ...CART, items: [], totals: [], itemCount: 0 });
+
+    expect(gaStub.beginCheckout).not.toHaveBeenCalled();
   });
 
   it('blocks submission for mixed-currency carts with a specific explanation', async () => {
@@ -213,6 +266,28 @@ describe('Checkout', () => {
     expect(el.textContent).toMatch(/R\s?370[.,]00/);
     // Local cart state dropped so the nav badge resets.
     expect(cartStub.reset).toHaveBeenCalled();
+  });
+
+  it('fires SHIPPING_SUBMITTED, PAYMENT_ATTEMPTED and ORDER_COMPLETED (with the order total + currency) on a successful submit', async () => {
+    await setup();
+    fillForm(component);
+    analyticsStub.track.mockClear();
+
+    component.submit();
+    fixture.detectChanges();
+
+    expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.SHIPPING_SUBMITTED);
+    expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.PAYMENT_ATTEMPTED);
+    expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.ORDER_COMPLETED, {
+      orderId: PLACED_ORDER.id,
+      value: PLACED_ORDER.total,
+      currency: PLACED_ORDER.currency,
+    });
+    expect(gaStub.purchase).toHaveBeenCalledWith(
+      PLACED_ORDER.id,
+      PLACED_ORDER.total,
+      PLACED_ORDER.currency,
+    );
   });
 
   // ── Error surfacing (distinct, never swallowed) ────────────────────────────
@@ -273,5 +348,6 @@ describe('Checkout', () => {
 
     expect(component.checkoutError()?.kind).toBe('generic');
     expect(fixture.nativeElement.textContent).toContain('Could not place your order');
+    expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.PAYMENT_FAILED);
   });
 });

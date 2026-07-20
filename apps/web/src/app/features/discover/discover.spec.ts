@@ -1,11 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { Router, provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
+  AnalyticsEventType,
+  AuthUser,
   CategoryDto,
   CountryCode,
   CurrencyCode,
@@ -21,6 +23,10 @@ import { ProductsService } from '../../core/api/products.service';
 import { CategoriesService } from '../../core/api/categories.service';
 import { VendorsService } from '../../core/api/vendors.service';
 import { SearchService } from '../../core/api/search.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { AnalyticsService } from '../../core/api/analytics.service';
+import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
+import { environment } from '../../../environments/environment';
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
 
@@ -87,11 +93,27 @@ interface SearchStub {
   suggest: ReturnType<typeof vi.fn>;
 }
 
+interface AuthStub {
+  isLoggedIn: ReturnType<typeof vi.fn>;
+  currentUser$: BehaviorSubject<AuthUser | null>;
+}
+
+interface AnalyticsStub {
+  track: ReturnType<typeof vi.fn>;
+}
+
+interface GaStub {
+  addToCart: ReturnType<typeof vi.fn>;
+}
+
 function makeStubs(): {
   productsStub: ProductsStub;
   categoriesStub: CategoriesStub;
   vendorsStub: VendorsStub;
   searchStub: SearchStub;
+  authStub: AuthStub;
+  analyticsStub: AnalyticsStub;
+  gaStub: GaStub;
 } {
   return {
     productsStub: {
@@ -107,6 +129,16 @@ function makeStubs(): {
     searchStub: {
       suggest: vi.fn(() => of(MOCK_SUGGESTIONS)),
     },
+    authStub: {
+      isLoggedIn: vi.fn(() => false),
+      currentUser$: new BehaviorSubject<AuthUser | null>(null),
+    },
+    analyticsStub: {
+      track: vi.fn(),
+    },
+    gaStub: {
+      addToCart: vi.fn(),
+    },
   };
 }
 
@@ -115,6 +147,9 @@ async function setupTestBed(
   categoriesStub: CategoriesStub,
   vendorsStub: VendorsStub,
   searchStub: SearchStub,
+  authStub: AuthStub,
+  analyticsStub: AnalyticsStub,
+  gaStub: GaStub,
 ): Promise<void> {
   return TestBed.configureTestingModule({
     imports: [Discover],
@@ -127,6 +162,9 @@ async function setupTestBed(
       { provide: CategoriesService, useValue: categoriesStub },
       { provide: VendorsService, useValue: vendorsStub },
       { provide: SearchService, useValue: searchStub },
+      { provide: AuthService, useValue: authStub },
+      { provide: AnalyticsService, useValue: analyticsStub },
+      { provide: GoogleAnalyticsService, useValue: gaStub },
     ],
   }).compileComponents();
 }
@@ -137,18 +175,32 @@ describe('Discover', () => {
   let fixture: ComponentFixture<Discover>;
   let component: Discover;
   let router: Router;
+  let httpMock: HttpTestingController;
   let productsStub: ProductsStub;
   let categoriesStub: CategoriesStub;
   let vendorsStub: VendorsStub;
   let searchStub: SearchStub;
+  let authStub: AuthStub;
+  let analyticsStub: AnalyticsStub;
+  let gaStub: GaStub;
 
   beforeEach(async () => {
-    ({ productsStub, categoriesStub, vendorsStub, searchStub } = makeStubs());
-    await setupTestBed(productsStub, categoriesStub, vendorsStub, searchStub);
+    ({ productsStub, categoriesStub, vendorsStub, searchStub, authStub, analyticsStub, gaStub } =
+      makeStubs());
+    await setupTestBed(
+      productsStub,
+      categoriesStub,
+      vendorsStub,
+      searchStub,
+      authStub,
+      analyticsStub,
+      gaStub,
+    );
 
     fixture = TestBed.createComponent(Discover);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
+    httpMock = TestBed.inject(HttpTestingController);
     fixture.detectChanges();
     await fixture.whenStable();
   });
@@ -227,6 +279,40 @@ describe('Discover', () => {
       queryParams: { vendorId: null },
       queryParamsHandling: 'merge',
     }));
+  });
+
+  // ── Add to cart ────────────────────────────────────────────────────────
+
+  it('authenticated add-to-cart fires ADD_TO_CART on success', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+
+    component.onAddToCart(VENDOR_LISTING);
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/cart/items`);
+    req.flush({ id: 'cart-1', items: [], totals: [], itemCount: 1, updatedAt: '' });
+
+    expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.ADD_TO_CART, {
+      productId: 'p2',
+      vendorId: 'v1',
+    });
+    expect(gaStub.addToCart).toHaveBeenCalledWith(
+      'p2',
+      VENDOR_LISTING.name,
+      VENDOR_LISTING.price,
+      VENDOR_LISTING.currency,
+    );
+  });
+
+  it('anonymous add-to-cart routes to /login and does not fire ADD_TO_CART', () => {
+    authStub.isLoggedIn.mockReturnValue(false);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onAddToCart(VENDOR_LISTING);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/login'], {
+      queryParams: { returnUrl: router.url },
+    });
+    expect(analyticsStub.track).not.toHaveBeenCalled();
   });
 
   it('SME toggle filters out products without a vendor (platform listings)', () => {

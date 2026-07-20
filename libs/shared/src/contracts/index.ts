@@ -12,3 +12,4 @@ export * from './dashboard';
 export * from './audit';
 export * from './search';
 export * from './synonym';
+export * from './analytics';

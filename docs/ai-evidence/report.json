@@ -1,4 +1,39 @@
 {
+  "generatedAt": "2026-07-17T13:38:41.138Z",
+  "git": {
+    "totalCommits": 139,
+    "aiCommits": 129,
+    "aiPct": 93,
+    "appCommits": 93,
+    "ins": 64667,
+    "del": 5080,
+    "net": 59587,
+    "aiIns": 51235,
+    "aiDel": 4942,
+    "filesTouched": 561,
+    "areaRows": [
+      {
+        "name": "Web (Angular)",
+        "commits": 54,
+        "ins": 32055,
+        "del": 1441
+      },
+      {
+        "name": "API (NestJS)",
+        "commits": 54,
+        "ins": 16713,
+        "del": 748
+      },
+      {
+        "name": "Docs",
+        "commits": 43,
+        "ins": 12153,
+        "del": 2793
+      },
+      {
+        "name": "AI Factory config",
+        "commits": 40,
+        "ins": 1775,
   "generatedAt": "2026-07-17T12:43:13.526Z",
   "git": {
     "totalCommits": 128,
@@ -38,6 +73,8 @@
       },
       {
         "name": "Shared contracts",
+        "commits": 20,
+        "ins": 989,
         "commits": 17,
         "ins": 818,
         "del": 6
@@ -59,6 +96,8 @@
     "lastDate": "2026-07-17",
     "recent": [
       {
+        "hash": "e671be7",
+        "subject": "fix: address review WARNs — token-derived focus rings, metadata size cap",
         "hash": "e78420d",
         "subject": "refactor(web): address review WARNs on the profile batch",
         "ai": true
@@ -99,28 +138,108 @@
         "ai": true
       },
       {
-        "hash": "6022c1e",
-        "subject": "feat(factory): vendor Ponytail minimalism ladder into backend/frontend/reviewer agents",
+        "hash": "c2b8eb6",
+        "subject": "test(api): pin analytics money + bucketing edges for the batch",
         "ai": true
       },
       {
-        "hash": "9cb4a8f",
-        "subject": "feat(factory): add CLARIFY step to /ship-card and /ship-batch",
+        "hash": "a111384",
+        "subject": "feat(web): vendor dashboard analytics view (ezkaNtbZ)",
         "ai": true
       },
       {
-        "hash": "97b6b19",
-        "subject": "chore(evidence): recompile AI evidence report after merging steering-analysis-poc",
+        "hash": "61c6e01",
+        "subject": "feat(web): admin dashboard analytics widgets (UC508IB6)",
         "ai": true
       },
       {
-        "hash": "3286a11",
-        "subject": "feat(factory): add /ship-batch command for multi-card and Fable-offloaded builds",
+        "hash": "bcb80f0",
+        "subject": "feat(api): vendor-scoped analytics endpoint with strict tenant isolation (ezkaNtbZ)",
+        "ai": true
+      },
+      {
+        "hash": "becdc0b",
+        "subject": "feat(api): admin analytics aggregation endpoint (UC508IB6)",
+        "ai": true
+      },
+      {
+        "hash": "96c91f3",
+        "subject": "feat(web): consent-gated GA4 integration, inert until a measurement id lands (p0kVZMii)",
+        "ai": true
+      },
+      {
+        "hash": "08cd8f5",
+        "subject": "chore(evidence): recompile AI evidence report for the customer-profile batch",
+        "ai": true
+      },
+      {
+        "hash": "83a9217",
+        "subject": "feat(web): instrument storefront funnel with bespoke analytics events (FRtcp2dg)",
+        "ai": true
+      },
+      {
+        "hash": "e78420d",
+        "subject": "refactor(web): address review WARNs on the profile batch",
+        "ai": true
+      },
+      {
+        "hash": "5928da3",
+        "subject": "feat(api): add analytics contracts + bespoke event ingestion (LKIGKUVM)",
+        "ai": true
+      },
+      {
+        "hash": "4ca3de8",
+        "subject": "feat(web): address book management in /profile (uGvvSURk)",
         "ai": true
       }
     ]
   },
   "branches": [
+    {
+      "branch": "feat/EXPtZCJL-vendor-portal-shell",
+      "cardId": "EXPtZCJL",
+      "slug": "vendor-portal-shell"
+    },
+    {
+      "branch": "feat/IhTVdNYP-admin-catalog",
+      "cardId": "IhTVdNYP",
+      "slug": "admin-catalog"
+    },
+    {
+      "branch": "feat/L9fM1Gu7-storefront",
+      "cardId": "L9fM1Gu7",
+      "slug": "storefront"
+    },
+    {
+      "branch": "feat/LKIGKUVM-analytics-reporting",
+      "cardId": "LKIGKUVM",
+      "slug": "analytics-reporting"
+    },
+    {
+      "branch": "feat/N8P6OPPm-admin-user-mgmt",
+      "cardId": "N8P6OPPm",
+      "slug": "admin-user-mgmt"
+    },
+    {
+      "branch": "feat/RLiauFte-admin-vendor-approvals",
+      "cardId": "RLiauFte",
+      "slug": "admin-vendor-approvals"
+    },
+    {
+      "branch": "feat/oWqIV57s-vendor-dashboard",
+      "cardId": "oWqIV57s",
+      "slug": "vendor-dashboard"
+    },
+    {
+      "branch": "feat/ship-batch-command",
+      "cardId": "ship",
+      "slug": "batch-command"
+    },
+    {
+      "branch": "feat/xEOk5i0M-vendor-products",
+      "cardId": "xEOk5i0M",
+      "slug": "vendor-products"
+    },
     {
       "branch": "feat/1fqtc2JF-vendor-onboarding",
       "cardId": "1fqtc2JF",
@@ -258,6 +377,9 @@
     }
   ],
   "tests": {
+    "total": 80,
+    "api": 31,
+    "web": 49
     "total": 75,
     "api": 28,
     "web": 47
@@ -286,6 +408,10 @@
     },
     "gatePass": 17,
     "gateFail": 1,
+    "edits": 314,
+    "editsUnfixable": 114,
+    "firstTs": "2026-06-18T12:14:47.925Z",
+    "lastTs": "2026-07-17T13:38:07.502Z",
     "edits": 283,
     "editsUnfixable": 103,
     "firstTs": "2026-06-18T12:14:47.925Z",
@@ -295,6 +421,7 @@
       "byAgent": [
         {
           "agentType": "unknown",
+          "invocations": 1,
           "invocations": 6,
           "inputTokens": 0,
           "outputTokens": 0,
@@ -304,6 +431,7 @@
         },
         {
           "agentType": "backend-engineer",
+          "invocations": 3,
           "invocations": 2,
           "inputTokens": 0,
           "outputTokens": 0,
@@ -313,6 +441,7 @@
         },
         {
           "agentType": "frontend-engineer",
+          "invocations": 4,
           "invocations": 3,
           "inputTokens": 0,
           "outputTokens": 0,
@@ -341,21 +470,40 @@
       ],
       "recent": [
         {
+          "ts": "2026-07-17T11:29:59.993Z",
           "ts": "2026-07-17T12:18:30.988Z",
           "agentType": "unknown",
           "totalTokens": 0
         },
         {
+          "ts": "2026-07-17T12:32:26.079Z",
           "ts": "2026-07-17T12:20:05.708Z",
           "agentType": "backend-engineer",
           "totalTokens": 0
         },
         {
+          "ts": "2026-07-17T12:41:49.035Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T12:54:28.701Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T13:03:24.368Z",
           "ts": "2026-07-17T12:20:09.998Z",
           "agentType": "backend-engineer",
           "totalTokens": 0
         },
         {
+          "ts": "2026-07-17T13:13:26.933Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-17T13:18:45.646Z",
           "ts": "2026-07-17T12:21:40.118Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -371,6 +519,7 @@
           "totalTokens": 0
         },
         {
+          "ts": "2026-07-17T13:19:17.284Z",
           "ts": "2026-07-17T12:28:57.627Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -381,6 +530,7 @@
           "totalTokens": 0
         },
         {
+          "ts": "2026-07-17T13:25:33.051Z",
           "ts": "2026-07-17T12:32:25.138Z",
           "agentType": "frontend-engineer",
           "totalTokens": 0
@@ -396,6 +546,7 @@
           "totalTokens": 0
         },
         {
+          "ts": "2026-07-17T13:32:31.849Z",
           "ts": "2026-07-17T12:36:03.780Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -411,6 +562,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/LKIGKUVM-analytics-reporting",
+      "number": 34,
+      "state": "OPEN",
+      "title": "feat: Analytics & Reporting — bespoke funnel + GA4 + admin/vendor analytics (5-card batch)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/34"
+    },
     {
       "headRefName": "feat/eq7ybOyS-customer-profile",
       "number": 33,
@@ -658,7 +816,7 @@
     },
     {
       "name": "In Review",
-      "cards": 0
+      "cards": 10
     },
     {
       "name": "Done",
