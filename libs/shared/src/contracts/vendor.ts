@@ -1,7 +1,4 @@
-import { CountryCode, CurrencyCode, OrderStatus, VendorStatus } from '../enums';
-
-// Keep this union open — a future card may add e.g. 'rule' without a breaking change.
-export type VendorSectionType = 'curated' | 'category';
+import { CountryCode, CurrencyCode, OrderStatus, VendorSectionType, VendorStatus } from '../enums';
 
 export interface VendorProfileSection {
   id: string;

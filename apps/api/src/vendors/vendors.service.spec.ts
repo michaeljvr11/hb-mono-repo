@@ -14,6 +14,7 @@ import {
   UserRole,
   CountryCode,
   VendorProfileSection,
+  VendorSectionType,
 } from '@hb/shared';
 import { VendorsService } from './vendors.service';
 import { AuditService } from '../audit/audit.service';
@@ -139,20 +140,39 @@ describe('VendorsService', () => {
 
       expect(result.id).toBe('v1');
     });
+
+    it('returns the self-view shape (website/description) so an owner PATCH echoes what GET /vendors/me returns', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(
+        mockVendor({ id: 'v1', userId: 'u1', website: 'https://old.example' }),
+      );
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+
+      const result = await service.update(
+        'v1',
+        { website: 'https://new.example', description: 'Updated bio' },
+        owner,
+      );
+
+      expect(result).toMatchObject({
+        website: 'https://new.example',
+        description: 'Updated bio',
+      });
+    });
   });
 
   describe('update (profile sections)', () => {
-    const curatedSection = (productIds: string[]): VendorProfileSection => ({
-      id: 's1',
+    const curatedSection = (productIds: string[], id = 's1'): VendorProfileSection => ({
+      id,
       title: 'Bestsellers',
-      type: 'curated',
+      type: VendorSectionType.CURATED,
       productIds,
     });
 
-    const categorySection = (categoryId: string): VendorProfileSection => ({
-      id: 's2',
+    const categorySection = (categoryId: string, id = 's2'): VendorProfileSection => ({
+      id,
       title: 'Home & Living',
-      type: 'category',
+      type: VendorSectionType.CATEGORY,
       categoryId,
     });
 
@@ -189,6 +209,31 @@ describe('VendorsService', () => {
       expect(vendorRepo.save).not.toHaveBeenCalled();
     });
 
+    it('rejects a category-typed section carrying productIds that belong to another vendor (defense in depth — the DTO should already block this shape, but the service loop must not key off `type`)', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+      // Nothing comes back — 'foreign-product' does not belong to vendor v1.
+      productRepo.find.mockResolvedValue([]);
+
+      const rogueSection = {
+        id: 's1',
+        title: 'Sneaky',
+        type: VendorSectionType.CATEGORY,
+        categoryId: 'cat-1',
+        // Bypasses the DTO layer entirely — this test exercises the service's own
+        // iterate-every-section guard, not class-validator.
+        productIds: ['foreign-product'],
+      } as unknown as VendorProfileSection;
+
+      await expect(
+        service.update('v1', { profileSections: [rogueSection] }, owner),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(productRepo.find).toHaveBeenCalledWith({
+        where: { id: In(['foreign-product']), vendorId: 'v1' },
+      });
+      expect(vendorRepo.save).not.toHaveBeenCalled();
+    });
+
     it('skips the ownership query entirely for category-only sections (no productIds to check)', async () => {
       const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
       vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
@@ -199,6 +244,49 @@ describe('VendorsService', () => {
 
       expect(productRepo.find).not.toHaveBeenCalled();
       expect(vendorRepo.save).toHaveBeenCalled();
+    });
+
+    it('rejects duplicate section ids in a single payload', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+
+      const sections = [categorySection('cat-1', 'dup'), categorySection('cat-2', 'dup')];
+
+      await expect(
+        service.update('v1', { profileSections: sections }, owner),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(productRepo.find).not.toHaveBeenCalled();
+      expect(vendorRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('rejects duplicate productIds within a single curated section', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+
+      const sections = [curatedSection(['p1', 'p1'])];
+
+      await expect(
+        service.update('v1', { profileSections: sections }, owner),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(productRepo.find).not.toHaveBeenCalled();
+      expect(vendorRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('lets an admin attach a curated section to another vendor profile when the productIds belong to THAT vendor (not the admin)', async () => {
+      const admin = mockUser({ id: 'admin1', role: UserRole.ADMIN });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'someone-else' }));
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+      productRepo.find.mockResolvedValue([{ id: 'p1' }]);
+
+      const sections = [curatedSection(['p1'])];
+      const result = await service.update('v1', { profileSections: sections }, admin);
+
+      // Ownership is scoped to the vendor row being edited (v1), never the acting
+      // admin's own vendor (admins typically have none).
+      expect(productRepo.find).toHaveBeenCalledWith({
+        where: { id: In(['p1']), vendorId: 'v1' },
+      });
+      expect(result.profileSections).toEqual(sections);
     });
   });
 
