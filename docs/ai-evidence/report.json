@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-07-26T21:07:45.992Z",
+  "generatedAt": "2026-07-26T21:39:27.254Z",
   "git": {
-    "totalCommits": 149,
-    "aiCommits": 138,
+    "totalCommits": 153,
+    "aiCommits": 142,
     "aiPct": 93,
-    "appCommits": 101,
-    "ins": 67825,
-    "del": 5643,
-    "net": 62182,
-    "aiIns": 54393,
-    "aiDel": 5505,
-    "filesTouched": 572,
+    "appCommits": 104,
+    "ins": 68464,
+    "del": 5832,
+    "net": 62632,
+    "aiIns": 55032,
+    "aiDel": 5694,
+    "filesTouched": 576,
     "areaRows": [
       {
         "name": "Web (Angular)",
@@ -20,20 +20,20 @@
       },
       {
         "name": "API (NestJS)",
-        "commits": 57,
-        "ins": 17783,
-        "del": 841
+        "commits": 60,
+        "ins": 18182,
+        "del": 887
       },
       {
         "name": "Docs",
-        "commits": 46,
-        "ins": 13046,
-        "del": 3170
+        "commits": 47,
+        "ins": 13225,
+        "del": 3313
       },
       {
         "name": "AI Factory config",
-        "commits": 44,
-        "ins": 1683,
+        "commits": 45,
+        "ins": 1744,
         "del": 68
       },
       {
@@ -58,6 +58,26 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-07-26",
     "recent": [
+      {
+        "hash": "d1a980a",
+        "subject": "fix(api): vendor upload false-reject and stored-XSS risk (VPC-2 review)",
+        "ai": true
+      },
+      {
+        "hash": "5ad23e6",
+        "subject": "test(api): cover VPC-2 upload owner-scope + reject non-image (VPC-2)",
+        "ai": true
+      },
+      {
+        "hash": "0aeede3",
+        "subject": "feat(api): vendor logo & banner upload endpoints (VPC-2)",
+        "ai": true
+      },
+      {
+        "hash": "60fb67b",
+        "subject": "chore: recompile AI evidence report",
+        "ai": true
+      },
       {
         "hash": "81503ea",
         "subject": "fix(api): close ownership-guard bypass in vendor profile sections (VPC-1 review)",
@@ -97,26 +117,6 @@
         "hash": "1c5bc03",
         "subject": "chore(evidence): recompile AI evidence report (UG5UFyxy)",
         "ai": true
-      },
-      {
-        "hash": "cd617c6",
-        "subject": "refactor(web): address review NITs on vendor profile page (UG5UFyxy)",
-        "ai": true
-      },
-      {
-        "hash": "7efa101",
-        "subject": "test(web): specs for vendor profile page + re-point assertions (UG5UFyxy)",
-        "ai": true
-      },
-      {
-        "hash": "871d6d4",
-        "subject": "feat(web): public vendor profile page at /vendors/:id (UG5UFyxy)",
-        "ai": true
-      },
-      {
-        "hash": "3194c67",
-        "subject": "chore(evidence): recompile AI evidence report after the analytics batch",
-        "ai": true
       }
     ]
   },
@@ -130,6 +130,11 @@
       "branch": "feat/7oPc1cnk-admin-audit-log",
       "cardId": "7oPc1cnk",
       "slug": "admin-audit-log"
+    },
+    {
+      "branch": "feat/AAjMPwV7-vendor-logo-banner-upload",
+      "cardId": "AAjMPwV7",
+      "slug": "vendor-logo-banner-upload"
     },
     {
       "branch": "feat/DD6Z0NUW-admin-vendor-approvals",
@@ -278,8 +283,8 @@
     }
   ],
   "tests": {
-    "total": 88,
-    "api": 34,
+    "total": 90,
+    "api": 36,
     "web": 54
   },
   "design": {
@@ -307,10 +312,10 @@
     },
     "gatePass": 22,
     "gateFail": 1,
-    "edits": 373,
-    "editsUnfixable": 140,
+    "edits": 389,
+    "editsUnfixable": 144,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-26T21:07:19.673Z",
+    "lastTs": "2026-07-26T21:38:56.978Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
@@ -325,7 +330,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 8,
+          "invocations": 9,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -343,7 +348,7 @@
         },
         {
           "agentType": "test-engineer",
-          "invocations": 3,
+          "invocations": 4,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -352,7 +357,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 6,
+          "invocations": 8,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -370,7 +375,7 @@
         },
         {
           "agentType": "docs-writer",
-          "invocations": 2,
+          "invocations": 3,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -379,31 +384,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-07-17T12:32:19.968Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:32:25.138Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:34:22.063Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:35:21.983Z",
-          "agentType": "test-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:36:03.780Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-07-17T12:39:21.999Z",
           "agentType": "code-reviewer",
@@ -478,6 +458,31 @@
           "ts": "2026-07-26T21:06:31.413Z",
           "agentType": "docs-writer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T21:20:59.486Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T21:23:52.489Z",
+          "agentType": "test-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T21:28:14.149Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T21:36:34.286Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T21:38:56.978Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
         }
       ]
     }
@@ -488,7 +493,7 @@
     {
       "headRefName": "feat/ZpvX9XIv-vendor-branding-sections-contract",
       "number": 37,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(api): vendor branding + profile-sections contract, schema, write (VPC-1)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/37"
     },
@@ -752,19 +757,19 @@
     },
     {
       "name": "To Do",
-      "cards": 9
+      "cards": 8
     },
     {
       "name": "In Progress",
-      "cards": 0
-    },
-    {
-      "name": "In Review",
       "cards": 1
     },
     {
+      "name": "In Review",
+      "cards": 0
+    },
+    {
       "name": "Done",
-      "cards": 48
+      "cards": 49
     },
     {
       "name": "Fable Documentation",

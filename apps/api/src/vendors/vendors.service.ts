@@ -23,6 +23,7 @@ import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { AuditAction, AuditService } from '../audit/audit.service';
 import { VendorEvents } from '../common/events/domain-events';
+import { FileUrlService } from '../products/upload/file-url.service';
 
 @Injectable()
 export class VendorsService {
@@ -36,6 +37,7 @@ export class VendorsService {
     private usersService: UsersService,
     private auditService: AuditService,
     private eventEmitter: EventEmitter2,
+    private fileUrlService: FileUrlService,
   ) {}
 
   private toResponseDto(vendor: Vendor): VendorResponseDto {
@@ -272,6 +274,30 @@ export class VendorsService {
 
   async hasVendor(userId: string): Promise<boolean> {
     return !!(await this.vendorRepository.findOne({ where: { userId } }));
+  }
+
+  // Shared owner-scoped branding-image update: looks the vendor up by the acting
+  // user's id (never a client-supplied vendor id — matches GET /vendors/me), sets
+  // the given field from the uploaded file, and returns the self-view DTO.
+  private async updateBrandingImage(
+    userId: string,
+    field: 'logoUrl' | 'bannerUrl',
+    file: Express.Multer.File,
+  ): Promise<VendorSelfResponseDto> {
+    const vendor = await this.vendorRepository.findOne({ where: { userId } });
+    if (!vendor) throw new NotFoundException('Vendor profile not found');
+
+    vendor[field] = this.fileUrlService.getFileUrl(file.filename, 'vendors');
+    const updated = await this.vendorRepository.save(vendor);
+    return this.toSelfResponseDto(updated);
+  }
+
+  async updateLogo(userId: string, file: Express.Multer.File): Promise<VendorSelfResponseDto> {
+    return this.updateBrandingImage(userId, 'logoUrl', file);
+  }
+
+  async updateBanner(userId: string, file: Express.Multer.File): Promise<VendorSelfResponseDto> {
+    return this.updateBrandingImage(userId, 'bannerUrl', file);
   }
 
   async getDashboard(userId: string): Promise<VendorDashboardResponseDto> {
