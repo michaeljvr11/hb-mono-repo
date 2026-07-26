@@ -473,3 +473,5 @@
 {"ts":"2026-07-26T21:40:43.133Z","type":"pr_gate","result":"fail","durationMs":9734}
 {"ts":"2026-07-26T21:44:00.470Z","type":"edit_lint","file":"apps/api/src/search/search-visibility.integration.spec.ts","autofixed":false,"tool":"Edit"}
 {"ts":"2026-07-26T21:44:10.820Z","type":"edit_lint","file":"apps/api/src/search/search-visibility.integration.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-07-26T21:45:14.845Z","type":"pr_gate","result":"pass","durationMs":9857}
+{"ts":"2026-07-26T21:45:45.335Z","type":"pr_gate","result":"pass","durationMs":9748}
