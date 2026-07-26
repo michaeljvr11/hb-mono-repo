@@ -102,7 +102,14 @@ interface CategoriesStub {
 function makeStubs(): { productsStub: ProductsStub; vendorsStub: VendorsStub; categoriesStub: CategoriesStub } {
   return {
     productsStub: {
-      list: vi.fn(() => of([MY_PRODUCT, OTHER_VENDOR_PRODUCT, PLATFORM_PRODUCT])),
+      list: vi.fn(() =>
+        of({
+          items: [MY_PRODUCT, OTHER_VENDOR_PRODUCT, PLATFORM_PRODUCT],
+          total: 3,
+          page: 1,
+          limit: 100,
+        }),
+      ),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -162,6 +169,7 @@ describe('VendorProducts component', () => {
   describe('vendor-only filtering', () => {
     it('loads all products from the service but only shows the vendor own listings', () => {
       expect(productsStub.list).toHaveBeenCalledTimes(1);
+      expect(productsStub.list).toHaveBeenCalledWith({ limit: 100 });
       // allProducts has all three
       expect(component.allProducts().length).toBe(3);
       // vendorProducts keeps only this vendor's listings

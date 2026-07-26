@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { ProductQueryDto } from './product-query.dto';
@@ -75,6 +76,97 @@ describe('ProductQueryDto', () => {
       const dto = transform({ q: 'a'.repeat(100) });
       const errors = await validate(dto);
       expect(errors).toHaveLength(0);
+    });
+  });
+
+  describe('page / limit / sort', () => {
+    it('coerces page and limit from numeric strings to numbers', () => {
+      const dto = transform({ page: '2', limit: '50' });
+      expect(dto.page).toBe(2);
+      expect(dto.limit).toBe(50);
+      expect(typeof dto.page).toBe('number');
+      expect(typeof dto.limit).toBe('number');
+    });
+
+    it('leaves page, limit and sort undefined when omitted', async () => {
+      const dto = transform({});
+      expect(dto.page).toBeUndefined();
+      expect(dto.limit).toBeUndefined();
+      expect(dto.sort).toBeUndefined();
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('passes validation for a valid page and limit', async () => {
+      const dto = transform({ page: '1', limit: '24' });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it.each(['0', '-1'])('rejects page = %s (below Min(1))', async (value) => {
+      const dto = transform({ page: value });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('page');
+      expect(errors[0].constraints).toHaveProperty('min');
+    });
+
+    it.each(['0', '-1'])('rejects limit = %s (below Min(1))', async (value) => {
+      const dto = transform({ limit: value });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('limit');
+      expect(errors[0].constraints).toHaveProperty('min');
+    });
+
+    it('does not reject a large limit — clamping happens server-side, not via validation', async () => {
+      const dto = transform({ limit: '10000' });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+      expect(dto.limit).toBe(10000);
+    });
+
+    it('rejects a non-integer page', async () => {
+      const dto = transform({ page: '1.5' });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].constraints).toHaveProperty('isInt');
+    });
+
+    it('rejects a non-numeric page', async () => {
+      const dto = transform({ page: 'abc' });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].constraints).toHaveProperty('isInt');
+    });
+
+    it('rejects a non-integer limit', async () => {
+      const dto = transform({ limit: '2.5' });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].constraints).toHaveProperty('isInt');
+    });
+
+    it('rejects a non-numeric limit', async () => {
+      const dto = transform({ limit: 'abc' });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].constraints).toHaveProperty('isInt');
+    });
+
+    it.each(['newest', 'price_asc', 'price_desc', 'name'])('accepts sort = %s', async (value) => {
+      const dto = transform({ sort: value });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+      expect(dto.sort).toBe(value);
+    });
+
+    it('rejects an invalid sort value', async () => {
+      const dto = transform({ sort: 'oldest' });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('sort');
+      expect(errors[0].constraints).toHaveProperty('isIn');
     });
   });
 });

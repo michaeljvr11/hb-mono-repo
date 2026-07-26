@@ -7,7 +7,15 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Brackets, In, Repository } from 'typeorm';
-import { ListingType, ProductDto, ProductQuery, UserRole, VendorStatus } from '@hb/shared';
+import {
+  ListingType,
+  PagedResponse,
+  ProductDto,
+  ProductQuery,
+  ProductSort,
+  UserRole,
+  VendorStatus,
+} from '@hb/shared';
 import { Product } from './entities/product.entity';
 import { ProductImage } from './entities/product-image.entity';
 import { ProductCreateDto } from './dto/product-create.dto';
@@ -20,6 +28,18 @@ import { Vendor } from '../vendors/entities/vendor.entity';
 import { Category } from '../categories/entities/category.entity';
 import { AuditAction, AuditService } from '../audit/audit.service';
 import { ProductEvents } from '../common/events/domain-events';
+
+const DEFAULT_LIMIT = 24;
+const MAX_LIMIT = 100;
+const DEFAULT_PAGE = 1;
+
+/** Primary sort column + direction per ProductSort value. `product.id` tiebreaker is always appended. */
+const SORT_MAP: Record<ProductSort, { column: string; direction: 'ASC' | 'DESC' }> = {
+  newest: { column: 'product.createdAt', direction: 'DESC' },
+  price_asc: { column: 'product.price', direction: 'ASC' },
+  price_desc: { column: 'product.price', direction: 'DESC' },
+  name: { column: 'product.name', direction: 'ASC' },
+};
 
 @Injectable()
 export class ProductsService {
@@ -170,7 +190,7 @@ export class ProductsService {
     return this.imageRepository.save(entities);
   }
 
-  async findAll(query?: ProductQuery): Promise<ProductDto[]> {
+  async findAll(query?: ProductQuery): Promise<PagedResponse<ProductDto>> {
     const qb = this.productsRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.images', 'images')
@@ -212,8 +232,17 @@ export class ProductsService {
       qb.andWhere('product.vendorId = :vendorId', { vendorId: query.vendorId });
     }
 
-    const products = await qb.getMany();
-    return products.map(ProductToResponseDto);
+    const limit = Math.min(Math.max(query?.limit ?? DEFAULT_LIMIT, 1), MAX_LIMIT);
+    const page = Math.max(query?.page ?? DEFAULT_PAGE, 1);
+    const skip = (page - 1) * limit;
+
+    const { column, direction } = SORT_MAP[query?.sort ?? 'newest'];
+    qb.orderBy(column, direction).addOrderBy('product.id', direction);
+
+    qb.skip(skip).take(limit);
+
+    const [products, total] = await qb.getManyAndCount();
+    return { items: products.map(ProductToResponseDto), total, page, limit };
   }
 
   async findOne(id: string): Promise<ProductDto> {

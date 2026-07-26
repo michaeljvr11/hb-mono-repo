@@ -16,6 +16,9 @@ import { RadialNav } from '../../../shared/components/radial-nav/radial-nav';
 type VendorState = 'loading' | 'loaded' | 'not-found' | 'error';
 type ProductsState = 'loading' | 'loaded' | 'empty' | 'error';
 
+/** Server-side max page size — used to avoid truncating a vendor's storefront listings. */
+const PRODUCT_LIST_MAX = 100;
+
 /**
  * Public vendor profile / storefront page (`/vendors/:id`). Fetches the
  * vendor by the `:id` route param (works during SSR — plain HttpClient
@@ -102,10 +105,10 @@ export class PublicVendorProfile {
 
   private loadProducts(vendorId: string): void {
     this.productsState.set('loading');
-    this.productsService.list({ vendorId }).subscribe({
-      next: (list) => {
-        this.products.set(list);
-        this.productsState.set(list.length ? 'loaded' : 'empty');
+    this.productsService.list({ vendorId, limit: PRODUCT_LIST_MAX }).subscribe({
+      next: (res) => {
+        this.products.set(res.items);
+        this.productsState.set(res.items.length ? 'loaded' : 'empty');
       },
       error: () => {
         this.products.set([]);

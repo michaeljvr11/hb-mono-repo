@@ -135,9 +135,9 @@ export class ProductDetail {
       return;
     }
     this.productsService.list({ categoryId }).subscribe({
-      next: (list) => {
+      next: (res) => {
         this.relatedProducts.set(
-          list.filter((p) => p.id !== product.id).slice(0, RELATED_LIMIT),
+          res.items.filter((p) => p.id !== product.id).slice(0, RELATED_LIMIT),
         );
       },
       error: () => this.relatedProducts.set([]),

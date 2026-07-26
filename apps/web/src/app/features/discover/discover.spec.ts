@@ -117,7 +117,9 @@ function makeStubs(): {
 } {
   return {
     productsStub: {
-      list: vi.fn(() => of([PLATFORM_LISTING, VENDOR_LISTING])),
+      list: vi.fn(() =>
+        of({ items: [PLATFORM_LISTING, VENDOR_LISTING], total: 2, page: 1, limit: 24 }),
+      ),
       getById: vi.fn(),
     },
     categoriesStub: {
@@ -209,11 +211,13 @@ describe('Discover', () => {
     expect(component).toBeTruthy();
   });
 
-  it('fetches products on init with no filters', () => {
+  it('fetches products on init with no filters, page 1 and the newest sort', () => {
     expect(productsStub.list).toHaveBeenCalledWith({
       q: undefined,
       categoryId: undefined,
       vendorId: undefined,
+      page: 1,
+      sort: 'newest',
     });
   });
 
@@ -226,6 +230,8 @@ describe('Discover', () => {
       q: 'honey',
       categoryId: undefined,
       vendorId: undefined,
+      page: 1,
+      sort: 'newest',
     });
   });
 
@@ -238,6 +244,8 @@ describe('Discover', () => {
       q: undefined,
       categoryId: 'cat-1',
       vendorId: undefined,
+      page: 1,
+      sort: 'newest',
     });
   });
 
@@ -250,14 +258,39 @@ describe('Discover', () => {
       q: undefined,
       categoryId: undefined,
       vendorId: 'v1',
+      page: 1,
+      sort: 'newest',
     });
   });
 
-  it('onCategorySelect navigates with the categoryId merged into query params', () => {
+  it('re-fetches with the parsed page and sort when both query params change', async () => {
+    await router.navigate([], { queryParams: { page: '2', sort: 'price_asc' } });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(productsStub.list).toHaveBeenCalledWith({
+      q: undefined,
+      categoryId: undefined,
+      vendorId: undefined,
+      page: 2,
+      sort: 'price_asc',
+    });
+  });
+
+  it('falls back to page 1 and sort "newest" for invalid query param values', async () => {
+    await router.navigate([], { queryParams: { page: 'nope', sort: 'bogus' } });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.page()).toBe(1);
+    expect(component.sort()).toBe('newest');
+  });
+
+  it('onCategorySelect navigates with the categoryId merged into query params and resets page', () => {
     const navigateSpy = vi.spyOn(router, 'navigate');
     component.onCategorySelect('cat-9');
     expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
-      queryParams: { categoryId: 'cat-9' },
+      queryParams: { categoryId: 'cat-9', page: null },
       queryParamsHandling: 'merge',
     }));
   });
@@ -272,11 +305,11 @@ describe('Discover', () => {
     expect(el.textContent).toContain('Leko Organics');
   });
 
-  it('dismissVendorFilter clears the vendorId param', () => {
+  it('dismissVendorFilter clears the vendorId param and resets page', () => {
     const navigateSpy = vi.spyOn(router, 'navigate');
     component.dismissVendorFilter();
     expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
-      queryParams: { vendorId: null },
+      queryParams: { vendorId: null, page: null },
       queryParamsHandling: 'merge',
     }));
   });
@@ -326,7 +359,7 @@ describe('Discover', () => {
   });
 
   it('shows an empty state with a clear-all action when no products match', async () => {
-    productsStub.list.mockReturnValue(of([]));
+    productsStub.list.mockReturnValue(of({ items: [], total: 0, page: 1, limit: 24 }));
     await router.navigate([], { queryParams: { q: 'nonexistent' } });
     fixture.detectChanges();
     await fixture.whenStable();
@@ -369,11 +402,11 @@ describe('Discover', () => {
       expect(navigateSpy).toHaveBeenCalledWith(['/vendors', 'sv1']);
     });
 
-    it('sets categoryId and clears q on a Categories suggestion selection', () => {
+    it('sets categoryId, clears q and resets page on a Categories suggestion selection', () => {
       const navigateSpy = vi.spyOn(router, 'navigate');
       component.onSuggestionSelected({ group: 'Categories', item: { id: 'sc1', label: 'Agriculture' } });
       expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
-        queryParams: { categoryId: 'sc1', q: null },
+        queryParams: { categoryId: 'sc1', q: null, page: null },
         queryParamsHandling: 'merge',
       }));
     });
@@ -386,21 +419,158 @@ describe('Discover', () => {
     });
   });
 
-  it('onSearchSubmit sets the q param', () => {
+  it('onSearchSubmit sets the q param and resets page', () => {
     const navigateSpy = vi.spyOn(router, 'navigate');
     component.onSearchSubmit('honey');
     expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
-      queryParams: { q: 'honey' },
+      queryParams: { q: 'honey', page: null },
       queryParamsHandling: 'merge',
     }));
   });
 
-  it('onSearchCleared drops the q param', () => {
+  it('onSearchCleared drops the q param and resets page', () => {
     const navigateSpy = vi.spyOn(router, 'navigate');
     component.onSearchCleared();
     expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
-      queryParams: { q: null },
+      queryParams: { q: null, page: null },
       queryParamsHandling: 'merge',
     }));
+  });
+
+  // ── Sort ─────────────────────────────────────────────────────────────────
+
+  it('onSortChange navigates with the new sort and resets page to 1', () => {
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    component.onSortChange('price_asc');
+    expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
+      queryParams: { sort: 'price_asc', page: null },
+      queryParamsHandling: 'merge',
+    }));
+  });
+
+  it('the sort select reflects the current sort() and changing it navigates', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const select = el.querySelector('#discover-sort') as HTMLSelectElement;
+    expect(select.value).toBe('newest');
+
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    select.value = 'name';
+    select.dispatchEvent(new Event('change'));
+
+    expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
+      queryParams: { sort: 'name', page: null },
+      queryParamsHandling: 'merge',
+    }));
+  });
+
+  // ── Pager ────────────────────────────────────────────────────────────────
+
+  describe('pagination', () => {
+    it('computes totalPages from total and the returned limit', async () => {
+      productsStub.list.mockReturnValue(
+        of({ items: [PLATFORM_LISTING, VENDOR_LISTING], total: 50, page: 2, limit: 24 }),
+      );
+      // Navigate to a page other than the default (1) so the `page` computed
+      // signal's value actually changes and the fetch effect re-runs.
+      await router.navigate([], { queryParams: { page: '2' } });
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(component.totalPages()).toBe(3);
+    });
+
+    it('Prev is disabled on page 1', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      const prevBtn = el.querySelector('.discover__pager-btn--prev') as HTMLButtonElement;
+      expect(prevBtn.disabled).toBe(true);
+    });
+
+    it('Next is disabled on the last page', async () => {
+      productsStub.list.mockReturnValue(
+        of({ items: [PLATFORM_LISTING], total: 2, page: 1, limit: 24 }),
+      );
+      await router.navigate([], { queryParams: { sort: 'name' } });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      const nextBtn = el.querySelector('.discover__pager-btn--next') as HTMLButtonElement;
+      expect(nextBtn.disabled).toBe(true);
+    });
+
+    it('Next is enabled and navigates to the next page when more pages remain', async () => {
+      productsStub.list.mockReturnValue(
+        of({ items: [PLATFORM_LISTING, VENDOR_LISTING], total: 50, page: 1, limit: 24 }),
+      );
+      // Force a re-fetch via the sort param (page stays at its default of 1 —
+      // a `page` navigation to '1' wouldn't change the computed signal's
+      // value and so wouldn't re-trigger the fetch effect).
+      await router.navigate([], { queryParams: { sort: 'name' } });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const navigateSpy = vi.spyOn(router, 'navigate');
+      const el: HTMLElement = fixture.nativeElement;
+      const nextBtn = el.querySelector('.discover__pager-btn--next') as HTMLButtonElement;
+      expect(nextBtn.disabled).toBe(false);
+
+      nextBtn.click();
+      expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
+        queryParams: { page: 2 },
+        queryParamsHandling: 'merge',
+      }));
+    });
+
+    it('Prev navigates to the previous page when not on page 1', async () => {
+      productsStub.list.mockReturnValue(
+        of({ items: [PLATFORM_LISTING, VENDOR_LISTING], total: 50, page: 2, limit: 24 }),
+      );
+      await router.navigate([], { queryParams: { page: '2' } });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const navigateSpy = vi.spyOn(router, 'navigate');
+      const el: HTMLElement = fixture.nativeElement;
+      const prevBtn = el.querySelector('.discover__pager-btn--prev') as HTMLButtonElement;
+      expect(prevBtn.disabled).toBe(false);
+
+      prevBtn.click();
+      expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
+        queryParams: { page: 1 },
+        queryParamsHandling: 'merge',
+      }));
+    });
+
+    it('shows a "Page X of Y" indicator', async () => {
+      productsStub.list.mockReturnValue(
+        of({ items: [PLATFORM_LISTING, VENDOR_LISTING], total: 50, page: 2, limit: 24 }),
+      );
+      await router.navigate([], { queryParams: { page: '2' } });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('.discover__pager-status')?.textContent).toContain('Page 2 of 3');
+    });
+
+    it('self-heals an out-of-range ?page= by redirecting to the last valid page', async () => {
+      // total 50 / limit 24 → last page is 3; requesting page 99 must redirect.
+      productsStub.list.mockReturnValue(
+        of({ items: [], total: 50, page: 99, limit: 24 }),
+      );
+      const navigateSpy = vi.spyOn(router, 'navigate');
+      await router.navigate([], { queryParams: { page: '99' } });
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(navigateSpy).toHaveBeenCalledWith([], expect.objectContaining({
+        queryParams: { page: 3 },
+        queryParamsHandling: 'merge',
+      }));
+    });
   });
 });

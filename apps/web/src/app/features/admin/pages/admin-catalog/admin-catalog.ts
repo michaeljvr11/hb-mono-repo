@@ -14,6 +14,9 @@ import { CategoriesService } from '../../../../core/api/categories.service';
 
 type CatalogView = 'products' | 'categories';
 
+/** Server-side max page size — used to avoid truncating the admin catalog list. */
+const PRODUCT_LIST_MAX = 100;
+
 @Component({
   selector: 'app-admin-catalog',
   standalone: true,
@@ -104,9 +107,9 @@ export class AdminCatalog implements OnInit {
   private loadProducts(): void {
     this.productsLoading.set(true);
     this.productsError.set(null);
-    this.productsService.list().subscribe({
-      next: (products) => {
-        this.allProducts.set(products);
+    this.productsService.list({ limit: PRODUCT_LIST_MAX }).subscribe({
+      next: (res) => {
+        this.allProducts.set(res.items);
         this.productsLoading.set(false);
       },
       error: () => {

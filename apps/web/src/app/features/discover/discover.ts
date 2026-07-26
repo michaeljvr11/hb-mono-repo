@@ -2,7 +2,15 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { AnalyticsEventType, CategoryDto, ProductDto, SearchSuggestions, VendorDto } from '@hb/shared';
+import {
+  AnalyticsEventType,
+  CategoryDto,
+  ProductDto,
+  ProductQuery,
+  ProductSort,
+  SearchSuggestions,
+  VendorDto,
+} from '@hb/shared';
 import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
@@ -21,13 +29,25 @@ import { RadialNav } from '../../shared/components/radial-nav/radial-nav';
 
 type LoadState = 'loading' | 'loaded' | 'empty' | 'error';
 
+const ALLOWED_SORTS: ProductSort[] = ['newest', 'price_asc', 'price_desc', 'name'];
+
+const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
+  { value: 'newest', label: 'Newest' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
+  { value: 'name', label: 'Name: A–Z' },
+];
+
 /**
- * Product discovery / browse page. All filter state lives in the URL query
- * params (q / categoryId / vendorId) so the page is SSR-safe and shareable —
- * user interactions navigate (merging query params via `Router.navigate`),
- * and a single reactive source (the `paramMap` signal from `toSignal`) drives
- * the q/categoryId/vendorId signals plus an `effect` that re-fetches the
- * product list + vendor-chip name on every change.
+ * Product discovery / browse page. All filter/sort/page state lives in the
+ * URL query params (q / categoryId / vendorId / sort / page) so the page is
+ * SSR-safe and shareable — user interactions navigate (merging query params
+ * via `Router.navigate`), and a single reactive source (the `paramMap`
+ * signal from `toSignal`) drives the q/categoryId/vendorId/sort/page signals
+ * plus an `effect` that re-fetches the product list + vendor-chip name on
+ * every change. Pages replace rather than accumulate — `?page=2` always
+ * SSR-renders exactly that slice. Changing a filter or the sort resets
+ * `page` back to 1 so users never land on an out-of-range page.
  */
 @Component({
   selector: 'app-discover',
@@ -60,9 +80,29 @@ export class Discover {
   readonly categoryId = computed(() => this.paramMap()?.get('categoryId') ?? null);
   readonly vendorId = computed(() => this.paramMap()?.get('vendorId') ?? null);
 
+  /** 1-based page number from `?page=`; falls back to 1 for missing/invalid values. */
+  readonly page = computed(() => {
+    const raw = this.paramMap()?.get('page');
+    const parsed = raw ? parseInt(raw, 10) : NaN;
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
+  });
+
+  /** Sort order from `?sort=`; falls back to 'newest' for missing/invalid values. */
+  readonly sort = computed<ProductSort>(() => {
+    const raw = this.paramMap()?.get('sort');
+    return (ALLOWED_SORTS as string[]).includes(raw ?? '') ? (raw as ProductSort) : 'newest';
+  });
+
+  readonly sortOptions = SORT_OPTIONS;
+
   // ── Products (server fetch reacts to any param change) ─────────────────
   readonly products = signal<ProductDto[]>([]);
   readonly productsState = signal<LoadState>('loading');
+  readonly total = signal(0);
+  readonly pageSize = signal(24);
+
+  readonly currentPage = computed(() => this.page());
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
 
   // ── Categories (for the chip row) ───────────────────────────────────────
   readonly categories = signal<CategoryDto[]>([]);
@@ -95,13 +135,17 @@ export class Discover {
     });
 
     // Single reactive source: the `paramMap` signal (backed by `queryParamMap`
-    // via `toSignal`) drives both the q/categoryId/vendorId signals above and
-    // this fetch effect — re-runs on every URL query param change.
+    // via `toSignal`) drives the q/categoryId/vendorId/sort/page signals above
+    // and this fetch effect — re-runs on every URL query param change. Pages
+    // replace rather than accumulate (no `limit` sent — the server default and
+    // its returned `limit` drive pager math via `pageSize`).
     effect(() => {
-      const query = {
+      const query: ProductQuery = {
         q: this.q() || undefined,
         categoryId: this.categoryId() ?? undefined,
         vendorId: this.vendorId() ?? undefined,
+        page: this.page(),
+        sort: this.sort(),
       };
 
       this.fetchProducts(query);
@@ -111,15 +155,26 @@ export class Discover {
 
   // ── Data loading ─────────────────────────────────────────────────────────
 
-  private fetchProducts(query: { q?: string; categoryId?: string; vendorId?: string }): void {
+  private fetchProducts(query: ProductQuery): void {
     this.productsState.set('loading');
     this.productsService.list(query).subscribe({
-      next: (list) => {
-        this.products.set(list);
-        this.productsState.set(list.length ? 'loaded' : 'empty');
+      next: (res) => {
+        // Self-heal an out-of-range ?page= (e.g. a shared/stale deep link past
+        // the last page): redirect to the last valid page rather than stranding
+        // the user on an empty grid with no pager to navigate back.
+        const lastPage = Math.max(1, Math.ceil(res.total / res.limit));
+        if (res.total > 0 && this.page() > lastPage) {
+          this.navigateMerge({ page: lastPage === 1 ? null : lastPage });
+          return;
+        }
+        this.products.set(res.items);
+        this.total.set(res.total);
+        this.pageSize.set(res.limit);
+        this.productsState.set(res.items.length ? 'loaded' : 'empty');
       },
       error: () => {
         this.products.set([]);
+        this.total.set(0);
         this.productsState.set('error');
       },
     });
@@ -139,7 +194,7 @@ export class Discover {
   // ── User actions → URL navigation ─────────────────────────────────────────
 
   onCategorySelect(categoryId: string | null): void {
-    this.navigateMerge({ categoryId });
+    this.navigateMerge({ categoryId, page: null });
   }
 
   onSmeToggle(checked: boolean): void {
@@ -147,7 +202,21 @@ export class Discover {
   }
 
   dismissVendorFilter(): void {
-    this.navigateMerge({ vendorId: null });
+    this.navigateMerge({ vendorId: null, page: null });
+  }
+
+  onSortChange(sort: ProductSort): void {
+    this.navigateMerge({ sort, page: null });
+  }
+
+  onPrevPage(): void {
+    if (this.currentPage() <= 1) return;
+    this.navigateMerge({ page: this.currentPage() - 1 });
+  }
+
+  onNextPage(): void {
+    if (this.currentPage() >= this.totalPages()) return;
+    this.navigateMerge({ page: this.currentPage() + 1 });
   }
 
   clearAllFilters(): void {
@@ -159,11 +228,11 @@ export class Discover {
 
   onSearchSubmit(term: string): void {
     const q = term.trim();
-    this.navigateMerge({ q: q || null });
+    this.navigateMerge({ q: q || null, page: null });
   }
 
   onSearchCleared(): void {
-    this.navigateMerge({ q: null });
+    this.navigateMerge({ q: null, page: null });
   }
 
   onSearchTermChange(term: string): void {
@@ -195,7 +264,7 @@ export class Discover {
         void this.router.navigate(['/vendors', event.item.id]);
         break;
       case 'Categories':
-        this.navigateMerge({ categoryId: event.item.id, q: null });
+        this.navigateMerge({ categoryId: event.item.id, q: null, page: null });
         break;
     }
   }
@@ -282,7 +351,7 @@ export class Discover {
     return groups;
   }
 
-  private navigateMerge(patch: Record<string, string | null>): void {
+  private navigateMerge(patch: Record<string, string | number | null>): void {
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: patch,
