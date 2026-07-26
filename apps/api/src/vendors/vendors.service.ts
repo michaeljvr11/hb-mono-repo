@@ -3,10 +3,11 @@ import {
   NotFoundException,
   ForbiddenException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CurrencyCode, OrderStatus, VendorStatus, UserRole } from '@hb/shared';
 import { Vendor } from './entities/vendor.entity';
 import { Product } from '../products/entities/product.entity';
@@ -16,6 +17,7 @@ import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { AdminCreateVendorDto } from './dto/admin-create-vendor.dto';
 import { VendorResponseDto } from './dto/vendor-response.dto';
 import { AdminVendorResponseDto } from './dto/admin-vendor-response.dto';
+import { VendorSelfResponseDto } from './dto/vendor-self-response.dto';
 import { VendorDashboardResponseDto } from './dto/vendor-dashboard-response.dto';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
@@ -43,6 +45,10 @@ export class VendorsService {
       tradingName: vendor.tradingName,
       status: vendor.status,
       countryCode: vendor.countryCode,
+      logoUrl: vendor.logoUrl,
+      bannerUrl: vendor.bannerUrl,
+      slogan: vendor.slogan,
+      profileSections: vendor.profileSections,
     };
   }
 
@@ -53,12 +59,27 @@ export class VendorsService {
       tradingName: vendor.tradingName,
       status: vendor.status,
       countryCode: vendor.countryCode,
+      logoUrl: vendor.logoUrl,
+      bannerUrl: vendor.bannerUrl,
+      slogan: vendor.slogan,
+      profileSections: vendor.profileSections,
       registrationNumber: vendor.registrationNumber,
       website: vendor.website,
       description: vendor.description,
       verificationDocumentUrl: vendor.verificationDocumentUrl,
       // createdAt is a CreateDateColumn — always set on a persisted vendor.
       appliedAt: vendor.createdAt.toISOString(),
+    };
+  }
+
+  // Owner self-view — widens the public shape with the vendor's own editable
+  // fields. Only ever called from the owner-gated GET /vendors/me route (and
+  // from update(), so an owner PATCHing their own profile gets the same shape).
+  private toSelfResponseDto(vendor: Vendor): VendorSelfResponseDto {
+    return {
+      ...this.toResponseDto(vendor),
+      website: vendor.website,
+      description: vendor.description,
     };
   }
 
@@ -169,16 +190,63 @@ export class VendorsService {
     return this.toResponseDto(vendor);
   }
 
-  async findByUserId(userId: string): Promise<VendorResponseDto | null> {
+  // Only called from the owner-gated GET /vendors/me route — returns the widened
+  // self-view (adds website/description on top of the public branding fields).
+  async findByUserId(userId: string): Promise<VendorSelfResponseDto | null> {
     const vendor = await this.vendorRepository.findOne({ where: { userId } });
-    return vendor ? this.toResponseDto(vendor) : null;
+    return vendor ? this.toSelfResponseDto(vendor) : null;
+  }
+
+  // Structural + ownership validation for profileSections, run before persisting:
+  //  - section ids must be unique within the payload
+  //  - productIds within a single section must not repeat
+  //  - every productId anywhere in the payload (not just on 'curated' sections —
+  //    the DTO's own IsCuratedProductIds/IsCategoryId validators already make it
+  //    structurally impossible for a non-curated section to carry productIds, but
+  //    this loop deliberately doesn't re-derive that from `type` so it keeps
+  //    working even if that invariant ever changes) must belong to the vendor
+  //    row being edited (not the acting user's own vendor, in case an admin is
+  //    editing someone else's profile). Ownership is checked with a single
+  //    batched query, not N+1.
+  private async validateProfileSections(
+    vendorId: string,
+    profileSections: UpdateVendorDto['profileSections'],
+  ): Promise<void> {
+    if (!profileSections?.length) return;
+
+    const sectionIds = profileSections.map((section) => section.id);
+    if (new Set(sectionIds).size !== sectionIds.length) {
+      throw new BadRequestException('profileSections must not contain duplicate section ids');
+    }
+
+    const allProductIds: string[] = [];
+    for (const section of profileSections) {
+      const ids = section.productIds ?? [];
+      if (!ids.length) continue;
+      if (new Set(ids).size !== ids.length) {
+        throw new BadRequestException(
+          `Section '${section.id}' must not contain duplicate productIds`,
+        );
+      }
+      allProductIds.push(...ids);
+    }
+
+    const productIds = [...new Set(allProductIds)];
+    if (productIds.length === 0) return;
+
+    const owned = await this.productRepository.find({
+      where: { id: In(productIds), vendorId },
+    });
+    if (owned.length !== productIds.length) {
+      throw new BadRequestException('One or more productIds do not belong to this vendor');
+    }
   }
 
   async update(
     id: string,
     updateDto: UpdateVendorDto,
     currentUser: User,
-  ): Promise<VendorResponseDto> {
+  ): Promise<VendorSelfResponseDto> {
     const vendor = await this.vendorRepository.findOne({ where: { id } });
     if (!vendor) throw new NotFoundException('Vendor not found');
 
@@ -188,9 +256,13 @@ export class VendorsService {
       throw new ForbiddenException('You can only update your own vendor profile');
     }
 
+    await this.validateProfileSections(vendor.id, updateDto.profileSections);
+
     Object.assign(vendor, updateDto);
     const updated = await this.vendorRepository.save(vendor);
-    return this.toResponseDto(updated);
+    // Return the self-view (not the lean public shape) — an owner PATCHing
+    // website/description should see those fields echoed back, matching GET /vendors/me.
+    return this.toSelfResponseDto(updated);
   }
 
   async remove(id: string): Promise<void> {

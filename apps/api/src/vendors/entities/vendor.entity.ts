@@ -8,7 +8,7 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { CountryCode, VendorStatus } from '@hb/shared';
+import { CountryCode, VendorProfileSection, VendorStatus } from '@hb/shared';
 import { Product } from '../../products/entities/product.entity';
 import { User } from '../../users/entities/user.entity';
 
@@ -51,6 +51,18 @@ export class Vendor {
 
   @Column({ nullable: true })
   verificationDocumentUrl?: string; // proof of business
+
+  @Column({ nullable: true })
+  logoUrl?: string;
+
+  @Column({ nullable: true })
+  bannerUrl?: string;
+
+  @Column({ nullable: true })
+  slogan?: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  profileSections?: VendorProfileSection[];
 
   // The User account that owns/manages this vendor
   @OneToOne(() => User)

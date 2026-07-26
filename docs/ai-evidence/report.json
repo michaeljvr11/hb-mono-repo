@@ -1,46 +1,46 @@
 {
-  "generatedAt": "2026-07-20T20:30:03.035Z",
+  "generatedAt": "2026-07-26T21:07:45.992Z",
   "git": {
-    "totalCommits": 142,
-    "aiCommits": 132,
+    "totalCommits": 149,
+    "aiCommits": 138,
     "aiPct": 93,
-    "appCommits": 96,
-    "ins": 66058,
-    "del": 5202,
-    "net": 60856,
-    "aiIns": 52626,
-    "aiDel": 5064,
-    "filesTouched": 566,
+    "appCommits": 101,
+    "ins": 67825,
+    "del": 5643,
+    "net": 62182,
+    "aiIns": 54393,
+    "aiDel": 5505,
+    "filesTouched": 572,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 57,
-        "ins": 32785,
-        "del": 1462
+        "commits": 59,
+        "ins": 33292,
+        "del": 1530
       },
       {
         "name": "API (NestJS)",
-        "commits": 54,
-        "ins": 16713,
-        "del": 748
+        "commits": 57,
+        "ins": 17783,
+        "del": 841
       },
       {
         "name": "Docs",
-        "commits": 45,
-        "ins": 12907,
-        "del": 2894
+        "commits": 46,
+        "ins": 13046,
+        "del": 3170
       },
       {
         "name": "AI Factory config",
-        "commits": 43,
-        "ins": 1682,
+        "commits": 44,
+        "ins": 1683,
         "del": 68
       },
       {
         "name": "Shared contracts",
-        "commits": 20,
-        "ins": 989,
-        "del": 6
+        "commits": 23,
+        "ins": 1039,
+        "del": 10
       },
       {
         "name": "Root & config",
@@ -56,8 +56,48 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-07-20",
+    "lastDate": "2026-07-26",
     "recent": [
+      {
+        "hash": "81503ea",
+        "subject": "fix(api): close ownership-guard bypass in vendor profile sections (VPC-1 review)",
+        "ai": true
+      },
+      {
+        "hash": "1e5b287",
+        "subject": "feat(api): vendor branding + profile-sections contract, schema, write (VPC-1)",
+        "ai": true
+      },
+      {
+        "hash": "5a9e701",
+        "subject": "fix(web): self-heal out-of-range discovery page (rmpsJVLi review)",
+        "ai": true
+      },
+      {
+        "hash": "901eccb",
+        "subject": "feat(web): consume paged products envelope + discovery pager/sort (rmpsJVLi)",
+        "ai": true
+      },
+      {
+        "hash": "d9671ed",
+        "subject": "feat(api): paginate + sort GET /products with envelope response (rmpsJVLi)",
+        "ai": true
+      },
+      {
+        "hash": "a626c91",
+        "subject": "index on main: a5375bb Merge pull request #35 from michaeljvr11/feat/UG5UFyxy-vendor-profile-page",
+        "ai": false
+      },
+      {
+        "hash": "d8edcff",
+        "subject": "untracked files on main: a5375bb Merge pull request #35 from michaeljvr11/feat/UG5UFyxy-vendor-profile-page",
+        "ai": false
+      },
+      {
+        "hash": "1c5bc03",
+        "subject": "chore(evidence): recompile AI evidence report (UG5UFyxy)",
+        "ai": true
+      },
       {
         "hash": "cd617c6",
         "subject": "refactor(web): address review NITs on vendor profile page (UG5UFyxy)",
@@ -76,46 +116,6 @@
       {
         "hash": "3194c67",
         "subject": "chore(evidence): recompile AI evidence report after the analytics batch",
-        "ai": true
-      },
-      {
-        "hash": "e671be7",
-        "subject": "fix: address review WARNs — token-derived focus rings, metadata size cap",
-        "ai": true
-      },
-      {
-        "hash": "c2b8eb6",
-        "subject": "test(api): pin analytics money + bucketing edges for the batch",
-        "ai": true
-      },
-      {
-        "hash": "a111384",
-        "subject": "feat(web): vendor dashboard analytics view (ezkaNtbZ)",
-        "ai": true
-      },
-      {
-        "hash": "61c6e01",
-        "subject": "feat(web): admin dashboard analytics widgets (UC508IB6)",
-        "ai": true
-      },
-      {
-        "hash": "bcb80f0",
-        "subject": "feat(api): vendor-scoped analytics endpoint with strict tenant isolation (ezkaNtbZ)",
-        "ai": true
-      },
-      {
-        "hash": "becdc0b",
-        "subject": "feat(api): admin analytics aggregation endpoint (UC508IB6)",
-        "ai": true
-      },
-      {
-        "hash": "96c91f3",
-        "subject": "feat(web): consent-gated GA4 integration, inert until a measurement id lands (p0kVZMii)",
-        "ai": true
-      },
-      {
-        "hash": "08cd8f5",
-        "subject": "chore(evidence): recompile AI evidence report for the customer-profile batch",
         "ai": true
       }
     ]
@@ -172,6 +172,11 @@
       "slug": "admin-portal-shell"
     },
     {
+      "branch": "feat/ZpvX9XIv-vendor-branding-sections-contract",
+      "cardId": "ZpvX9XIv",
+      "slug": "vendor-branding-sections-contract"
+    },
+    {
       "branch": "feat/ai-evidence-system",
       "cardId": "ai",
       "slug": "evidence-system"
@@ -215,6 +220,11 @@
       "branch": "feat/oWqIV57s-vendor-dashboard",
       "cardId": "oWqIV57s",
       "slug": "vendor-dashboard"
+    },
+    {
+      "branch": "feat/rmpsJVLi-product-pagination-sort",
+      "cardId": "rmpsJVLi",
+      "slug": "product-pagination-sort"
     },
     {
       "branch": "feat/sKd1xhQl-vendor-orders-fulfilment",
@@ -268,8 +278,8 @@
     }
   ],
   "tests": {
-    "total": 87,
-    "api": 33,
+    "total": 88,
+    "api": 34,
     "web": 54
   },
   "design": {
@@ -288,25 +298,25 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 17,
+    "prodBlocks": 18,
     "blockReasons": {
-      "push names a protected branch": 13,
+      "push names a protected branch": 14,
       "force push": 1,
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 19,
+    "gatePass": 22,
     "gateFail": 1,
-    "edits": 327,
-    "editsUnfixable": 116,
+    "edits": 373,
+    "editsUnfixable": 140,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-20T20:29:42.413Z",
+    "lastTs": "2026-07-26T21:07:19.673Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 7,
+          "invocations": 9,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -315,7 +325,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 5,
+          "invocations": 8,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -324,7 +334,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 7,
+          "invocations": 8,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -342,7 +352,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 3,
+          "invocations": 6,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -357,64 +367,18 @@
           "cacheReadTokens": 0,
           "cacheCreationTokens": 0,
           "totalTokens": 0
+        },
+        {
+          "agentType": "docs-writer",
+          "invocations": 2,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheCreationTokens": 0,
+          "totalTokens": 0
         }
       ],
       "recent": [
-        {
-          "ts": "2026-07-17T13:18:45.646Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T13:19:17.284Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T13:25:33.051Z",
-          "agentType": "test-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T13:32:31.849Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:18:30.988Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:20:05.708Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:20:09.998Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:21:40.118Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:26:22.743Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:27:57.327Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-17T12:28:57.627Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-07-17T12:32:19.968Z",
           "agentType": "frontend-engineer",
@@ -459,6 +423,61 @@
           "ts": "2026-07-20T20:26:21.432Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-20T21:12:17.781Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-20T21:21:53.673Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-20T21:24:48.902Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-20T21:29:43.180Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-20T21:36:27.508Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T20:45:08.689Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T20:49:57.326Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T20:51:01.408Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T20:57:45.103Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T21:04:40.003Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T21:06:31.413Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
         }
       ]
     }
@@ -467,9 +486,23 @@
   "extractionCandidates": null,
   "prs": [
     {
+      "headRefName": "feat/ZpvX9XIv-vendor-branding-sections-contract",
+      "number": 37,
+      "state": "OPEN",
+      "title": "feat(api): vendor branding + profile-sections contract, schema, write (VPC-1)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/37"
+    },
+    {
+      "headRefName": "feat/rmpsJVLi-product-pagination-sort",
+      "number": 36,
+      "state": "MERGED",
+      "title": "feat: product listing pagination + sort (API + web) [rmpsJVLi]",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/36"
+    },
+    {
       "headRefName": "feat/UG5UFyxy-vendor-profile-page",
       "number": 35,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(web): public vendor profile page at /vendors/:id (UG5UFyxy)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/35"
     },
@@ -719,19 +752,19 @@
     },
     {
       "name": "To Do",
-      "cards": 5
+      "cards": 9
     },
     {
       "name": "In Progress",
-      "cards": 1
+      "cards": 0
     },
     {
       "name": "In Review",
-      "cards": 10
+      "cards": 1
     },
     {
       "name": "Done",
-      "cards": 36
+      "cards": 48
     },
     {
       "name": "Fable Documentation",
