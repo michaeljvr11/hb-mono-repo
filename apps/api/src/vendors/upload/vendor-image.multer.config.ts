@@ -1,21 +1,35 @@
 import { BadRequestException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+
+// Extension is derived from a fixed mimetype allow-list, never from the client-supplied
+// `originalname` — `uploads/` is served statically (main.ts), so trusting an attacker-
+// controlled originalname extension (e.g. `x.html` sent with an allowed image mimetype)
+// would let a stored file be served back as text/html from the API origin.
+const MIME_EXTENSIONS: Record<string, string> = {
+  'image/jpg': '.jpg',
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+};
 
 /**
  * Disk-storage options for vendor logo/banner uploads.
- * Mirrors productImageMulterOptions exactly (see apps/api/src/products/upload/multer.config.ts) —
- * only the destination folder differs. Must be passed to FileInterceptor explicitly —
- * without it Multer falls back to memory storage and file.filename is undefined
- * (broken image URLs).
+ * Mirrors productImageMulterOptions (see apps/api/src/products/upload/multer.config.ts) —
+ * only the destination folder and extension derivation differ. Must be passed to
+ * FileInterceptor explicitly — without it Multer falls back to memory storage and
+ * file.filename is undefined (broken image URLs).
  */
 export const vendorImageMulterOptions: MulterOptions = {
   storage: diskStorage({
     destination: './uploads/vendors',
     filename: (req, file, cb) => {
-      cb(null, `${uuidv4()}${extname(file.originalname)}`);
+      const ext = MIME_EXTENSIONS[file.mimetype];
+      if (!ext) {
+        return cb(new BadRequestException('Only image files are allowed!'), '');
+      }
+      cb(null, `${uuidv4()}${ext}`);
     },
   }),
   limits: {

@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   Query,
-  HttpStatus,
-  ParseFilePipeBuilder,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -22,6 +20,7 @@ import { AdminCreateVendorDto } from './dto/admin-create-vendor.dto';
 import { UpdateVendorStatusDto } from './dto/update-vendor-status.dto';
 import { VendorAnalyticsQueryDto } from './dto/vendor-analytics-query.dto';
 import { vendorImageMulterOptions } from './upload/vendor-image.multer.config';
+import { vendorImageFilePipe } from './upload/vendor-image-file.pipe';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
@@ -91,23 +90,7 @@ export class VendorsController {
   @Post('me/logo')
   @Roles(UserRole.VENDOR)
   @UseInterceptors(FileInterceptor('file', vendorImageMulterOptions))
-  uploadLogo(
-    @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: /(jpg|jpeg|png|webp)$/,
-        })
-        .addMaxSizeValidator({
-          maxSize: 5 * 1024 * 1024, // 5MB
-        })
-        .build({
-          fileIsRequired: true,
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        }),
-    )
-    file: Express.Multer.File,
-    @GetUser() user: User,
-  ) {
+  uploadLogo(@UploadedFile(vendorImageFilePipe) file: Express.Multer.File, @GetUser() user: User) {
     return this.vendorsService.updateLogo(user.id, file);
   }
 
@@ -115,20 +98,7 @@ export class VendorsController {
   @Roles(UserRole.VENDOR)
   @UseInterceptors(FileInterceptor('file', vendorImageMulterOptions))
   uploadBanner(
-    @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: /(jpg|jpeg|png|webp)$/,
-        })
-        .addMaxSizeValidator({
-          maxSize: 5 * 1024 * 1024, // 5MB
-        })
-        .build({
-          fileIsRequired: true,
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        }),
-    )
-    file: Express.Multer.File,
+    @UploadedFile(vendorImageFilePipe) file: Express.Multer.File,
     @GetUser() user: User,
   ) {
     return this.vendorsService.updateBanner(user.id, file);
