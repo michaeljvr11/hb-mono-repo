@@ -14,6 +14,7 @@ import { SynonymsService } from './synonyms.service';
 import { VendorsService } from '../vendors/vendors.service';
 import { AuditService } from '../audit/audit.service';
 import { UsersService } from '../users/users.service';
+import { FileUrlService } from '../products/upload/file-url.service';
 import { Product } from '../products/entities/product.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
 import { Category } from '../categories/entities/category.entity';
@@ -169,6 +170,7 @@ describe('Search visibility (integration): query-time approved-vendor gate, live
         { provide: getRepositoryToken(OrderItem), useValue: orderItemRepo },
         { provide: AuditService, useValue: { log: jest.fn().mockResolvedValue(undefined) } },
         { provide: UsersService, useValue: { update: jest.fn() } },
+        { provide: FileUrlService, useValue: { getFileUrl: jest.fn() } },
       ],
     }).compile();
 

@@ -24,6 +24,7 @@ import { OrderItem } from '../orders/entities/order-item.entity';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
+import { FileUrlService } from '../products/upload/file-url.service';
 
 const mockVendor = (overrides: Partial<Vendor> = {}): Vendor =>
   ({
@@ -70,6 +71,7 @@ describe('VendorsService', () => {
   let usersService: { update: jest.Mock };
   let auditService: { log: jest.Mock; query: jest.Mock };
   let eventEmitter: { emit: jest.Mock };
+  let fileUrlService: { getFileUrl: jest.Mock };
 
   beforeEach(async () => {
     vendorRepo = {
@@ -90,6 +92,8 @@ describe('VendorsService', () => {
 
     eventEmitter = { emit: jest.fn() };
 
+    fileUrlService = { getFileUrl: jest.fn() };
+
     const module = await Test.createTestingModule({
       providers: [
         VendorsService,
@@ -99,6 +103,7 @@ describe('VendorsService', () => {
         { provide: UsersService, useValue: usersService },
         { provide: AuditService, useValue: auditService },
         { provide: EventEmitter2, useValue: eventEmitter },
+        { provide: FileUrlService, useValue: fileUrlService },
       ],
     }).compile();
 
@@ -680,6 +685,111 @@ describe('VendorsService', () => {
     it('throws NotFoundException when the vendor profile does not exist', async () => {
       vendorRepo.findOne.mockResolvedValue(null);
       await expect(service.getDashboard('no-such-user')).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('updateLogo / updateBanner (owner-scoped branding upload)', () => {
+    const file = { filename: 'abc123.png' } as Express.Multer.File;
+
+    it('sets logoUrl from the uploaded file and returns the full self-view DTO shape', async () => {
+      vendorRepo.findOne.mockResolvedValue(
+        mockVendor({
+          id: 'v1',
+          userId: 'u1',
+          bannerUrl: 'https://cdn.hb.com/banners/existing.png',
+          website: 'https://roots-and-shoots.example',
+          description: 'Handmade art from the Cape',
+        }),
+      );
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+      fileUrlService.getFileUrl.mockReturnValue('/uploads/vendors/abc123.png');
+
+      const result = await service.updateLogo('u1', file);
+
+      expect(vendorRepo.findOne).toHaveBeenCalledWith({ where: { userId: 'u1' } });
+      expect(fileUrlService.getFileUrl).toHaveBeenCalledWith('abc123.png', 'vendors');
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ logoUrl: '/uploads/vendors/abc123.png' }),
+      );
+      // The banner field must be left untouched by a logo upload.
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ bannerUrl: 'https://cdn.hb.com/banners/existing.png' }),
+      );
+      // Full self-view shape (matches GET /vendors/me), not just the touched field.
+      expect(result).toMatchObject({
+        id: 'v1',
+        logoUrl: '/uploads/vendors/abc123.png',
+        bannerUrl: 'https://cdn.hb.com/banners/existing.png',
+        website: 'https://roots-and-shoots.example',
+        description: 'Handmade art from the Cape',
+      });
+    });
+
+    it('sets bannerUrl from the uploaded file and leaves logoUrl untouched', async () => {
+      vendorRepo.findOne.mockResolvedValue(
+        mockVendor({
+          id: 'v1',
+          userId: 'u1',
+          logoUrl: 'https://cdn.hb.com/logos/existing.png',
+        }),
+      );
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+      fileUrlService.getFileUrl.mockReturnValue('/uploads/vendors/abc123.png');
+
+      const result = await service.updateBanner('u1', file);
+
+      expect(fileUrlService.getFileUrl).toHaveBeenCalledWith('abc123.png', 'vendors');
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ bannerUrl: '/uploads/vendors/abc123.png' }),
+      );
+      // The logo field must be left untouched by a banner upload.
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ logoUrl: 'https://cdn.hb.com/logos/existing.png' }),
+      );
+      expect(result.bannerUrl).toBe('/uploads/vendors/abc123.png');
+      expect(result.logoUrl).toBe('https://cdn.hb.com/logos/existing.png');
+    });
+
+    it('throws NotFoundException when the acting user has no vendor profile', async () => {
+      vendorRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.updateLogo('no-vendor-user', file)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(vendorRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException from updateBanner too when the acting user has no vendor profile', async () => {
+      vendorRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.updateBanner('no-vendor-user', file)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(vendorRepo.save).not.toHaveBeenCalled();
+    });
+
+    // Owner-scope: the lookup is keyed ONLY by the acting user's id (from the JWT via
+    // @GetUser()), never by any client-supplied vendor/user id. Prove this isn't just
+    // "404 on a missing row" by keying two distinct vendor profiles by two distinct
+    // userIds and confirming each upload only ever reaches its own owner's row.
+    it('scopes the lookup strictly to the requesting user — never touches another user’s vendor row', async () => {
+      const vendorA = mockVendor({ id: 'vA', userId: 'user-a', logoUrl: 'old-a.png' });
+      const vendorB = mockVendor({ id: 'vB', userId: 'user-b', logoUrl: 'old-b.png' });
+      vendorRepo.findOne.mockImplementation(({ where }: { where: { userId: string } }) =>
+        Promise.resolve([vendorA, vendorB].find((v) => v.userId === where.userId) ?? null),
+      );
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+      fileUrlService.getFileUrl.mockReturnValue('/uploads/vendors/new-for-a.png');
+
+      const result = await service.updateLogo('user-a', file);
+
+      // Only vendor A's row was saved, with vendor A's id — user-b's row is untouched.
+      expect(vendorRepo.save).toHaveBeenCalledTimes(1);
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'vA', userId: 'user-a' }),
+      );
+      expect(result.id).toBe('vA');
+      expect(vendorB.logoUrl).toBe('old-b.png');
     });
   });
 });

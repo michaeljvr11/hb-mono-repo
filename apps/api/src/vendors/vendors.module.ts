@@ -8,11 +8,12 @@ import { Product } from '../products/entities/product.entity';
 import { OrderItem } from '../orders/entities/order-item.entity';
 import { AnalyticsEvent } from '../analytics/entities/analytics-event.entity';
 import { UsersModule } from '../users/users.module';
+import { FileUrlService } from '../products/upload/file-url.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Vendor, Product, OrderItem, AnalyticsEvent]), UsersModule],
   controllers: [VendorsController],
-  providers: [VendorsService, VendorAnalyticsService],
+  providers: [VendorsService, VendorAnalyticsService, FileUrlService],
   exports: [VendorsService],
 })
 export class VendorsModule {}
