@@ -470,3 +470,6 @@
 {"ts":"2026-07-26T21:32:28.434Z","type":"edit_lint","file":"apps/api/src/vendors/upload/vendor-image.multer.config.spec.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-07-26T21:36:34.286Z","type":"agent_token_usage","agentType":"code-reviewer","agentId":"a0cecc28fcc6dc9d8","sessionId":"c1aa6d92-3de3-4f12-bda0-4a9f29cf0707","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
 {"ts":"2026-07-26T21:38:56.978Z","type":"agent_token_usage","agentType":"docs-writer","agentId":"aad03dff3e350aa02","sessionId":"c1aa6d92-3de3-4f12-bda0-4a9f29cf0707","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-07-26T21:40:43.133Z","type":"pr_gate","result":"fail","durationMs":9734}
+{"ts":"2026-07-26T21:44:00.470Z","type":"edit_lint","file":"apps/api/src/search/search-visibility.integration.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-07-26T21:44:10.820Z","type":"edit_lint","file":"apps/api/src/search/search-visibility.integration.spec.ts","autofixed":true,"tool":"Edit"}
