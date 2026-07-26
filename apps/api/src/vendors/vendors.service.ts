@@ -3,10 +3,11 @@ import {
   NotFoundException,
   ForbiddenException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CurrencyCode, OrderStatus, VendorStatus, UserRole } from '@hb/shared';
 import { Vendor } from './entities/vendor.entity';
 import { Product } from '../products/entities/product.entity';
@@ -16,6 +17,7 @@ import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { AdminCreateVendorDto } from './dto/admin-create-vendor.dto';
 import { VendorResponseDto } from './dto/vendor-response.dto';
 import { AdminVendorResponseDto } from './dto/admin-vendor-response.dto';
+import { VendorSelfResponseDto } from './dto/vendor-self-response.dto';
 import { VendorDashboardResponseDto } from './dto/vendor-dashboard-response.dto';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
@@ -43,6 +45,10 @@ export class VendorsService {
       tradingName: vendor.tradingName,
       status: vendor.status,
       countryCode: vendor.countryCode,
+      logoUrl: vendor.logoUrl,
+      bannerUrl: vendor.bannerUrl,
+      slogan: vendor.slogan,
+      profileSections: vendor.profileSections,
     };
   }
 
@@ -53,12 +59,34 @@ export class VendorsService {
       tradingName: vendor.tradingName,
       status: vendor.status,
       countryCode: vendor.countryCode,
+      logoUrl: vendor.logoUrl,
+      bannerUrl: vendor.bannerUrl,
+      slogan: vendor.slogan,
+      profileSections: vendor.profileSections,
       registrationNumber: vendor.registrationNumber,
       website: vendor.website,
       description: vendor.description,
       verificationDocumentUrl: vendor.verificationDocumentUrl,
       // createdAt is a CreateDateColumn — always set on a persisted vendor.
       appliedAt: vendor.createdAt.toISOString(),
+    };
+  }
+
+  // Owner self-view — widens the public shape with the vendor's own editable
+  // fields. Only ever called from the owner-gated GET /vendors/me route.
+  private toSelfResponseDto(vendor: Vendor): VendorSelfResponseDto {
+    return {
+      id: vendor.id,
+      businessName: vendor.businessName,
+      tradingName: vendor.tradingName,
+      status: vendor.status,
+      countryCode: vendor.countryCode,
+      logoUrl: vendor.logoUrl,
+      bannerUrl: vendor.bannerUrl,
+      slogan: vendor.slogan,
+      profileSections: vendor.profileSections,
+      website: vendor.website,
+      description: vendor.description,
     };
   }
 
@@ -169,9 +197,37 @@ export class VendorsService {
     return this.toResponseDto(vendor);
   }
 
-  async findByUserId(userId: string): Promise<VendorResponseDto | null> {
+  // Only called from the owner-gated GET /vendors/me route — returns the widened
+  // self-view (adds website/description on top of the public branding fields).
+  async findByUserId(userId: string): Promise<VendorSelfResponseDto | null> {
     const vendor = await this.vendorRepository.findOne({ where: { userId } });
-    return vendor ? this.toResponseDto(vendor) : null;
+    return vendor ? this.toSelfResponseDto(vendor) : null;
+  }
+
+  // Curated profile sections may only reference products owned by the vendor
+  // row being edited (not the acting user's own vendor, in case an admin is
+  // editing someone else's profile). Single batched query, not N+1.
+  private async assertCuratedProductsOwnedByVendor(
+    vendorId: string,
+    profileSections: UpdateVendorDto['profileSections'],
+  ): Promise<void> {
+    if (!profileSections?.length) return;
+
+    const productIds = [
+      ...new Set(
+        profileSections
+          .filter((section) => section.type === 'curated')
+          .flatMap((section) => section.productIds ?? []),
+      ),
+    ];
+    if (productIds.length === 0) return;
+
+    const owned = await this.productRepository.find({
+      where: { id: In(productIds), vendorId },
+    });
+    if (owned.length !== productIds.length) {
+      throw new BadRequestException('One or more curated productIds do not belong to this vendor');
+    }
   }
 
   async update(
@@ -187,6 +243,8 @@ export class VendorsService {
     if (currentUser.role !== UserRole.ADMIN && vendor.userId !== currentUser.id) {
       throw new ForbiddenException('You can only update your own vendor profile');
     }
+
+    await this.assertCuratedProductsOwnedByVendor(vendor.id, updateDto.profileSections);
 
     Object.assign(vendor, updateDto);
     const updated = await this.vendorRepository.save(vendor);

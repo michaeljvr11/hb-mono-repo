@@ -1,4 +1,4 @@
-import { CountryCode, VendorDto, VendorStatus } from '@hb/shared';
+import { CountryCode, VendorDto, VendorProfileSection, VendorStatus } from '@hb/shared';
 
 // Public shape only — never expose registrationNumber, verification docs, bank details.
 export class VendorResponseDto implements VendorDto {
@@ -7,4 +7,8 @@ export class VendorResponseDto implements VendorDto {
   tradingName?: string;
   status: VendorStatus;
   countryCode: CountryCode;
+  logoUrl?: string;
+  bannerUrl?: string;
+  slogan?: string;
+  profileSections?: VendorProfileSection[];
 }

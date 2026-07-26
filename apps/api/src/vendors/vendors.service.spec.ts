@@ -1,8 +1,20 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { CurrencyCode, VendorStatus, UserRole, CountryCode } from '@hb/shared';
+import { In } from 'typeorm';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  CurrencyCode,
+  VendorStatus,
+  UserRole,
+  CountryCode,
+  VendorProfileSection,
+} from '@hb/shared';
 import { VendorsService } from './vendors.service';
 import { AuditService } from '../audit/audit.service';
 import { Vendor } from './entities/vendor.entity';
@@ -67,7 +79,7 @@ describe('VendorsService', () => {
       delete: jest.fn(),
     };
 
-    productRepo = { count: jest.fn() };
+    productRepo = { count: jest.fn(), find: jest.fn() };
 
     orderItemRepo = { createQueryBuilder: jest.fn() };
 
@@ -126,6 +138,67 @@ describe('VendorsService', () => {
       const result = await service.update('v1', { businessName: 'Mine' }, owner);
 
       expect(result.id).toBe('v1');
+    });
+  });
+
+  describe('update (profile sections)', () => {
+    const curatedSection = (productIds: string[]): VendorProfileSection => ({
+      id: 's1',
+      title: 'Bestsellers',
+      type: 'curated',
+      productIds,
+    });
+
+    const categorySection = (categoryId: string): VendorProfileSection => ({
+      id: 's2',
+      title: 'Home & Living',
+      type: 'category',
+      categoryId,
+    });
+
+    it('persists a mix of curated and category sections when all curated productIds belong to the vendor', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+      productRepo.find.mockResolvedValue([{ id: 'p1' }, { id: 'p2' }]);
+
+      const sections = [curatedSection(['p1', 'p2']), categorySection('cat-1')];
+      const result = await service.update('v1', { profileSections: sections }, owner);
+
+      expect(productRepo.find).toHaveBeenCalledWith({
+        where: { id: In(['p1', 'p2']), vendorId: 'v1' },
+      });
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ profileSections: sections }),
+      );
+      expect(result.profileSections).toEqual(sections);
+    });
+
+    it('rejects when a curated section references a productId belonging to a different vendor', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+      // Only p1 comes back — p2 belongs to some other vendor and is excluded by the
+      // vendorId-scoped query.
+      productRepo.find.mockResolvedValue([{ id: 'p1' }]);
+
+      const sections = [curatedSection(['p1', 'p2'])];
+
+      await expect(
+        service.update('v1', { profileSections: sections }, owner),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(vendorRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('skips the ownership query entirely for category-only sections (no productIds to check)', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+
+      const sections = [categorySection('cat-1')];
+      await service.update('v1', { profileSections: sections }, owner);
+
+      expect(productRepo.find).not.toHaveBeenCalled();
+      expect(vendorRepo.save).toHaveBeenCalled();
     });
   });
 
@@ -387,7 +460,17 @@ describe('VendorsService', () => {
       expect(result).not.toHaveProperty('registrationNumber');
       expect(result).not.toHaveProperty('verificationDocumentUrl');
       expect(Object.keys(result).sort()).toEqual(
-        ['businessName', 'countryCode', 'id', 'status', 'tradingName'].sort(),
+        [
+          'bannerUrl',
+          'businessName',
+          'countryCode',
+          'id',
+          'logoUrl',
+          'profileSections',
+          'slogan',
+          'status',
+          'tradingName',
+        ].sort(),
       );
     });
 
@@ -412,6 +495,43 @@ describe('VendorsService', () => {
       vendorRepo.findOne.mockResolvedValue(null);
 
       await expect(service.findOne('missing')).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('findByUserId (owner self-view)', () => {
+    it('returns the widened self-view shape including website and description', async () => {
+      const vendor = mockVendor({
+        id: 'v1',
+        userId: 'u1',
+        website: 'https://roots-and-shoots.example',
+        description: 'Handmade art from the Cape',
+        slogan: 'Made by hand, made with heart',
+        logoUrl: 'https://cdn.hb.com/logos/v1.png',
+        bannerUrl: 'https://cdn.hb.com/banners/v1.png',
+        profileSections: [{ id: 's1', title: 'Featured', type: 'curated', productIds: ['p1'] }],
+      });
+      vendorRepo.findOne.mockResolvedValue(vendor);
+
+      const result = await service.findByUserId('u1');
+
+      expect(vendorRepo.findOne).toHaveBeenCalledWith({ where: { userId: 'u1' } });
+      expect(result).toMatchObject({
+        id: 'v1',
+        website: 'https://roots-and-shoots.example',
+        description: 'Handmade art from the Cape',
+        slogan: 'Made by hand, made with heart',
+        logoUrl: 'https://cdn.hb.com/logos/v1.png',
+        bannerUrl: 'https://cdn.hb.com/banners/v1.png',
+        profileSections: [{ id: 's1', title: 'Featured', type: 'curated', productIds: ['p1'] }],
+      });
+    });
+
+    it('returns null when the user has no vendor profile', async () => {
+      vendorRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.findByUserId('no-vendor-user');
+
+      expect(result).toBeNull();
     });
   });
 
