@@ -24,6 +24,7 @@ import { OrderItem } from '../orders/entities/order-item.entity';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
+import { FileUrlService } from '../products/upload/file-url.service';
 
 const mockVendor = (overrides: Partial<Vendor> = {}): Vendor =>
   ({
@@ -70,6 +71,7 @@ describe('VendorsService', () => {
   let usersService: { update: jest.Mock };
   let auditService: { log: jest.Mock; query: jest.Mock };
   let eventEmitter: { emit: jest.Mock };
+  let fileUrlService: { getFileUrl: jest.Mock };
 
   beforeEach(async () => {
     vendorRepo = {
@@ -90,6 +92,8 @@ describe('VendorsService', () => {
 
     eventEmitter = { emit: jest.fn() };
 
+    fileUrlService = { getFileUrl: jest.fn() };
+
     const module = await Test.createTestingModule({
       providers: [
         VendorsService,
@@ -99,6 +103,7 @@ describe('VendorsService', () => {
         { provide: UsersService, useValue: usersService },
         { provide: AuditService, useValue: auditService },
         { provide: EventEmitter2, useValue: eventEmitter },
+        { provide: FileUrlService, useValue: fileUrlService },
       ],
     }).compile();
 
@@ -680,6 +685,48 @@ describe('VendorsService', () => {
     it('throws NotFoundException when the vendor profile does not exist', async () => {
       vendorRepo.findOne.mockResolvedValue(null);
       await expect(service.getDashboard('no-such-user')).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('updateLogo / updateBanner (owner-scoped branding upload)', () => {
+    const file = { filename: 'abc123.png' } as Express.Multer.File;
+
+    it('sets logoUrl from the uploaded file and returns the self-view DTO', async () => {
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+      fileUrlService.getFileUrl.mockReturnValue('/uploads/vendors/abc123.png');
+
+      const result = await service.updateLogo('u1', file);
+
+      expect(vendorRepo.findOne).toHaveBeenCalledWith({ where: { userId: 'u1' } });
+      expect(fileUrlService.getFileUrl).toHaveBeenCalledWith('abc123.png', 'vendors');
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ logoUrl: '/uploads/vendors/abc123.png' }),
+      );
+      expect(result.logoUrl).toBe('/uploads/vendors/abc123.png');
+    });
+
+    it('sets bannerUrl from the uploaded file and returns the self-view DTO', async () => {
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+      fileUrlService.getFileUrl.mockReturnValue('/uploads/vendors/abc123.png');
+
+      const result = await service.updateBanner('u1', file);
+
+      expect(fileUrlService.getFileUrl).toHaveBeenCalledWith('abc123.png', 'vendors');
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ bannerUrl: '/uploads/vendors/abc123.png' }),
+      );
+      expect(result.bannerUrl).toBe('/uploads/vendors/abc123.png');
+    });
+
+    it('throws NotFoundException when the acting user has no vendor profile', async () => {
+      vendorRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.updateLogo('no-vendor-user', file)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(vendorRepo.save).not.toHaveBeenCalled();
     });
   });
 });

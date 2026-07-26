@@ -1,4 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  HttpStatus,
+  ParseFilePipeBuilder,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '@hb/shared';
 import { VendorsService } from './vendors.service';
 import { VendorAnalyticsService } from './vendor-analytics.service';
@@ -7,6 +21,7 @@ import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { AdminCreateVendorDto } from './dto/admin-create-vendor.dto';
 import { UpdateVendorStatusDto } from './dto/update-vendor-status.dto';
 import { VendorAnalyticsQueryDto } from './dto/vendor-analytics-query.dto';
+import { vendorImageMulterOptions } from './upload/vendor-image.multer.config';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
@@ -71,6 +86,52 @@ export class VendorsController {
   @Roles(UserRole.VENDOR)
   getMyAnalytics(@Query() query: VendorAnalyticsQueryDto, @GetUser() user: User) {
     return this.vendorAnalyticsService.getAnalytics(user.id, query);
+  }
+
+  @Post('me/logo')
+  @Roles(UserRole.VENDOR)
+  @UseInterceptors(FileInterceptor('file', vendorImageMulterOptions))
+  uploadLogo(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /(jpg|jpeg|png|webp)$/,
+        })
+        .addMaxSizeValidator({
+          maxSize: 5 * 1024 * 1024, // 5MB
+        })
+        .build({
+          fileIsRequired: true,
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
+    @GetUser() user: User,
+  ) {
+    return this.vendorsService.updateLogo(user.id, file);
+  }
+
+  @Post('me/banner')
+  @Roles(UserRole.VENDOR)
+  @UseInterceptors(FileInterceptor('file', vendorImageMulterOptions))
+  uploadBanner(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /(jpg|jpeg|png|webp)$/,
+        })
+        .addMaxSizeValidator({
+          maxSize: 5 * 1024 * 1024, // 5MB
+        })
+        .build({
+          fileIsRequired: true,
+          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        }),
+    )
+    file: Express.Multer.File,
+    @GetUser() user: User,
+  ) {
+    return this.vendorsService.updateBanner(user.id, file);
   }
 
   // Public so anonymous/SSR-rendered vendor-profile pages can fetch without a token
