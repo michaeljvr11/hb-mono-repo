@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-07-26T21:39:27.254Z",
+  "generatedAt": "2026-07-26T21:49:53.083Z",
   "git": {
-    "totalCommits": 153,
-    "aiCommits": 142,
+    "totalCommits": 157,
+    "aiCommits": 146,
     "aiPct": 93,
-    "appCommits": 104,
-    "ins": 68464,
-    "del": 5832,
-    "net": 62632,
-    "aiIns": 55032,
-    "aiDel": 5694,
-    "filesTouched": 576,
+    "appCommits": 106,
+    "ins": 68698,
+    "del": 5943,
+    "net": 62755,
+    "aiIns": 55266,
+    "aiDel": 5805,
+    "filesTouched": 577,
     "areaRows": [
       {
         "name": "Web (Angular)",
@@ -20,20 +20,20 @@
       },
       {
         "name": "API (NestJS)",
-        "commits": 60,
-        "ins": 18182,
-        "del": 887
+        "commits": 62,
+        "ins": 18272,
+        "del": 889
       },
       {
         "name": "Docs",
-        "commits": 47,
-        "ins": 13225,
-        "del": 3313
+        "commits": 48,
+        "ins": 13340,
+        "del": 3422
       },
       {
         "name": "AI Factory config",
-        "commits": 45,
-        "ins": 1744,
+        "commits": 49,
+        "ins": 1773,
         "del": 68
       },
       {
@@ -58,6 +58,36 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-07-26",
     "recent": [
+      {
+        "hash": "d1eeec4",
+        "subject": "index on fix/product-image-upload-extension-spoofing: 41cd2c9 fix(api): stop trusting client originalname for product image extension",
+        "ai": false
+      },
+      {
+        "hash": "0a34a18",
+        "subject": "untracked files on fix/product-image-upload-extension-spoofing: 41cd2c9 fix(api): stop trusting client originalname for product image extension",
+        "ai": false
+      },
+      {
+        "hash": "41cd2c9",
+        "subject": "fix(api): stop trusting client originalname for product image extension",
+        "ai": true
+      },
+      {
+        "hash": "01b389d",
+        "subject": "chore: factory-log entries from VPC-2 pipeline",
+        "ai": true
+      },
+      {
+        "hash": "4232b0e",
+        "subject": "fix(api): unbreak search-visibility integration spec after VendorsService dep",
+        "ai": true
+      },
+      {
+        "hash": "d4278f1",
+        "subject": "chore: recompile AI evidence report",
+        "ai": true
+      },
       {
         "hash": "d1a980a",
         "subject": "fix(api): vendor upload false-reject and stored-XSS risk (VPC-2 review)",
@@ -86,36 +116,6 @@
       {
         "hash": "1e5b287",
         "subject": "feat(api): vendor branding + profile-sections contract, schema, write (VPC-1)",
-        "ai": true
-      },
-      {
-        "hash": "5a9e701",
-        "subject": "fix(web): self-heal out-of-range discovery page (rmpsJVLi review)",
-        "ai": true
-      },
-      {
-        "hash": "901eccb",
-        "subject": "feat(web): consume paged products envelope + discovery pager/sort (rmpsJVLi)",
-        "ai": true
-      },
-      {
-        "hash": "d9671ed",
-        "subject": "feat(api): paginate + sort GET /products with envelope response (rmpsJVLi)",
-        "ai": true
-      },
-      {
-        "hash": "a626c91",
-        "subject": "index on main: a5375bb Merge pull request #35 from michaeljvr11/feat/UG5UFyxy-vendor-profile-page",
-        "ai": false
-      },
-      {
-        "hash": "d8edcff",
-        "subject": "untracked files on main: a5375bb Merge pull request #35 from michaeljvr11/feat/UG5UFyxy-vendor-profile-page",
-        "ai": false
-      },
-      {
-        "hash": "1c5bc03",
-        "subject": "chore(evidence): recompile AI evidence report (UG5UFyxy)",
         "ai": true
       }
     ]
@@ -283,8 +283,8 @@
     }
   ],
   "tests": {
-    "total": 90,
-    "api": 36,
+    "total": 91,
+    "api": 37,
     "web": 54
   },
   "design": {
@@ -310,18 +310,18 @@
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 22,
-    "gateFail": 1,
-    "edits": 389,
-    "editsUnfixable": 144,
+    "gatePass": 24,
+    "gateFail": 2,
+    "edits": 393,
+    "editsUnfixable": 145,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-26T21:38:56.978Z",
+    "lastTs": "2026-07-26T21:45:45.335Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 9,
+          "invocations": 10,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -384,11 +384,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-07-17T12:39:21.999Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-07-20T20:19:31.553Z",
           "agentType": "design-to-code",
@@ -460,6 +455,11 @@
           "totalTokens": 0
         },
         {
+          "ts": "2026-07-26T21:39:04.525Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
           "ts": "2026-07-26T21:20:59.486Z",
           "agentType": "backend-engineer",
           "totalTokens": 0
@@ -490,6 +490,20 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "fix/product-image-upload-extension-spoofing",
+      "number": 39,
+      "state": "OPEN",
+      "title": "fix(api): stop trusting client originalname for product image extension",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/39"
+    },
+    {
+      "headRefName": "feat/AAjMPwV7-vendor-logo-banner-upload",
+      "number": 38,
+      "state": "MERGED",
+      "title": "feat(api): vendor logo & banner upload endpoints (VPC-2)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/38"
+    },
     {
       "headRefName": "feat/ZpvX9XIv-vendor-branding-sections-contract",
       "number": 37,
@@ -750,34 +764,10 @@
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/1"
     }
   ],
-  "trello": [
-    {
-      "name": "Documentation",
-      "cards": 8
-    },
-    {
-      "name": "To Do",
-      "cards": 8
-    },
-    {
-      "name": "In Progress",
-      "cards": 1
-    },
-    {
-      "name": "In Review",
-      "cards": 0
-    },
-    {
-      "name": "Done",
-      "cards": 49
-    },
-    {
-      "name": "Fable Documentation",
-      "cards": 0
-    }
-  ],
+  "trello": null,
   "notes": [
     "No steering-audit.json yet — run the align-steering-docs skill to populate it.",
-    "No extraction-candidates.json yet — run the service-extraction-analysis skill to populate it."
+    "No extraction-candidates.json yet — run the service-extraction-analysis skill to populate it.",
+    "No .mcp.json — Trello card flow skipped."
   ]
 }

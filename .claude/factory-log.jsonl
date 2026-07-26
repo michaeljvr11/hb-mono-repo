@@ -478,3 +478,6 @@
 {"ts":"2026-07-26T21:44:10.820Z","type":"edit_lint","file":"apps/api/src/search/search-visibility.integration.spec.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-07-26T21:45:14.845Z","type":"pr_gate","result":"pass","durationMs":9857}
 {"ts":"2026-07-26T21:45:45.335Z","type":"pr_gate","result":"pass","durationMs":9748}
+{"ts":"2026-07-26T21:48:01.589Z","type":"pr_gate","result":"pass","durationMs":12669}
+{"ts":"2026-07-26T21:48:15.981Z","type":"agent_token_usage","agentType":"unknown","agentId":"a5101ec996a5b8384","sessionId":"11578e41-a180-4a14-851d-148b4851cf87","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-07-26T21:50:29.797Z","type":"prod_fence_block","reason":"push names a protected branch","command":"cd \"C:/Users/michael.jvanrensburg/vscode/hb-mono-repo/.claude/worktrees/unruffled-wiles-562b14\" && git commit -m \"$(cat <<'EOF'\nchore: recompile AI evidence report after merging main\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\" && git push"}
