@@ -1,7 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { AnalyticsEventType, CurrencyCode, VendorAnalyticsDto } from '@hb/shared';
+import {
+  AnalyticsEventType,
+  CountryCode,
+  CurrencyCode,
+  VendorAnalyticsDto,
+  VendorSelfDto,
+  VendorStatus,
+} from '@hb/shared';
 
 import { VendorsService } from './vendors.service';
 import { environment } from '../../../environments/environment';
@@ -85,5 +92,73 @@ describe('VendorsService — getAnalytics', () => {
     expect(req.request.params.get('to')).toBe('2026-07-01');
     expect(req.request.params.get('granularity')).toBe('week');
     req.flush(MOCK_ANALYTICS);
+  });
+});
+
+describe('VendorsService — profile self-view & uploads', () => {
+  let service: VendorsService;
+  let httpMock: HttpTestingController;
+  const API_URL = `${environment.apiBaseUrl}/vendors`;
+
+  const MOCK_SELF: VendorSelfDto = {
+    id: 'vendor-1',
+    businessName: 'My Store',
+    status: VendorStatus.APPROVED,
+    countryCode: CountryCode.SOUTH_AFRICA,
+    website: 'https://mystore.example',
+    description: 'We sell great things.',
+    slogan: 'Quality you can trust',
+    logoUrl: 'https://cdn.example/logo.png',
+    bannerUrl: 'https://cdn.example/banner.png',
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    service = TestBed.inject(VendorsService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
+  });
+
+  it('getMe() calls GET /vendors/me and returns the self-view DTO', () => {
+    service.getMe().subscribe((res) => {
+      expect(res).toEqual(MOCK_SELF);
+    });
+
+    const req = httpMock.expectOne(`${API_URL}/me`);
+    expect(req.request.method).toBe('GET');
+    req.flush(MOCK_SELF);
+  });
+
+  it('uploadLogo() posts multipart FormData with field "file" to /vendors/me/logo', () => {
+    const file = new File(['a'], 'logo.png', { type: 'image/png' });
+
+    service.uploadLogo(file).subscribe((res) => {
+      expect(res).toEqual(MOCK_SELF);
+    });
+
+    const req = httpMock.expectOne(`${API_URL}/me/logo`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toBeInstanceOf(FormData);
+    expect((req.request.body as FormData).get('file')).toBe(file);
+    req.flush(MOCK_SELF);
+  });
+
+  it('uploadBanner() posts multipart FormData with field "file" to /vendors/me/banner', () => {
+    const file = new File(['a'], 'banner.jpg', { type: 'image/jpeg' });
+
+    service.uploadBanner(file).subscribe((res) => {
+      expect(res).toEqual(MOCK_SELF);
+    });
+
+    const req = httpMock.expectOne(`${API_URL}/me/banner`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toBeInstanceOf(FormData);
+    expect((req.request.body as FormData).get('file')).toBe(file);
+    req.flush(MOCK_SELF);
   });
 });

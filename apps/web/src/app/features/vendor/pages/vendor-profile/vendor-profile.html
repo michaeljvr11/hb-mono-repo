@@ -1,0 +1,183 @@
+<section class="profile-page">
+  <header class="page-header">
+    <h1 class="page-title">Profile</h1>
+    <p class="page-sub">Manage your store profile — how you appear to shoppers.</p>
+  </header>
+
+  @if (vendorLoadError()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ vendorLoadError() }}</span>
+    </div>
+  }
+
+  @if (vendorLoading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading your profile…</p>
+    </div>
+  }
+
+  @if (!vendorLoading() && !vendorLoadError()) {
+    <div class="profile-grid">
+      <!-- ── Branding ────────────────────────────────────────────────────── -->
+      <section class="panel">
+        <h2 class="panel-title">Branding</h2>
+
+        <div class="field">
+          <span class="field-label" id="logo-label">Logo</span>
+          <div class="image-upload-row">
+            <div class="image-preview image-preview--logo">
+              @if (logoDisplayUrl(); as url) {
+                <img [src]="url" alt="Vendor logo" />
+              } @else {
+                <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+              }
+            </div>
+            <div class="image-upload-controls">
+              <input
+                id="logo-file"
+                class="field-input field-file"
+                type="file"
+                aria-labelledby="logo-label"
+                [accept]="ALLOWED_IMAGE_TYPES"
+                [disabled]="logoPending()"
+                (change)="onLogoSelected($event)"
+              />
+              <p class="field-hint">JPG, PNG or WEBP. Max 5MB.</p>
+              @if (logoPending()) {
+                <p class="field-hint field-hint--pending">
+                  <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+                  Uploading…
+                </p>
+              }
+            </div>
+          </div>
+          @if (logoError()) {
+            <div class="error-banner error-banner--inline" role="alert">
+              <span class="material-symbols-outlined" aria-hidden="true">error</span>
+              <span>{{ logoError() }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="field">
+          <span class="field-label" id="banner-label">Banner</span>
+          <div class="image-upload-row">
+            <div class="image-preview image-preview--banner">
+              @if (bannerDisplayUrl(); as url) {
+                <img [src]="url" alt="Vendor banner" />
+              } @else {
+                <span class="material-symbols-outlined" aria-hidden="true">panorama</span>
+              }
+            </div>
+            <div class="image-upload-controls">
+              <input
+                id="banner-file"
+                class="field-input field-file"
+                type="file"
+                aria-labelledby="banner-label"
+                [accept]="ALLOWED_IMAGE_TYPES"
+                [disabled]="bannerPending()"
+                (change)="onBannerSelected($event)"
+              />
+              <p class="field-hint">JPG, PNG or WEBP. Max 5MB.</p>
+              @if (bannerPending()) {
+                <p class="field-hint field-hint--pending">
+                  <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+                  Uploading…
+                </p>
+              }
+            </div>
+          </div>
+          @if (bannerError()) {
+            <div class="error-banner error-banner--inline" role="alert">
+              <span class="material-symbols-outlined" aria-hidden="true">error</span>
+              <span>{{ bannerError() }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- ── Business details ───────────────────────────────────────────── -->
+      <section class="panel">
+        <h2 class="panel-title">Business details</h2>
+
+        <form class="details-form" [formGroup]="profileForm" (ngSubmit)="submitProfile()">
+          <div class="field">
+            <label class="field-label" for="vp-businessName">Business name <span class="req">*</span></label>
+            <input
+              id="vp-businessName"
+              class="field-input"
+              type="text"
+              formControlName="businessName"
+              autocomplete="organization"
+              [class.field-input--error]="profileForm.get('businessName')?.invalid && profileForm.get('businessName')?.touched"
+            />
+            @if (profileForm.get('businessName')?.hasError('required') && profileForm.get('businessName')?.touched) {
+              <p class="field-hint field-hint--error">Business name is required.</p>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="vp-tradingName">Trading name</label>
+            <input id="vp-tradingName" class="field-input" type="text" formControlName="tradingName" />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="vp-website">Website</label>
+            <input id="vp-website" class="field-input" type="url" formControlName="website" placeholder="https://" />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="vp-description">Description</label>
+            <textarea
+              id="vp-description"
+              class="field-input field-textarea"
+              formControlName="description"
+              rows="4"
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="vp-slogan">Slogan</label>
+            <input
+              id="vp-slogan"
+              class="field-input"
+              type="text"
+              formControlName="slogan"
+              maxlength="120"
+              [class.field-input--error]="profileForm.get('slogan')?.invalid && profileForm.get('slogan')?.touched"
+            />
+            <p class="field-hint">{{ profileForm.get('slogan')?.value?.length ?? 0 }}/120</p>
+            @if (profileForm.get('slogan')?.hasError('maxlength') && profileForm.get('slogan')?.touched) {
+              <p class="field-hint field-hint--error">Slogan must be 120 characters or fewer.</p>
+            }
+          </div>
+
+          @if (saveError()) {
+            <div class="error-banner error-banner--inline" role="alert">
+              <span class="material-symbols-outlined" aria-hidden="true">error</span>
+              <span>{{ saveError() }}</span>
+            </div>
+          }
+          @if (saveSuccess()) {
+            <div class="success-banner" role="status">
+              <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+              <span>{{ saveSuccess() }}</span>
+            </div>
+          }
+
+          <div class="form-actions">
+            <button class="primary-btn" type="submit" [disabled]="profileForm.invalid || savePending()">
+              @if (savePending()) {
+                <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+              }
+              {{ savePending() ? 'Saving…' : 'Save changes' }}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  }
+</section>
