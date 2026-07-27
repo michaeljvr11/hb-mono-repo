@@ -11,6 +11,7 @@ import {
   VendorAnalyticsQuery,
   VendorDashboardDto,
   VendorDto as Vendor,
+  VendorSelfDto,
 } from '@hb/shared';
 import { environment } from '../../../environments/environment';
 
@@ -30,8 +31,8 @@ export class VendorsService {
     return this.http.get<Vendor>(`${this.API_URL}/${id}`);
   }
 
-  getMe(): Observable<Vendor> {
-    return this.http.get<Vendor>(`${this.API_URL}/me`);
+  getMe(): Observable<VendorSelfDto> {
+    return this.http.get<VendorSelfDto>(`${this.API_URL}/me`);
   }
 
   create(data: CreateVendorRequest): Observable<Vendor> {
@@ -42,8 +43,25 @@ export class VendorsService {
     return this.http.post<Vendor>(`${this.API_URL}/admin`, data);
   }
 
-  update(id: string, data: UpdateVendorRequest): Observable<Vendor> {
-    return this.http.patch<Vendor>(`${this.API_URL}/${id}`, data);
+  /** Owner-scoped PATCH — server returns the self-view (same shape as GET /vendors/me). */
+  update(id: string, data: UpdateVendorRequest): Observable<VendorSelfDto> {
+    return this.http.patch<VendorSelfDto>(`${this.API_URL}/${id}`, data);
+  }
+
+  /** Multipart upload — field name `file`, matches the server's multer config. */
+  uploadLogo(file: File): Observable<VendorSelfDto> {
+    return this.http.post<VendorSelfDto>(`${this.API_URL}/me/logo`, this.toFileFormData(file));
+  }
+
+  /** Multipart upload — field name `file`, matches the server's multer config. */
+  uploadBanner(file: File): Observable<VendorSelfDto> {
+    return this.http.post<VendorSelfDto>(`${this.API_URL}/me/banner`, this.toFileFormData(file));
+  }
+
+  private toFileFormData(file: File): FormData {
+    const formData = new FormData();
+    formData.append('file', file);
+    return formData;
   }
 
   updateStatus(id: string, data: UpdateVendorStatusRequest): Observable<Vendor> {
