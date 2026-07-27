@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-07-26T21:49:53.083Z",
+  "generatedAt": "2026-07-27T19:24:41.090Z",
   "git": {
-    "totalCommits": 157,
-    "aiCommits": 146,
+    "totalCommits": 160,
+    "aiCommits": 149,
     "aiPct": 93,
-    "appCommits": 106,
-    "ins": 68698,
-    "del": 5943,
-    "net": 62755,
-    "aiIns": 55266,
-    "aiDel": 5805,
-    "filesTouched": 577,
+    "appCommits": 108,
+    "ins": 69951,
+    "del": 6154,
+    "net": 63797,
+    "aiIns": 56519,
+    "aiDel": 6016,
+    "filesTouched": 580,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 59,
-        "ins": 33292,
-        "del": 1530
+        "commits": 61,
+        "ins": 34438,
+        "del": 1617
       },
       {
         "name": "API (NestJS)",
@@ -26,14 +26,14 @@
       },
       {
         "name": "Docs",
-        "commits": 48,
-        "ins": 13340,
-        "del": 3422
+        "commits": 49,
+        "ins": 13444,
+        "del": 3546
       },
       {
         "name": "AI Factory config",
-        "commits": 49,
-        "ins": 1773,
+        "commits": 50,
+        "ins": 1776,
         "del": 68
       },
       {
@@ -56,17 +56,22 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-07-26",
+    "lastDate": "2026-07-27",
     "recent": [
       {
-        "hash": "d1eeec4",
-        "subject": "index on fix/product-image-upload-extension-spoofing: 41cd2c9 fix(api): stop trusting client originalname for product image extension",
-        "ai": false
+        "hash": "690d004",
+        "subject": "fix(web): vendor profile review fixes — preview reset on upload error, trust server response",
+        "ai": true
       },
       {
-        "hash": "0a34a18",
-        "subject": "untracked files on fix/product-image-upload-extension-spoofing: 41cd2c9 fix(api): stop trusting client originalname for product image extension",
-        "ai": false
+        "hash": "f6c200a",
+        "subject": "feat(web): vendor portal profile editor (VPC-3)",
+        "ai": true
+      },
+      {
+        "hash": "8f6a69d",
+        "subject": "chore: recompile AI evidence report",
+        "ai": true
       },
       {
         "hash": "41cd2c9",
@@ -111,11 +116,6 @@
       {
         "hash": "81503ea",
         "subject": "fix(api): close ownership-guard bypass in vendor profile sections (VPC-1 review)",
-        "ai": true
-      },
-      {
-        "hash": "1e5b287",
-        "subject": "feat(api): vendor branding + profile-sections contract, schema, write (VPC-1)",
         "ai": true
       }
     ]
@@ -247,6 +247,11 @@
       "slug": "public-vendor-profile"
     },
     {
+      "branch": "feat/y3fz4TC2-vendor-profile-editor",
+      "cardId": "y3fz4TC2",
+      "slug": "vendor-profile-editor"
+    },
+    {
       "branch": "feat/IhTVdNYP-admin-catalog",
       "cardId": "IhTVdNYP",
       "slug": "admin-catalog"
@@ -283,9 +288,9 @@
     }
   ],
   "tests": {
-    "total": 91,
+    "total": 92,
     "api": 37,
-    "web": 54
+    "web": 55
   },
   "design": {
     "files": 31,
@@ -303,25 +308,25 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 18,
+    "prodBlocks": 19,
     "blockReasons": {
-      "push names a protected branch": 14,
+      "push names a protected branch": 15,
       "force push": 1,
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 24,
+    "gatePass": 26,
     "gateFail": 2,
     "edits": 393,
     "editsUnfixable": 145,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-26T21:45:45.335Z",
+    "lastTs": "2026-07-27T19:24:17.878Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 10,
+          "invocations": 11,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -339,7 +344,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 8,
+          "invocations": 9,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -357,7 +362,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 8,
+          "invocations": 9,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -375,7 +380,7 @@
         },
         {
           "agentType": "docs-writer",
-          "invocations": 3,
+          "invocations": 4,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -384,26 +389,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-07-20T20:19:31.553Z",
-          "agentType": "design-to-code",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-20T20:22:30.240Z",
-          "agentType": "test-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-20T20:26:21.432Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-20T21:12:17.781Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-07-20T21:21:53.673Z",
           "agentType": "unknown",
@@ -483,6 +468,26 @@
           "ts": "2026-07-26T21:38:56.978Z",
           "agentType": "docs-writer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-26T21:48:15.981Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-27T19:10:08.897Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-27T19:15:59.209Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-27T19:23:13.675Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
         }
       ]
     }
@@ -491,9 +496,16 @@
   "extractionCandidates": null,
   "prs": [
     {
+      "headRefName": "feat/y3fz4TC2-vendor-profile-editor",
+      "number": 40,
+      "state": "OPEN",
+      "title": "feat(web): vendor portal profile editor (VPC-3)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/40"
+    },
+    {
       "headRefName": "fix/product-image-upload-extension-spoofing",
       "number": 39,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "fix(api): stop trusting client originalname for product image extension",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/39"
     },
@@ -764,10 +776,34 @@
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/1"
     }
   ],
-  "trello": null,
+  "trello": [
+    {
+      "name": "Documentation",
+      "cards": 8
+    },
+    {
+      "name": "To Do",
+      "cards": 7
+    },
+    {
+      "name": "In Progress",
+      "cards": 0
+    },
+    {
+      "name": "In Review",
+      "cards": 1
+    },
+    {
+      "name": "Done",
+      "cards": 50
+    },
+    {
+      "name": "Fable Documentation",
+      "cards": 0
+    }
+  ],
   "notes": [
     "No steering-audit.json yet — run the align-steering-docs skill to populate it.",
-    "No extraction-candidates.json yet — run the service-extraction-analysis skill to populate it.",
-    "No .mcp.json — Trello card flow skipped."
+    "No extraction-candidates.json yet — run the service-extraction-analysis skill to populate it."
   ]
 }

@@ -481,3 +481,7 @@
 {"ts":"2026-07-26T21:48:01.589Z","type":"pr_gate","result":"pass","durationMs":12669}
 {"ts":"2026-07-26T21:48:15.981Z","type":"agent_token_usage","agentType":"unknown","agentId":"a5101ec996a5b8384","sessionId":"11578e41-a180-4a14-851d-148b4851cf87","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
 {"ts":"2026-07-26T21:50:29.797Z","type":"prod_fence_block","reason":"push names a protected branch","command":"cd \"C:/Users/michael.jvanrensburg/vscode/hb-mono-repo/.claude/worktrees/unruffled-wiles-562b14\" && git commit -m \"$(cat <<'EOF'\nchore: recompile AI evidence report after merging main\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\" && git push"}
+{"ts":"2026-07-27T19:10:08.897Z","type":"agent_token_usage","agentType":"frontend-engineer","agentId":"ad49926dbe71899a7","sessionId":"9d5e2f8c-6668-4781-945d-d28d8366097d","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-07-27T19:15:59.209Z","type":"agent_token_usage","agentType":"code-reviewer","agentId":"a6e207cb791db4d65","sessionId":"9d5e2f8c-6668-4781-945d-d28d8366097d","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-07-27T19:23:13.675Z","type":"agent_token_usage","agentType":"docs-writer","agentId":"a135a8ea1159a6ffa","sessionId":"9d5e2f8c-6668-4781-945d-d28d8366097d","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-07-27T19:24:17.878Z","type":"pr_gate","result":"pass","durationMs":14023}
