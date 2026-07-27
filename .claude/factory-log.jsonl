@@ -493,3 +493,5 @@
 {"ts":"2026-07-27T19:53:35.971Z","type":"agent_token_usage","agentType":"code-reviewer","agentId":"aeaa6f839ca4b8cdb","sessionId":"457b8e40-bae7-404c-921a-ad071b2c96ec","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
 {"ts":"2026-07-27T20:00:12.560Z","type":"agent_token_usage","agentType":"frontend-engineer","agentId":"a58672ec316636b1f","sessionId":"457b8e40-bae7-404c-921a-ad071b2c96ec","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
 {"ts":"2026-07-27T20:03:57.281Z","type":"agent_token_usage","agentType":"code-reviewer","agentId":"ac36f080f09a64958","sessionId":"457b8e40-bae7-404c-921a-ad071b2c96ec","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-07-27T20:06:57.277Z","type":"agent_token_usage","agentType":"docs-writer","agentId":"ab2758f12c9c74cdb","sessionId":"457b8e40-bae7-404c-921a-ad071b2c96ec","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-07-27T20:07:44.031Z","type":"pr_gate","result":"pass","durationMs":10168}
