@@ -189,6 +189,11 @@
             <span>{{ vendorProductsError() }}</span>
           </div>
         }
+        @if (vendorProductsTruncated()) {
+          <p class="field-hint field-hint--warning">
+            Showing your first 100 products — search isn't available yet for larger catalogs.
+          </p>
+        }
 
         <!-- Add section -->
         <div class="add-section">
@@ -199,13 +204,14 @@
                 id="new-section-title"
                 class="field-input"
                 type="text"
+                maxlength="120"
                 [value]="newSectionTitle()"
                 (input)="newSectionTitle.set($any($event.target).value)"
                 placeholder="e.g. Our Top Picks"
               />
               <div class="preset-chips">
                 @for (preset of SECTION_TITLE_PRESETS; track preset) {
-                  <button class="preset-chip" type="button" (click)="applyPreset(preset)">{{ preset }}</button>
+                  <button class="preset-chip" type="button" (click)="newSectionTitle.set(preset)">{{ preset }}</button>
                 }
               </div>
             </div>
@@ -265,7 +271,7 @@
                       type="button"
                       [disabled]="i === 0"
                       (click)="moveSection(i, -1)"
-                      aria-label="Move section up"
+                      [attr.aria-label]="'Move section ' + section.title + ' up'"
                     >
                       <span class="material-symbols-outlined" aria-hidden="true">arrow_upward</span>
                     </button>
@@ -274,7 +280,7 @@
                       type="button"
                       [disabled]="i === sections().length - 1"
                       (click)="moveSection(i, 1)"
-                      aria-label="Move section down"
+                      [attr.aria-label]="'Move section ' + section.title + ' down'"
                     >
                       <span class="material-symbols-outlined" aria-hidden="true">arrow_downward</span>
                     </button>
@@ -286,6 +292,7 @@
                       [id]="'section-title-' + section.id"
                       class="field-input"
                       type="text"
+                      maxlength="120"
                       [value]="section.title"
                       (input)="renameSection(section.id, $event)"
                     />
@@ -303,31 +310,35 @@
                   </button>
                 </div>
 
+                @if (sectionValidationErrors().get(section.id); as validationHint) {
+                  <p class="field-hint field-hint--error">{{ validationHint }}</p>
+                }
+
                 @if (section.type === VendorSectionType.CURATED) {
                   <div class="section-editor">
                     <p class="field-hint">{{ (section.productIds ?? []).length }}/{{ CURATED_PRODUCTS_MAX }} products selected</p>
 
                     @if (sectionProducts(section).length > 0) {
                       <ul class="picked-products">
-                        @for (product of sectionProducts(section); track product.id; let pi = $index) {
+                        @for (product of sectionProducts(section); track product.id) {
                           <li class="picked-product">
                             <span class="picked-product-name">{{ product.name }}</span>
                             <div class="picked-product-actions">
                               <button
                                 class="row-btn"
                                 type="button"
-                                [disabled]="pi === 0"
-                                (click)="moveProductInSection(section.id, pi, -1)"
-                                aria-label="Move product up"
+                                [disabled]="productIndexInSection(section, product.id) === 0"
+                                (click)="moveProductInSection(section.id, product.id, -1)"
+                                [attr.aria-label]="'Move ' + product.name + ' up'"
                               >
                                 <span class="material-symbols-outlined" aria-hidden="true">arrow_upward</span>
                               </button>
                               <button
                                 class="row-btn"
                                 type="button"
-                                [disabled]="pi === sectionProducts(section).length - 1"
-                                (click)="moveProductInSection(section.id, pi, 1)"
-                                aria-label="Move product down"
+                                [disabled]="productIndexInSection(section, product.id) === (section.productIds ?? []).length - 1"
+                                (click)="moveProductInSection(section.id, product.id, 1)"
+                                [attr.aria-label]="'Move ' + product.name + ' down'"
                               >
                                 <span class="material-symbols-outlined" aria-hidden="true">arrow_downward</span>
                               </button>
@@ -407,7 +418,12 @@
         }
 
         <div class="form-actions">
-          <button class="primary-btn" type="button" [disabled]="sectionsSaving()" (click)="saveSections()">
+          <button
+            class="primary-btn"
+            type="button"
+            [disabled]="sectionsSaving() || !sectionsValidForSave()"
+            (click)="saveSections()"
+          >
             @if (sectionsSaving()) {
               <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
             }

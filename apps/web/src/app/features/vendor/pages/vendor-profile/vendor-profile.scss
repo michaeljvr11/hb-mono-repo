@@ -156,6 +156,7 @@
   color: var(--hb-on-surface-variant);
 
   &--error { color: var(--hb-error); }
+  &--warning { color: var(--hb-secondary); }
   &--pending { display: flex; align-items: center; gap: 6px; color: var(--hb-primary); }
 }
 

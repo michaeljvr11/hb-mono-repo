@@ -90,6 +90,10 @@ export class VendorProfile implements OnInit, OnDestroy {
   readonly vendorProducts = signal<ProductDto[]>([]);
   readonly vendorProductsLoading = signal(true);
   readonly vendorProductsError = signal<string | null>(null);
+  /** Total vendor product count reported by the server, to detect when the page-1-only fetch below is truncated. */
+  readonly vendorProductsTotal = signal(0);
+  /** True once the vendor has more products than the single page fetched — pickers only cover page 1 (see PRODUCT_LIST_MAX). */
+  readonly vendorProductsTruncated = computed(() => this.vendorProductsTotal() > this.vendorProducts().length);
 
   /** Categories the vendor actually has products in (deduped), NOT the full platform catalog. */
   readonly vendorCategories = computed<ProductCategoryDto[]>(() => {
@@ -150,6 +154,7 @@ export class VendorProfile implements OnInit, OnDestroy {
     this.productsService.list({ vendorId, limit: PRODUCT_LIST_MAX }).subscribe({
       next: (res) => {
         this.vendorProducts.set(res.items);
+        this.vendorProductsTotal.set(res.total);
         this.vendorProductsLoading.set(false);
       },
       error: () => {
@@ -193,9 +198,28 @@ export class VendorProfile implements OnInit, OnDestroy {
 
   // ─── Product sections ────────────────────────────────────────────────────
 
-  applyPreset(title: string): void {
-    this.newSectionTitle.set(title);
-  }
+  /**
+   * Maps section id -> the reason it can't be saved yet, so the server's structural
+   * validators (IsCuratedProductIds / IsCategoryId, both non-negotiable there) can never
+   * see a section that would 400 the *entire* PATCH and take every sibling section down
+   * with it. Blank/whitespace-only titles are folded in here too (server allows them,
+   * but they'd persist and render as blank headings on the public profile).
+   */
+  readonly sectionValidationErrors = computed<Map<string, string>>(() => {
+    const errors = new Map<string, string>();
+    for (const section of this.sections()) {
+      if (!section.title.trim()) {
+        errors.set(section.id, 'Add a title.');
+      } else if (section.type === VendorSectionType.CURATED && (section.productIds ?? []).length === 0) {
+        errors.set(section.id, 'Add at least one product.');
+      } else if (section.type === VendorSectionType.CATEGORY && !section.categoryId) {
+        errors.set(section.id, 'Choose a category.');
+      }
+    }
+    return errors;
+  });
+
+  readonly sectionsValidForSave = computed(() => this.sectionValidationErrors().size === 0);
 
   addSection(): void {
     const title = this.newSectionTitle().trim();
@@ -212,7 +236,9 @@ export class VendorProfile implements OnInit, OnDestroy {
   }
 
   renameSection(id: string, event: Event): void {
-    const title = (event.target as HTMLInputElement).value;
+    // Mirror server's DTO cap (@MaxLength(120), no @IsNotEmpty) — a >120-char title 400s the
+    // whole save, and blank titles are caught separately by sectionValidationErrors above.
+    const title = (event.target as HTMLInputElement).value.slice(0, 120);
     this.updateSections((list) => list.map((s) => (s.id === id ? { ...s, title } : s)));
   }
 
@@ -247,10 +273,27 @@ export class VendorProfile implements OnInit, OnDestroy {
     );
   }
 
-  moveProductInSection(sectionId: string, index: number, direction: -1 | 1): void {
+  /**
+   * Takes the productId itself, not a list index: `sectionProducts()` below silently drops
+   * any id that doesn't resolve to a currently-fetched product, so an index into that
+   * *filtered* list desyncs from a raw-array index the moment a section holds one
+   * unresolvable id — reordering by id keeps this correct regardless of that gap.
+   */
+  moveProductInSection(sectionId: string, productId: string, direction: -1 | 1): void {
     this.updateSections((list) =>
-      list.map((s) => (s.id === sectionId ? { ...s, productIds: this.swap(s.productIds ?? [], index, index + direction) } : s)),
+      list.map((s) => {
+        if (s.id !== sectionId) return s;
+        const ids = s.productIds ?? [];
+        const index = ids.indexOf(productId);
+        if (index === -1) return s;
+        return { ...s, productIds: this.swap(ids, index, index + direction) };
+      }),
     );
+  }
+
+  /** Raw-array position of a productId within a section, for up/down [disabled] bounds (see moveProductInSection). */
+  productIndexInSection(section: VendorProfileSection, productId: string): number {
+    return (section.productIds ?? []).indexOf(productId);
   }
 
   /** Products already picked for a curated section, resolved in order (dangling ids silently dropped). */
@@ -268,7 +311,7 @@ export class VendorProfile implements OnInit, OnDestroy {
 
   saveSections(): void {
     const vendor = this.vendor();
-    if (!vendor || this.sectionsSaving()) return;
+    if (!vendor || this.sectionsSaving() || !this.sectionsValidForSave()) return;
 
     this.sectionsSaving.set(true);
     this.sectionsError.set(null);
