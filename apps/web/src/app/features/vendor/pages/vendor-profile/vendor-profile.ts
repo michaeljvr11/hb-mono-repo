@@ -10,6 +10,9 @@ import { extractErrorMessage } from '../../../../shared/extract-error-message';
 const SLOGAN_MAX_LENGTH = 120;
 /** Mirrors the server-side logo/banner upload constraint (VPC-1/VPC-2): jpg/jpeg/png/webp, 5MB. */
 const ALLOWED_IMAGE_TYPES = 'image/jpeg,image/png,image/webp';
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+type ImageKind = 'logo' | 'banner';
 
 @Component({
   selector: 'app-vendor-profile',
@@ -59,6 +62,12 @@ export class VendorProfile implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadVendorProfile();
+
+    // A stale "saved" banner shouldn't linger once the user starts editing again.
+    this.profileForm.valueChanges.subscribe(() => {
+      this.saveSuccess.set(null);
+      this.saveError.set(null);
+    });
   }
 
   ngOnDestroy(): void {
@@ -104,27 +113,17 @@ export class VendorProfile implements OnInit, OnDestroy {
     const raw = this.profileForm.getRawValue();
     const payload: UpdateVendorRequest = {
       businessName: raw.businessName,
-      tradingName: raw.tradingName,
-      website: raw.website,
-      description: raw.description,
-      slogan: raw.slogan,
+      tradingName: raw.tradingName || undefined,
+      website: raw.website || undefined,
+      description: raw.description || undefined,
+      slogan: raw.slogan || undefined,
     };
 
     this.vendorsService.update(vendor.id, payload)
       .pipe(finalize(() => this.savePending.set(false)))
       .subscribe({
         next: (updated) => {
-          // `update()` is typed against the shared VendorDto (not the self-view) —
-          // merge the known-safe fields back into local state rather than trusting
-          // the response shape for website/description.
-          this.vendor.update(v => v ? {
-            ...v,
-            businessName: updated.businessName,
-            tradingName: updated.tradingName,
-            slogan: updated.slogan,
-            website: raw.website,
-            description: raw.description,
-          } : v);
+          this.vendor.set(updated);
           this.saveSuccess.set('Profile changes saved.');
         },
         error: (err: unknown) => {
@@ -136,45 +135,42 @@ export class VendorProfile implements OnInit, OnDestroy {
   // ─── Logo / banner upload ────────────────────────────────────────────────
 
   onLogoSelected(event: Event): void {
-    const file = this.pickFile(event);
-    if (!file) return;
-
-    this.logoError.set(null);
-    this.setPreview(this.logoPreviewUrl, file);
-    this.logoPending.set(true);
-
-    this.vendorsService.uploadLogo(file)
-      .pipe(finalize(() => this.logoPending.set(false)))
-      .subscribe({
-        next: (updated) => {
-          this.vendor.set(updated);
-          this.revokePreview(this.logoPreviewUrl());
-          this.logoPreviewUrl.set(null);
-        },
-        error: (err: unknown) => {
-          this.logoError.set(extractErrorMessage(err) ?? 'Failed to upload logo. Please try again.');
-        },
-      });
+    this.uploadImage('logo', event);
   }
 
   onBannerSelected(event: Event): void {
+    this.uploadImage('banner', event);
+  }
+
+  private uploadImage(kind: ImageKind, event: Event): void {
     const file = this.pickFile(event);
     if (!file) return;
 
-    this.bannerError.set(null);
-    this.setPreview(this.bannerPreviewUrl, file);
-    this.bannerPending.set(true);
+    const pending = kind === 'logo' ? this.logoPending : this.bannerPending;
+    const error = kind === 'logo' ? this.logoError : this.bannerError;
+    const preview = kind === 'logo' ? this.logoPreviewUrl : this.bannerPreviewUrl;
 
-    this.vendorsService.uploadBanner(file)
-      .pipe(finalize(() => this.bannerPending.set(false)))
+    error.set(null);
+    if (file.size > MAX_IMAGE_BYTES) {
+      error.set('File is too large. Max 5MB.');
+      return;
+    }
+    this.setPreview(preview, file);
+    pending.set(true);
+
+    const upload$ = kind === 'logo' ? this.vendorsService.uploadLogo(file) : this.vendorsService.uploadBanner(file);
+    upload$
+      .pipe(finalize(() => pending.set(false)))
       .subscribe({
         next: (updated) => {
           this.vendor.set(updated);
-          this.revokePreview(this.bannerPreviewUrl());
-          this.bannerPreviewUrl.set(null);
+          this.revokePreview(preview());
+          preview.set(null);
         },
         error: (err: unknown) => {
-          this.bannerError.set(extractErrorMessage(err) ?? 'Failed to upload banner. Please try again.');
+          error.set(extractErrorMessage(err) ?? `Failed to upload ${kind}. Please try again.`);
+          this.revokePreview(preview());
+          preview.set(null);
         },
       });
   }

@@ -134,6 +134,17 @@ describe('VendorsService — profile self-view & uploads', () => {
     req.flush(MOCK_SELF);
   });
 
+  it('update() PATCHes /vendors/:id and returns the self-view DTO', () => {
+    service.update('vendor-1', { slogan: 'New slogan' }).subscribe((res) => {
+      expect(res).toEqual(MOCK_SELF);
+    });
+
+    const req = httpMock.expectOne(`${API_URL}/vendor-1`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ slogan: 'New slogan' });
+    req.flush(MOCK_SELF);
+  });
+
   it('uploadLogo() posts multipart FormData with field "file" to /vendors/me/logo', () => {
     const file = new File(['a'], 'logo.png', { type: 'image/png' });
 

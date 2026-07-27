@@ -146,7 +146,6 @@
               class="field-input"
               type="text"
               formControlName="slogan"
-              maxlength="120"
               [class.field-input--error]="profileForm.get('slogan')?.invalid && profileForm.get('slogan')?.touched"
             />
             <p class="field-hint">{{ profileForm.get('slogan')?.value?.length ?? 0 }}/120</p>
