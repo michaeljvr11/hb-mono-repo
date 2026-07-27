@@ -177,6 +177,260 @@
           </div>
         </form>
       </section>
+
+      <!-- ── Product sections ───────────────────────────────────────────── -->
+      <section class="panel panel--full">
+        <h2 class="panel-title">Product sections</h2>
+        <p class="panel-sub">Build ordered sections of your products to feature on your public profile.</p>
+
+        @if (vendorProductsError()) {
+          <div class="error-banner" role="alert">
+            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+            <span>{{ vendorProductsError() }}</span>
+          </div>
+        }
+        @if (vendorProductsTruncated()) {
+          <p class="field-hint field-hint--warning">
+            Showing your first 100 products — search isn't available yet for larger catalogs.
+          </p>
+        }
+
+        <!-- Add section -->
+        <div class="add-section">
+          <div class="field-row">
+            <div class="field field--half">
+              <label class="field-label" for="new-section-title">Section title</label>
+              <input
+                id="new-section-title"
+                class="field-input"
+                type="text"
+                maxlength="120"
+                [value]="newSectionTitle()"
+                (input)="newSectionTitle.set($any($event.target).value)"
+                placeholder="e.g. Our Top Picks"
+              />
+              <div class="preset-chips">
+                @for (preset of SECTION_TITLE_PRESETS; track preset) {
+                  <button class="preset-chip" type="button" (click)="newSectionTitle.set(preset)">{{ preset }}</button>
+                }
+              </div>
+            </div>
+
+            <div class="field field--half">
+              <span class="field-label" id="new-section-type-label">Section type</span>
+              <div class="radio-group" role="radiogroup" aria-labelledby="new-section-type-label">
+                <label class="radio-item">
+                  <input
+                    type="radio"
+                    name="new-section-type"
+                    [checked]="newSectionType() === VendorSectionType.CURATED"
+                    (change)="newSectionType.set(VendorSectionType.CURATED)"
+                  />
+                  <span>Curated — hand-picked products</span>
+                </label>
+                <label class="radio-item">
+                  <input
+                    type="radio"
+                    name="new-section-type"
+                    [checked]="newSectionType() === VendorSectionType.CATEGORY"
+                    (change)="newSectionType.set(VendorSectionType.CATEGORY)"
+                  />
+                  <span>Category — auto-fills from a category</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="add-section-actions">
+            <button
+              class="secondary-btn"
+              type="button"
+              [disabled]="!newSectionTitle().trim() || !canAddSection()"
+              (click)="addSection()"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">add</span>
+              Add section
+            </button>
+            @if (!canAddSection()) {
+              <p class="field-hint">You've reached the {{ MAX_SECTIONS }}-section limit.</p>
+            }
+          </div>
+        </div>
+
+        <!-- Section list -->
+        @if (sections().length === 0) {
+          <p class="field-hint">No sections yet — add one above to feature products on your profile.</p>
+        } @else {
+          <ul class="section-list">
+            @for (section of sections(); track section.id; let i = $index) {
+              <li class="section-row">
+                <div class="section-row-header">
+                  <div class="reorder-group">
+                    <button
+                      class="row-btn"
+                      type="button"
+                      [disabled]="i === 0"
+                      (click)="moveSection(i, -1)"
+                      [attr.aria-label]="'Move section ' + section.title + ' up'"
+                    >
+                      <span class="material-symbols-outlined" aria-hidden="true">arrow_upward</span>
+                    </button>
+                    <button
+                      class="row-btn"
+                      type="button"
+                      [disabled]="i === sections().length - 1"
+                      (click)="moveSection(i, 1)"
+                      [attr.aria-label]="'Move section ' + section.title + ' down'"
+                    >
+                      <span class="material-symbols-outlined" aria-hidden="true">arrow_downward</span>
+                    </button>
+                  </div>
+
+                  <div class="field section-title-field">
+                    <label class="field-label" [for]="'section-title-' + section.id">Title</label>
+                    <input
+                      [id]="'section-title-' + section.id"
+                      class="field-input"
+                      type="text"
+                      maxlength="120"
+                      [value]="section.title"
+                      (input)="renameSection(section.id, $event)"
+                    />
+                  </div>
+
+                  <span class="type-chip">{{ section.type === VendorSectionType.CURATED ? 'Curated' : 'Category' }}</span>
+
+                  <button
+                    class="row-btn row-btn--danger"
+                    type="button"
+                    (click)="removeSection(section.id)"
+                    [attr.aria-label]="'Delete section ' + section.title"
+                  >
+                    <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                  </button>
+                </div>
+
+                @if (sectionValidationErrors().get(section.id); as validationHint) {
+                  <p class="field-hint field-hint--error">{{ validationHint }}</p>
+                }
+
+                @if (section.type === VendorSectionType.CURATED) {
+                  <div class="section-editor">
+                    <p class="field-hint">{{ (section.productIds ?? []).length }}/{{ CURATED_PRODUCTS_MAX }} products selected</p>
+
+                    @if (sectionProducts(section).length > 0) {
+                      <ul class="picked-products">
+                        @for (product of sectionProducts(section); track product.id) {
+                          <li class="picked-product">
+                            <span class="picked-product-name">{{ product.name }}</span>
+                            <div class="picked-product-actions">
+                              <button
+                                class="row-btn"
+                                type="button"
+                                [disabled]="productIndexInSection(section, product.id) === 0"
+                                (click)="moveProductInSection(section.id, product.id, -1)"
+                                [attr.aria-label]="'Move ' + product.name + ' up'"
+                              >
+                                <span class="material-symbols-outlined" aria-hidden="true">arrow_upward</span>
+                              </button>
+                              <button
+                                class="row-btn"
+                                type="button"
+                                [disabled]="productIndexInSection(section, product.id) === (section.productIds ?? []).length - 1"
+                                (click)="moveProductInSection(section.id, product.id, 1)"
+                                [attr.aria-label]="'Move ' + product.name + ' down'"
+                              >
+                                <span class="material-symbols-outlined" aria-hidden="true">arrow_downward</span>
+                              </button>
+                              <button
+                                class="row-btn row-btn--danger"
+                                type="button"
+                                (click)="removeProductFromSection(section.id, product.id)"
+                                [attr.aria-label]="'Remove ' + product.name"
+                              >
+                                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                              </button>
+                            </div>
+                          </li>
+                        }
+                      </ul>
+                    }
+
+                    @if (vendorProductsLoading()) {
+                      <p class="field-hint">Loading your products…</p>
+                    } @else if (availableProductsForSection(section).length === 0) {
+                      <p class="field-hint">No more of your products to add.</p>
+                    } @else {
+                      <div class="available-products">
+                        @for (product of availableProductsForSection(section); track product.id) {
+                          <button
+                            class="available-product-chip"
+                            type="button"
+                            [disabled]="(section.productIds ?? []).length >= CURATED_PRODUCTS_MAX"
+                            (click)="addProductToSection(section.id, product.id)"
+                          >
+                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                            {{ product.name }}
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="section-editor">
+                    @if (vendorProductsLoading()) {
+                      <p class="field-hint">Loading your categories…</p>
+                    } @else if (vendorCategories().length === 0) {
+                      <p class="field-hint">None of your products have a category assigned yet.</p>
+                    } @else {
+                      <div class="radio-group" role="radiogroup" [attr.aria-label]="'Category for ' + section.title">
+                        @for (cat of vendorCategories(); track cat.id) {
+                          <label class="radio-item">
+                            <input
+                              type="radio"
+                              [name]="'section-category-' + section.id"
+                              [checked]="section.categoryId === cat.id"
+                              (change)="setSectionCategory(section.id, cat.id)"
+                            />
+                            <span>{{ cat.name }}</span>
+                          </label>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </li>
+            }
+          </ul>
+        }
+
+        @if (sectionsError()) {
+          <div class="error-banner error-banner--inline" role="alert">
+            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+            <span>{{ sectionsError() }}</span>
+          </div>
+        }
+        @if (sectionsSuccess()) {
+          <div class="success-banner" role="status">
+            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+            <span>{{ sectionsSuccess() }}</span>
+          </div>
+        }
+
+        <div class="form-actions">
+          <button
+            class="primary-btn"
+            type="button"
+            [disabled]="sectionsSaving() || !sectionsValidForSave()"
+            (click)="saveSections()"
+          >
+            @if (sectionsSaving()) {
+              <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+            }
+            {{ sectionsSaving() ? 'Saving…' : 'Save sections' }}
+          </button>
+        </div>
+      </section>
     </div>
   }
 </section>

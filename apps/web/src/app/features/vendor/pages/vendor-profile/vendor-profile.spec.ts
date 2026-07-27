@@ -1,9 +1,20 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { of, Subject, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
-import { CountryCode, VendorSelfDto, VendorStatus } from '@hb/shared';
+import {
+  CountryCode,
+  CurrencyCode,
+  ListingType,
+  PagedResponse,
+  ProductDto,
+  VendorProfileSection,
+  VendorSectionType,
+  VendorSelfDto,
+  VendorStatus,
+} from '@hb/shared';
 
 import { VendorProfile } from './vendor-profile';
+import { ProductsService } from '../../../../core/api/products.service';
 import { VendorsService } from '../../../../core/api/vendors.service';
 
 // jsdom (the vitest test DOM) may not implement the URL object-URL APIs, and where it
@@ -27,6 +38,47 @@ const MOCK_VENDOR: VendorSelfDto = {
   slogan: 'Quality you can trust',
   logoUrl: 'https://cdn.example/logo.png',
   bannerUrl: 'https://cdn.example/banner.png',
+  profileSections: [],
+};
+
+const MOCK_PRODUCTS: ProductDto[] = [
+  {
+    id: 'product-1',
+    name: 'Widget A',
+    description: 'A fine widget.',
+    price: 100,
+    currency: CurrencyCode.ZAR,
+    stockQuantity: 5,
+    originCountry: CountryCode.SOUTH_AFRICA,
+    listingType: ListingType.VENDOR,
+    images: [],
+    vendor: { id: 'vendor-1', businessName: 'My Store' },
+    categories: [{ id: 'cat-1', name: 'Widgets' }],
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'product-2',
+    name: 'Widget B',
+    description: 'Another fine widget.',
+    price: 200,
+    currency: CurrencyCode.ZAR,
+    stockQuantity: 3,
+    originCountry: CountryCode.SOUTH_AFRICA,
+    listingType: ListingType.VENDOR,
+    images: [],
+    vendor: { id: 'vendor-1', businessName: 'My Store' },
+    categories: [{ id: 'cat-2', name: 'Gadgets' }],
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+];
+
+const MOCK_PRODUCTS_PAGE: PagedResponse<ProductDto> = {
+  items: MOCK_PRODUCTS,
+  total: MOCK_PRODUCTS.length,
+  page: 1,
+  limit: 100,
 };
 
 function fileChangeEvent(file: File): Event {
@@ -36,13 +88,17 @@ function fileChangeEvent(file: File): Event {
   return { target: input } as unknown as Event;
 }
 
-// ─── Stub interface ──────────────────────────────────────────────────────────
+// ─── Stub interfaces ──────────────────────────────────────────────────────────
 
 interface VendorsStub {
   getMe: ReturnType<typeof vi.fn>;
   update: ReturnType<typeof vi.fn>;
   uploadLogo: ReturnType<typeof vi.fn>;
   uploadBanner: ReturnType<typeof vi.fn>;
+}
+
+interface ProductsStub {
+  list: ReturnType<typeof vi.fn>;
 }
 
 function makeVendorsStub(): VendorsStub {
@@ -54,11 +110,18 @@ function makeVendorsStub(): VendorsStub {
   };
 }
 
-async function setupTestBed(vendorsStub: VendorsStub): Promise<void> {
+function makeProductsStub(): ProductsStub {
+  return {
+    list: vi.fn(() => of(MOCK_PRODUCTS_PAGE)),
+  };
+}
+
+async function setupTestBed(vendorsStub: VendorsStub, productsStub: ProductsStub = makeProductsStub()): Promise<void> {
   return TestBed.configureTestingModule({
     imports: [VendorProfile],
     providers: [
       { provide: VendorsService, useValue: vendorsStub },
+      { provide: ProductsService, useValue: productsStub },
     ],
   }).compileComponents();
 }
@@ -69,10 +132,12 @@ describe('VendorProfile component', () => {
   let component: VendorProfile;
   let fixture: ComponentFixture<VendorProfile>;
   let vendorsStub: VendorsStub;
+  let productsStub: ProductsStub;
 
   beforeEach(async () => {
     vendorsStub = makeVendorsStub();
-    await setupTestBed(vendorsStub);
+    productsStub = makeProductsStub();
+    await setupTestBed(vendorsStub, productsStub);
     fixture = TestBed.createComponent(VendorProfile);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -306,6 +371,444 @@ describe('VendorProfile component', () => {
       expect(component.bannerError()).toBe('File too large');
       expect(component.bannerPending()).toBe(false);
       expect(component.bannerDisplayUrl()).toBe('https://cdn.example/banner.png');
+    });
+  });
+
+  // ── Product sections ────────────────────────────────────────────────────
+
+  describe('product sections', () => {
+    it('fetches the vendor\'s own products, scoped by vendorId', () => {
+      expect(productsStub.list).toHaveBeenCalledWith({ vendorId: 'vendor-1', limit: 100 });
+    });
+
+    it('seeds sections from vendor.profileSections on load', async () => {
+      const seeded: VendorProfileSection[] = [
+        { id: 'sec-1', title: 'Top Picks', type: VendorSectionType.CURATED, productIds: ['product-1'] },
+      ];
+      vendorsStub.getMe.mockReturnValue(of({ ...MOCK_VENDOR, profileSections: seeded }));
+      TestBed.resetTestingModule();
+      await setupTestBed(vendorsStub, productsStub);
+      const seededFixture = TestBed.createComponent(VendorProfile);
+      seededFixture.detectChanges();
+      await seededFixture.whenStable();
+
+      expect(seededFixture.componentInstance.sections()).toEqual(seeded);
+    });
+
+    it('derives vendorCategories from the fetched products, deduped', () => {
+      expect(component.vendorCategories()).toEqual([
+        { id: 'cat-1', name: 'Widgets' },
+        { id: 'cat-2', name: 'Gadgets' },
+      ]);
+    });
+
+    it('adds a curated section with a generated id and the chosen type/title', () => {
+      component.newSectionTitle.set('Top Picks');
+      component.newSectionType.set(VendorSectionType.CURATED);
+      component.addSection();
+
+      expect(component.sections().length).toBe(1);
+      expect(component.sections()[0]).toMatchObject({ title: 'Top Picks', type: VendorSectionType.CURATED });
+      expect(component.sections()[0].id).toBeTruthy();
+      // Draft fields reset after adding.
+      expect(component.newSectionTitle()).toBe('');
+    });
+
+    it('does not add a section with a blank title', () => {
+      component.newSectionTitle.set('   ');
+      component.addSection();
+
+      expect(component.sections().length).toBe(0);
+    });
+
+    it('clicking a preset chip prefills (does not force) the title field', () => {
+      fixture.detectChanges();
+      const presetChip: HTMLButtonElement = fixture.nativeElement.querySelector('.preset-chip');
+      presetChip.click();
+      expect(component.newSectionTitle()).toBe(presetChip.textContent?.trim());
+
+      // User can still overwrite it with free text.
+      component.newSectionTitle.set('Something Else');
+      expect(component.newSectionTitle()).toBe('Something Else');
+    });
+
+    it('reorders sections up and down', () => {
+      component.newSectionTitle.set('Section A');
+      component.addSection();
+      component.newSectionTitle.set('Section B');
+      component.addSection();
+
+      expect(component.sections().map(s => s.title)).toEqual(['Section A', 'Section B']);
+
+      component.moveSection(1, -1);
+      expect(component.sections().map(s => s.title)).toEqual(['Section B', 'Section A']);
+
+      component.moveSection(0, -1); // already at top — no-op
+      expect(component.sections().map(s => s.title)).toEqual(['Section B', 'Section A']);
+    });
+
+    it('renames a section inline', () => {
+      component.newSectionTitle.set('Original');
+      component.addSection();
+      const id = component.sections()[0].id;
+
+      component.renameSection(id, { target: { value: 'Renamed' } } as unknown as Event);
+
+      expect(component.sections()[0].title).toBe('Renamed');
+    });
+
+    it('truncates an inline rename at 120 chars, mirroring the server DTO cap', () => {
+      component.newSectionTitle.set('Original');
+      component.addSection();
+      const id = component.sections()[0].id;
+
+      component.renameSection(id, { target: { value: 'x'.repeat(150) } } as unknown as Event);
+
+      expect(component.sections()[0].title.length).toBe(120);
+    });
+
+    it('deletes a section', () => {
+      component.newSectionTitle.set('Doomed');
+      component.addSection();
+      const id = component.sections()[0].id;
+
+      component.removeSection(id);
+
+      expect(component.sections()).toEqual([]);
+    });
+
+    it('curated picker only ever offers the vendor\'s own products', () => {
+      component.newSectionTitle.set('Top Picks');
+      component.newSectionType.set(VendorSectionType.CURATED);
+      component.addSection();
+      const section = component.sections()[0];
+
+      const available = component.availableProductsForSection(section);
+      expect(available.map(p => p.id)).toEqual(['product-1', 'product-2']);
+    });
+
+    it('adds and removes products from a curated section, and reorders them', () => {
+      component.newSectionTitle.set('Top Picks');
+      component.addSection();
+      const id = component.sections()[0].id;
+
+      component.addProductToSection(id, 'product-1');
+      component.addProductToSection(id, 'product-2');
+      expect(component.sections()[0].productIds).toEqual(['product-1', 'product-2']);
+
+      component.moveProductInSection(id, 'product-2', -1);
+      expect(component.sections()[0].productIds).toEqual(['product-2', 'product-1']);
+
+      component.removeProductFromSection(id, 'product-2');
+      expect(component.sections()[0].productIds).toEqual(['product-1']);
+    });
+
+    it('does not add the same product twice to a curated section', () => {
+      component.newSectionTitle.set('Top Picks');
+      component.addSection();
+      const id = component.sections()[0].id;
+
+      component.addProductToSection(id, 'product-1');
+      component.addProductToSection(id, 'product-1');
+
+      expect(component.sections()[0].productIds).toEqual(['product-1']);
+    });
+
+    it('sets categoryId on a category section', () => {
+      component.newSectionTitle.set('Gadgets Zone');
+      component.newSectionType.set(VendorSectionType.CATEGORY);
+      component.addSection();
+      const id = component.sections()[0].id;
+
+      component.setSectionCategory(id, 'cat-2');
+
+      expect(component.sections()[0].categoryId).toBe('cat-2');
+    });
+
+    it('saveSections calls VendorsService.update with the id and the current sections array', () => {
+      const section: VendorProfileSection = { id: 'sec-1', title: 'Top Picks', type: VendorSectionType.CURATED, productIds: ['product-1'] };
+      component.sections.set([section]);
+      vendorsStub.update.mockReturnValue(of({ ...MOCK_VENDOR, profileSections: [section] }));
+
+      component.saveSections();
+
+      expect(vendorsStub.update).toHaveBeenCalledWith('vendor-1', { profileSections: [section] });
+    });
+
+    it('saving an empty sections array is valid', () => {
+      component.sections.set([]);
+      vendorsStub.update.mockReturnValue(of({ ...MOCK_VENDOR, profileSections: [] }));
+
+      component.saveSections();
+
+      expect(vendorsStub.update).toHaveBeenCalledWith('vendor-1', { profileSections: [] });
+    });
+
+    // ── Round-trips: UI actions -> saved payload ─────────────────────────
+
+    it('saves a curated section\'s productIds in the order left by reorder actions, not add order', () => {
+      component.newSectionTitle.set('Top Picks');
+      component.newSectionType.set(VendorSectionType.CURATED);
+      component.addSection();
+      const id = component.sections()[0].id;
+
+      component.addProductToSection(id, 'product-1');
+      component.addProductToSection(id, 'product-2');
+      component.moveProductInSection(id, 'product-2', -1); // product-2 should now lead
+
+      vendorsStub.update.mockReturnValue(of(MOCK_VENDOR));
+      component.saveSections();
+
+      const [, payload] = vendorsStub.update.mock.calls[0] as [string, { profileSections: VendorProfileSection[] }];
+      expect(payload.profileSections[0].productIds).toEqual(['product-2', 'product-1']);
+    });
+
+    it('saves a renamed section title, not the title it had when added', () => {
+      component.newSectionTitle.set('Original Title');
+      component.addSection();
+      const id = component.sections()[0].id;
+      component.addProductToSection(id, 'product-1'); // keep the section valid-for-save (curated needs >=1 product)
+
+      component.renameSection(id, { target: { value: 'Renamed Title' } } as unknown as Event);
+
+      vendorsStub.update.mockReturnValue(of(MOCK_VENDOR));
+      component.saveSections();
+
+      const [, payload] = vendorsStub.update.mock.calls[0] as [string, { profileSections: VendorProfileSection[] }];
+      expect(payload.profileSections[0].title).toBe('Renamed Title');
+    });
+
+    it('saves a category section with type/categoryId and no productIds', () => {
+      component.newSectionTitle.set('Gadgets Zone');
+      component.newSectionType.set(VendorSectionType.CATEGORY);
+      component.addSection();
+      const id = component.sections()[0].id;
+      component.setSectionCategory(id, 'cat-2');
+
+      vendorsStub.update.mockReturnValue(of(MOCK_VENDOR));
+      component.saveSections();
+
+      const [, payload] = vendorsStub.update.mock.calls[0] as [string, { profileSections: VendorProfileSection[] }];
+      expect(payload.profileSections[0]).toMatchObject({
+        title: 'Gadgets Zone',
+        type: VendorSectionType.CATEGORY,
+        categoryId: 'cat-2',
+      });
+      expect(payload.profileSections[0].productIds).toBeUndefined();
+    });
+
+    // ── Client-side caps ───────────────────────────────────────────────────
+
+    it('canAddSection() goes false at the MAX_SECTIONS cap and addSection() no-ops past it', () => {
+      for (let i = 0; i < 10; i++) {
+        component.newSectionTitle.set(`Section ${i}`);
+        component.addSection();
+      }
+      expect(component.sections().length).toBe(10);
+      expect(component.canAddSection()).toBe(false);
+
+      component.newSectionTitle.set('Eleventh');
+      component.addSection();
+
+      expect(component.sections().length).toBe(10);
+    });
+
+    it('disables the Add section button in the DOM once the section cap is reached', () => {
+      for (let i = 0; i < 10; i++) {
+        component.newSectionTitle.set(`Section ${i}`);
+        component.addSection();
+      }
+      component.newSectionTitle.set('Would be eleventh');
+      fixture.detectChanges();
+
+      const addBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.add-section-actions .secondary-btn');
+      expect(addBtn.disabled).toBe(true);
+    });
+
+    it('addProductToSection() no-ops once a curated section hits CURATED_PRODUCTS_MAX', () => {
+      component.newSectionTitle.set('Big Section');
+      component.newSectionType.set(VendorSectionType.CURATED);
+      component.addSection();
+      const id = component.sections()[0].id;
+
+      for (let i = 0; i < 24; i++) {
+        component.addProductToSection(id, `product-${i}`);
+      }
+      expect(component.sections()[0].productIds?.length).toBe(24);
+
+      component.addProductToSection(id, 'product-overflow');
+
+      expect(component.sections()[0].productIds?.length).toBe(24);
+      expect(component.sections()[0].productIds).not.toContain('product-overflow');
+    });
+
+    // ── Save-payload validity guard (structural: server 400s the WHOLE save otherwise) ──
+
+    describe('sectionsValidForSave / invalid-section guard', () => {
+      it('blocks save when a curated section has no productIds, and re-enables once one is added', () => {
+        component.newSectionTitle.set('Empty Curated');
+        component.newSectionType.set(VendorSectionType.CURATED);
+        component.addSection();
+        const id = component.sections()[0].id;
+
+        expect(component.sectionsValidForSave()).toBe(false);
+        expect(component.sectionValidationErrors().get(id)).toBe('Add at least one product.');
+
+        vendorsStub.update.mockReturnValue(of(MOCK_VENDOR));
+        component.saveSections();
+        expect(vendorsStub.update).not.toHaveBeenCalled();
+
+        component.addProductToSection(id, 'product-1');
+        expect(component.sectionsValidForSave()).toBe(true);
+        expect(component.sectionValidationErrors().has(id)).toBe(false);
+
+        component.saveSections();
+        expect(vendorsStub.update).toHaveBeenCalledTimes(1);
+      });
+
+      it('blocks save when a category section has no categoryId, and re-enables once one is chosen', () => {
+        component.newSectionTitle.set('Empty Category');
+        component.newSectionType.set(VendorSectionType.CATEGORY);
+        component.addSection();
+        const id = component.sections()[0].id;
+
+        expect(component.sectionsValidForSave()).toBe(false);
+        expect(component.sectionValidationErrors().get(id)).toBe('Choose a category.');
+
+        vendorsStub.update.mockReturnValue(of(MOCK_VENDOR));
+        component.saveSections();
+        expect(vendorsStub.update).not.toHaveBeenCalled();
+
+        component.setSectionCategory(id, 'cat-1');
+        expect(component.sectionsValidForSave()).toBe(true);
+
+        component.saveSections();
+        expect(vendorsStub.update).toHaveBeenCalledTimes(1);
+      });
+
+      it('blocks save when a section title is blank/whitespace-only', () => {
+        component.sections.set([
+          { id: 'sec-blank', title: '   ', type: VendorSectionType.CURATED, productIds: ['product-1'] },
+        ]);
+
+        expect(component.sectionsValidForSave()).toBe(false);
+        expect(component.sectionValidationErrors().get('sec-blank')).toBe('Add a title.');
+
+        vendorsStub.update.mockReturnValue(of(MOCK_VENDOR));
+        component.saveSections();
+        expect(vendorsStub.update).not.toHaveBeenCalled();
+      });
+
+      it('disables the Save sections button in the DOM while invalid, and re-enables it once fixed', () => {
+        component.newSectionTitle.set('Empty Curated');
+        component.newSectionType.set(VendorSectionType.CURATED);
+        component.addSection();
+        const id = component.sections()[0].id;
+        fixture.detectChanges();
+
+        const saveBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.panel--full .primary-btn');
+        expect(saveBtn.disabled).toBe(true);
+
+        component.addProductToSection(id, 'product-1');
+        fixture.detectChanges();
+        expect(saveBtn.disabled).toBe(false);
+      });
+    });
+
+    // ── Reorder desync guard (id-based, not filtered-index-based) ─────────
+
+    it('reorders correctly by productId even when a section holds an id unresolvable to a fetched product', () => {
+      // 'ghost-product' never appears in MOCK_PRODUCTS — sectionProducts() silently drops it,
+      // which is exactly the scenario that desyncs a filtered-list index from the raw array.
+      const section: VendorProfileSection = {
+        id: 'sec-1',
+        title: 'Top Picks',
+        type: VendorSectionType.CURATED,
+        productIds: ['ghost-product', 'product-1', 'product-2'],
+      };
+      component.sections.set([section]);
+
+      // Move product-2 up by its own id — should swap with product-1, leaving the
+      // unresolvable ghost id untouched at index 0.
+      component.moveProductInSection('sec-1', 'product-2', -1);
+
+      expect(component.sections()[0].productIds).toEqual(['ghost-product', 'product-2', 'product-1']);
+
+      vendorsStub.update.mockReturnValue(of(MOCK_VENDOR));
+      component.saveSections();
+
+      const [, payload] = vendorsStub.update.mock.calls[0] as [string, { profileSections: VendorProfileSection[] }];
+      expect(payload.profileSections[0].productIds).toEqual(['ghost-product', 'product-2', 'product-1']);
+    });
+
+    // ── Truncated product list warning ─────────────────────────────────────
+
+    it('surfaces a warning when the vendor has more products than the single fetched page', async () => {
+      const truncatedPage: PagedResponse<ProductDto> = { items: MOCK_PRODUCTS, total: 150, page: 1, limit: 100 };
+      productsStub.list.mockReturnValue(of(truncatedPage));
+      TestBed.resetTestingModule();
+      await setupTestBed(vendorsStub, productsStub);
+      const truncatedFixture = TestBed.createComponent(VendorProfile);
+      truncatedFixture.detectChanges();
+      await truncatedFixture.whenStable();
+
+      expect(truncatedFixture.componentInstance.vendorProductsTruncated()).toBe(true);
+    });
+
+    it('does not show the truncation warning when all products fit on one page', () => {
+      expect(component.vendorProductsTruncated()).toBe(false);
+    });
+
+    it('on save success, trusts the server response for both vendor and sections state', async () => {
+      const serverSections: VendorProfileSection[] = [
+        { id: 'sec-server', title: 'Server Normalised', type: VendorSectionType.CATEGORY, categoryId: 'cat-1' },
+      ];
+      vendorsStub.update.mockReturnValue(of({ ...MOCK_VENDOR, profileSections: serverSections }));
+
+      component.saveSections();
+      await fixture.whenStable();
+
+      expect(component.sections()).toEqual(serverSections);
+      expect(component.vendor()?.profileSections).toEqual(serverSections);
+      expect(component.sectionsSuccess()).toBeTruthy();
+      expect(component.sectionsError()).toBeNull();
+      expect(component.sectionsSaving()).toBe(false);
+    });
+
+    it('sets sectionsError and clears sectionsSaving when the save fails', async () => {
+      vendorsStub.update.mockReturnValue(throwError(() => new Error('500')));
+
+      component.saveSections();
+      await fixture.whenStable();
+
+      expect(component.sectionsError()).toBeTruthy();
+      expect(component.sectionsSuccess()).toBeNull();
+      expect(component.sectionsSaving()).toBe(false);
+    });
+
+    it('does not double-submit while a sections save is pending', async () => {
+      const pending$ = new Subject<VendorSelfDto>();
+      vendorsStub.update.mockReturnValue(pending$);
+
+      component.saveSections();
+      component.saveSections();
+      pending$.next(MOCK_VENDOR);
+      pending$.complete();
+      await fixture.whenStable();
+
+      expect(vendorsStub.update).toHaveBeenCalledTimes(1);
+    });
+
+    it('clears a stale sections success/error banner once the list is edited again', async () => {
+      vendorsStub.update.mockReturnValue(of(MOCK_VENDOR));
+      component.saveSections();
+      await fixture.whenStable();
+      expect(component.sectionsSuccess()).toBeTruthy();
+
+      component.newSectionTitle.set('New Section');
+      component.addSection();
+
+      expect(component.sectionsSuccess()).toBeNull();
     });
   });
 

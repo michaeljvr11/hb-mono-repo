@@ -2,7 +2,8 @@ import { isPlatformBrowser } from '@angular/common';
 import { Component, OnDestroy, OnInit, PLATFORM_ID, WritableSignal, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { UpdateVendorRequest, VendorSelfDto } from '@hb/shared';
+import { ProductCategoryDto, ProductDto, UpdateVendorRequest, VendorProfileSection, VendorSectionType, VendorSelfDto } from '@hb/shared';
+import { ProductsService } from '../../../../core/api/products.service';
 import { VendorsService } from '../../../../core/api/vendors.service';
 import { extractErrorMessage } from '../../../../shared/extract-error-message';
 
@@ -14,6 +15,15 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 type ImageKind = 'logo' | 'banner';
 
+/** Server-side max page size — avoids truncating the vendor's own product list for the section pickers. */
+const PRODUCT_LIST_MAX = 100;
+/** Mirrors the server-side cap on VendorDto.profileSections (VPC-1). */
+const MAX_SECTIONS = 10;
+/** Mirrors the server-side cap on VendorProfileSection.productIds for curated sections (VPC-1). */
+const CURATED_PRODUCTS_MAX = 24;
+/** UX-nudge presets only — free text is always allowed (spec: "no hardcoded section names"). */
+const SECTION_TITLE_PRESETS = ['Top Picks', 'New Arrivals'];
+
 @Component({
   selector: 'app-vendor-profile',
   standalone: true,
@@ -23,10 +33,15 @@ type ImageKind = 'logo' | 'banner';
 })
 export class VendorProfile implements OnInit, OnDestroy {
   private readonly vendorsService = inject(VendorsService);
+  private readonly productsService = inject(ProductsService);
   private readonly fb = inject(FormBuilder);
   private readonly platformId = inject(PLATFORM_ID);
 
   readonly ALLOWED_IMAGE_TYPES = ALLOWED_IMAGE_TYPES;
+  readonly VendorSectionType = VendorSectionType;
+  readonly SECTION_TITLE_PRESETS = SECTION_TITLE_PRESETS;
+  readonly MAX_SECTIONS = MAX_SECTIONS;
+  readonly CURATED_PRODUCTS_MAX = CURATED_PRODUCTS_MAX;
 
   // ─── Vendor profile state ────────────────────────────────────────────────
   readonly vendor = signal<VendorSelfDto | null>(null);
@@ -60,6 +75,37 @@ export class VendorProfile implements OnInit, OnDestroy {
   /** Newly-selected (unsaved) file preview if present, otherwise the persisted banner. */
   readonly bannerDisplayUrl = computed(() => this.bannerPreviewUrl() ?? this.vendor()?.bannerUrl ?? null);
 
+  // ─── Product sections ────────────────────────────────────────────────────
+  readonly sections = signal<VendorProfileSection[]>([]);
+  readonly sectionsSaving = signal(false);
+  readonly sectionsError = signal<string | null>(null);
+  readonly sectionsSuccess = signal<string | null>(null);
+  readonly canAddSection = computed(() => this.sections().length < MAX_SECTIONS);
+
+  /** New-section draft fields. */
+  readonly newSectionTitle = signal('');
+  readonly newSectionType = signal<VendorSectionType>(VendorSectionType.CURATED);
+
+  /** The vendor's own products — source for the curated picker and the category picker. */
+  readonly vendorProducts = signal<ProductDto[]>([]);
+  readonly vendorProductsLoading = signal(true);
+  readonly vendorProductsError = signal<string | null>(null);
+  /** Total vendor product count reported by the server, to detect when the page-1-only fetch below is truncated. */
+  readonly vendorProductsTotal = signal(0);
+  /** True once the vendor has more products than the single page fetched — pickers only cover page 1 (see PRODUCT_LIST_MAX). */
+  readonly vendorProductsTruncated = computed(() => this.vendorProductsTotal() > this.vendorProducts().length);
+
+  /** Categories the vendor actually has products in (deduped), NOT the full platform catalog. */
+  readonly vendorCategories = computed<ProductCategoryDto[]>(() => {
+    const byId = new Map<string, ProductCategoryDto>();
+    for (const product of this.vendorProducts()) {
+      for (const category of product.categories) {
+        if (!byId.has(category.id)) byId.set(category.id, category);
+      }
+    }
+    return [...byId.values()];
+  });
+
   ngOnInit(): void {
     this.loadVendorProfile();
 
@@ -91,11 +137,29 @@ export class VendorProfile implements OnInit, OnDestroy {
           description: vendor.description ?? '',
           slogan: vendor.slogan ?? '',
         });
+        this.sections.set(vendor.profileSections ?? []);
         this.vendorLoading.set(false);
+        this.loadVendorProducts(vendor.id);
       },
       error: () => {
         this.vendorLoadError.set('Could not load your vendor profile. Please refresh the page.');
         this.vendorLoading.set(false);
+      },
+    });
+  }
+
+  private loadVendorProducts(vendorId: string): void {
+    this.vendorProductsLoading.set(true);
+    this.vendorProductsError.set(null);
+    this.productsService.list({ vendorId, limit: PRODUCT_LIST_MAX }).subscribe({
+      next: (res) => {
+        this.vendorProducts.set(res.items);
+        this.vendorProductsTotal.set(res.total);
+        this.vendorProductsLoading.set(false);
+      },
+      error: () => {
+        this.vendorProductsError.set('Failed to load your products. Curated/category pickers may be unavailable.');
+        this.vendorProductsLoading.set(false);
       },
     });
   }
@@ -130,6 +194,156 @@ export class VendorProfile implements OnInit, OnDestroy {
           this.saveError.set(extractErrorMessage(err) ?? 'Failed to save profile changes. Please try again.');
         },
       });
+  }
+
+  // ─── Product sections ────────────────────────────────────────────────────
+
+  /**
+   * Maps section id -> the reason it can't be saved yet, so the server's structural
+   * validators (IsCuratedProductIds / IsCategoryId, both non-negotiable there) can never
+   * see a section that would 400 the *entire* PATCH and take every sibling section down
+   * with it. Blank/whitespace-only titles are folded in here too (server allows them,
+   * but they'd persist and render as blank headings on the public profile).
+   */
+  readonly sectionValidationErrors = computed<Map<string, string>>(() => {
+    const errors = new Map<string, string>();
+    for (const section of this.sections()) {
+      if (!section.title.trim()) {
+        errors.set(section.id, 'Add a title.');
+      } else if (section.type === VendorSectionType.CURATED && (section.productIds ?? []).length === 0) {
+        errors.set(section.id, 'Add at least one product.');
+      } else if (section.type === VendorSectionType.CATEGORY && !section.categoryId) {
+        errors.set(section.id, 'Choose a category.');
+      }
+    }
+    return errors;
+  });
+
+  readonly sectionsValidForSave = computed(() => this.sectionValidationErrors().size === 0);
+
+  addSection(): void {
+    const title = this.newSectionTitle().trim();
+    if (!title || !this.canAddSection()) return;
+
+    const section: VendorProfileSection = {
+      id: crypto.randomUUID(),
+      title,
+      type: this.newSectionType(),
+    };
+    this.updateSections((list) => [...list, section]);
+    this.newSectionTitle.set('');
+    this.newSectionType.set(VendorSectionType.CURATED);
+  }
+
+  renameSection(id: string, event: Event): void {
+    // Mirror server's DTO cap (@MaxLength(120), no @IsNotEmpty) — a >120-char title 400s the
+    // whole save, and blank titles are caught separately by sectionValidationErrors above.
+    const title = (event.target as HTMLInputElement).value.slice(0, 120);
+    this.updateSections((list) => list.map((s) => (s.id === id ? { ...s, title } : s)));
+  }
+
+  removeSection(id: string): void {
+    this.updateSections((list) => list.filter((s) => s.id !== id));
+  }
+
+  moveSection(index: number, direction: -1 | 1): void {
+    this.updateSections((list) => this.swap(list, index, index + direction));
+  }
+
+  setSectionCategory(id: string, categoryId: string): void {
+    this.updateSections((list) => list.map((s) => (s.id === id ? { ...s, categoryId } : s)));
+  }
+
+  addProductToSection(sectionId: string, productId: string): void {
+    this.updateSections((list) =>
+      list.map((s) => {
+        if (s.id !== sectionId) return s;
+        const current = s.productIds ?? [];
+        if (current.includes(productId) || current.length >= CURATED_PRODUCTS_MAX) return s;
+        return { ...s, productIds: [...current, productId] };
+      }),
+    );
+  }
+
+  removeProductFromSection(sectionId: string, productId: string): void {
+    this.updateSections((list) =>
+      list.map((s) =>
+        s.id === sectionId ? { ...s, productIds: (s.productIds ?? []).filter((id) => id !== productId) } : s,
+      ),
+    );
+  }
+
+  /**
+   * Takes the productId itself, not a list index: `sectionProducts()` below silently drops
+   * any id that doesn't resolve to a currently-fetched product, so an index into that
+   * *filtered* list desyncs from a raw-array index the moment a section holds one
+   * unresolvable id — reordering by id keeps this correct regardless of that gap.
+   */
+  moveProductInSection(sectionId: string, productId: string, direction: -1 | 1): void {
+    this.updateSections((list) =>
+      list.map((s) => {
+        if (s.id !== sectionId) return s;
+        const ids = s.productIds ?? [];
+        const index = ids.indexOf(productId);
+        if (index === -1) return s;
+        return { ...s, productIds: this.swap(ids, index, index + direction) };
+      }),
+    );
+  }
+
+  /** Raw-array position of a productId within a section, for up/down [disabled] bounds (see moveProductInSection). */
+  productIndexInSection(section: VendorProfileSection, productId: string): number {
+    return (section.productIds ?? []).indexOf(productId);
+  }
+
+  /** Products already picked for a curated section, resolved in order (dangling ids silently dropped). */
+  sectionProducts(section: VendorProfileSection): ProductDto[] {
+    return (section.productIds ?? [])
+      .map((id) => this.vendorProducts().find((p) => p.id === id))
+      .filter((p): p is ProductDto => !!p);
+  }
+
+  /** The vendor's own products not yet picked for this curated section. */
+  availableProductsForSection(section: VendorProfileSection): ProductDto[] {
+    const picked = new Set(section.productIds ?? []);
+    return this.vendorProducts().filter((p) => !picked.has(p.id));
+  }
+
+  saveSections(): void {
+    const vendor = this.vendor();
+    if (!vendor || this.sectionsSaving() || !this.sectionsValidForSave()) return;
+
+    this.sectionsSaving.set(true);
+    this.sectionsError.set(null);
+    this.sectionsSuccess.set(null);
+
+    this.vendorsService.update(vendor.id, { profileSections: this.sections() })
+      .pipe(finalize(() => this.sectionsSaving.set(false)))
+      .subscribe({
+        next: (updated) => {
+          this.vendor.set(updated);
+          this.sections.set(updated.profileSections ?? []);
+          this.sectionsSuccess.set('Product sections saved.');
+        },
+        error: (err: unknown) => {
+          this.sectionsError.set(extractErrorMessage(err) ?? 'Failed to save product sections. Please try again.');
+        },
+      });
+  }
+
+  /** Swaps two array elements immutably; no-op (returns the same list) if either index is out of range. */
+  private swap<T>(list: T[], a: number, b: number): T[] {
+    if (a < 0 || b < 0 || a >= list.length || b >= list.length) return list;
+    const copy = [...list];
+    [copy[a], copy[b]] = [copy[b], copy[a]];
+    return copy;
+  }
+
+  /** Mutates sections and clears any stale save banner, mirroring the details-form editing convention. */
+  private updateSections(updater: (list: VendorProfileSection[]) => VendorProfileSection[]): void {
+    this.sections.update(updater);
+    this.sectionsSuccess.set(null);
+    this.sectionsError.set(null);
   }
 
   // ─── Logo / banner upload ────────────────────────────────────────────────
