@@ -1,7 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { AnalyticsEventType, CountryCode, ProductCategoryDto, ProductDto, VendorDto } from '@hb/shared';
+import {
+  AnalyticsEventType,
+  CountryCode,
+  ProductCategoryDto,
+  ProductDto,
+  VendorDto,
+  VendorSectionType,
+} from '@hb/shared';
 import { AnalyticsService } from '../../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../../core/analytics/google-analytics.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -15,6 +22,13 @@ import { RadialNav } from '../../../shared/components/radial-nav/radial-nav';
 
 type VendorState = 'loading' | 'loaded' | 'not-found' | 'error';
 type ProductsState = 'loading' | 'loaded' | 'empty' | 'error';
+
+/** A vendor-defined profile section resolved against the vendor's loaded product list. */
+interface ResolvedSection {
+  id: string;
+  title: string;
+  products: ProductDto[];
+}
 
 /** Server-side max page size — used to avoid truncating a vendor's storefront listings. */
 const PRODUCT_LIST_MAX = 100;
@@ -72,6 +86,46 @@ export class PublicVendorProfile {
     }
     return Array.from(seen.values());
   });
+
+  /**
+   * Vendor-authored profile sections (curated picks or category pulls), resolved
+   * in order against the already-loaded `products()` list — no extra requests.
+   * Sections that resolve to zero products are dropped entirely ("an empty
+   * section renders nothing rather than an empty shell"). Returns `[]` while
+   * products are still loading so the template doesn't flash an empty state.
+   */
+  readonly resolvedSections = computed<ResolvedSection[]>(() => {
+    if (this.productsState() === 'loading') return [];
+
+    const vendor = this.vendor();
+    const sections = vendor?.profileSections ?? [];
+    if (!sections.length) return [];
+
+    const allProducts = this.products();
+    const productsById = new Map(allProducts.map((product) => [product.id, product]));
+
+    const resolved: ResolvedSection[] = [];
+    for (const section of sections) {
+      let sectionProducts: ProductDto[];
+      if (section.type === VendorSectionType.CURATED) {
+        sectionProducts = (section.productIds ?? [])
+          .map((id) => productsById.get(id))
+          .filter((product): product is ProductDto => !!product);
+      } else {
+        sectionProducts = allProducts.filter((product) =>
+          (product.categories ?? []).some((category) => category.id === section.categoryId),
+        );
+      }
+
+      if (sectionProducts.length) {
+        resolved.push({ id: section.id, title: section.title, products: sectionProducts });
+      }
+    }
+    return resolved;
+  });
+
+  /** True once the vendor has at least one non-empty custom profile section. */
+  readonly hasCustomSections = computed(() => this.resolvedSections().length > 0);
 
   constructor() {
     this.route.paramMap.subscribe((params) => {
