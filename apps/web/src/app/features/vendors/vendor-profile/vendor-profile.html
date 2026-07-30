@@ -26,7 +26,8 @@
         class="vendor-profile__banner"
         [src]="vendor.bannerUrl"
         [alt]="vendor.businessName + ' banner'"
-        loading="lazy"
+        loading="eager"
+        fetchpriority="high"
       />
     }
     <section class="vendor-profile__hero">
@@ -80,10 +81,24 @@
     } @else if (hasCustomSections()) {
       <!-- ── Vendor-curated / category profile sections ────────────────── -->
       @for (section of resolvedSections(); track section.id) {
-        <section class="vendor-profile__section" [attr.aria-label]="section.title">
-          <h2 class="vendor-profile__section-title">{{ section.title }}</h2>
+        <section class="vendor-profile__section" [attr.aria-labelledby]="'section-title-' + section.id">
+          <h2 class="vendor-profile__section-title" [id]="'section-title-' + section.id">{{ section.title }}</h2>
           <div class="vendor-profile__grid">
             @for (product of section.products; track product.id) {
+              <app-product-card [product]="product" variant="grid" (addToCart)="onAddToCart($event)" />
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ── Residual grid — products not claimed by any section ────────── -->
+      @if (unsectionedProducts().length) {
+        <section class="vendor-profile__section" aria-labelledby="section-title-unsectioned">
+          <h2 class="vendor-profile__section-title" id="section-title-unsectioned">
+            More from {{ vendor.businessName }}
+          </h2>
+          <div class="vendor-profile__grid">
+            @for (product of unsectionedProducts(); track product.id) {
               <app-product-card [product]="product" variant="grid" (addToCart)="onAddToCart($event)" />
             }
           </div>

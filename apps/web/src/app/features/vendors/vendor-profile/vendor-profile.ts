@@ -111,10 +111,12 @@ export class PublicVendorProfile {
         sectionProducts = (section.productIds ?? [])
           .map((id) => productsById.get(id))
           .filter((product): product is ProductDto => !!product);
-      } else {
+      } else if (section.type === VendorSectionType.CATEGORY) {
         sectionProducts = allProducts.filter((product) =>
           (product.categories ?? []).some((category) => category.id === section.categoryId),
         );
+      } else {
+        sectionProducts = [];
       }
 
       if (sectionProducts.length) {
@@ -126,6 +128,18 @@ export class PublicVendorProfile {
 
   /** True once the vendor has at least one non-empty custom profile section. */
   readonly hasCustomSections = computed(() => this.resolvedSections().length > 0);
+
+  /**
+   * Products not claimed by any resolved section, rendered in a residual
+   * "More from <vendor>" grid so building sections never makes the rest of
+   * a vendor's catalogue invisible on their own storefront page.
+   */
+  readonly unsectionedProducts = computed<ProductDto[]>(() => {
+    const claimed = new Set(
+      this.resolvedSections().flatMap((section) => section.products.map((product) => product.id)),
+    );
+    return this.products().filter((product) => !claimed.has(product.id));
+  });
 
   constructor() {
     this.route.paramMap.subscribe((params) => {

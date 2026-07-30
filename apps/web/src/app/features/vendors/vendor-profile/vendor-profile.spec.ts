@@ -445,8 +445,70 @@ describe('PublicVendorProfile', () => {
       const curated = component.resolvedSections().find((s) => s.id === 'sec-1');
       expect(curated?.products.map((p) => p.id)).toEqual(['p2', 'p1']);
 
+      // SOAP (p3) isn't referenced by the only section, so it surfaces in the
+      // residual "More from" grid rather than vanishing — total is 3, not 2.
       const el: HTMLElement = fixture.nativeElement;
-      expect(el.querySelectorAll('app-product-card').length).toBe(2);
+      expect(el.querySelectorAll('app-product-card').length).toBe(3);
+    });
+
+    it('renders a residual "More from <vendor>" grid for products not claimed by any section', async () => {
+      vendorsStub.getById.mockReturnValue(of(VENDOR_WITH_DANGLING_CURATED));
+      productsStub.list.mockReturnValue(
+        of({ items: [HONEY, TEA, SOAP], total: 3, page: 1, limit: 100 }),
+      );
+      paramMap$.next(convertToParamMap({ id: 'v1' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(component.unsectionedProducts().map((p) => p.id)).toEqual(['p3']);
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('More from Leko Organics');
+    });
+
+    it('omits the residual grid when every product is claimed by a section', async () => {
+      vendorsStub.getById.mockReturnValue(of(VENDOR_WITH_SECTIONS));
+      productsStub.list.mockReturnValue(
+        of({ items: [HONEY, TEA, SOAP], total: 3, page: 1, limit: 100 }),
+      );
+      paramMap$.next(convertToParamMap({ id: 'v1' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(component.unsectionedProducts()).toEqual([]);
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).not.toContain('More from');
+      // 2 (curated: p2, p1) + 1 (category: p3), no residual duplicate.
+      expect(el.querySelectorAll('app-product-card').length).toBe(3);
+    });
+
+    it('a product claimed by any section is excluded from the residual grid even if another section also references it', async () => {
+      const vendorWithOverlap: VendorDto = {
+        ...MOCK_VENDOR,
+        profileSections: [
+          { id: 'sec-1', title: 'Top Picks', type: VendorSectionType.CURATED, productIds: ['p1'] },
+          { id: 'sec-2', title: 'Agriculture', type: VendorSectionType.CATEGORY, categoryId: 'cat-1' },
+        ],
+      };
+      vendorsStub.getById.mockReturnValue(of(vendorWithOverlap));
+      productsStub.list.mockReturnValue(
+        of({ items: [HONEY, TEA, SOAP], total: 3, page: 1, limit: 100 }),
+      );
+      paramMap$.next(convertToParamMap({ id: 'v1' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      // HONEY (p1) is in both sec-1 and sec-2 (cat-1) — appears in both sections...
+      const topPicks = component.resolvedSections().find((s) => s.id === 'sec-1');
+      const agriculture = component.resolvedSections().find((s) => s.id === 'sec-2');
+      expect(topPicks?.products.map((p) => p.id)).toEqual(['p1']);
+      expect(agriculture?.products.map((p) => p.id)).toEqual(['p1', 'p2']);
+
+      // ...but is still claimed, so only SOAP (p3, unrelated to either section) is residual.
+      expect(component.unsectionedProducts().map((p) => p.id)).toEqual(['p3']);
     });
 
     it('resolves a category section to products whose categories include the matching category id', async () => {
