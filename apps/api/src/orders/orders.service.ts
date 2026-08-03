@@ -8,7 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
 import {
   AddressDto,
   CountryCode,
@@ -32,6 +32,7 @@ import { User } from '../users/entities/user.entity';
 import { PAYMENT_PROVIDER } from '../payments/payment-provider.port';
 import type { PaymentProviderPort } from '../payments/payment-provider.port';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CommissionRateService } from '../commission/commission-rate.service';
 
 /**
  * Order State Machine (vault: "Order State Machine", confirmed 2026-06-18):
@@ -75,6 +76,7 @@ export class OrdersService {
     @Inject(PAYMENT_PROVIDER)
     private readonly paymentProvider: PaymentProviderPort,
     private readonly dataSource: DataSource,
+    private readonly commissionRateService: CommissionRateService,
   ) {}
 
   async findAllForUser(userId: string): Promise<OrderDto[]> {
@@ -169,6 +171,14 @@ export class OrdersService {
       const lines: Array<Partial<OrderItem>> = [];
       let subtotalCents = 0;
 
+      // Resolved once per order (not per line) so every line in the same
+      // order snapshots the identical rate, even if a rate change lands
+      // mid-loop — the Vendor Earnings & Commission spec requires one
+      // consistent commission-rate snapshot per order, never recomputed
+      // per line.
+      const orderCreatedAt = new Date();
+      const commissionRate = await this.commissionRateService.getRateAt(orderCreatedAt);
+
       for (const cartItem of cartItems) {
         // Row lock; eager relations are skipped because FOR UPDATE cannot be
         // applied to the nullable side of the image/category joins.
@@ -199,6 +209,9 @@ export class OrdersService {
           quantity: cartItem.quantity,
           listingType: product.listingType,
           vendorId: product.vendorId ?? undefined,
+          // Platform lines (no vendor) carry no commission — see the "no
+          // fake house vendor" invariant (Listing Types & Vendor Rules).
+          commissionRatePercent: product.vendorId ? commissionRate.ratePercent : null,
         });
 
         await manager.update(Product, product.id, {
@@ -275,6 +288,29 @@ export class OrdersService {
 
     order.status = next;
     const saved = await this.ordersRepository.save(order);
+
+    // The one and only place deliveredAt gets stamped (vault: "Vendor
+    // Earnings & Commission" data model point 1) — the payout-eligibility
+    // clock's anchor. `ORDER_STATUS_TRANSITIONS` only allows reaching
+    // `delivered` from `shipped`, so checking `next` alone is equivalent to
+    // "on the shipped → delivered transition". The in-memory `deliveredAt ==
+    // null` check is only a fast-path guard against a real timestamp: the
+    // read-then-write `findOne` → mutate → `save` pattern above has no row
+    // lock, so two concurrent admin `shipped → delivered` calls could both
+    // observe `deliveredAt == null` and both stamp, last-write-wins shifting
+    // the payout clock by the race window. Since `deliveredAt` is a
+    // money-timing anchor, the actual write is a conditional UPDATE ...
+    // WHERE "deliveredAt" IS NULL, atomic at the DB level, so only the first
+    // of two racing calls ever succeeds in stamping it.
+    if (next === OrderStatus.DELIVERED && order.deliveredAt == null) {
+      const stampedAt = new Date();
+      await this.ordersRepository.update(
+        { id: orderId, deliveredAt: IsNull() },
+        { deliveredAt: stampedAt },
+      );
+      saved.deliveredAt = stampedAt;
+    }
+
     return this.toDto(saved);
   }
 

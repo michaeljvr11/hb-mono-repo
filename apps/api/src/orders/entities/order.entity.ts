@@ -81,6 +81,16 @@ export class Order {
   @OneToMany(() => OrderItem, (item) => item.order, { cascade: true })
   items: OrderItem[];
 
+  /**
+   * Stamped exactly once, in `OrdersService.updateStatus` on the
+   * `shipped → delivered` transition (vault: "Vendor Earnings & Commission").
+   * The 48h damage-claim window used for payout eligibility is derived from
+   * this (`deliveredAt + DAMAGE_CLAIM_WINDOW_HOURS`), never stored separately.
+   * Order-level for v1 — per-shipment delivery is a listed TBD.
+   */
+  @Column({ type: 'timestamptz', nullable: true })
+  deliveredAt?: Date;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
