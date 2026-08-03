@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-08-03T17:29:13.323Z",
+  "generatedAt": "2026-08-03T19:36:57.995Z",
   "git": {
-    "totalCommits": 170,
-    "aiCommits": 159,
+    "totalCommits": 173,
+    "aiCommits": 162,
     "aiPct": 94,
-    "appCommits": 115,
-    "ins": 72557,
-    "del": 6443,
-    "net": 66114,
-    "aiIns": 59125,
-    "aiDel": 6305,
-    "filesTouched": 588,
+    "appCommits": 117,
+    "ins": 73623,
+    "del": 6615,
+    "net": 67008,
+    "aiIns": 60191,
+    "aiDel": 6477,
+    "filesTouched": 593,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 66,
-        "ins": 36175,
-        "del": 1682
+        "commits": 68,
+        "ins": 36990,
+        "del": 1713
       },
       {
         "name": "API (NestJS)",
@@ -26,14 +26,14 @@
       },
       {
         "name": "Docs",
-        "commits": 51,
-        "ins": 13701,
-        "del": 3750
+        "commits": 52,
+        "ins": 13905,
+        "del": 3891
       },
       {
         "name": "AI Factory config",
-        "commits": 53,
-        "ins": 1790,
+        "commits": 54,
+        "ins": 1837,
         "del": 68
       },
       {
@@ -58,6 +58,21 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-08-03",
     "recent": [
+      {
+        "hash": "95a7c9a",
+        "subject": "fix(web): close review findings on commission-rate screen (VE-2)",
+        "ai": true
+      },
+      {
+        "hash": "b5adf98",
+        "subject": "feat(web): admin commission-rate management screen (VE-2)",
+        "ai": true
+      },
+      {
+        "hash": "4d72652",
+        "subject": "chore(evidence): recompile AI-factory evidence report",
+        "ai": true
+      },
       {
         "hash": "beba298",
         "subject": "fix(api): close commission-rate review findings (VE-1)",
@@ -101,21 +116,6 @@
       {
         "hash": "3ec51c2",
         "subject": "feat(web): vendor portal product section builder (VPC-4)",
-        "ai": true
-      },
-      {
-        "hash": "8f1c2e6",
-        "subject": "chore: recompile AI evidence report",
-        "ai": true
-      },
-      {
-        "hash": "690d004",
-        "subject": "fix(web): vendor profile review fixes — preview reset on upload error, trust server response",
-        "ai": true
-      },
-      {
-        "hash": "f6c200a",
-        "subject": "feat(web): vendor portal profile editor (VPC-3)",
         "ai": true
       }
     ]
@@ -175,6 +175,11 @@
       "branch": "feat/UG5UFyxy-vendor-profile-page",
       "cardId": "UG5UFyxy",
       "slug": "vendor-profile-page"
+    },
+    {
+      "branch": "feat/WIZ4pJtk-admin-commission-rate-screen",
+      "cardId": "WIZ4pJtk",
+      "slug": "admin-commission-rate-screen"
     },
     {
       "branch": "feat/Z1ADCLQm-admin-portal-shell",
@@ -303,9 +308,9 @@
     }
   ],
   "tests": {
-    "total": 93,
+    "total": 94,
     "api": 38,
-    "web": 55
+    "web": 56
   },
   "design": {
     "files": 31,
@@ -330,12 +335,12 @@
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 29,
+    "gatePass": 30,
     "gateFail": 2,
     "edits": 418,
     "editsUnfixable": 154,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-03T17:28:47.285Z",
+    "lastTs": "2026-08-03T19:36:34.855Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
@@ -359,7 +364,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 12,
+          "invocations": 13,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -377,7 +382,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 14,
+          "invocations": 15,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -395,7 +400,7 @@
         },
         {
           "agentType": "docs-writer",
-          "invocations": 9,
+          "invocations": 10,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -431,21 +436,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-07-27T21:47:04.689Z",
-          "agentType": "Explore",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-27T21:47:22.643Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-27T21:49:56.758Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-07-27T21:53:40.007Z",
           "agentType": "unknown",
@@ -530,6 +520,21 @@
           "ts": "2026-08-03T17:27:07.037Z",
           "agentType": "docs-writer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-03T19:28:20.280Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-03T19:30:53.809Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-03T19:35:59.745Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
         }
       ]
     }
@@ -538,9 +543,16 @@
   "extractionCandidates": null,
   "prs": [
     {
+      "headRefName": "feat/WIZ4pJtk-admin-commission-rate-screen",
+      "number": 44,
+      "state": "OPEN",
+      "title": "feat(web): admin commission-rate management screen (VE-2)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/44"
+    },
+    {
       "headRefName": "feat/QAeB8YGv-admin-commission-rate",
       "number": 43,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(api): admin-configurable commission rate (VE-1)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/43"
     },
@@ -846,7 +858,7 @@
     },
     {
       "name": "To Do",
-      "cards": 9
+      "cards": 8
     },
     {
       "name": "In Progress",
@@ -854,11 +866,11 @@
     },
     {
       "name": "In Review",
-      "cards": 2
+      "cards": 1
     },
     {
       "name": "Done",
-      "cards": 52
+      "cards": 54
     },
     {
       "name": "Fable Documentation",
