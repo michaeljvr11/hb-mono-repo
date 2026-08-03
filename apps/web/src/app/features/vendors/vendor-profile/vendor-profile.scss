@@ -29,6 +29,14 @@
 
 /* ── Hero ──────────────────────────────────────────────────────────────── */
 
+.vendor-profile__banner {
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--hb-outline-variant);
+}
+
 .vendor-profile__hero {
   display: flex;
   flex-direction: column;
@@ -38,6 +46,33 @@
   border: 1px solid var(--hb-outline-variant);
   border-radius: 12px;
   background: var(--hb-surface-container-low);
+}
+
+.vendor-profile__hero-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vendor-profile__logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--hb-outline-variant);
+  flex-shrink: 0;
+
+  @media (min-width: 768px) {
+    width: 72px;
+    height: 72px;
+  }
+}
+
+.vendor-profile__slogan {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--hb-on-surface-variant);
 }
 
 .vendor-profile__hero-badge {
@@ -112,6 +147,22 @@
   font-weight: 600;
   line-height: 20px;
   white-space: nowrap;
+}
+
+/* ── Vendor-curated profile sections ──────────────────────────────────── */
+
+.vendor-profile__section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vendor-profile__section-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--hb-on-surface);
 }
 
 /* ── Product grid ──────────────────────────────────────────────────────── */

@@ -21,14 +21,36 @@
     </div>
   } @else if (vendor(); as vendor) {
     <!-- ── Vendor hero ─────────────────────────────────────────────────── -->
+    @if (vendor.bannerUrl) {
+      <img
+        class="vendor-profile__banner"
+        [src]="vendor.bannerUrl"
+        [alt]="vendor.businessName + ' banner'"
+        loading="eager"
+        fetchpriority="high"
+      />
+    }
     <section class="vendor-profile__hero">
       <div class="vendor-profile__hero-badge">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1" aria-hidden="true">verified</span>
         <span>Verified SME</span>
       </div>
-      <h1 class="vendor-profile__name">{{ vendor.businessName }}</h1>
+      <div class="vendor-profile__hero-heading">
+        @if (vendor.logoUrl) {
+          <img
+            class="vendor-profile__logo"
+            [src]="vendor.logoUrl"
+            [alt]="vendor.businessName + ' logo'"
+            loading="lazy"
+          />
+        }
+        <h1 class="vendor-profile__name">{{ vendor.businessName }}</h1>
+      </div>
       @if (vendor.tradingName) {
         <p class="vendor-profile__trading-name">Trading as {{ vendor.tradingName }}</p>
+      }
+      @if (vendor.slogan) {
+        <p class="vendor-profile__slogan">{{ vendor.slogan }}</p>
       }
       <p class="vendor-profile__location">
         <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
@@ -36,42 +58,73 @@
       </p>
     </section>
 
-    <!-- ── Category chips (derived from the vendor's product categories) ── -->
-    @if (categoryChips().length) {
-      <section class="vendor-profile__categories" aria-label="Categories offered">
-        <div class="vendor-profile__chip-row">
-          @for (category of categoryChips(); track category.id) {
-            <span class="vendor-profile__chip">{{ category.name }}</span>
-          }
-        </div>
+    @if (productsState() === 'loading' || productsState() === 'error' || productsState() === 'empty') {
+      <!-- ── Product loading / error / empty states ────────────────────── -->
+      <section class="vendor-profile__grid-section">
+        @if (productsState() === 'loading') {
+          <div class="state-message" role="status" aria-live="polite">
+            <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
+            <p>Loading products…</p>
+          </div>
+        } @else if (productsState() === 'error') {
+          <div class="state-message state-message--error" role="alert">
+            <span class="material-symbols-outlined state-message__icon">error_outline</span>
+            <p>Could not load this vendor's products right now. Please try again later.</p>
+          </div>
+        } @else {
+          <div class="state-message" role="status">
+            <span class="material-symbols-outlined state-message__icon">inventory_2</span>
+            <p>{{ vendor.businessName }} doesn't have any listings yet.</p>
+          </div>
+        }
       </section>
-    }
+    } @else if (hasCustomSections()) {
+      <!-- ── Vendor-curated / category profile sections ────────────────── -->
+      @for (section of resolvedSections(); track section.id) {
+        <section class="vendor-profile__section" [attr.aria-labelledby]="'section-title-' + section.id">
+          <h2 class="vendor-profile__section-title" [id]="'section-title-' + section.id">{{ section.title }}</h2>
+          <div class="vendor-profile__grid">
+            @for (product of section.products; track product.id) {
+              <app-product-card [product]="product" variant="grid" (addToCart)="onAddToCart($event)" />
+            }
+          </div>
+        </section>
+      }
 
-    <!-- ── Product grid ────────────────────────────────────────────────── -->
-    <section class="vendor-profile__grid-section">
-      @if (productsState() === 'loading') {
-        <div class="state-message" role="status" aria-live="polite">
-          <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
-          <p>Loading products…</p>
-        </div>
-      } @else if (productsState() === 'error') {
-        <div class="state-message state-message--error" role="alert">
-          <span class="material-symbols-outlined state-message__icon">error_outline</span>
-          <p>Could not load this vendor's products right now. Please try again later.</p>
-        </div>
-      } @else if (productsState() === 'empty') {
-        <div class="state-message" role="status">
-          <span class="material-symbols-outlined state-message__icon">inventory_2</span>
-          <p>{{ vendor.businessName }} doesn't have any listings yet.</p>
-        </div>
-      } @else {
+      <!-- ── Residual grid — products not claimed by any section ────────── -->
+      @if (unsectionedProducts().length) {
+        <section class="vendor-profile__section" aria-labelledby="section-title-unsectioned">
+          <h2 class="vendor-profile__section-title" id="section-title-unsectioned">
+            More from {{ vendor.businessName }}
+          </h2>
+          <div class="vendor-profile__grid">
+            @for (product of unsectionedProducts(); track product.id) {
+              <app-product-card [product]="product" variant="grid" (addToCart)="onAddToCart($event)" />
+            }
+          </div>
+        </section>
+      }
+    } @else {
+      <!-- ── Category chips (derived from the vendor's product categories) ── -->
+      @if (categoryChips().length) {
+        <section class="vendor-profile__categories" aria-label="Categories offered">
+          <div class="vendor-profile__chip-row">
+            @for (category of categoryChips(); track category.id) {
+              <span class="vendor-profile__chip">{{ category.name }}</span>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ── Product grid ────────────────────────────────────────────────── -->
+      <section class="vendor-profile__grid-section">
         <div class="vendor-profile__grid">
           @for (product of products(); track product.id) {
             <app-product-card [product]="product" variant="grid" (addToCart)="onAddToCart($event)" />
           }
         </div>
-      }
-    </section>
+      </section>
+    }
   }
 
 </main>
