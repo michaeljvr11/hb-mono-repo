@@ -116,7 +116,7 @@ describe('AdminCommission component', () => {
     component.submit();
     await fixture.whenStable();
 
-    expect(component.formError()).toBe('A rate already exists on or after that date.');
+    expect(component.submitError()).toBe('A rate already exists on or after that date.');
     expect(component.pending()).toBe(false);
   });
 
@@ -127,7 +127,7 @@ describe('AdminCommission component', () => {
     component.submit();
     await fixture.whenStable();
 
-    expect(component.formError()).toBe('Failed to schedule rate. Please try again.');
+    expect(component.submitError()).toBe('Failed to schedule rate. Please try again.');
     expect(component.pending()).toBe(false);
   });
 
@@ -135,7 +135,7 @@ describe('AdminCommission component', () => {
     component.ratePercent.set(150);
     component.submit();
 
-    expect(component.validationError()).toBeTruthy();
+    expect(component.submitError()).toBeTruthy();
     expect(stub.create).not.toHaveBeenCalled();
   });
 
@@ -143,7 +143,44 @@ describe('AdminCommission component', () => {
     component.ratePercent.set(null);
     component.submit();
 
-    expect(component.validationError()).toBeTruthy();
+    expect(component.submitError()).toBeTruthy();
+    expect(stub.create).not.toHaveBeenCalled();
+  });
+
+  it('accepts legitimate 2-decimal-place rates that are float-imprecise (e.g. 8.29)', async () => {
+    stub.create.mockReturnValue(of({ ...MOCK_ITEMS[0], ratePercent: 8.29 }));
+
+    component.ratePercent.set(8.29);
+    component.submit();
+    await fixture.whenStable();
+
+    expect(component.submitError()).toBeNull();
+    expect(stub.create).toHaveBeenCalledWith({ ratePercent: 8.29 });
+  });
+
+  it('rejects a rate with more than 2 decimal places', () => {
+    component.ratePercent.set(12.345);
+    component.submit();
+
+    expect(component.submitError()).toBe('Rate can have at most 2 decimal places.');
+    expect(stub.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects an invalid effectiveFrom date without throwing', () => {
+    component.ratePercent.set(20);
+    component.effectiveFrom.set('not-a-date');
+
+    expect(() => component.submit()).not.toThrow();
+    expect(component.submitError()).toBe('Effective date is not a valid date/time.');
+    expect(stub.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects a note longer than 500 characters', () => {
+    component.ratePercent.set(20);
+    component.note.set('x'.repeat(501));
+    component.submit();
+
+    expect(component.submitError()).toBe('Note must be 500 characters or fewer.');
     expect(stub.create).not.toHaveBeenCalled();
   });
 

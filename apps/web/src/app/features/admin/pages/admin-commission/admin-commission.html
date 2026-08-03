@@ -79,6 +79,7 @@
             id="note"
             name="note"
             type="text"
+            maxlength="500"
             placeholder="Reason for the change"
             [ngModel]="note()"
             (ngModelChange)="note.set($event)"
@@ -86,17 +87,10 @@
           />
         </div>
 
-        @if (validationError()) {
+        @if (submitError()) {
           <div class="error-banner error-banner--inline" role="alert">
             <span class="material-symbols-outlined" aria-hidden="true">error</span>
-            <span>{{ validationError() }}</span>
-          </div>
-        }
-
-        @if (formError()) {
-          <div class="error-banner error-banner--inline" role="alert">
-            <span class="material-symbols-outlined" aria-hidden="true">error</span>
-            <span>{{ formError() }}</span>
+            <span>{{ submitError() }}</span>
           </div>
         }
 

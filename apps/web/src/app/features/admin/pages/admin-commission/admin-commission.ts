@@ -21,15 +21,13 @@ export class AdminCommission implements OnInit {
 
   /** In-flight submission guard for the "schedule new rate" form. */
   readonly pending = signal(false);
-  /** Inline error shown near the form after a failed submit. */
-  readonly formError = signal<string | null>(null);
+  /** Inline error shown near the form — client-side validation or a failed submit. */
+  readonly submitError = signal<string | null>(null);
 
   // Form fields.
   readonly ratePercent = signal<number | null>(null);
   readonly effectiveFrom = signal<string>('');
   readonly note = signal<string>('');
-  /** Client-side validation message, set on submit. */
-  readonly validationError = signal<string | null>(null);
 
   readonly currentRate = computed<CommissionRateListItemDto | null>(() =>
     this.items().find(i => i.inForce) ?? null,
@@ -57,27 +55,37 @@ export class AdminCommission implements OnInit {
   submit(): void {
     if (this.pending()) return;
 
-    this.validationError.set(null);
-    this.formError.set(null);
+    this.submitError.set(null);
 
     const rate = this.ratePercent();
     if (rate === null || Number.isNaN(rate) || rate < 0 || rate > 100) {
-      this.validationError.set('Rate must be a number between 0 and 100.');
+      this.submitError.set('Rate must be a number between 0 and 100.');
       return;
     }
-    // Reject more than 2 decimal places (mirrors server-side validation).
-    if (Math.round(rate * 100) !== rate * 100) {
-      this.validationError.set('Rate can have at most 2 decimal places.');
+    // Reject more than 2 decimal places (mirrors server-side @IsNumber({ maxDecimalPlaces: 2 })).
+    // Comparing against Math.round(rate * 100) is float-unsafe (e.g. 8.29 * 100 === 828.9999999999999),
+    // so this checks the decimal-string representation instead.
+    if (!/^\d+(\.\d{1,2})?$/.test(String(rate))) {
+      this.submitError.set('Rate can have at most 2 decimal places.');
       return;
     }
 
     const payload: CreateCommissionRateRequest = { ratePercent: rate };
-    const effectiveFrom = this.effectiveFrom().trim();
-    if (effectiveFrom) {
+    const effectiveFromInput = this.effectiveFrom().trim();
+    if (effectiveFromInput) {
       // Input is a local datetime-local value; convert to ISO for the API.
-      payload.effectiveFrom = new Date(effectiveFrom).toISOString();
+      const parsed = new Date(effectiveFromInput);
+      if (Number.isNaN(parsed.getTime())) {
+        this.submitError.set('Effective date is not a valid date/time.');
+        return;
+      }
+      payload.effectiveFrom = parsed.toISOString();
     }
     const note = this.note().trim();
+    if (note.length > 500) {
+      this.submitError.set('Note must be 500 characters or fewer.');
+      return;
+    }
     if (note) {
       payload.note = note;
     }
@@ -96,9 +104,9 @@ export class AdminCommission implements OnInit {
           const message = typeof err.error?.message === 'string'
             ? err.error.message
             : 'A rate already exists at or after that effective date.';
-          this.formError.set(message);
+          this.submitError.set(message);
         } else {
-          this.formError.set('Failed to schedule rate. Please try again.');
+          this.submitError.set('Failed to schedule rate. Please try again.');
         }
         this.pending.set(false);
       },
