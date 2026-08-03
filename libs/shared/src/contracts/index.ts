@@ -14,3 +14,4 @@ export * from './audit';
 export * from './search';
 export * from './synonym';
 export * from './analytics';
+export * from './earnings';

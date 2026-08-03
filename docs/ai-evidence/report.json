@@ -1,45 +1,45 @@
 {
-  "generatedAt": "2026-07-27T20:04:22.180Z",
+  "generatedAt": "2026-08-03T17:29:13.323Z",
   "git": {
-    "totalCommits": 163,
-    "aiCommits": 152,
-    "aiPct": 93,
-    "appCommits": 110,
-    "ins": 71322,
-    "del": 6273,
-    "net": 65049,
-    "aiIns": 57890,
-    "aiDel": 6135,
-    "filesTouched": 580,
+    "totalCommits": 170,
+    "aiCommits": 159,
+    "aiPct": 94,
+    "appCommits": 115,
+    "ins": 72557,
+    "del": 6443,
+    "net": 66114,
+    "aiIns": 59125,
+    "aiDel": 6305,
+    "filesTouched": 588,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 63,
-        "ins": 35666,
-        "del": 1644
+        "commits": 66,
+        "ins": 36175,
+        "del": 1682
       },
       {
         "name": "API (NestJS)",
-        "commits": 62,
-        "ins": 18272,
-        "del": 889
+        "commits": 64,
+        "ins": 18829,
+        "del": 909
       },
       {
         "name": "Docs",
-        "commits": 50,
-        "ins": 13583,
-        "del": 3638
+        "commits": 51,
+        "ins": 13701,
+        "del": 3750
       },
       {
         "name": "AI Factory config",
-        "commits": 51,
-        "ins": 1780,
+        "commits": 53,
+        "ins": 1790,
         "del": 68
       },
       {
         "name": "Shared contracts",
-        "commits": 23,
-        "ins": 1039,
+        "commits": 24,
+        "ins": 1080,
         "del": 10
       },
       {
@@ -56,8 +56,43 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-07-27",
+    "lastDate": "2026-08-03",
     "recent": [
+      {
+        "hash": "beba298",
+        "subject": "fix(api): close commission-rate review findings (VE-1)",
+        "ai": true
+      },
+      {
+        "hash": "844e55b",
+        "subject": "feat(api): admin-configurable commission rate (VE-1)",
+        "ai": true
+      },
+      {
+        "hash": "9e30f4d",
+        "subject": "fix(web): keep unsectioned products visible + accessibility fixes on vendor profile",
+        "ai": true
+      },
+      {
+        "hash": "d24df6f",
+        "subject": "test(web): cover vendor branding + profile-section rendering (VPC-5)",
+        "ai": true
+      },
+      {
+        "hash": "ea4a1a8",
+        "subject": "feat(web): render vendor branding + profile sections on public page",
+        "ai": true
+      },
+      {
+        "hash": "b09a585",
+        "subject": "chore: update factory log",
+        "ai": true
+      },
+      {
+        "hash": "a634e25",
+        "subject": "chore: recompile AI evidence report",
+        "ai": true
+      },
       {
         "hash": "d2ab737",
         "subject": "fix(web): close VPC-4 review findings on vendor section builder",
@@ -81,41 +116,6 @@
       {
         "hash": "f6c200a",
         "subject": "feat(web): vendor portal profile editor (VPC-3)",
-        "ai": true
-      },
-      {
-        "hash": "8f6a69d",
-        "subject": "chore: recompile AI evidence report",
-        "ai": true
-      },
-      {
-        "hash": "41cd2c9",
-        "subject": "fix(api): stop trusting client originalname for product image extension",
-        "ai": true
-      },
-      {
-        "hash": "01b389d",
-        "subject": "chore: factory-log entries from VPC-2 pipeline",
-        "ai": true
-      },
-      {
-        "hash": "4232b0e",
-        "subject": "fix(api): unbreak search-visibility integration spec after VendorsService dep",
-        "ai": true
-      },
-      {
-        "hash": "d4278f1",
-        "subject": "chore: recompile AI evidence report",
-        "ai": true
-      },
-      {
-        "hash": "d1a980a",
-        "subject": "fix(api): vendor upload false-reject and stored-XSS risk (VPC-2 review)",
-        "ai": true
-      },
-      {
-        "hash": "5ad23e6",
-        "subject": "test(api): cover VPC-2 upload owner-scope + reject non-image (VPC-2)",
         "ai": true
       }
     ]
@@ -160,6 +160,11 @@
       "branch": "feat/MkRjnkvv-admin-synonyms-ui",
       "cardId": "MkRjnkvv",
       "slug": "admin-synonyms-ui"
+    },
+    {
+      "branch": "feat/QAeB8YGv-admin-commission-rate",
+      "cardId": "QAeB8YGv",
+      "slug": "admin-commission-rate"
     },
     {
       "branch": "feat/Sm1kSNO8-safe-category-delete",
@@ -232,6 +237,11 @@
       "slug": "vendor-dashboard"
     },
     {
+      "branch": "feat/rHxbUA2G-vendor-branding-public-render",
+      "cardId": "rHxbUA2G",
+      "slug": "vendor-branding-public-render"
+    },
+    {
       "branch": "feat/rmpsJVLi-product-pagination-sort",
       "cardId": "rmpsJVLi",
       "slug": "product-pagination-sort"
@@ -293,8 +303,8 @@
     }
   ],
   "tests": {
-    "total": 92,
-    "api": 37,
+    "total": 93,
+    "api": 38,
     "web": 55
   },
   "design": {
@@ -320,18 +330,18 @@
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 26,
+    "gatePass": 29,
     "gateFail": 2,
-    "edits": 393,
-    "editsUnfixable": 145,
+    "edits": 418,
+    "editsUnfixable": 154,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-07-27T20:03:57.281Z",
+    "lastTs": "2026-08-03T17:28:47.285Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 12,
+          "invocations": 20,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -340,7 +350,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 9,
+          "invocations": 10,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -349,7 +359,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 11,
+          "invocations": 12,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -358,7 +368,7 @@
         },
         {
           "agentType": "test-engineer",
-          "invocations": 5,
+          "invocations": 6,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -367,7 +377,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 11,
+          "invocations": 14,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -385,7 +395,34 @@
         },
         {
           "agentType": "docs-writer",
-          "invocations": 5,
+          "invocations": 9,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheCreationTokens": 0,
+          "totalTokens": 0
+        },
+        {
+          "agentType": "Explore",
+          "invocations": 1,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheCreationTokens": 0,
+          "totalTokens": 0
+        },
+        {
+          "agentType": "product-planner",
+          "invocations": 1,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheCreationTokens": 0,
+          "totalTokens": 0
+        },
+        {
+          "agentType": "general-purpose",
+          "invocations": 1,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -395,103 +432,103 @@
       ],
       "recent": [
         {
-          "ts": "2026-07-26T20:57:45.103Z",
-          "agentType": "backend-engineer",
+          "ts": "2026-07-27T21:47:04.689Z",
+          "agentType": "Explore",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-26T21:04:40.003Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-26T21:06:31.413Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-26T21:39:04.525Z",
+          "ts": "2026-07-27T21:47:22.643Z",
           "agentType": "unknown",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-26T21:20:59.486Z",
-          "agentType": "backend-engineer",
+          "ts": "2026-07-27T21:49:56.758Z",
+          "agentType": "unknown",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-26T21:23:52.489Z",
+          "ts": "2026-07-27T21:53:40.007Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-27T21:58:02.877Z",
+          "agentType": "product-planner",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-27T22:19:12.997Z",
+          "agentType": "general-purpose",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-30T17:47:18.582Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-30T17:56:35.047Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-30T18:01:40.973Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-30T18:15:25.792Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-30T18:23:09.483Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-30T18:26:27.423Z",
           "agentType": "test-engineer",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-26T21:28:14.149Z",
+          "ts": "2026-07-30T18:32:40.624Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-26T21:36:34.286Z",
+          "ts": "2026-07-30T18:40:31.875Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-26T21:38:56.978Z",
+          "ts": "2026-07-30T18:43:02.431Z",
           "agentType": "docs-writer",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-26T21:48:15.981Z",
+          "ts": "2026-07-30T18:46:01.608Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-07-30T18:46:30.063Z",
           "agentType": "unknown",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-27T19:10:08.897Z",
-          "agentType": "frontend-engineer",
+          "ts": "2026-08-03T17:12:43.699Z",
+          "agentType": "backend-engineer",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-27T19:15:59.209Z",
+          "ts": "2026-08-03T17:18:48.533Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
         },
         {
-          "ts": "2026-07-27T19:23:13.675Z",
+          "ts": "2026-08-03T17:27:07.037Z",
           "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-27T19:25:41.830Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-27T19:26:08.914Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-27T19:46:21.909Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-27T19:49:13.411Z",
-          "agentType": "test-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-27T19:53:35.971Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-27T20:00:12.560Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-27T20:03:57.281Z",
-          "agentType": "code-reviewer",
           "totalTokens": 0
         }
       ]
@@ -500,6 +537,27 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/QAeB8YGv-admin-commission-rate",
+      "number": 43,
+      "state": "OPEN",
+      "title": "feat(api): admin-configurable commission rate (VE-1)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/43"
+    },
+    {
+      "headRefName": "feat/rHxbUA2G-vendor-branding-public-render",
+      "number": 42,
+      "state": "MERGED",
+      "title": "feat(web): render vendor branding + profile sections on public page",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/42"
+    },
+    {
+      "headRefName": "feat/d7IHQ8Rm-vendor-profile-section-builder",
+      "number": 41,
+      "state": "MERGED",
+      "title": "feat(web): vendor profile section builder (VPC-4)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/41"
+    },
     {
       "headRefName": "feat/y3fz4TC2-vendor-profile-editor",
       "number": 40,
@@ -788,19 +846,19 @@
     },
     {
       "name": "To Do",
-      "cards": 6
+      "cards": 9
     },
     {
       "name": "In Progress",
-      "cards": 1
-    },
-    {
-      "name": "In Review",
       "cards": 0
     },
     {
+      "name": "In Review",
+      "cards": 2
+    },
+    {
       "name": "Done",
-      "cards": 51
+      "cards": 52
     },
     {
       "name": "Fable Documentation",
