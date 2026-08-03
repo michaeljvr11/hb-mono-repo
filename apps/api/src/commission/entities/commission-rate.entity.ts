@@ -25,7 +25,7 @@ export class CommissionRate {
   effectiveFrom: Date;
 
   /** Optional free-text context for why the rate changed. */
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', length: 500, nullable: true })
   note: string | null;
 
   /** The admin user who created this row, if known. */

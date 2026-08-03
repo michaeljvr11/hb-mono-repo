@@ -1,4 +1,4 @@
-import { IsISO8601, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsISO8601, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { CreateCommissionRateRequest } from '@hb/shared';
 
 export class CreateCommissionRateDto implements CreateCommissionRateRequest {
@@ -13,5 +13,6 @@ export class CreateCommissionRateDto implements CreateCommissionRateRequest {
 
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   note?: string;
 }

@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThanOrEqual, Repository } from 'typeorm';
+import { LessThanOrEqual, QueryFailedError, Repository } from 'typeorm';
 import { CommissionRateDto, CommissionRateListDto, CommissionRateListItemDto } from '@hb/shared';
 
 import { CommissionRate } from './entities/commission-rate.entity';
@@ -48,14 +48,34 @@ export class CommissionRateService {
       );
     }
 
-    const saved = await this.commissionRateRepo.save(
-      this.commissionRateRepo.create({
-        ratePercent: dto.ratePercent,
-        effectiveFrom,
-        note: dto.note ?? null,
-        createdByUserId: userId ?? null,
-      }),
-    );
+    let saved: CommissionRate;
+    try {
+      saved = await this.commissionRateRepo.save(
+        this.commissionRateRepo.create({
+          ratePercent: dto.ratePercent,
+          effectiveFrom,
+          note: dto.note ?? null,
+          createdByUserId: userId ?? null,
+        }),
+      );
+    } catch (err: unknown) {
+      // Defense-in-depth against the race the read-then-write check above can't
+      // close on its own: two concurrent creates can both read the same "latest"
+      // row and both pass the in-app check before either commits. The unique
+      // index on effectiveFrom (migration 1784419200000) is the real guarantee;
+      // this turns its pg 23505 violation into the same ConflictException a
+      // sequential out-of-order request gets, instead of a raw 500.
+      const pgCode =
+        err instanceof QueryFailedError
+          ? (err.driverError as { code?: string } | undefined)?.code
+          : undefined;
+      if (pgCode === '23505') {
+        throw new ConflictException(
+          `A commission rate with effectiveFrom ${effectiveFrom.toISOString()} already exists`,
+        );
+      }
+      throw err;
+    }
 
     await this.auditService.log({
       userId,

@@ -9,6 +9,7 @@ import { AdminController } from '../../admin/admin.controller';
 import { UsersController } from '../../users/users.controller';
 import { OrdersController } from '../../orders/orders.controller';
 import { AnalyticsController } from '../../analytics/analytics.controller';
+import { CommissionController } from '../../commission/commission.controller';
 
 /**
  * Guardrail: authentication is on by default (global JwtAuthGuard), and a route only
@@ -29,6 +30,7 @@ const CONTROLLERS = [
   UsersController,
   OrdersController,
   AnalyticsController,
+  CommissionController,
 ];
 
 const EXPECTED_PUBLIC = [

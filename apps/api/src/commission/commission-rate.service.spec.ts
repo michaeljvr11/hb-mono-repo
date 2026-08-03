@@ -1,6 +1,7 @@
 import { ConflictException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { LessThanOrEqual } from 'typeorm';
 import { AuditAction, AuditService } from '../audit/audit.service';
 import { CommissionRateService } from './commission-rate.service';
 import { CommissionRate } from './entities/commission-rate.entity';
@@ -184,14 +185,18 @@ describe('CommissionRateService', () => {
 
       expect(result.id).toBe('boundary-row');
       expect(repo.findOne).toHaveBeenCalledWith(
-        expect.objectContaining({ order: { effectiveFrom: 'DESC' } }),
+        expect.objectContaining({
+          where: { effectiveFrom: LessThanOrEqual(boundary) },
+          order: { effectiveFrom: 'DESC' },
+        }),
       );
     });
 
     it('resolves the prior row one millisecond before the boundary', async () => {
-      // The repo mock stands in for the WHERE effectiveFrom <= date clause;
-      // this asserts the service queries with the exact date given, one ms
-      // before the boundary, so the DB-level LessThanOrEqual correctly excludes it.
+      // Assert the service queries with LessThanOrEqual(the exact date given) —
+      // pins the operator, not just the mocked return value, so swapping
+      // LessThanOrEqual for LessThan (which would wrongly exclude the boundary
+      // row) fails this test.
       const oneMsBefore = new Date('2026-05-31T23:59:59.999Z');
       repo.findOne.mockResolvedValue(
         makeRow({ id: 'prior-row', effectiveFrom: new Date('2026-01-01T00:00:00.000Z') }),
@@ -200,6 +205,9 @@ describe('CommissionRateService', () => {
       const result = await service.getRateAt(oneMsBefore);
 
       expect(result.id).toBe('prior-row');
+      expect(repo.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { effectiveFrom: LessThanOrEqual(oneMsBefore) } }),
+      );
     });
 
     it('resolves the correct row between two history entries', async () => {
@@ -211,6 +219,9 @@ describe('CommissionRateService', () => {
       const result = await service.getRateAt(between);
 
       expect(result.id).toBe('mid-row');
+      expect(repo.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { effectiveFrom: LessThanOrEqual(between) } }),
+      );
     });
 
     it('resolves the newest row when queried after every history entry', async () => {
@@ -222,6 +233,9 @@ describe('CommissionRateService', () => {
       const result = await service.getRateAt(afterAll);
 
       expect(result.id).toBe('newest-row');
+      expect(repo.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { effectiveFrom: LessThanOrEqual(afterAll) } }),
+      );
     });
 
     it('throws when no row covers the given date', async () => {

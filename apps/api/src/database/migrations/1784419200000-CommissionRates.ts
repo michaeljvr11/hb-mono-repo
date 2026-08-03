@@ -29,8 +29,14 @@ export class CommissionRates1784419200000 implements MigrationInterface {
       )
     `);
 
+    // UNIQUE (not just indexed): two concurrent admin inserts can both read the
+    // same "latest" row and both pass the service-layer strictly-after check
+    // before either commits. The unique constraint is the actual guarantee that
+    // the history stays monotonically ordered; CommissionRateService.create()
+    // catches the resulting pg unique-violation (23505) and rethrows it as the
+    // same ConflictException the read-then-write check already throws.
     await queryRunner.query(
-      `CREATE INDEX "IDX_commission_rates_effectiveFrom" ON "commission_rates" ("effectiveFrom")`,
+      `CREATE UNIQUE INDEX "IDX_commission_rates_effectiveFrom" ON "commission_rates" ("effectiveFrom")`,
     );
 
     const earliestOrder = (await queryRunner.query(
