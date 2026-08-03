@@ -1,0 +1,152 @@
+<section class="commission-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Commission Rate</h1>
+    <p class="page-sub">View the platform commission rate history and schedule new rates.</p>
+  </header>
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading commission rates…</p>
+    </div>
+  }
+
+  <!-- Load error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+    <!-- Current rate headline -->
+    <div class="detail-card headline-card">
+      @if (currentRate(); as rate) {
+        <span class="headline-label">Current rate</span>
+        <span class="headline-value">{{ rate.ratePercent | number:'1.2-2' }}%</span>
+        <span class="headline-meta">In force since {{ rate.effectiveFrom | date:'d MMM y, HH:mm' }}</span>
+      } @else {
+        <div class="list-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">percent</span>
+          <p>No commission rate has been set yet.</p>
+        </div>
+      }
+    </div>
+
+    <!-- Schedule new rate form -->
+    <div class="detail-card form-card">
+      <h2 class="section-title">Schedule new rate</h2>
+      <p class="helper-text">
+        A new rate only applies to orders placed from its effective date onward.
+        It never restates earnings already calculated under a previous rate.
+      </p>
+
+      <form (ngSubmit)="submit()" class="rate-form">
+        <div class="form-row">
+          <label for="ratePercent">Rate (%)</label>
+          <input
+            id="ratePercent"
+            name="ratePercent"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            placeholder="e.g. 15.00"
+            [ngModel]="ratePercent()"
+            (ngModelChange)="ratePercent.set($event)"
+            [disabled]="pending()"
+          />
+        </div>
+
+        <div class="form-row">
+          <label for="effectiveFrom">Effective from (optional)</label>
+          <input
+            id="effectiveFrom"
+            name="effectiveFrom"
+            type="datetime-local"
+            [ngModel]="effectiveFrom()"
+            (ngModelChange)="effectiveFrom.set($event)"
+            [disabled]="pending()"
+          />
+        </div>
+
+        <div class="form-row">
+          <label for="note">Note (optional)</label>
+          <input
+            id="note"
+            name="note"
+            type="text"
+            placeholder="Reason for the change"
+            [ngModel]="note()"
+            (ngModelChange)="note.set($event)"
+            [disabled]="pending()"
+          />
+        </div>
+
+        @if (validationError()) {
+          <div class="error-banner error-banner--inline" role="alert">
+            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+            <span>{{ validationError() }}</span>
+          </div>
+        }
+
+        @if (formError()) {
+          <div class="error-banner error-banner--inline" role="alert">
+            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+            <span>{{ formError() }}</span>
+          </div>
+        }
+
+        <div class="action-bar">
+          <button class="action-btn action-btn--activate" type="submit" [disabled]="pending()">
+            @if (pending()) {
+              <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+            }
+            Schedule rate
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- History table -->
+    <div class="detail-card history-card">
+      <h2 class="section-title">History</h2>
+
+      @if (items().length === 0) {
+        <div class="list-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
+          <p>No commission rate history yet.</p>
+        </div>
+      } @else {
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Rate</th>
+              <th>Effective from</th>
+              <th>Note</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of items(); track item.id) {
+              <tr [class.history-row--current]="item.inForce">
+                <td>
+                  {{ item.ratePercent | number:'1.2-2' }}%
+                  @if (item.inForce) {
+                    <span class="verified-badge">In force</span>
+                  }
+                </td>
+                <td>{{ item.effectiveFrom | date:'d MMM y, HH:mm' }}</td>
+                <td>{{ item.note ?? '—' }}</td>
+                <td>{{ item.createdAt | date:'d MMM y, HH:mm' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+</section>

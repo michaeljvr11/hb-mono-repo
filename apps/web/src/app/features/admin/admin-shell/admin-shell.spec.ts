@@ -75,12 +75,12 @@ describe('AdminShell', () => {
     expect(authService.logout).toHaveBeenCalledTimes(1);
   });
 
-  it('exposes exactly seven nav items', () => {
-    expect(component.navItems.length).toBe(7);
+  it('exposes exactly eight nav items', () => {
+    expect(component.navItems.length).toBe(8);
   });
 
   it('nav items have the expected paths', () => {
     const paths = component.navItems.map(i => i.path);
-    expect(paths).toEqual(['dashboard', 'vendors', 'catalog', 'users', 'orders', 'search-synonyms', 'logs']);
+    expect(paths).toEqual(['dashboard', 'vendors', 'catalog', 'users', 'orders', 'search-synonyms', 'commission-rates', 'logs']);
   });
 });
