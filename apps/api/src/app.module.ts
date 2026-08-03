@@ -23,6 +23,7 @@ import { AdminModule } from './admin/admin.module';
 import { AuditModule } from './audit/audit.module';
 import { SearchModule } from './search/search.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { CommissionModule } from './commission/commission.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     AuditModule,
     SearchModule,
     AnalyticsModule,
+    CommissionModule,
   ],
   controllers: [AppController],
   providers: [
