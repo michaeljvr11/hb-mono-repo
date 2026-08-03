@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-08-03T19:36:57.995Z",
+  "generatedAt": "2026-08-03T20:36:53.569Z",
   "git": {
-    "totalCommits": 173,
-    "aiCommits": 162,
+    "totalCommits": 175,
+    "aiCommits": 164,
     "aiPct": 94,
-    "appCommits": 117,
-    "ins": 73623,
-    "del": 6615,
-    "net": 67008,
-    "aiIns": 60191,
-    "aiDel": 6477,
-    "filesTouched": 593,
+    "appCommits": 118,
+    "ins": 74715,
+    "del": 6704,
+    "net": 68011,
+    "aiIns": 61283,
+    "aiDel": 6566,
+    "filesTouched": 599,
     "areaRows": [
       {
         "name": "Web (Angular)",
@@ -20,20 +20,20 @@
       },
       {
         "name": "API (NestJS)",
-        "commits": 64,
-        "ins": 18829,
-        "del": 909
+        "commits": 65,
+        "ins": 19771,
+        "del": 911
       },
       {
         "name": "Docs",
-        "commits": 52,
-        "ins": 13905,
-        "del": 3891
+        "commits": 53,
+        "ins": 14005,
+        "del": 3978
       },
       {
         "name": "AI Factory config",
-        "commits": 54,
-        "ins": 1837,
+        "commits": 56,
+        "ins": 1887,
         "del": 68
       },
       {
@@ -58,6 +58,16 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-08-03",
     "recent": [
+      {
+        "hash": "f980849",
+        "subject": "feat(api): payout-eligibility data model + net vendor earnings engine (VE-3)",
+        "ai": true
+      },
+      {
+        "hash": "7b44cda",
+        "subject": "chore(evidence): recompile AI-factory evidence report",
+        "ai": true
+      },
       {
         "hash": "95a7c9a",
         "subject": "fix(web): close review findings on commission-rate screen (VE-2)",
@@ -106,16 +116,6 @@
       {
         "hash": "a634e25",
         "subject": "chore: recompile AI evidence report",
-        "ai": true
-      },
-      {
-        "hash": "d2ab737",
-        "subject": "fix(web): close VPC-4 review findings on vendor section builder",
-        "ai": true
-      },
-      {
-        "hash": "3ec51c2",
-        "subject": "feat(web): vendor portal product section builder (VPC-4)",
         "ai": true
       }
     ]
@@ -262,6 +262,11 @@
       "slug": "admin-orders-dashboard"
     },
     {
+      "branch": "feat/trMZD1C5-payout-eligibility-earnings",
+      "cardId": "trMZD1C5",
+      "slug": "payout-eligibility-earnings"
+    },
+    {
       "branch": "feat/vs3y5tDJ-public-vendor-profile",
       "cardId": "vs3y5tDJ",
       "slug": "public-vendor-profile"
@@ -308,8 +313,8 @@
     }
   ],
   "tests": {
-    "total": 94,
-    "api": 38,
+    "total": 95,
+    "api": 39,
     "web": 56
   },
   "design": {
@@ -335,12 +340,12 @@
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 30,
+    "gatePass": 31,
     "gateFail": 2,
-    "edits": 418,
-    "editsUnfixable": 154,
+    "edits": 461,
+    "editsUnfixable": 165,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-03T19:36:34.855Z",
+    "lastTs": "2026-08-03T20:36:22.071Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
@@ -355,7 +360,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 10,
+          "invocations": 12,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -382,7 +387,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 15,
+          "invocations": 16,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -400,7 +405,7 @@
         },
         {
           "agentType": "docs-writer",
-          "invocations": 10,
+          "invocations": 11,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -436,26 +441,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-07-27T21:53:40.007Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-27T21:58:02.877Z",
-          "agentType": "product-planner",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-27T22:19:12.997Z",
-          "agentType": "general-purpose",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-30T17:47:18.582Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-07-30T17:56:35.047Z",
           "agentType": "unknown",
@@ -535,6 +520,26 @@
           "ts": "2026-08-03T19:35:59.745Z",
           "agentType": "docs-writer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-03T20:11:32.828Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-03T20:19:49.329Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-03T20:29:39.617Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-03T20:35:08.464Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
         }
       ]
     }
@@ -543,9 +548,16 @@
   "extractionCandidates": null,
   "prs": [
     {
+      "headRefName": "feat/trMZD1C5-payout-eligibility-earnings",
+      "number": 45,
+      "state": "OPEN",
+      "title": "feat(api): payout-eligibility data model + net vendor earnings engine (VE-3)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/45"
+    },
+    {
       "headRefName": "feat/WIZ4pJtk-admin-commission-rate-screen",
       "number": 44,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(web): admin commission-rate management screen (VE-2)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/44"
     },
@@ -858,7 +870,7 @@
     },
     {
       "name": "To Do",
-      "cards": 8
+      "cards": 7
     },
     {
       "name": "In Progress",
@@ -870,7 +882,7 @@
     },
     {
       "name": "Done",
-      "cards": 54
+      "cards": 55
     },
     {
       "name": "Fable Documentation",
