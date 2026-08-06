@@ -61,7 +61,7 @@ export class RadialNav {
     { id: 'home', icon: 'home', label: 'Home', routerLink: '/shop' },
     { id: 'search', icon: 'search', label: 'Search', routerLink: '/discover' },
     { id: 'orders', icon: 'receipt_long', label: 'My Orders' },
-    { id: 'profile', icon: 'person', label: 'Profile' },
+    { id: 'profile', icon: 'person', label: 'Profile', routerLink: '/profile' },
     { id: 'cart', icon: 'shopping_cart', label: 'Cart' },
     { id: 'wishlist', icon: 'favorite', label: 'Wishlist' },
   ];

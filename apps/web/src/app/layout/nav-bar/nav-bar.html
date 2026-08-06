@@ -74,10 +74,14 @@
 
       <!-- Auth controls: sign-in (anonymous) or account + sign-out (authenticated) -->
       @if (isAuthenticated()) {
-        <div class="nav-bar__account">
+        <a
+          class="nav-bar__account"
+          routerLink="/profile"
+          aria-label="View your profile"
+        >
           <span class="material-symbols-outlined nav-bar__account-icon" aria-hidden="true">person</span>
           <span class="nav-bar__account-name">{{ accountLabel() }}</span>
-        </div>
+        </a>
         <button
           type="button"
           class="nav-bar__signout"

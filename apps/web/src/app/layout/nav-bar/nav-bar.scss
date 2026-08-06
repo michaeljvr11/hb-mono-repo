@@ -265,6 +265,14 @@
   padding: 4px 8px;
   border-radius: 4px;
   color: var(--hb-on-surface-variant);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+
+  &:hover {
+    background: var(--hb-surface-container);
+    color: var(--hb-on-surface);
+  }
 }
 
 .nav-bar__account-icon {

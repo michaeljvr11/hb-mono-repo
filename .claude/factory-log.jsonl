@@ -594,3 +594,4 @@
 {"ts":"2026-08-03T20:29:39.617Z","type":"agent_token_usage","agentType":"backend-engineer","agentId":"a5b6cd127923f56e7","sessionId":"b2745d0a-f195-4fb5-b06f-b2ac5af21cf3","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
 {"ts":"2026-08-03T20:35:08.464Z","type":"agent_token_usage","agentType":"docs-writer","agentId":"a3300fde73b8a7541","sessionId":"b2745d0a-f195-4fb5-b06f-b2ac5af21cf3","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
 {"ts":"2026-08-03T20:36:22.071Z","type":"pr_gate","result":"pass","durationMs":12295}
+{"ts":"2026-08-06T18:15:36.697Z","type":"agent_token_usage","agentType":"unknown","agentId":"a8d346b9a31d1814d","sessionId":"97035dd1-94ff-40b3-a0d5-28844d362518","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}

@@ -322,7 +322,7 @@ describe('Shop', () => {
     );
   });
 
-  it('shows a coming-soon notice for orders/profile/wishlist radial nav items', () => {
+  it('shows a coming-soon notice for orders/wishlist radial nav items', () => {
     flushLoads();
     fixture.detectChanges();
     const snackBar = fixture.debugElement.injector.get(MatSnackBar);
@@ -331,13 +331,6 @@ describe('Shop', () => {
     component.onRadialNavSelect('orders');
     expect(openSpy).toHaveBeenCalledWith(
       expect.stringContaining('My Orders'),
-      expect.anything(),
-      expect.anything(),
-    );
-
-    component.onRadialNavSelect('profile');
-    expect(openSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Profile'),
       expect.anything(),
       expect.anything(),
     );

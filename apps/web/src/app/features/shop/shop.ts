@@ -166,7 +166,6 @@ export class Shop implements OnInit {
     }
     const labels: Partial<Record<RadialNavItemId, string>> = {
       orders: 'My Orders',
-      profile: 'Profile',
       wishlist: 'Wishlist',
     };
     this.notifyComingSoon(labels[itemId] ?? 'This feature');
