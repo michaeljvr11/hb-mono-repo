@@ -6,7 +6,7 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, EntityManager } from 'typeorm';
+import { DataSource, EntityManager, IsNull } from 'typeorm';
 import { CurrencyCode, ListingType, OrderStatus, PaymentStatus, UserRole } from '@hb/shared';
 import { ORDER_STATUS_TRANSITIONS, OrdersService } from './orders.service';
 import { Order } from './entities/order.entity';
@@ -19,6 +19,7 @@ import { Vendor } from '../vendors/entities/vendor.entity';
 import { User } from '../users/entities/user.entity';
 import { PAYMENT_PROVIDER } from '../payments/payment-provider.port';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CommissionRateService } from '../commission/commission-rate.service';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -101,6 +102,7 @@ describe('OrdersService', () => {
   let vendorsRepo: Record<string, jest.Mock>;
   let orderItemsRepo: Record<string, jest.Mock>;
   let paymentProvider: Record<string, jest.Mock>;
+  let commissionRateService: Record<string, jest.Mock>;
   let manager: Record<string, jest.Mock>;
 
   /** Per-entity dispatch for the transactional EntityManager mock. */
@@ -134,6 +136,7 @@ describe('OrdersService', () => {
       find: jest.fn(),
       findOne: jest.fn(),
       save: jest.fn((o: Order) => Promise.resolve(o)),
+      update: jest.fn(() => Promise.resolve({ affected: 1 })),
     };
     paymentsRepo = {
       create: jest.fn((p: Partial<Payment>) => p as Payment),
@@ -147,6 +150,16 @@ describe('OrdersService', () => {
       ),
       getPaymentStatus: jest.fn(() => Promise.resolve('paid')),
       refund: jest.fn(),
+    };
+    commissionRateService = {
+      getRateAt: jest.fn(() =>
+        Promise.resolve({
+          id: 'rate-1',
+          ratePercent: 15,
+          effectiveFrom: NOW.toISOString(),
+          createdAt: NOW.toISOString(),
+        }),
+      ),
     };
 
     const dataSource = {
@@ -164,6 +177,7 @@ describe('OrdersService', () => {
         { provide: getRepositoryToken(OrderItem), useValue: orderItemsRepo },
         { provide: PAYMENT_PROVIDER, useValue: paymentProvider },
         { provide: DataSource, useValue: dataSource },
+        { provide: CommissionRateService, useValue: commissionRateService },
       ],
     }).compile();
 
@@ -269,6 +283,64 @@ describe('OrdersService', () => {
           ],
         }),
       );
+    });
+
+    it('snapshots commissionRatePercent from getRateAt on vendor lines, null on platform lines', async () => {
+      stageCart(
+        [
+          { productId: 'prod-vendor', quantity: 1 },
+          { productId: 'prod-platform', quantity: 1 },
+        ],
+        [
+          makeProduct({
+            id: 'prod-vendor',
+            listingType: ListingType.VENDOR,
+            vendorId: 'vendor-9',
+          }),
+          makeProduct({
+            id: 'prod-platform',
+            listingType: ListingType.PLATFORM,
+            vendorId: undefined,
+          }),
+        ],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      // Resolved exactly once per order creation, not once per line.
+      expect(commissionRateService.getRateAt).toHaveBeenCalledTimes(1);
+      expect(commissionRateService.getRateAt).toHaveBeenCalledWith(expect.any(Date));
+
+      expect(manager.save).toHaveBeenCalledWith(
+        Order,
+        expect.objectContaining({
+          // cartItems are locked/processed in deterministic productId order
+          // ('prod-platform' < 'prod-vendor' lexicographically).
+          items: [
+            expect.objectContaining({ productId: 'prod-platform', commissionRatePercent: null }),
+            expect.objectContaining({ productId: 'prod-vendor', commissionRatePercent: 15 }),
+          ],
+        }),
+      );
+    });
+
+    it('uses one consistent timestamp across every line in the same order', async () => {
+      stageCart(
+        [
+          { productId: 'prod-a', quantity: 1 },
+          { productId: 'prod-b', quantity: 1 },
+        ],
+        [
+          makeProduct({ id: 'prod-a', vendorId: 'vendor-1' }),
+          makeProduct({ id: 'prod-b', vendorId: 'vendor-2' }),
+        ],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      // Only one call total covers both lines — same resolved Date argument.
+      expect(commissionRateService.getRateAt).toHaveBeenCalledTimes(1);
+      expect(commissionRateService.getRateAt).toHaveBeenCalledWith(expect.any(Date));
     });
 
     it('rejects a mixed-currency cart (ZAR and NAD are never summed together)', async () => {
@@ -440,6 +512,79 @@ describe('OrdersService', () => {
       expect(ORDER_STATUS_TRANSITIONS[OrderStatus.DELIVERED]).toEqual([]);
       expect(ORDER_STATUS_TRANSITIONS[OrderStatus.CANCELLED]).toEqual([]);
     });
+  });
+
+  // ── deliveredAt stamping (VE-3: Vendor Earnings & Commission) ──────────────
+
+  describe('updateStatus — deliveredAt stamping', () => {
+    const admin = makeUser({ id: 'admin-1', role: UserRole.ADMIN });
+
+    it('stamps deliveredAt to approximately now on shipped → delivered', async () => {
+      stageOrder({ status: OrderStatus.SHIPPED, deliveredAt: undefined });
+      const before = Date.now();
+
+      await service.updateStatus(admin, 'order-1', OrderStatus.DELIVERED);
+
+      const saved = lastSavedOrder();
+      expect(saved.deliveredAt).toBeInstanceOf(Date);
+      expect(saved.deliveredAt.getTime()).toBeGreaterThanOrEqual(before);
+      expect(saved.deliveredAt.getTime()).toBeLessThanOrEqual(Date.now());
+
+      function stageOrder(overrides: Partial<Order> = {}) {
+        const order = makeOrder(overrides);
+        ordersRepo.findOne.mockResolvedValue(order);
+        return order;
+      }
+    });
+
+    it('never overwrites an existing non-null deliveredAt', async () => {
+      const existing = new Date('2026-01-01T00:00:00.000Z');
+      const order = makeOrder({ status: OrderStatus.SHIPPED, deliveredAt: existing });
+      ordersRepo.findOne.mockResolvedValue(order);
+
+      await service.updateStatus(admin, 'order-1', OrderStatus.DELIVERED);
+
+      expect(lastSavedOrder().deliveredAt).toBe(existing);
+      expect(ordersRepo.update).not.toHaveBeenCalled();
+    });
+
+    it('stamps deliveredAt via a race-safe conditional UPDATE ... WHERE deliveredAt IS NULL, not the whole-entity save()', async () => {
+      const order = makeOrder({ status: OrderStatus.SHIPPED, deliveredAt: undefined });
+      ordersRepo.findOne.mockResolvedValue(order);
+      const before = Date.now();
+
+      await service.updateStatus(admin, 'order-1', OrderStatus.DELIVERED);
+
+      expect(ordersRepo.update).toHaveBeenCalledTimes(1);
+      const calls = ordersRepo.update.mock.calls as [
+        { id: string; deliveredAt: unknown },
+        { deliveredAt: Date },
+      ][];
+      const [where, patch] = calls[0];
+      expect(where).toEqual({ id: 'order-1', deliveredAt: IsNull() });
+      expect(patch.deliveredAt).toBeInstanceOf(Date);
+      expect(patch.deliveredAt.getTime()).toBeGreaterThanOrEqual(before);
+      expect(patch.deliveredAt.getTime()).toBeLessThanOrEqual(Date.now());
+    });
+
+    it.each([
+      [OrderStatus.PENDING, OrderStatus.CONFIRMED],
+      [OrderStatus.CONFIRMED, OrderStatus.PROCESSING],
+      [OrderStatus.PROCESSING, OrderStatus.HANDED_TO_HB],
+      [OrderStatus.HANDED_TO_HB, OrderStatus.SHIPPED],
+    ])('leaves deliveredAt untouched on %s → %s', async (from, to) => {
+      const order = makeOrder({ status: from, deliveredAt: undefined });
+      ordersRepo.findOne.mockResolvedValue(order);
+
+      await service.updateStatus(admin, 'order-1', to);
+
+      expect(lastSavedOrder().deliveredAt).toBeUndefined();
+    });
+
+    function lastSavedOrder(): Order {
+      const calls = ordersRepo.save.mock.calls as Order[][];
+      return calls[calls.length - 1][0];
+    }
   });
 
   // ── Transition rights per role ─────────────────────────────────────────────

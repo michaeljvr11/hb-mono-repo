@@ -68,6 +68,15 @@ export class OrderItem {
   @Column({ nullable: true })
   vendorId?: string;
 
+  /**
+   * Commission rate (%) in force at order-creation time, snapshotted the same
+   * way as `unitPrice`/`productName` — a later change to `commission_rates`
+   * must never retroactively restate this line's earnings. `NULL` for
+   * platform lines (`vendorId` unset) — there is no vendor to charge a fee to.
+   */
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  commissionRatePercent?: number | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 }
