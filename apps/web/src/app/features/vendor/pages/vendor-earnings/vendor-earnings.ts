@@ -105,6 +105,13 @@ export class VendorEarnings implements OnInit {
     return period.netByCurrency.map((entry) => entry.currency);
   }
 
+  /** `periodEnd` is EXCLUSIVE (the next period's start) — rendering it verbatim as a
+   *  calendar date would visibly overlap with the following row's start date. Display
+   *  the last inclusive day instead (periodEnd minus one day). */
+  periodDisplayEnd(period: SettlementPeriodPreviewDto): Date {
+    return new Date(new Date(period.periodEnd).getTime() - 24 * 60 * 60 * 1000);
+  }
+
   periodNet(period: SettlementPeriodPreviewDto, currency: CurrencyCode): number {
     return this.amountFor(period.netByCurrency, currency);
   }

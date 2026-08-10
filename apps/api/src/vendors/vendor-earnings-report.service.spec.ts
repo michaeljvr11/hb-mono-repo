@@ -4,7 +4,11 @@ import { NotFoundException } from '@nestjs/common';
 import { CurrencyCode } from '@hb/shared';
 import { VendorEarningsReportService } from './vendor-earnings-report.service';
 import { Vendor } from './entities/vendor.entity';
-import { VendorEarningsGroup, VendorEarningsService } from '../earnings/vendor-earnings.service';
+import {
+  currentSettlementPeriodBounds,
+  VendorEarningsGroup,
+  VendorEarningsService,
+} from '../earnings/vendor-earnings.service';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -250,6 +254,30 @@ describe('VendorEarningsReportService', () => {
     expect(open[0].netByCurrency).toEqual([{ currency: CurrencyCode.ZAR, amount: 85 }]);
     // Closed periods carry net only (no commission field leaked).
     expect(closed[0].netByCurrency).toEqual([{ currency: CurrencyCode.ZAR, amount: 90 }]);
+  });
+
+  it('open settlementPreview entry bounds come from currentSettlementPeriodBounds(now), not an ad-hoc calculation', async () => {
+    vendorRepo.findOne.mockResolvedValue(makeVendor());
+    vendorEarningsService.getEarningsByVendor.mockResolvedValue(
+      new Map([
+        [
+          'vendor-1',
+          makeGroup({
+            accrued: {
+              orderCount: 1,
+              byCurrency: [{ currency: CurrencyCode.ZAR, commissionAmount: 15, netAmount: 85 }],
+            },
+          }),
+        ],
+      ]),
+    );
+
+    const result = await service.getMyEarnings('user-1', {}, NOW);
+    const expectedBounds = currentSettlementPeriodBounds(NOW);
+
+    const open = result.settlementPreview.find((p) => p.status === 'open');
+    expect(open?.periodStart).toBe(expectedBounds.periodStart.toISOString());
+    expect(open?.periodEnd).toBe(expectedBounds.periodEnd.toISOString());
   });
 
   it('keeps ZAR and NAD separate throughout balance/summary/settlementPreview — never summed', async () => {

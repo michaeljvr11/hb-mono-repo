@@ -142,7 +142,11 @@
     <section class="settlement-section">
       <header class="section-header">
         <h2 class="section-title">Settlement periods</h2>
-        <p class="section-sub">Bi-weekly settlement periods. The current period is still accruing.</p>
+        <p class="section-sub">
+          Bi-weekly settlement periods. The current period is still accruing. Figures reflect only
+          orders placed within the selected reporting window above — a period may show less than
+          its full total if it extends beyond that window.
+        </p>
       </header>
 
       <div class="table-card">
@@ -158,7 +162,7 @@
           <tbody>
             @for (period of data.settlementPreview; track period.periodStart) {
               <tr>
-                <td>{{ period.periodStart | date:'d MMM y' }} – {{ period.periodEnd | date:'d MMM y' }}</td>
+                <td>{{ period.periodStart | date:'d MMM y' }} – {{ periodDisplayEnd(period) | date:'d MMM y' }}</td>
                 <td>
                   <span class="status-chip" [class.status-chip--open]="period.status === 'open'">
                     {{ period.status === 'open' ? 'Current period' : 'Closed' }}
