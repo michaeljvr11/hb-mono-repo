@@ -101,9 +101,11 @@ for this command for a one-line change.
 4. IMPLEMENT — same PULL-then-build loop as `/ship-card`, extended for the batch
    For each slice of work (a slice may span multiple cards or be one card broken
    into vertical slices — one commit per slice either way):
-   - PULL: `git pull` this project and the Obsidian vault before every slice —
-     re-read the relevant note(s), adjust plan/card comments if anything moved
-     since PLAN.
+   - PULL: `git pull` this project and the Obsidian vault before every slice.
+     **Only re-read the relevant note(s) if the vault pull actually brought new
+     commits** (git reports something other than "Already up to date") — adjust
+     plan/card comments if anything moved since PLAN; skip the re-read on a
+     no-op pull, there's nothing new to catch.
    - BUILD: dispatch per the mode decided in step 2 —
      - Sequential slice → one specialist (`backend-engineer` / `frontend-engineer`
        / `design-to-code`), same as `/ship-card`, or an `Agent` call with
@@ -119,9 +121,15 @@ for this command for a one-line change.
    Then start the next slice from PULL again.
 
 5. TEST
-   - test-engineer writes/updates tests for the whole batch.
-   - Run: `npm run test:api`, `npm run test -w @hb/web`, `npm run lint:api`,
-     `npm run build`. Fix failures before proceeding.
+   - test-engineer writes/updates tests for whatever layer(s) the batch touched.
+   - Run only what those layers need, same reasoning as `/ship-card` — CI
+     (`.github/workflows/ci.yml`) already re-runs `lint:api` + `test:api` + the
+     full build as the PR gate, and its web-tests job is informational-only:
+     - `apps/api` or `libs/shared` touched anywhere in the batch → `npm run
+       lint:api` && `npm run test:api`.
+     - `apps/web` touched anywhere in the batch → `npm run test -w @hb/web`.
+     - Always `npm run build` (shared → api → web).
+   - Fix failures before proceeding.
 
 6. REVIEW
    - Run code-reviewer on the full diff. Address every FAIL. Re-run affected
@@ -131,12 +139,23 @@ for this command for a one-line change.
 
 7. DELIVER
    - Commit any remaining changes, same AI-authorship trailer as step 3.
-   - DOCUMENT (once): dispatch docs-writer with the CONTEXT MANIFEST(s) plus
-     accumulated slice notes for the whole batch. It appends Implementation
-     Notes to every Obsidian spec note touched and records one session log
-     covering the whole batch (`History/<Name>/session-<n>.md`).
-   - COMMIT DOCS: commit spec-note updates + session log straight to the vault's
-     `main` (no branch/PR there — see `/ship-card`).
+   - EVIDENCE: run `npm run evidence` to recompile `docs/ai-evidence/REPORT.md`
+     **before** dispatching docs-writer — the generator already traces
+     `feat/<card-id>-<slug>` branches to PRs, so the batch's primary card shows
+     up there (note in the PR body, below, which other card ids are bundled in,
+     since the generator only traces the primary). Compiling first means
+     docs-writer only needs to boot once for this batch, not twice.
+   - DOCUMENT (once): dispatch docs-writer with the CONTEXT MANIFEST(s),
+     accumulated slice notes for the whole batch, and the freshly compiled
+     evidence figures. In one pass it appends Implementation Notes to every
+     Obsidian spec note touched, records one session log covering the whole
+     batch (`History/<Name>/session-<n>.md`, docs-writer's short template —
+     ~10-15 lines, one log for the whole batch, not one per card), and
+     refreshes the headline figures in the Obsidian **AI Factory — Evidence
+     Log** note.
+   - COMMIT DOCS: commit the spec-note updates, session log, and evidence-log
+     refresh together in **one** commit straight to the vault's `main` (no
+     branch/PR there — see `/ship-card`).
    - Open **one PR** for the whole batch using the template. Title and body
      name every card bundled in, state the bundling reason from step 2, and
      link every Trello card + every Obsidian note touched — mirror the
@@ -145,10 +164,4 @@ for this command for a one-line change.
    - Comment the PR link on **every** card in the batch (Node.js
      `url.searchParams.set('text', ...)`, never `curl --data-urlencode` — see
      the trello-mcp-rest-fallback memory). Move every card to "In Review".
-   - EVIDENCE: run `npm run evidence` to recompile `docs/ai-evidence/REPORT.md`
-     — the generator already traces `feat/<card-id>-<slug>` branches to PRs, so
-     the batch's primary card shows up there; note in the PR body which other
-     card ids are bundled in, since the generator only traces the primary.
-     Have docs-writer refresh the headline figures in the Obsidian
-     **AI Factory — Evidence Log** note.
    - STOP. Do not merge. A human owns prod.
