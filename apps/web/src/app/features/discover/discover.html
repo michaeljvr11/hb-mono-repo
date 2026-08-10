@@ -99,7 +99,13 @@
     } @else {
       <div class="discover__grid">
         @for (product of filteredProducts(); track product.id) {
-          <app-product-card [product]="product" variant="grid" (addToCart)="onAddToCart($event)" />
+          <app-product-card
+            [product]="product"
+            variant="grid"
+            [wishlisted]="isWishlisted(product.id)"
+            (addToCart)="onAddToCart($event)"
+            (wishlistToggle)="onWishlistToggle($event)"
+          />
         }
       </div>
     }

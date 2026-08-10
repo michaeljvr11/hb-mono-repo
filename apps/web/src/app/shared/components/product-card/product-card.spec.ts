@@ -110,4 +110,56 @@ describe('ProductCard', () => {
     const anchor = fixture.nativeElement.querySelector('a.product-card') as HTMLAnchorElement;
     expect(anchor.getAttribute('href')).toBe('/products/p1');
   });
+
+  // ── Wishlist affordance ──────────────────────────────────────────────
+
+  it('renders an outline heart with "Add to wishlist" when not wishlisted (default)', async () => {
+    await setup();
+    const btn = fixture.nativeElement.querySelector(
+      '.product-card__wishlist-btn',
+    ) as HTMLButtonElement;
+    expect(btn).toBeTruthy();
+    expect(btn.classList.contains('product-card__wishlist-btn--active')).toBe(false);
+    expect(btn.getAttribute('aria-pressed')).toBe('false');
+    expect(btn.getAttribute('aria-label')).toBe('Add to wishlist');
+  });
+
+  it('renders a filled heart with "Remove from wishlist" when wishlisted', async () => {
+    await setup();
+    fixture.componentRef.setInput('wishlisted', true);
+    fixture.detectChanges();
+
+    const btn = fixture.nativeElement.querySelector(
+      '.product-card__wishlist-btn',
+    ) as HTMLButtonElement;
+    expect(btn.classList.contains('product-card__wishlist-btn--active')).toBe(true);
+    expect(btn.getAttribute('aria-pressed')).toBe('true');
+    expect(btn.getAttribute('aria-label')).toBe('Remove from wishlist');
+  });
+
+  it('emits wishlistToggle with the product on heart click', async () => {
+    await setup();
+    const spy = vi.fn();
+    component.wishlistToggle.subscribe(spy);
+
+    const btn = fixture.nativeElement.querySelector(
+      '.product-card__wishlist-btn',
+    ) as HTMLButtonElement;
+    btn.click();
+
+    expect(spy).toHaveBeenCalledWith(baseProduct);
+  });
+
+  it('does not trigger router navigation when the wishlist heart is clicked', async () => {
+    await setup();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+
+    const btn = fixture.nativeElement.querySelector(
+      '.product-card__wishlist-btn',
+    ) as HTMLButtonElement;
+    btn.click();
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
 });

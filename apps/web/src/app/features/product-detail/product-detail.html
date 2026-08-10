@@ -134,7 +134,13 @@
         <h2 class="pdp__section-title">You May Also Like</h2>
         <div class="pdp__related-grid">
           @for (related of relatedProducts(); track related.id) {
-            <app-product-card [product]="related" variant="grid" (addToCart)="onRelatedAddToCart($event)" />
+            <app-product-card
+              [product]="related"
+              variant="grid"
+              [wishlisted]="isWishlisted(related.id)"
+              (addToCart)="onRelatedAddToCart($event)"
+              (wishlistToggle)="onRelatedWishlistToggle($event)"
+            />
           }
         </div>
       </section>

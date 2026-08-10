@@ -2,6 +2,7 @@ import { isPlatformBrowser, Location } from '@angular/common';
 import {
   Component,
   PLATFORM_ID,
+  afterNextRender,
   computed,
   inject,
   signal,
@@ -15,6 +16,7 @@ import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
+import { WishlistService } from '../../core/api/wishlist.service';
 import { ProductsService } from '../../core/api/products.service';
 import { formatPrice } from '../../shared/format-price';
 import { Footer } from '../../layout/footer/footer';
@@ -46,6 +48,7 @@ export class ProductDetail {
   private readonly productsService = inject(ProductsService);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
+  private readonly wishlistService = inject(WishlistService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly gaService = inject(GoogleAnalyticsService);
   private readonly snackBar = inject(MatSnackBar);
@@ -53,6 +56,15 @@ export class ProductDetail {
 
   /** Real cart count for the radial-nav badge. */
   readonly cartCount = this.cartService.itemCount;
+
+  // Hydration gate: server render and first client render must both show
+  // empty hearts (no anonymous-vs-signed-in DOM mismatch) — see nav-bar.ts.
+  // Scoped to the related-products grid only — WL-3 owns the PDP hero.
+  private readonly hydrated = signal(false);
+
+  /** True once hydrated and the product is on the signed-in user's wishlist. */
+  readonly isWishlisted = (productId: string): boolean =>
+    this.hydrated() && this.wishlistService.has(productId);
 
   private readonly productId = toSignal(
     this.route.paramMap.pipe(switchMap((params) => [params.get('id')])),
@@ -97,6 +109,15 @@ export class ProductDetail {
   });
 
   constructor() {
+    afterNextRender(() => {
+      this.hydrated.set(true);
+      // Prime the wishlist once per page load for signed-in users; toggles
+      // elsewhere keep the shared WishlistService signal fresh.
+      if (this.authService.isLoggedIn() && this.wishlistService.wishlist() === null) {
+        this.wishlistService.load().subscribe({ error: () => undefined });
+      }
+    });
+
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (!id) {
@@ -219,6 +240,29 @@ export class ProductDetail {
             verticalPosition: 'top',
           },
         );
+      },
+    });
+  }
+
+  /** Wishlist toggle for the "You May Also Like" related-products grid. */
+  onRelatedWishlistToggle(product: ProductDto): void {
+    if (!this.authService.isLoggedIn()) {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url },
+      });
+      return;
+    }
+    // No optimistic mutation — the heart only reflects a successful server
+    // response (via WishlistService's signal), so a failure can never leave
+    // it lying about the real state.
+    this.wishlistService.toggle(product.id).subscribe({
+      error: (err: { error?: { message?: string } }) => {
+        this.snackBar.open(err?.error?.message ?? 'Could not update your wishlist.', 'Close', {
+          duration: 4000,
+          horizontalPosition: 'end',
+          panelClass: ['hb-info-snackbar'],
+          verticalPosition: 'top',
+        });
       },
     });
   }

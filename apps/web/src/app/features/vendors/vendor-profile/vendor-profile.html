@@ -85,7 +85,13 @@
           <h2 class="vendor-profile__section-title" [id]="'section-title-' + section.id">{{ section.title }}</h2>
           <div class="vendor-profile__grid">
             @for (product of section.products; track product.id) {
-              <app-product-card [product]="product" variant="grid" (addToCart)="onAddToCart($event)" />
+              <app-product-card
+                [product]="product"
+                variant="grid"
+                [wishlisted]="isWishlisted(product.id)"
+                (addToCart)="onAddToCart($event)"
+                (wishlistToggle)="onWishlistToggle($event)"
+              />
             }
           </div>
         </section>
@@ -99,7 +105,13 @@
           </h2>
           <div class="vendor-profile__grid">
             @for (product of unsectionedProducts(); track product.id) {
-              <app-product-card [product]="product" variant="grid" (addToCart)="onAddToCart($event)" />
+              <app-product-card
+                [product]="product"
+                variant="grid"
+                [wishlisted]="isWishlisted(product.id)"
+                (addToCart)="onAddToCart($event)"
+                (wishlistToggle)="onWishlistToggle($event)"
+              />
             }
           </div>
         </section>
@@ -120,7 +132,13 @@
       <section class="vendor-profile__grid-section">
         <div class="vendor-profile__grid">
           @for (product of products(); track product.id) {
-            <app-product-card [product]="product" variant="grid" (addToCart)="onAddToCart($event)" />
+            <app-product-card
+              [product]="product"
+              variant="grid"
+              [wishlisted]="isWishlisted(product.id)"
+              (addToCart)="onAddToCart($event)"
+              (wishlistToggle)="onWishlistToggle($event)"
+            />
           }
         </div>
       </section>

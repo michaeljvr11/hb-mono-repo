@@ -82,7 +82,9 @@
             role="listitem"
             variant="carousel"
             [product]="product"
+            [wishlisted]="isWishlisted(product.id)"
             (addToCart)="onAddToCart($event)"
+            (wishlistToggle)="onWishlistToggle($event)"
           />
         }
       </div>

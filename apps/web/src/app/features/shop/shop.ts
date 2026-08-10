@@ -1,5 +1,13 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  PLATFORM_ID,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AnalyticsEventType, CategoryDto, ProductDto, VendorDto } from '@hb/shared';
@@ -7,6 +15,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { CartService } from '../../core/api/cart.service';
+import { WishlistService } from '../../core/api/wishlist.service';
 import { CategoriesService } from '../../core/api/categories.service';
 import { ProductsService } from '../../core/api/products.service';
 import { VendorsService } from '../../core/api/vendors.service';
@@ -73,6 +82,7 @@ export class Shop implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
+  private readonly wishlistService = inject(WishlistService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly gaService = inject(GoogleAnalyticsService);
   private readonly router = inject(Router);
@@ -80,6 +90,14 @@ export class Shop implements OnInit {
 
   /** Real cart count for the radial-nav badge. */
   readonly cartCount = this.cartService.itemCount;
+
+  // Hydration gate: server render and first client render must both show
+  // empty hearts (no anonymous-vs-signed-in DOM mismatch) — see nav-bar.ts.
+  private readonly hydrated = signal(false);
+
+  /** True once hydrated and the product is on the signed-in user's wishlist. */
+  readonly isWishlisted = (productId: string): boolean =>
+    this.hydrated() && this.wishlistService.has(productId);
 
   // Products
   readonly products = signal<ProductDto[]>([]);
@@ -95,6 +113,17 @@ export class Shop implements OnInit {
 
   /** First page of "New in Namibia" carousel products. */
   readonly carouselProducts = computed(() => this.products().slice(0, CAROUSEL_LIMIT));
+
+  constructor() {
+    afterNextRender(() => {
+      this.hydrated.set(true);
+      // Prime the wishlist once per page load for signed-in users; toggles
+      // elsewhere keep the shared WishlistService signal fresh.
+      if (this.authService.isLoggedIn() && this.wishlistService.wishlist() === null) {
+        this.wishlistService.load().subscribe({ error: () => undefined });
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loadProducts();
@@ -159,6 +188,22 @@ export class Shop implements OnInit {
     });
   }
 
+  onWishlistToggle(product: ProductDto): void {
+    if (!this.authService.isLoggedIn()) {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url },
+      });
+      return;
+    }
+    // No optimistic mutation — the heart only reflects a successful server
+    // response (via WishlistService's signal), so a failure can never leave
+    // it lying about the real state.
+    this.wishlistService.toggle(product.id).subscribe({
+      error: (err: { error?: { message?: string } }) =>
+        this.notifyWishlistError(err?.error?.message),
+    });
+  }
+
   onRadialNavSelect(itemId: RadialNavItemId): void {
     if (itemId === 'cart') {
       this.onCartClick();
@@ -207,6 +252,15 @@ export class Shop implements OnInit {
       duration: 5000,
       horizontalPosition: 'end',
       panelClass: ['hb-error-snackbar'],
+      verticalPosition: 'top',
+    });
+  }
+
+  private notifyWishlistError(message?: string): void {
+    this.snackBar.open(message ?? 'Could not update your wishlist.', 'Close', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      panelClass: ['hb-info-snackbar'],
       verticalPosition: 'top',
     });
   }

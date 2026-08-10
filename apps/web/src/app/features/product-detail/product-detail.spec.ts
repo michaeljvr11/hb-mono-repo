@@ -18,6 +18,7 @@ import {
 import { ProductDetail } from './product-detail';
 import { ProductsService } from '../../core/api/products.service';
 import { CartService } from '../../core/api/cart.service';
+import { WishlistService } from '../../core/api/wishlist.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -94,12 +95,20 @@ interface GaStub {
   addToCart: ReturnType<typeof vi.fn>;
 }
 
+interface WishlistStub {
+  has: ReturnType<typeof vi.fn>;
+  toggle: ReturnType<typeof vi.fn>;
+  load: ReturnType<typeof vi.fn>;
+  wishlist: ReturnType<typeof signal<null>>;
+}
+
 function makeStubs(): {
   productsStub: ProductsStub;
   authStub: AuthStub;
   cartStub: CartStub;
   analyticsStub: AnalyticsStub;
   gaStub: GaStub;
+  wishlistStub: WishlistStub;
 } {
   return {
     productsStub: {
@@ -125,6 +134,12 @@ function makeStubs(): {
       viewItem: vi.fn(),
       addToCart: vi.fn(),
     },
+    wishlistStub: {
+      has: vi.fn(() => false),
+      toggle: vi.fn(() => of({ items: [], itemCount: 0 })),
+      load: vi.fn(() => of({ items: [], itemCount: 0 })),
+      wishlist: signal(null),
+    },
   };
 }
 
@@ -134,6 +149,7 @@ async function setupTestBed(
   cartStub: CartStub,
   analyticsStub: AnalyticsStub,
   gaStub: GaStub,
+  wishlistStub: WishlistStub,
   paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>,
 ): Promise<void> {
   return TestBed.configureTestingModule({
@@ -146,6 +162,7 @@ async function setupTestBed(
       { provide: ProductsService, useValue: productsStub },
       { provide: AuthService, useValue: authStub },
       { provide: CartService, useValue: cartStub },
+      { provide: WishlistService, useValue: wishlistStub },
       { provide: AnalyticsService, useValue: analyticsStub },
       { provide: GoogleAnalyticsService, useValue: gaStub },
       {
@@ -167,13 +184,22 @@ describe('ProductDetail', () => {
   let cartStub: CartStub;
   let analyticsStub: AnalyticsStub;
   let gaStub: GaStub;
+  let wishlistStub: WishlistStub;
   let paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   beforeEach(async () => {
-    ({ productsStub, authStub, cartStub, analyticsStub, gaStub } = makeStubs());
+    ({ productsStub, authStub, cartStub, analyticsStub, gaStub, wishlistStub } = makeStubs());
     paramMap$ = new BehaviorSubject(convertToParamMap({ id: 'p1' }));
 
-    await setupTestBed(productsStub, authStub, cartStub, analyticsStub, gaStub, paramMap$);
+    await setupTestBed(
+      productsStub,
+      authStub,
+      cartStub,
+      analyticsStub,
+      gaStub,
+      wishlistStub,
+      paramMap$,
+    );
 
     fixture = TestBed.createComponent(ProductDetail);
     component = fixture.componentInstance;
@@ -331,6 +357,28 @@ describe('ProductDetail', () => {
     component.onRelatedAddToCart(RELATED_SAME_CATEGORY);
 
     expect(cartStub.addItem).toHaveBeenCalledWith('p2');
+  });
+
+  // ── Wishlist toggle (related-products grid) ─────────────────────────────
+
+  it('anonymous related-product wishlist toggle routes to /login with the current returnUrl', () => {
+    authStub.isLoggedIn.mockReturnValue(false);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onRelatedWishlistToggle(RELATED_SAME_CATEGORY);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/login'], {
+      queryParams: { returnUrl: router.url },
+    });
+    expect(wishlistStub.toggle).not.toHaveBeenCalled();
+  });
+
+  it('authenticated related-product wishlist toggle calls WishlistService.toggle with the product id', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+
+    component.onRelatedWishlistToggle(RELATED_SAME_CATEGORY);
+
+    expect(wishlistStub.toggle).toHaveBeenCalledWith('p2');
   });
 
   it('surfaces the API error message when add-to-cart fails', () => {
