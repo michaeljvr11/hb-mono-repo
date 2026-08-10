@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-08-03T20:36:53.569Z",
+  "generatedAt": "2026-08-06T18:24:19.682Z",
   "git": {
-    "totalCommits": 175,
-    "aiCommits": 164,
+    "totalCommits": 176,
+    "aiCommits": 165,
     "aiPct": 94,
     "appCommits": 118,
-    "ins": 74715,
-    "del": 6704,
-    "net": 68011,
-    "aiIns": 61283,
-    "aiDel": 6566,
+    "ins": 74818,
+    "del": 6792,
+    "net": 68026,
+    "aiIns": 61386,
+    "aiDel": 6654,
     "filesTouched": 599,
     "areaRows": [
       {
@@ -26,14 +26,14 @@
       },
       {
         "name": "Docs",
-        "commits": 53,
-        "ins": 14005,
-        "del": 3978
+        "commits": 54,
+        "ins": 14106,
+        "del": 4066
       },
       {
         "name": "AI Factory config",
-        "commits": 56,
-        "ins": 1887,
+        "commits": 57,
+        "ins": 1889,
         "del": 68
       },
       {
@@ -58,6 +58,11 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-08-03",
     "recent": [
+      {
+        "hash": "2f4ca90",
+        "subject": "chore(evidence): recompile AI-factory evidence report",
+        "ai": true
+      },
       {
         "hash": "f980849",
         "subject": "feat(api): payout-eligibility data model + net vendor earnings engine (VE-3)",
@@ -111,11 +116,6 @@
       {
         "hash": "b09a585",
         "subject": "chore: update factory log",
-        "ai": true
-      },
-      {
-        "hash": "a634e25",
-        "subject": "chore: recompile AI evidence report",
         "ai": true
       }
     ]
@@ -345,13 +345,13 @@
     "edits": 461,
     "editsUnfixable": 165,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-03T20:36:22.071Z",
+    "lastTs": "2026-08-06T18:15:36.697Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 20,
+          "invocations": 21,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -441,11 +441,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-07-30T17:56:35.047Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-07-30T18:01:40.973Z",
           "agentType": "unknown",
@@ -540,6 +535,11 @@
           "ts": "2026-08-03T20:35:08.464Z",
           "agentType": "docs-writer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-06T18:15:36.697Z",
+          "agentType": "unknown",
+          "totalTokens": 0
         }
       ]
     }
@@ -550,7 +550,7 @@
     {
       "headRefName": "feat/trMZD1C5-payout-eligibility-earnings",
       "number": 45,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(api): payout-eligibility data model + net vendor earnings engine (VE-3)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/45"
     },

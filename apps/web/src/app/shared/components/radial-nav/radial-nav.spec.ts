@@ -69,15 +69,16 @@ describe('RadialNav', () => {
     expect(component.open()).toBe(false);
   });
 
-  it('renders Home and Search as routerLinks to /shop and /discover', async () => {
+  it('renders Home, Search, and Profile as routerLinks to /shop, /discover, and /profile', async () => {
     await setup();
     const links = fixture.nativeElement.querySelectorAll('a.radial-nav__item');
     const hrefs = Array.from(links).map((a) => (a as HTMLAnchorElement).getAttribute('href'));
     expect(hrefs).toContain('/shop');
     expect(hrefs).toContain('/discover');
+    expect(hrefs).toContain('/profile');
   });
 
-  it('emits itemSelected for non-routed items (orders/profile/cart/wishlist) and collapses', async () => {
+  it('emits itemSelected for non-routed items (orders/cart/wishlist) and collapses', async () => {
     await setup();
     const spy = vi.fn();
     component.itemSelected.subscribe(spy);

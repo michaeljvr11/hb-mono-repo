@@ -112,6 +112,14 @@ describe('NavBar', () => {
     expect(el.querySelector('a.nav-bar__signin')).toBeNull();
   });
 
+  it('links the account icon to /profile when authenticated', async () => {
+    userSubject.next(jane);
+    await hydrate();
+    const account = fixture.nativeElement.querySelector('a.nav-bar__account') as HTMLAnchorElement;
+    expect(account).toBeTruthy();
+    expect(account.getAttribute('href')).toBe('/profile');
+  });
+
   it('falls back to the email when the user has no first name', async () => {
     userSubject.next({ id: '2', email: 'no-name@hb.test', role: UserRole.CUSTOMER });
     await hydrate();
