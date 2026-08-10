@@ -1,46 +1,46 @@
 {
-  "generatedAt": "2026-08-06T18:24:19.682Z",
+  "generatedAt": "2026-08-10T15:23:22.852Z",
   "git": {
-    "totalCommits": 176,
-    "aiCommits": 165,
+    "totalCommits": 180,
+    "aiCommits": 169,
     "aiPct": 94,
-    "appCommits": 118,
-    "ins": 74818,
-    "del": 6792,
-    "net": 68026,
-    "aiIns": 61386,
-    "aiDel": 6654,
-    "filesTouched": 599,
+    "appCommits": 122,
+    "ins": 77390,
+    "del": 6934,
+    "net": 70456,
+    "aiIns": 63876,
+    "aiDel": 6760,
+    "filesTouched": 611,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 68,
-        "ins": 36990,
-        "del": 1713
+        "commits": 71,
+        "ins": 37944,
+        "del": 1748
       },
       {
         "name": "API (NestJS)",
-        "commits": 65,
-        "ins": 19771,
-        "del": 911
+        "commits": 67,
+        "ins": 21146,
+        "del": 938
       },
       {
         "name": "Docs",
-        "commits": 54,
-        "ins": 14106,
-        "del": 4066
+        "commits": 55,
+        "ins": 14146,
+        "del": 4106
       },
       {
         "name": "AI Factory config",
-        "commits": 57,
-        "ins": 1889,
-        "del": 68
+        "commits": 60,
+        "ins": 1988,
+        "del": 104
       },
       {
         "name": "Shared contracts",
-        "commits": 24,
-        "ins": 1080,
-        "del": 10
+        "commits": 26,
+        "ins": 1184,
+        "del": 14
       },
       {
         "name": "Root & config",
@@ -56,8 +56,38 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-03",
+    "lastDate": "2026-08-10",
     "recent": [
+      {
+        "hash": "8bb3f83",
+        "subject": "fix(earnings): address code review — validator drift, test mock, SSR hydration",
+        "ai": true
+      },
+      {
+        "hash": "3623356",
+        "subject": "feat(web): admin cross-vendor earnings report UI",
+        "ai": true
+      },
+      {
+        "hash": "5977836",
+        "subject": "feat(api): admin cross-vendor earnings report (VE-4)",
+        "ai": true
+      },
+      {
+        "hash": "90de6cb",
+        "subject": "tightened ship-card methodology",
+        "ai": false
+      },
+      {
+        "hash": "5155b2f",
+        "subject": "index on fix/profile-icon-nav-link: a408383 fix(web): wire the profile icon to /profile in both nav components",
+        "ai": false
+      },
+      {
+        "hash": "a408383",
+        "subject": "fix(web): wire the profile icon to /profile in both nav components",
+        "ai": true
+      },
       {
         "hash": "2f4ca90",
         "subject": "chore(evidence): recompile AI-factory evidence report",
@@ -87,40 +117,15 @@
         "hash": "4d72652",
         "subject": "chore(evidence): recompile AI-factory evidence report",
         "ai": true
-      },
-      {
-        "hash": "beba298",
-        "subject": "fix(api): close commission-rate review findings (VE-1)",
-        "ai": true
-      },
-      {
-        "hash": "844e55b",
-        "subject": "feat(api): admin-configurable commission rate (VE-1)",
-        "ai": true
-      },
-      {
-        "hash": "9e30f4d",
-        "subject": "fix(web): keep unsectioned products visible + accessibility fixes on vendor profile",
-        "ai": true
-      },
-      {
-        "hash": "d24df6f",
-        "subject": "test(web): cover vendor branding + profile-section rendering (VPC-5)",
-        "ai": true
-      },
-      {
-        "hash": "ea4a1a8",
-        "subject": "feat(web): render vendor branding + profile sections on public page",
-        "ai": true
-      },
-      {
-        "hash": "b09a585",
-        "subject": "chore: update factory log",
-        "ai": true
       }
     ]
   },
   "branches": [
+    {
+      "branch": "feat/1DAb9a1I-admin-earnings-report",
+      "cardId": "1DAb9a1I",
+      "slug": "admin-earnings-report"
+    },
     {
       "branch": "feat/1fqtc2JF-vendor-onboarding",
       "cardId": "1fqtc2JF",
@@ -313,9 +318,9 @@
     }
   ],
   "tests": {
-    "total": 95,
-    "api": 39,
-    "web": 56
+    "total": 99,
+    "api": 41,
+    "web": 58
   },
   "design": {
     "files": 31,
@@ -342,16 +347,16 @@
     },
     "gatePass": 31,
     "gateFail": 2,
-    "edits": 461,
-    "editsUnfixable": 165,
+    "edits": 481,
+    "editsUnfixable": 170,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-06T18:15:36.697Z",
+    "lastTs": "2026-08-10T15:16:57.153Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 21,
+          "invocations": 24,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -360,7 +365,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 12,
+          "invocations": 13,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -369,7 +374,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 13,
+          "invocations": 14,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -387,7 +392,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 16,
+          "invocations": 17,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -441,36 +446,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-07-30T18:01:40.973Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-30T18:15:25.792Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-30T18:23:09.483Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-30T18:26:27.423Z",
-          "agentType": "test-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-30T18:32:40.624Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-30T18:40:31.875Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-07-30T18:43:02.431Z",
           "agentType": "docs-writer",
@@ -540,6 +515,36 @@
           "ts": "2026-08-06T18:15:36.697Z",
           "agentType": "unknown",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T14:36:08.179Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T14:54:13.147Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T14:56:02.451Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T15:03:09.875Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T15:04:16.467Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T15:12:22.979Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
         }
       ]
     }
@@ -547,6 +552,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "fix/profile-icon-nav-link",
+      "number": 46,
+      "state": "MERGED",
+      "title": "fix(web): wire the profile icon to /profile",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/46"
+    },
     {
       "headRefName": "feat/trMZD1C5-payout-eligibility-earnings",
       "number": 45,
@@ -870,19 +882,19 @@
     },
     {
       "name": "To Do",
-      "cards": 7
+      "cards": 11
     },
     {
       "name": "In Progress",
-      "cards": 0
-    },
-    {
-      "name": "In Review",
       "cards": 1
     },
     {
+      "name": "In Review",
+      "cards": 0
+    },
+    {
       "name": "Done",
-      "cards": 55
+      "cards": 56
     },
     {
       "name": "Fable Documentation",

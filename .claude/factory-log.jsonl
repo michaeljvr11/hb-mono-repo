@@ -611,3 +611,13 @@
 {"ts":"2026-08-10T14:49:57.767Z","type":"edit_lint","file":"apps/api/src/admin/admin-earnings.service.spec.ts","autofixed":false,"tool":"Write"}
 {"ts":"2026-08-10T14:50:24.559Z","type":"edit_lint","file":"apps/api/src/admin/admin-earnings.service.spec.ts","autofixed":false,"tool":"Edit"}
 {"ts":"2026-08-10T14:51:00.670Z","type":"edit_lint","file":"apps/api/src/admin/admin-earnings.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-10T14:54:13.147Z","type":"agent_token_usage","agentType":"backend-engineer","agentId":"a8438e87f29216c90","sessionId":"a5677f2b-620e-4829-9478-d204bba4fc1d","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-10T14:56:02.451Z","type":"agent_token_usage","agentType":"unknown","agentId":"a421e48553f95f577","sessionId":"a5677f2b-620e-4829-9478-d204bba4fc1d","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-10T15:03:09.875Z","type":"agent_token_usage","agentType":"frontend-engineer","agentId":"ad9d5691719823747","sessionId":"a5677f2b-620e-4829-9478-d204bba4fc1d","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-10T15:04:16.467Z","type":"agent_token_usage","agentType":"unknown","agentId":"afd53ae3a623e7e73","sessionId":"a5677f2b-620e-4829-9478-d204bba4fc1d","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-10T15:12:22.979Z","type":"agent_token_usage","agentType":"code-reviewer","agentId":"a9826225537690458","sessionId":"a5677f2b-620e-4829-9478-d204bba4fc1d","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-10T15:15:41.821Z","type":"edit_lint","file":"apps/api/src/admin/dto/admin-earnings-query.dto.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-10T15:15:55.623Z","type":"edit_lint","file":"apps/api/src/admin/admin-earnings.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-10T15:16:11.422Z","type":"edit_lint","file":"apps/api/src/admin/admin-earnings.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-10T15:16:35.635Z","type":"edit_lint","file":"apps/api/src/admin/admin-earnings.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-10T15:16:57.153Z","type":"edit_lint","file":"apps/api/src/admin/admin-earnings.service.spec.ts","autofixed":true,"tool":"Edit"}
