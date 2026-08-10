@@ -6,10 +6,12 @@ import { UserRole } from '@hb/shared';
 import { AdminService } from './admin.service';
 import { AdminOrdersService } from './admin-orders.service';
 import { AdminAnalyticsService } from './admin-analytics.service';
+import { AdminEarningsService } from './admin-earnings.service';
 import { AuditService } from '../audit/audit.service';
 import { AdminUserQueryDto } from './dto/admin-user-query.dto';
 import { AdminOrderQueryDto } from './dto/admin-order-query.dto';
 import { AdminAnalyticsQueryDto } from './dto/admin-analytics-query.dto';
+import { AdminEarningsQueryDto } from './dto/admin-earnings-query.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { SetUserActiveDto } from './dto/set-user-active.dto';
 import { AuditLogQueryDto } from '../audit/dto/audit-log-query.dto';
@@ -21,6 +23,7 @@ export class AdminController {
     private readonly adminService: AdminService,
     private readonly adminOrdersService: AdminOrdersService,
     private readonly adminAnalyticsService: AdminAnalyticsService,
+    private readonly adminEarningsService: AdminEarningsService,
     private readonly auditService: AuditService,
   ) {}
 
@@ -60,6 +63,11 @@ export class AdminController {
   @Get('analytics')
   getAnalytics(@Query() query: AdminAnalyticsQueryDto) {
     return this.adminAnalyticsService.getSummary(query);
+  }
+
+  @Get('earnings')
+  getEarnings(@Query() query: AdminEarningsQueryDto) {
+    return this.adminEarningsService.getReport(query);
   }
 
   @Get('audit-logs')

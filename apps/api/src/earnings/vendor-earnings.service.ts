@@ -42,6 +42,46 @@ export interface VendorEarningsSnapshot {
   settlementPreview: SettlementPeriodSnapshot[];
 }
 
+/**
+ * Per-currency money breakdown exposing BOTH commission and net —
+ * `getEarnings()`'s `VendorEarningsSnapshot` only keeps net (VE-3 didn't
+ * need commission). VE-4's cross-vendor admin report needs the commission
+ * side too: "platform revenue = sum of commission on eligible lines" (vault).
+ * No `grossAmount` field here on purpose — callers derive gross as
+ * `commissionAmount + netAmount`, never independently computed, per the
+ * vault's "commission + net === gross" invariant.
+ */
+export interface VendorEarningsCurrencyBreakdown {
+  currency: CurrencyCode;
+  commissionAmount: number;
+  netAmount: number;
+}
+
+/** One earnings bucket (pendingClaimWindow or accrued) for one vendor. */
+export interface VendorEarningsBucketBreakdown {
+  /** Distinct orders contributing to this bucket for this vendor. */
+  orderCount: number;
+  byCurrency: VendorEarningsCurrencyBreakdown[];
+}
+
+export interface VendorSettlementPeriodBreakdown extends VendorEarningsBucketBreakdown {
+  periodStart: Date;
+  /** Exclusive — the next period's periodStart. */
+  periodEnd: Date;
+}
+
+/**
+ * Grouped-by-vendor counterpart of `VendorEarningsSnapshot`: same three
+ * buckets (`pendingClaimWindow`, `accrued`, `settlementPreview`), commission
+ * exposed alongside net at every bucket, keyed by `vendorId`.
+ */
+export interface VendorEarningsGroup {
+  vendorId: string;
+  pendingClaimWindow: VendorEarningsBucketBreakdown;
+  accrued: VendorEarningsBucketBreakdown;
+  settlementPreview: VendorSettlementPeriodBreakdown[];
+}
+
 @Injectable()
 export class VendorEarningsService {
   private readonly logger = new Logger(VendorEarningsService.name);
@@ -183,6 +223,162 @@ export class VendorEarningsService {
   }
 
   /**
+   * Grouped-by-vendor counterpart of `getEarnings()` — VE-3's own
+   * implementation notes anticipated this ("extend method to group-by-vendor
+   * internally if VE-4 needs single-query efficiency"). Same eligibility
+   * math, same three buckets, reusing `periodIndexFor`/`splitGrossNetCents`/
+   * `DAMAGE_CLAIM_WINDOW_HOURS`/`SETTLEMENT_ANCHOR_DATE` — only what's
+   * captured differs: results are keyed per vendor, and both commission and
+   * net are kept at every bucket (not just net).
+   *
+   * `getEarnings()` itself is left untouched (still the single-scope,
+   * net-only read used by VE-5's own-earnings case) rather than rewritten as
+   * a thin wrapper over this method — that would mean converting Rand
+   * amounts back to cents for re-aggregation, reintroducing exactly the kind
+   * of float round-trip this file works hard to avoid. Two call sites over
+   * the same well-tested per-line math is the safer trade.
+   */
+  async getEarningsByVendor(
+    scope: { vendorId?: string },
+    from: Date,
+    to: Date,
+    now: Date = new Date(),
+  ): Promise<Map<string, VendorEarningsGroup>> {
+    const query = this.orderItemRepository
+      .createQueryBuilder('oi')
+      .leftJoinAndSelect('oi.order', 'o')
+      .where('oi.vendorId IS NOT NULL')
+      .andWhere('o.createdAt BETWEEN :from AND :to', { from, to })
+      .andWhere('o.status = :delivered', { delivered: OrderStatus.DELIVERED });
+
+    if (scope.vendorId) {
+      query.andWhere('oi.vendorId = :vendorId', { vendorId: scope.vendorId });
+    }
+
+    const items = await query.getMany();
+    const refundedOrderIds = await this.findRefundedOrderIds(items.map((item) => item.orderId));
+
+    const nowPeriodIndex = periodIndexFor(now);
+
+    type MoneyCents = { commissionCents: number; netCents: number };
+    interface VendorAccumulator {
+      pendingOrderIds: Set<string>;
+      pendingMap: Map<CurrencyCode, MoneyCents>;
+      accruedOrderIds: Set<string>;
+      accruedMap: Map<CurrencyCode, MoneyCents>;
+      periodBuckets: Map<
+        number,
+        {
+          periodStart: Date;
+          periodEnd: Date;
+          orderIds: Set<string>;
+          map: Map<CurrencyCode, MoneyCents>;
+        }
+      >;
+    }
+
+    const byVendor = new Map<string, VendorAccumulator>();
+    const accumulatorFor = (vendorId: string): VendorAccumulator => {
+      let acc = byVendor.get(vendorId);
+      if (!acc) {
+        acc = {
+          pendingOrderIds: new Set(),
+          pendingMap: new Map(),
+          accruedOrderIds: new Set(),
+          accruedMap: new Map(),
+          periodBuckets: new Map(),
+        };
+        byVendor.set(vendorId, acc);
+      }
+      return acc;
+    };
+
+    for (const item of items) {
+      const order = item.order;
+      if (!order || !order.deliveredAt) continue; // defensive: should never happen once DELIVERED
+      if (refundedOrderIds.has(item.orderId)) continue;
+      if (!item.vendorId) continue; // defensive: query filters oi.vendorId IS NOT NULL
+
+      if (item.commissionRatePercent == null) {
+        this.logger.warn(
+          `Order item ${item.id} (order ${item.orderId}, vendor ${item.vendorId}) has a null ` +
+            'commissionRatePercent — excluding it from vendor earnings entirely',
+        );
+        continue;
+      }
+
+      const acc = accumulatorFor(item.vendorId);
+
+      const grossCents = Math.round(Number(item.unitPrice) * 100) * item.quantity;
+      const ratePercent = Number(item.commissionRatePercent);
+      const { commissionCents, netCents } = splitGrossNetCents(grossCents, ratePercent);
+
+      const claimWindowEndMs =
+        order.deliveredAt.getTime() + DAMAGE_CLAIM_WINDOW_HOURS * 60 * 60 * 1000;
+
+      if (now.getTime() < claimWindowEndMs) {
+        acc.pendingOrderIds.add(item.orderId);
+        addMoneyCents(acc.pendingMap, item.currency, commissionCents, netCents);
+        continue;
+      }
+
+      // Same eligibility-instant bucketing as getEarnings() — see that
+      // method's comment for why this is deliveredAt + 48h, not deliveredAt.
+      const linePeriodIndex = periodIndexFor(new Date(claimWindowEndMs));
+      if (linePeriodIndex === nowPeriodIndex) {
+        acc.accruedOrderIds.add(item.orderId);
+        addMoneyCents(acc.accruedMap, item.currency, commissionCents, netCents);
+        continue;
+      }
+
+      let bucket = acc.periodBuckets.get(linePeriodIndex);
+      if (!bucket) {
+        const periodStart = new Date(
+          SETTLEMENT_ANCHOR_DATE.getTime() + linePeriodIndex * PERIOD_LENGTH_MS,
+        );
+        bucket = {
+          periodStart,
+          periodEnd: new Date(periodStart.getTime() + PERIOD_LENGTH_MS),
+          orderIds: new Set<string>(),
+          map: new Map<CurrencyCode, MoneyCents>(),
+        };
+        acc.periodBuckets.set(linePeriodIndex, bucket);
+      }
+      bucket.orderIds.add(item.orderId);
+      addMoneyCents(bucket.map, item.currency, commissionCents, netCents);
+    }
+
+    const result = new Map<string, VendorEarningsGroup>();
+    for (const [vendorId, acc] of byVendor.entries()) {
+      const settlementPreview: VendorSettlementPeriodBreakdown[] = Array.from(
+        acc.periodBuckets.entries(),
+      )
+        .sort(([a], [b]) => a - b)
+        .map(([, bucket]) => ({
+          periodStart: bucket.periodStart,
+          periodEnd: bucket.periodEnd,
+          orderCount: bucket.orderIds.size,
+          byCurrency: toCurrencyBreakdowns(bucket.map),
+        }));
+
+      result.set(vendorId, {
+        vendorId,
+        pendingClaimWindow: {
+          orderCount: acc.pendingOrderIds.size,
+          byCurrency: toCurrencyBreakdowns(acc.pendingMap),
+        },
+        accrued: {
+          orderCount: acc.accruedOrderIds.size,
+          byCurrency: toCurrencyBreakdowns(acc.accruedMap),
+        },
+        settlementPreview,
+      });
+    }
+
+    return result;
+  }
+
+  /**
    * Refund-exclusion hook (currently inert — no writer sets `refunded` yet,
    * see "Vendor Earnings & Commission" out-of-scope notes) wired now so
    * earnings are correct the moment a real refund flow lands, no follow-up
@@ -237,4 +433,30 @@ function toCurrencyTotals(map: Map<CurrencyCode, number>): CurrencyTotalDto[] {
   return Array.from(map.entries())
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([currency, cents]) => ({ currency, amount: cents / 100 }));
+}
+
+/** Accumulates one line's commission/net cents into a per-currency map, used by `getEarningsByVendor`. */
+function addMoneyCents(
+  map: Map<CurrencyCode, { commissionCents: number; netCents: number }>,
+  currency: CurrencyCode,
+  commissionCents: number,
+  netCents: number,
+): void {
+  const existing = map.get(currency) ?? { commissionCents: 0, netCents: 0 };
+  map.set(currency, {
+    commissionCents: existing.commissionCents + commissionCents,
+    netCents: existing.netCents + netCents,
+  });
+}
+
+function toCurrencyBreakdowns(
+  map: Map<CurrencyCode, { commissionCents: number; netCents: number }>,
+): VendorEarningsCurrencyBreakdown[] {
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([currency, cents]) => ({
+      currency,
+      commissionAmount: cents.commissionCents / 100,
+      netAmount: cents.netCents / 100,
+    }));
 }
