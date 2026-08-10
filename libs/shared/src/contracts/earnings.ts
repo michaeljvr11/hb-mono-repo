@@ -128,3 +128,70 @@ export interface AdminEarningsReportDto {
    */
   heldForVendorsByCurrency: CurrencyTotalDto[];
 }
+
+// ─── VE-5 — vendor own-earnings reporting ───
+
+/**
+ * Query params for GET /vendors/me/earnings — the vendor-scoped mirror of
+ * `AdminEarningsQuery`. Deliberately has NO `vendorId` field: the vendor
+ * scope is ALWAYS resolved from the authenticated user server-side, never
+ * client-supplied — this is the ownership boundary for the endpoint.
+ */
+export interface VendorEarningsQuery {
+  /** Preset trailing/calendar window. Defaults to '1m'. Ignored when `from`/`to` are both supplied. */
+  window?: EarningsWindow;
+  /** ISO date (yyyy-mm-dd), inclusive. Must be supplied together with `to`. */
+  from?: string;
+  /** ISO date (yyyy-mm-dd), inclusive. Must be supplied together with `from`. */
+  to?: string;
+}
+
+/**
+ * Net-of-commission balance split (vault "Vendor Earnings & Commission"):
+ * money delivered but still awaiting the 48-hour damage-claim window vs
+ * money that has cleared the window and is accrued/eligible. Both figures
+ * are NET amounts (the vendor's own cut) — commission is H&B's cut and is
+ * not broken out here; see `summary` for the commission side.
+ */
+export interface EarningsBalanceDto {
+  /** Delivered, but still inside the 48h damage-claim window — not yet eligible. */
+  pendingClaimWindowByCurrency: CurrencyTotalDto[];
+  /** Eligible (claim window elapsed); includes the currently-accruing settlement period. */
+  accruedByCurrency: CurrencyTotalDto[];
+}
+
+/**
+ * One bi-weekly settlement period, bucketed off VE-3's `SETTLEMENT_ANCHOR_DATE`.
+ * `'closed'` entries are periods entirely in the past (VE-3's `settlementPreview`
+ * bucket, unmodified). There is always exactly ONE `'open'` entry — the
+ * currently-accruing period, sourced from the `accrued` bucket — appended
+ * after the closed entries, even when its `orderCount` is 0 (a vendor with no
+ * activity still sees "this period: R0.00", not a missing row).
+ */
+export interface SettlementPeriodPreviewDto {
+  /** ISO-8601 UTC timestamp — inclusive period start. */
+  periodStart: string;
+  /** ISO-8601 UTC timestamp — exclusive period end. */
+  periodEnd: string;
+  orderCount: number;
+  netByCurrency: CurrencyTotalDto[];
+  status: 'open' | 'closed';
+}
+
+/**
+ * Vendor's own earnings report (GET /vendors/me/earnings) — the vendor-scoped
+ * mirror of `AdminEarningsReportDto`. `summary` reuses `VendorEarningsSummaryDto`
+ * verbatim: same eligible-lines-only semantics VE-4 established (`accrued` +
+ * closed `settlementPreview`, excluding `pendingClaimWindow`) — this aligns
+ * the vault's "commission on eligible lines" framing and keeps this report's
+ * totals reconcilable with the admin cross-vendor report's per-vendor row.
+ */
+export interface VendorEarningsReportDto {
+  /** ISO-8601 UTC timestamp — resolved start of the report window. */
+  from: string;
+  /** ISO-8601 UTC timestamp — resolved end of the report window. */
+  to: string;
+  summary: VendorEarningsSummaryDto;
+  balance: EarningsBalanceDto;
+  settlementPreview: SettlementPeriodPreviewDto[];
+}

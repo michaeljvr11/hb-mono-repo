@@ -65,6 +65,13 @@ export interface UpdateVendorStatusRequest {
 export interface VendorDashboardDto {
   productCount: number;
   orderCountByStatus: Partial<Record<OrderStatus, number>>;
+  /**
+   * GROSS line GMV of this vendor's order lines (all statuses, all time) —
+   * NOT net-of-commission revenue. Vendors keep the commission-adjusted net;
+   * H&B earns only the commission portion. For the accounting-accurate
+   * eligible-lines figures (net earnings, accrued balance, settlement
+   * preview), see `VendorEarningsReportDto` (GET /vendors/me/earnings).
+   */
   totalRevenue: number;
   currency: CurrencyCode;
 }

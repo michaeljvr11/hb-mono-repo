@@ -400,6 +400,23 @@ function periodIndexFor(date: Date): number {
 }
 
 /**
+ * Bounds of the currently-OPEN (accruing) bi-weekly settlement period
+ * containing `now` — VE-5's own-earnings report needs to attach period
+ * bounds to the `accrued` bucket without duplicating the
+ * `SETTLEMENT_ANCHOR_DATE`/`PERIOD_LENGTH_MS` math that already lives in
+ * this file. Reuses `periodIndexFor` directly rather than introducing a
+ * second anchor or re-deriving the period length elsewhere.
+ */
+export function currentSettlementPeriodBounds(now: Date = new Date()): {
+  periodStart: Date;
+  periodEnd: Date;
+} {
+  const index = periodIndexFor(now);
+  const periodStart = new Date(SETTLEMENT_ANCHOR_DATE.getTime() + index * PERIOD_LENGTH_MS);
+  return { periodStart, periodEnd: new Date(periodStart.getTime() + PERIOD_LENGTH_MS) };
+}
+
+/**
  * Per-line rounding (vault-confirmed, non-negotiable): commission is rounded
  * half-up to 2dp; net is DERIVED by subtraction, never independently
  * rounded — this guarantees `commission + net === gross` on every line, done
