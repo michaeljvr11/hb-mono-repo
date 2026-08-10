@@ -39,6 +39,7 @@ describe('Shop', () => {
     toggle: ReturnType<typeof vi.fn>;
     load: ReturnType<typeof vi.fn>;
     wishlist: ReturnType<typeof signal<null>>;
+    itemCount: ReturnType<typeof signal<number>>;
   };
 
   const categories: CategoryDto[] = [
@@ -93,6 +94,7 @@ describe('Shop', () => {
       toggle: vi.fn(() => of({ items: [], itemCount: 0 })),
       load: vi.fn(() => of({ items: [], itemCount: 0 })),
       wishlist: signal(null),
+      itemCount: signal(0),
     };
 
     await TestBed.configureTestingModule({
@@ -362,7 +364,7 @@ describe('Shop', () => {
     expect(wishlistStub.toggle).toHaveBeenCalledWith('p1');
   });
 
-  it('shows a coming-soon notice for orders/wishlist radial nav items', () => {
+  it('shows a coming-soon notice for the orders radial nav item', () => {
     flushLoads();
     fixture.detectChanges();
     const snackBar = fixture.debugElement.injector.get(MatSnackBar);
@@ -371,13 +373,6 @@ describe('Shop', () => {
     component.onRadialNavSelect('orders');
     expect(openSpy).toHaveBeenCalledWith(
       expect.stringContaining('My Orders'),
-      expect.anything(),
-      expect.anything(),
-    );
-
-    component.onRadialNavSelect('wishlist');
-    expect(openSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Wishlist'),
       expect.anything(),
       expect.anything(),
     );

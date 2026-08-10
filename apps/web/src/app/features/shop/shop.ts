@@ -95,6 +95,11 @@ export class Shop implements OnInit {
   // empty hearts (no anonymous-vs-signed-in DOM mismatch) — see nav-bar.ts.
   private readonly hydrated = signal(false);
 
+  /** Real wishlist count for the radial-nav badge — 0 until hydrated, same gate as isWishlisted. */
+  readonly wishlistCount = computed(() =>
+    this.hydrated() ? this.wishlistService.itemCount() : 0,
+  );
+
   /** True once hydrated and the product is on the signed-in user's wishlist. */
   readonly isWishlisted = (productId: string): boolean =>
     this.hydrated() && this.wishlistService.has(productId);
@@ -211,7 +216,6 @@ export class Shop implements OnInit {
     }
     const labels: Partial<Record<RadialNavItemId, string>> = {
       orders: 'My Orders',
-      wishlist: 'Wishlist',
     };
     this.notifyComingSoon(labels[itemId] ?? 'This feature');
   }

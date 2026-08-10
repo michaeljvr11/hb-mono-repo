@@ -81,6 +81,11 @@ export class Discover {
   readonly isWishlisted = (productId: string): boolean =>
     this.hydrated() && this.wishlistService.has(productId);
 
+  /** Real wishlist count for the radial-nav badge — 0 until hydrated, same gate as isWishlisted. */
+  readonly wishlistCount = computed(() =>
+    this.hydrated() ? this.wishlistService.itemCount() : 0,
+  );
+
   // ── URL-driven params (single source of truth) ─────────────────────────
   private readonly paramMap = toSignal<ParamMap | null>(this.route.queryParamMap, {
     initialValue: null,

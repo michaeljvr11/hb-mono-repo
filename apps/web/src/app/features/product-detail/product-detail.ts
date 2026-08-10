@@ -66,6 +66,11 @@ export class ProductDetail {
   readonly isWishlisted = (productId: string): boolean =>
     this.hydrated() && this.wishlistService.has(productId);
 
+  /** Real wishlist count for the radial-nav badge — 0 until hydrated, same gate as isWishlisted. */
+  readonly wishlistCount = computed(() =>
+    this.hydrated() ? this.wishlistService.itemCount() : 0,
+  );
+
   private readonly productId = toSignal(
     this.route.paramMap.pipe(switchMap((params) => [params.get('id')])),
     { initialValue: null },

@@ -112,6 +112,7 @@ interface WishlistStub {
   toggle: ReturnType<typeof vi.fn>;
   load: ReturnType<typeof vi.fn>;
   wishlist: ReturnType<typeof signal<null>>;
+  itemCount: ReturnType<typeof signal<number>>;
 }
 
 function makeStubs(): {
@@ -151,6 +152,7 @@ function makeStubs(): {
       toggle: vi.fn(() => of({ items: [], itemCount: 0 })),
       load: vi.fn(() => of({ items: [], itemCount: 0 })),
       wishlist: signal(null),
+      itemCount: signal(0),
     },
   };
 }

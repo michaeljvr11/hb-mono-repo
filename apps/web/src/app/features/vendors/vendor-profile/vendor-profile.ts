@@ -79,6 +79,11 @@ export class PublicVendorProfile {
   readonly isWishlisted = (productId: string): boolean =>
     this.hydrated() && this.wishlistService.has(productId);
 
+  /** Real wishlist count for the radial-nav badge — 0 until hydrated, same gate as isWishlisted. */
+  readonly wishlistCount = computed(() =>
+    this.hydrated() ? this.wishlistService.itemCount() : 0,
+  );
+
   readonly vendor = signal<VendorDto | null>(null);
   readonly state = signal<VendorState>('loading');
 

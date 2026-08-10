@@ -167,6 +167,28 @@
   }
 }
 
+/* Icon-only — no count badge (owner-confirmed divergence from the cart badge). */
+.nav-bar__wishlist-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--hb-primary);
+  border-radius: 4px;
+  transition: background 150ms ease;
+
+  .material-symbols-outlined {
+    font-size: 24px;
+  }
+
+  &:hover {
+    background: var(--hb-surface-container-low);
+  }
+}
+
 .nav-bar__cart-btn {
   position: relative;
   display: flex;
