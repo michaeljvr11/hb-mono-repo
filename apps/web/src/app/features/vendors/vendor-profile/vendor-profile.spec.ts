@@ -430,6 +430,21 @@ describe('PublicVendorProfile', () => {
     expect(wishlistStub.toggle).toHaveBeenCalledWith('p1');
   });
 
+  it('the hydration gate starts closed: isWishlisted reads false immediately after construction, before any render', () => {
+    // WishlistService already reports membership, but the SSR-rendered
+    // markup and the client's pre-hydration DOM must still agree on an
+    // empty heart. `hydrated` only flips inside the `afterNextRender`
+    // callback registered in the constructor, which requires an actual
+    // render pass — checking immediately after construction, before any
+    // `detectChanges()`, is the one place it can't have fired yet. If the
+    // gate were ever dropped (`isWishlisted` calling `has()` directly),
+    // this would read `true` here and fail.
+    wishlistStub.has.mockReturnValue(true);
+    const freshComponent = TestBed.createComponent(PublicVendorProfile).componentInstance;
+
+    expect(freshComponent.isWishlisted('p1')).toBe(false);
+  });
+
   // ─── VPC-5: vendor branding + profile-section rendering ────────────────────
   describe('vendor branding + profile sections', () => {
     it('renders banner, logo, and slogan when set on the vendor', async () => {

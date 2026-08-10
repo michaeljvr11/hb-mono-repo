@@ -391,6 +391,26 @@ describe('Discover', () => {
     expect(wishlistStub.toggle).toHaveBeenCalledWith('p2');
   });
 
+  it('the hydration gate starts closed: isWishlisted reads false immediately after construction, before any render', () => {
+    // WishlistService already reports membership, but the SSR-rendered
+    // markup and the client's pre-hydration DOM must still agree on an
+    // empty heart. `hydrated` only flips inside the `afterNextRender`
+    // callback registered in the constructor, which requires an actual
+    // render pass — checking immediately after construction, before any
+    // `detectChanges()`, is the one place it can't have fired yet. If the
+    // gate were ever dropped (`isWishlisted` calling `has()` directly),
+    // this would read `true` here and fail. (Not asserted post-hydration
+    // here — this suite's product list resolves synchronously from a
+    // stubbed observable, so the first `detectChanges()` both renders the
+    // cards and flips `hydrated` in the same pass, which trips Angular's
+    // dev-mode "changed after checked" guard; the shop.spec.ts suite covers
+    // the full closed→open transition against a real, unflushed HTTP load.)
+    wishlistStub.has.mockReturnValue(true);
+    const freshComponent = TestBed.createComponent(Discover).componentInstance;
+
+    expect(freshComponent.isWishlisted('p2')).toBe(false);
+  });
+
   it('SME toggle filters out products without a vendor (platform listings)', () => {
     expect(component.smeOnly()).toBe(true);
     expect(component.filteredProducts().length).toBe(1);

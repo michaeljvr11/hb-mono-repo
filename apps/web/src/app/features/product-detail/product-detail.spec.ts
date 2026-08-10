@@ -450,6 +450,22 @@ describe('ProductDetail', () => {
     expect(component.isWishlisted('p1')).toBe(false);
   });
 
+  it('the hydration gate starts closed: isWishlisted reads false immediately after construction, before any render', () => {
+    // WishlistService already reports membership, but the SSR-rendered
+    // markup and the client's pre-hydration DOM must still agree on an
+    // empty heart. `hydrated` only flips inside the `afterNextRender`
+    // callback registered in the constructor, which requires an actual
+    // render pass — checking immediately after construction, before any
+    // `detectChanges()`, is the one place it can't have fired yet (unlike
+    // the test above, which runs after the shared `beforeEach` has already
+    // hydrated the fixture). If the gate were ever dropped (`isWishlisted`
+    // calling `has()` directly), this would read `true` here and fail.
+    wishlistStub.has.mockReturnValue(true);
+    const freshComponent = TestBed.createComponent(ProductDetail).componentInstance;
+
+    expect(freshComponent.isWishlisted('p1')).toBe(false);
+  });
+
   it('renders the hero/sticky-bar wishlist button reflecting saved state', async () => {
     // Pre-set the wishlisted mock and build a fresh fixture so the "saved"
     // state is present from the very first render — mutating an

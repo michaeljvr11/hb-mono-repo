@@ -364,6 +364,40 @@ describe('Shop', () => {
     expect(wishlistStub.toggle).toHaveBeenCalledWith('p1');
   });
 
+  it('shows an empty heart before the first render — the hydration gate starts closed (SSR/first-paint parity)', () => {
+    // WishlistService already reports membership, but the SSR-rendered
+    // markup and the client's pre-hydration DOM must still agree on an
+    // empty heart. `hydrated` only flips inside the `afterNextRender`
+    // callback registered in the constructor, which requires an actual
+    // render pass — so checking immediately after construction, before any
+    // `detectChanges()`, is the one place this can't have fired yet. If the
+    // gate were ever dropped (`isWishlisted` calling `has()` directly),
+    // this would read `true` here and fail.
+    wishlistStub.has.mockReturnValue(true);
+    flushLoads(); // satisfy the outer fixture's pending loads from beforeEach
+
+    const freshFixture = TestBed.createComponent(Shop);
+    const freshComponent = freshFixture.componentInstance;
+
+    expect(freshComponent.isWishlisted('p1')).toBe(false);
+
+    freshFixture.detectChanges();
+    flushLoads();
+  });
+
+  it('reflects real wishlist membership once hydrated', () => {
+    wishlistStub.has.mockReturnValue(true);
+    flushLoads();
+
+    const freshFixture = TestBed.createComponent(Shop);
+    const freshComponent = freshFixture.componentInstance;
+    freshFixture.detectChanges();
+
+    expect(freshComponent.isWishlisted('p1')).toBe(true);
+
+    flushLoads();
+  });
+
   it('shows a coming-soon notice for the orders radial nav item', () => {
     flushLoads();
     fixture.detectChanges();

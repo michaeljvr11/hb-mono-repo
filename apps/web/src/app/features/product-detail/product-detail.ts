@@ -59,7 +59,8 @@ export class ProductDetail {
 
   // Hydration gate: server render and first client render must both show
   // empty hearts (no anonymous-vs-signed-in DOM mismatch) — see nav-bar.ts.
-  // Scoped to the related-products grid only — WL-3 owns the PDP hero.
+  // Gates every wishlist surface on this page: the sticky-bar heart, the
+  // related-products grid hearts, and the radial-nav badge.
   private readonly hydrated = signal(false);
 
   /** True once hydrated and the product is on the signed-in user's wishlist. */

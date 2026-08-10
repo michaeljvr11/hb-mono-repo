@@ -1,10 +1,19 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
+import { QueryFailedError } from 'typeorm';
 import { CurrencyCode } from '@hb/shared';
 import { WishlistService } from './wishlist.service';
 import { WishlistItem } from './entities/wishlist-item.entity';
 import { Product } from '../products/entities/product.entity';
+
+/** Builds a TypeORM QueryFailedError carrying a Postgres SQLSTATE, as pg-driver errors do. */
+function pgError(code: string): QueryFailedError {
+  return new QueryFailedError('INSERT ...', [], {
+    code,
+    toString: () => `error: duplicate key value violates unique constraint`,
+  } as never);
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -223,6 +232,38 @@ describe('WishlistService', () => {
 
     await expect(service.addItem('user-1', { productId: 'prod-1' })).resolves.toBeDefined();
     expect(wishlistItemRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('swallows a concurrent-insert unique-violation (SQLSTATE 23505) and still returns the list, not an error', async () => {
+    productRepo.findOne.mockResolvedValue(makeProduct());
+    // Lost the race: no existing row seen at check-time, but the insert
+    // collides because another request won the race between check and save.
+    wishlistItemRepo.findOne.mockResolvedValue(null);
+    wishlistItemRepo.save.mockRejectedValue(pgError('23505'));
+    wishlistItemRepo.find.mockResolvedValue([makeWishlistItem()]);
+
+    await expect(service.addItem('user-1', { productId: 'prod-1' })).resolves.toEqual(
+      expect.objectContaining({ itemCount: 1 }),
+    );
+  });
+
+  it('rethrows a non-unique-violation database error from the insert rather than swallowing it', async () => {
+    productRepo.findOne.mockResolvedValue(makeProduct());
+    wishlistItemRepo.findOne.mockResolvedValue(null);
+    wishlistItemRepo.save.mockRejectedValue(pgError('23503')); // foreign-key violation, not a duplicate
+
+    await expect(service.addItem('user-1', { productId: 'prod-1' })).rejects.toBeInstanceOf(
+      QueryFailedError,
+    );
+  });
+
+  it('rethrows a non-database error from the insert unchanged', async () => {
+    productRepo.findOne.mockResolvedValue(makeProduct());
+    wishlistItemRepo.findOne.mockResolvedValue(null);
+    const boom = new Error('connection reset');
+    wishlistItemRepo.save.mockRejectedValue(boom);
+
+    await expect(service.addItem('user-1', { productId: 'prod-1' })).rejects.toBe(boom);
   });
 
   it('scopes the duplicate check to the caller (userId + productId)', async () => {
