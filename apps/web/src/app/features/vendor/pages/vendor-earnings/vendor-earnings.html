@@ -1,0 +1,184 @@
+<section class="earnings-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Earnings</h1>
+    <p class="page-sub">Your accounting-accurate net earnings, after the platform service fee.</p>
+  </header>
+
+  <!-- Statement, not payment — AC-mandated plain-language copy -->
+  <div class="statement-notice" role="note">
+    <span class="material-symbols-outlined" aria-hidden="true">info</span>
+    <p>
+      This is a statement, not a payment — no payout has been executed and no transfer date
+      is promised. A line only counts here once an order is delivered and its 48-hour
+      damage-claim window has closed.
+    </p>
+  </div>
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <!-- Window selector -->
+  <div class="filter-tabs" role="tablist" aria-label="Reporting window">
+    @for (tab of windowTabs(); track tab.value) {
+      <button
+        class="tab-btn"
+        role="tab"
+        [class.tab-btn--active]="selectedWindow() === tab.value"
+        [attr.aria-selected]="selectedWindow() === tab.value"
+        type="button"
+        (click)="setWindow(tab.value)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading your earnings report…</p>
+    </div>
+  }
+
+  @if (!loading() && !error() && report(); as data) {
+    <p class="range-sub">{{ data.from | date:'d MMM y' }} – {{ data.to | date:'d MMM y' }}</p>
+
+    <!-- Gross / fee / net summary -->
+    <section class="summary-section">
+      <header class="section-header">
+        <h2 class="section-title">Sales summary</h2>
+        <p class="section-sub">Gross sales, platform service fee, and your net earnings for the selected window.</p>
+      </header>
+
+      @if (summaryCurrencies(data).length === 0) {
+        <div class="list-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>
+          <p>No eligible activity in this window.</p>
+          <span class="list-empty-sub">Sales appear here once an order is delivered and its claim window closes.</span>
+        </div>
+      } @else {
+        <div class="table-card">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th scope="col">Currency</th>
+                <th scope="col">Gross sales</th>
+                <th scope="col">Service fee</th>
+                <th scope="col">Net earnings</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (currency of summaryCurrencies(data); track currency) {
+                <tr>
+                  <td>{{ currency }}</td>
+                  <td>{{ formatMoney(summaryGross(data, currency), currency) }}</td>
+                  <td>{{ formatMoney(summaryFee(data, currency), currency) }}</td>
+                  <td class="summary-net-cell">{{ formatMoney(summaryNet(data, currency), currency) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      <p class="section-caption">Orders contributing: {{ data.summary.orderCount }}</p>
+    </section>
+
+    <!-- Balance split -->
+    <section class="balance-section">
+      <header class="section-header">
+        <h2 class="section-title">Balance</h2>
+        <p class="section-sub">Net (your cut, after the service fee) — split by claim-window status.</p>
+      </header>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h3 class="metric-card-title">Awaiting 48-hour claim window</h3>
+          <p class="metric-card-caption">
+            Delivered, but still inside the damage-claim window — not yet eligible.
+          </p>
+          @if (data.balance.pendingClaimWindowByCurrency.length === 0) {
+            <p class="metric-empty">Nothing awaiting the claim window.</p>
+          } @else {
+            <ul class="revenue-list" aria-label="Awaiting claim window by currency">
+              @for (entry of data.balance.pendingClaimWindowByCurrency; track entry.currency) {
+                <li class="revenue-item">
+                  <span class="revenue-currency">{{ entry.currency }}</span>
+                  <span class="revenue-amount">{{ formatMoney(entry.amount, entry.currency) }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <div class="metric-card">
+          <h3 class="metric-card-title">Accrued and eligible</h3>
+          <p class="metric-card-caption">
+            Claim window has elapsed — includes the currently-accruing settlement period.
+          </p>
+          @if (data.balance.accruedByCurrency.length === 0) {
+            <p class="metric-empty">Nothing accrued yet.</p>
+          } @else {
+            <ul class="revenue-list" aria-label="Accrued and eligible by currency">
+              @for (entry of data.balance.accruedByCurrency; track entry.currency) {
+                <li class="revenue-item">
+                  <span class="revenue-currency">{{ entry.currency }}</span>
+                  <span class="revenue-amount">{{ formatMoney(entry.amount, entry.currency) }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Settlement preview periods -->
+    <section class="settlement-section">
+      <header class="section-header">
+        <h2 class="section-title">Settlement periods</h2>
+        <p class="section-sub">Bi-weekly settlement periods. The current period is still accruing.</p>
+      </header>
+
+      <div class="table-card">
+        <table class="settlement-table">
+          <thead>
+            <tr>
+              <th scope="col">Period</th>
+              <th scope="col">Status</th>
+              <th scope="col">Orders</th>
+              <th scope="col">Net</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (period of data.settlementPreview; track period.periodStart) {
+              <tr>
+                <td>{{ period.periodStart | date:'d MMM y' }} – {{ period.periodEnd | date:'d MMM y' }}</td>
+                <td>
+                  <span class="status-chip" [class.status-chip--open]="period.status === 'open'">
+                    {{ period.status === 'open' ? 'Current period' : 'Closed' }}
+                  </span>
+                </td>
+                <td>{{ period.orderCount }}</td>
+                <td class="settlement-money-cell">
+                  @if (periodCurrencies(period).length === 0) {
+                    <span class="metric-empty" aria-label="No activity in this period">—</span>
+                  } @else {
+                    @for (currency of periodCurrencies(period); track currency) {
+                      <span class="settlement-money-line">{{ formatMoney(periodNet(period, currency), currency) }}</span>
+                    }
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</section>

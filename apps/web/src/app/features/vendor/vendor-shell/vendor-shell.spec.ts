@@ -42,8 +42,8 @@ describe('VendorShell', () => {
     expect(component).toBeTruthy();
   });
 
-  it('renders all four nav labels', () => {
-    const labels = ['Dashboard', 'Products', 'Orders', 'Profile'];
+  it('renders all five nav labels', () => {
+    const labels = ['Dashboard', 'Earnings', 'Products', 'Orders', 'Profile'];
     const el: HTMLElement = fixture.nativeElement;
     for (const label of labels) {
       expect(el.textContent).toContain(label);
@@ -75,12 +75,21 @@ describe('VendorShell', () => {
     expect(authService.logout).toHaveBeenCalledTimes(1);
   });
 
-  it('exposes exactly four nav items', () => {
-    expect(component.navItems.length).toBe(4);
+  it('exposes exactly five nav items', () => {
+    expect(component.navItems.length).toBe(5);
   });
 
   it('nav items have the expected paths', () => {
     const paths = component.navItems.map(i => i.path);
-    expect(paths).toEqual(['dashboard', 'products', 'orders', 'profile']);
+    expect(paths).toEqual(['dashboard', 'earnings', 'products', 'orders', 'profile']);
+  });
+
+  it('the Earnings nav item links to the earnings route', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const earningsLink = Array.from(el.querySelectorAll('a.nav-item')).find(
+      (a) => a.textContent?.includes('Earnings'),
+    ) as HTMLAnchorElement | undefined;
+    expect(earningsLink).toBeTruthy();
+    expect(earningsLink?.getAttribute('href')).toContain('earnings');
   });
 });

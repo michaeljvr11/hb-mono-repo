@@ -85,6 +85,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./features/vendor/pages/vendor-dashboard/vendor-dashboard').then(m => m.VendorDashboard) },
+      { path: 'earnings',  loadComponent: () => import('./features/vendor/pages/vendor-earnings/vendor-earnings').then(m => m.VendorEarnings) },
       { path: 'products',  loadComponent: () => import('./features/vendor/pages/vendor-products/vendor-products').then(m => m.VendorProducts) },
       { path: 'orders',    loadComponent: () => import('./features/vendor/pages/vendor-orders/vendor-orders').then(m => m.VendorOrders) },
       { path: 'profile',   loadComponent: () => import('./features/vendor/pages/vendor-profile/vendor-profile').then(m => m.VendorProfile) },
