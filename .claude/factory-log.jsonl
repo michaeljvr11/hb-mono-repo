@@ -621,3 +621,4 @@
 {"ts":"2026-08-10T15:16:11.422Z","type":"edit_lint","file":"apps/api/src/admin/admin-earnings.service.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-08-10T15:16:35.635Z","type":"edit_lint","file":"apps/api/src/admin/admin-earnings.service.spec.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-08-10T15:16:57.153Z","type":"edit_lint","file":"apps/api/src/admin/admin-earnings.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-10T15:24:57.658Z","type":"pr_gate","result":"pass","durationMs":7781}
