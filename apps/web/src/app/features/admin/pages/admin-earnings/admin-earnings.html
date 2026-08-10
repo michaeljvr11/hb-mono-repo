@@ -1,0 +1,170 @@
+<section class="earnings-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Earnings</h1>
+    <p class="page-sub">Cross-vendor payout-eligible earnings — commission, held funds, and platform-listing GMV.</p>
+  </header>
+
+  <!-- Error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <!-- Window selector -->
+  <div class="filter-tabs" role="tablist" aria-label="Reporting window">
+    @for (tab of windowTabs(); track tab.value) {
+      <button
+        class="tab-btn"
+        role="tab"
+        [class.tab-btn--active]="selectedWindow() === tab.value"
+        [attr.aria-selected]="selectedWindow() === tab.value"
+        type="button"
+        (click)="setWindow(tab.value)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading earnings report…</p>
+    </div>
+  }
+
+  @if (!loading() && !error() && report(); as data) {
+    <p class="range-sub">{{ data.from | date:'d MMM y' }} – {{ data.to | date:'d MMM y' }}</p>
+
+    <!-- Headline figures -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <h2 class="metric-card-title">Commission earned</h2>
+        <p class="metric-card-caption">
+          Platform revenue earned on eligible vendor lines (past the 48h damage-claim window).
+          Includes vendors no longer approved, so this can exceed the sum of the Commission
+          column below.
+        </p>
+        @if (data.platformCommissionByCurrency.length === 0) {
+          <p class="metric-empty">No commission earned in this window.</p>
+        } @else {
+          <ul class="revenue-list" aria-label="Commission earned by currency">
+            @for (entry of data.platformCommissionByCurrency; track entry.currency) {
+              <li class="revenue-item">
+                <span class="revenue-currency">{{ entry.currency }}</span>
+                <span class="revenue-amount">{{ formatMoney(entry.amount, entry.currency) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <div class="metric-card">
+        <h2 class="metric-card-title">Held for vendors (unsettled)</h2>
+        <p class="metric-card-caption">
+          Money owed to vendors that's eligible but not yet in a settled payout batch.
+        </p>
+        @if (data.heldForVendorsByCurrency.length === 0) {
+          <p class="metric-empty">Nothing held for vendors in this window.</p>
+        } @else {
+          <ul class="revenue-list" aria-label="Held for vendors by currency">
+            @for (entry of data.heldForVendorsByCurrency; track entry.currency) {
+              <li class="revenue-item">
+                <span class="revenue-currency">{{ entry.currency }}</span>
+                <span class="revenue-amount">{{ formatMoney(entry.amount, entry.currency) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <div class="metric-card">
+        <h2 class="metric-card-title">Platform listing GMV (not revenue)</h2>
+        <p class="metric-card-caption">
+          Gross sales volume of H&amp;B's own first-party listings — no margin data here, not a profit figure.
+        </p>
+        @if (data.platformListingGmvByCurrency.length === 0) {
+          <p class="metric-empty">No platform-listing sales in this window.</p>
+        } @else {
+          <ul class="revenue-list" aria-label="Platform listing GMV by currency">
+            @for (entry of data.platformListingGmvByCurrency; track entry.currency) {
+              <li class="revenue-item">
+                <span class="revenue-currency">{{ entry.currency }}</span>
+                <span class="revenue-amount">{{ formatMoney(entry.amount, entry.currency) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+
+    <!-- Per-vendor table -->
+    <section class="vendor-section">
+      <header class="section-header">
+        <h2 class="section-title">Vendor earnings</h2>
+        <p class="section-sub">Payout-eligible earnings per vendor for the selected window (not all-time sales).</p>
+      </header>
+
+      @if (data.vendors.length === 0) {
+        <div class="list-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+          <p>No approved vendors.</p>
+          <span class="list-empty-sub">Vendor earnings appear here once a vendor is approved.</span>
+        </div>
+      } @else {
+        <div class="table-card">
+          <table class="vendor-table">
+            <thead>
+              <tr>
+                <th scope="col">Vendor</th>
+                <th scope="col">Orders</th>
+                <th scope="col">Gross</th>
+                <th scope="col">Commission</th>
+                <th scope="col">Net</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (vendor of data.vendors; track vendor.vendorId) {
+                <tr>
+                  <td>{{ vendor.businessName }}</td>
+                  <td>{{ vendor.orderCount }}</td>
+                  <td class="vendor-money-cell">
+                    @if (vendorCurrencies(vendor).length === 0) {
+                      <span class="metric-empty" aria-label="No activity in this window">—</span>
+                    } @else {
+                      @for (currency of vendorCurrencies(vendor); track currency) {
+                        <span class="vendor-money-line">{{ formatMoney(vendorGross(vendor, currency), currency) }}</span>
+                      }
+                    }
+                  </td>
+                  <td class="vendor-money-cell">
+                    @if (vendorCurrencies(vendor).length === 0) {
+                      <span class="metric-empty" aria-label="No activity in this window">—</span>
+                    } @else {
+                      @for (currency of vendorCurrencies(vendor); track currency) {
+                        <span class="vendor-money-line">{{ formatMoney(vendorCommission(vendor, currency), currency) }}</span>
+                      }
+                    }
+                  </td>
+                  <td class="vendor-money-cell">
+                    @if (vendorCurrencies(vendor).length === 0) {
+                      <span class="metric-empty" aria-label="No activity in this window">—</span>
+                    } @else {
+                      @for (currency of vendorCurrencies(vendor); track currency) {
+                        <span class="vendor-money-line">{{ formatMoney(vendorNet(vendor, currency), currency) }}</span>
+                      }
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+</section>

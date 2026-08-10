@@ -1,3 +1,5 @@
+import { CurrencyTotalDto } from './dashboard';
+
 /**
  * Vendor commission rate — append-only history. The applicable rate for any
  * moment in time is the row with the greatest `effectiveFrom <= t`. Rows are
@@ -37,4 +39,92 @@ export interface CommissionRateListItemDto extends CommissionRateDto {
 /** Full commission rate history, newest `effectiveFrom` first. */
 export interface CommissionRateListDto {
   items: CommissionRateListItemDto[];
+}
+
+// ─── VE-4/VE-5 — payout-eligibility earnings reporting ───
+
+/**
+ * Preset reporting window (vault: "Vendor Earnings & Commission", resolved
+ * 2026-07-28). `1w`/`2w` are ROLLING trailing periods ending now (matching
+ * `AdminAnalyticsQuery`'s rolling-window convention); `1m` is the CURRENT
+ * CALENDAR MONTH (1st of the month through now), not a rolling 30 days —
+ * deliberately mixed semantics, confirmed with the business.
+ *
+ * `EARNINGS_WINDOWS` is the single source of truth for the valid values —
+ * runtime validators (`class-validator`'s `@IsIn`) must derive from this
+ * array rather than restating the literal union, so adding/removing a preset
+ * here can't silently drift from what the API actually accepts.
+ */
+export const EARNINGS_WINDOWS = ['1w', '2w', '1m'] as const;
+export type EarningsWindow = (typeof EARNINGS_WINDOWS)[number];
+
+/**
+ * Query params for GET /admin/earnings (and the vendor-scoped own-earnings
+ * equivalent). Explicit `from`/`to` (ISO dates, inclusive) always win over
+ * `window` when both are supplied. When neither is supplied, the server
+ * defaults to `window: '1m'` (current calendar month), NOT
+ * `AdminAnalyticsQuery`'s 30-day-rolling default.
+ */
+export interface AdminEarningsQuery {
+  /** Preset trailing/calendar window. Defaults to '1m'. Ignored when `from`/`to` are both supplied. */
+  window?: EarningsWindow;
+  /** ISO date (yyyy-mm-dd), inclusive. Must be supplied together with `to`. */
+  from?: string;
+  /** ISO date (yyyy-mm-dd), inclusive. Must be supplied together with `from`. */
+  to?: string;
+  /** Scopes the report to one vendor — headline platform-wide figures narrow too. */
+  vendorId?: string;
+}
+
+/**
+ * One vendor's row in the admin cross-vendor earnings report. Built from
+ * that vendor's payout-ELIGIBLE lines only (VE-3's `accrued` +
+ * `settlementPreview` buckets) — lines still inside their 48h damage-claim
+ * window (`pendingClaimWindow`) contribute nothing here. `grossByCurrency`
+ * is always `commissionByCurrency + netByCurrency` per currency, derived —
+ * never independently computed. Only currencies with at least one
+ * contributing line appear (omit-zero-currency convention); a vendor with
+ * zero eligible activity in the window still appears in the report with
+ * `orderCount: 0` and empty arrays.
+ */
+export interface VendorEarningsSummaryDto {
+  vendorId: string;
+  businessName: string;
+  /** Distinct orders contributing an eligible line for this vendor in the window. */
+  orderCount: number;
+  grossByCurrency: CurrencyTotalDto[];
+  commissionByCurrency: CurrencyTotalDto[];
+  netByCurrency: CurrencyTotalDto[];
+}
+
+/**
+ * Admin cross-vendor earnings report (accounting-accurate — see vault
+ * "Vendor Earnings & Commission"). `platformRevenue`/`vendorRevenue` on
+ * `AdminDashboardDto` are gross line GMV; the figures here are the real
+ * accounting split: what H&B has actually earned in fees
+ * (`platformCommissionByCurrency`), what's owed to vendors but not yet
+ * settled (`heldForVendorsByCurrency`), and first-party platform-listing GMV
+ * (`platformListingGmvByCurrency`, explicitly GMV not revenue — no
+ * delivered/refund gating for platform lines in this slice).
+ */
+export interface AdminEarningsReportDto {
+  /** ISO-8601 UTC timestamp — resolved start of the report window. */
+  from: string;
+  /** ISO-8601 UTC timestamp — resolved end of the report window. */
+  to: string;
+  /** Every currently-APPROVED vendor, zero-filled — or just the one vendor named by `vendorId`, when that filter is supplied. */
+  vendors: VendorEarningsSummaryDto[];
+  /** Commission earned on eligible lines (accrued + settlementPreview), platform-wide. */
+  platformCommissionByCurrency: CurrencyTotalDto[];
+  /** Gross GMV of PLATFORM-listing-type order lines in the window. GMV, not revenue. */
+  platformListingGmvByCurrency: CurrencyTotalDto[];
+  /**
+   * VE-3's `accrued` bucket, platform-wide — money owed to vendors, not yet
+   * H&B revenue. Note: this is a "currently held" snapshot (relative to the
+   * real clock at request time), NOT a figure scoped to `[from, to]` the way
+   * every other field on this DTO is — querying a past window still reports
+   * what's held for vendors *right now*, not what was held during that past
+   * window.
+   */
+  heldForVendorsByCurrency: CurrencyTotalDto[];
 }

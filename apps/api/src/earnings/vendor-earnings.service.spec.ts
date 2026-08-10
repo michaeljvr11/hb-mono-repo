@@ -373,4 +373,186 @@ describe('VendorEarningsService', () => {
       expect(result.settlementPreview[0].orderCount).toBe(1);
     });
   });
+
+  describe('getEarningsByVendor', () => {
+    it('groups earnings by vendor without cross-vendor leakage', async () => {
+      const deliveredAt = new Date('2026-01-10T00:00:00.000Z');
+      const now = new Date(deliveredAt.getTime() + 49 * HOUR_MS);
+      stageItems([
+        makeItem({
+          id: 'v1-item',
+          orderId: 'order-v1',
+          order: makeOrder({ id: 'order-v1', deliveredAt }),
+          vendorId: 'vendor-1',
+          unitPrice: '100.00' as never,
+        }),
+        makeItem({
+          id: 'v2-item',
+          orderId: 'order-v2',
+          order: makeOrder({ id: 'order-v2', deliveredAt }),
+          vendorId: 'vendor-2',
+          unitPrice: '200.00' as never,
+        }),
+      ]);
+
+      const result = await service.getEarningsByVendor({}, FROM, TO, now);
+
+      expect(result.size).toBe(2);
+      const v1 = result.get('vendor-1');
+      const v2 = result.get('vendor-2');
+
+      expect(v1.accrued.orderCount).toBe(1);
+      expect(v1.accrued.byCurrency).toEqual([
+        { currency: CurrencyCode.ZAR, commissionAmount: 15, netAmount: 85 },
+      ]);
+      expect(v2.accrued.byCurrency).toEqual([
+        { currency: CurrencyCode.ZAR, commissionAmount: 30, netAmount: 170 },
+      ]);
+    });
+
+    it('exposes both commission and net at the pendingClaimWindow bucket (getEarnings() only keeps net)', async () => {
+      const deliveredAt = new Date('2026-01-10T00:00:00.000Z');
+      const now = new Date(deliveredAt.getTime() + 47 * HOUR_MS); // still inside claim window
+      stageItems([makeItem({ order: makeOrder({ deliveredAt }), vendorId: 'vendor-1' })]);
+
+      const result = await service.getEarningsByVendor({}, FROM, TO, now);
+      const group = result.get('vendor-1');
+
+      expect(group.pendingClaimWindow.orderCount).toBe(1);
+      expect(group.pendingClaimWindow.byCurrency).toEqual([
+        { currency: CurrencyCode.ZAR, commissionAmount: 15, netAmount: 85 },
+      ]);
+      expect(group.accrued.byCurrency).toEqual([]);
+      expect(group.settlementPreview).toEqual([]);
+    });
+
+    it('buckets a closed-period line into settlementPreview with both commission and net', async () => {
+      const deliveredAt = new Date(SETTLEMENT_ANCHOR_DATE.getTime());
+      const now = new Date(deliveredAt.getTime() + 30 * 24 * HOUR_MS); // well past, closed period
+      stageItems([makeItem({ order: makeOrder({ deliveredAt }), vendorId: 'vendor-1' })]);
+
+      const result = await service.getEarningsByVendor({}, FROM, TO, now);
+      const group = result.get('vendor-1');
+
+      expect(group.settlementPreview).toHaveLength(1);
+      expect(group.settlementPreview[0].orderCount).toBe(1);
+      expect(group.settlementPreview[0].byCurrency).toEqual([
+        { currency: CurrencyCode.ZAR, commissionAmount: 15, netAmount: 85 },
+      ]);
+      expect(group.settlementPreview[0].periodStart).toEqual(SETTLEMENT_ANCHOR_DATE);
+    });
+
+    it('counts one order once even when a vendor has multiple line items on it', async () => {
+      const deliveredAt = new Date('2026-01-10T00:00:00.000Z');
+      const now = new Date(deliveredAt.getTime() + 49 * HOUR_MS);
+      const order = makeOrder({ id: 'order-multi', deliveredAt });
+      stageItems([
+        makeItem({ id: 'item-a', orderId: 'order-multi', order, vendorId: 'vendor-1' }),
+        makeItem({ id: 'item-b', orderId: 'order-multi', order, vendorId: 'vendor-1' }),
+      ]);
+
+      const result = await service.getEarningsByVendor({}, FROM, TO, now);
+      const group = result.get('vendor-1');
+
+      expect(group.accrued.orderCount).toBe(1);
+      expect(group.accrued.byCurrency).toEqual([
+        { currency: CurrencyCode.ZAR, commissionAmount: 30, netAmount: 170 },
+      ]);
+    });
+
+    it('never combines ZAR and NAD for the same vendor', async () => {
+      const deliveredAt = new Date('2026-01-10T00:00:00.000Z');
+      const now = new Date(deliveredAt.getTime() + 49 * HOUR_MS);
+      stageItems([
+        makeItem({
+          id: 'zar-item',
+          orderId: 'order-zar',
+          order: makeOrder({ id: 'order-zar', deliveredAt }),
+          vendorId: 'vendor-1',
+          currency: CurrencyCode.ZAR,
+        }),
+        makeItem({
+          id: 'nad-item',
+          orderId: 'order-nad',
+          order: makeOrder({ id: 'order-nad', deliveredAt }),
+          vendorId: 'vendor-1',
+          currency: CurrencyCode.NAD,
+        }),
+      ]);
+
+      const result = await service.getEarningsByVendor({}, FROM, TO, now);
+      const group = result.get('vendor-1');
+
+      expect(group.accrued.byCurrency).toEqual(
+        expect.arrayContaining([
+          { currency: CurrencyCode.ZAR, commissionAmount: 15, netAmount: 85 },
+          { currency: CurrencyCode.NAD, commissionAmount: 15, netAmount: 85 },
+        ]),
+      );
+    });
+
+    it('scope.vendorId narrows the query to just that vendor', async () => {
+      const deliveredAt = new Date('2026-01-10T00:00:00.000Z');
+      const now = new Date(deliveredAt.getTime() + 49 * HOUR_MS);
+      stageItems([
+        makeItem({
+          id: 'mine',
+          orderId: 'order-mine',
+          order: makeOrder({ id: 'order-mine', deliveredAt }),
+          vendorId: 'vendor-1',
+        }),
+        makeItem({
+          id: 'theirs',
+          orderId: 'order-theirs',
+          order: makeOrder({ id: 'order-theirs', deliveredAt }),
+          vendorId: 'vendor-2',
+        }),
+      ]);
+
+      const result = await service.getEarningsByVendor({ vendorId: 'vendor-1' }, FROM, TO, now);
+
+      expect(result.size).toBe(1);
+      expect(result.has('vendor-2')).toBe(false);
+    });
+
+    it('excludes a cancelled order from every vendor bucket', async () => {
+      const deliveredAt = new Date('2026-01-10T00:00:00.000Z');
+      const now = new Date(deliveredAt.getTime() + 49 * HOUR_MS);
+      stageItems([
+        makeItem({
+          id: 'cancelled',
+          orderId: 'order-cancelled',
+          order: makeOrder({ id: 'order-cancelled', deliveredAt, status: OrderStatus.CANCELLED }),
+          vendorId: 'vendor-1',
+        }),
+      ]);
+
+      const result = await service.getEarningsByVendor({}, FROM, TO, now);
+      expect(result.has('vendor-1')).toBe(false);
+    });
+
+    it('excludes a vendor line whose order has a refunded payment', async () => {
+      const deliveredAt = new Date('2026-01-10T00:00:00.000Z');
+      const now = new Date(deliveredAt.getTime() + 49 * HOUR_MS);
+      stageItems([
+        makeItem({
+          orderId: 'order-refunded',
+          order: makeOrder({ id: 'order-refunded', deliveredAt }),
+          vendorId: 'vendor-1',
+        }),
+      ]);
+      paymentRepo.find.mockResolvedValue([
+        { orderId: 'order-refunded', status: PaymentStatus.REFUNDED },
+      ]);
+
+      const result = await service.getEarningsByVendor({}, FROM, TO, now);
+      expect(result.has('vendor-1')).toBe(false);
+    });
+
+    it('returns an empty map when there are no vendor lines in range', async () => {
+      stageItems([]);
+      const result = await service.getEarningsByVendor({}, FROM, TO);
+      expect(result.size).toBe(0);
+    });
+  });
 });

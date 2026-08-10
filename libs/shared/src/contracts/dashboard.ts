@@ -25,8 +25,18 @@ export interface AdminDashboardDto {
   totalOrders: number;
   /** Count of orders per status — every OrderStatus present and zero-filled. */
   orderCountsByStatus: OrderStatusCountDto[];
-  /** Revenue from platform-fulfilled order lines, grouped by currency. */
+  /**
+   * GROSS line GMV of platform-fulfilled order lines, grouped by currency —
+   * NOT net revenue (no commission concept applies to platform lines in the
+   * first place). For the accounting-accurate admin earnings split (fees
+   * actually earned, money held for vendors), see `AdminEarningsReportDto`.
+   */
   platformRevenue: CurrencyTotalDto[];
-  /** Revenue from vendor-fulfilled order lines, grouped by currency. */
+  /**
+   * GROSS line GMV of vendor-fulfilled order lines, grouped by currency —
+   * NOT net-of-commission revenue. Vendors keep the commission-adjusted net,
+   * H&B earns only the commission portion; see `AdminEarningsReportDto` for
+   * those accounting-accurate figures.
+   */
   vendorRevenue: CurrencyTotalDto[];
 }
