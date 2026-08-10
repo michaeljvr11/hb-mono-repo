@@ -1,10 +1,10 @@
 import { IsDateString, IsIn, IsOptional, IsUUID } from 'class-validator';
-import { AdminEarningsQuery } from '@hb/shared';
+import { AdminEarningsQuery, EARNINGS_WINDOWS } from '@hb/shared';
 import type { EarningsWindow } from '@hb/shared';
 
 export class AdminEarningsQueryDto implements AdminEarningsQuery {
   @IsOptional()
-  @IsIn(['1w', '2w', '1m'])
+  @IsIn(EARNINGS_WINDOWS)
   window?: EarningsWindow;
 
   @IsOptional()

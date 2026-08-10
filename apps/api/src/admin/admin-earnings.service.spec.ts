@@ -54,33 +54,60 @@ function makeItem(overrides: Partial<OrderItem> = {}): OrderItem {
 
 /**
  * Simulates a real WHERE-clause-filtered TypeORM query builder (same
- * convention as `VendorEarningsService`'s spec): captures the bind params
- * and actually filters `getMany()`'s results, so a filter dropped from the
- * real query would be caught here too.
+ * convention as `VendorEarningsService`'s spec): captures EVERY bind param
+ * the real query passes (`platform`, `cancelled`, `from`/`to`, `vendorId`)
+ * from both `where` and `andWhere`, and filters `getMany()`'s results off
+ * those captured values — never off a hardcoded re-implementation of the
+ * filter. Dropping any `.where()`/`.andWhere()` clause from the real query
+ * (`admin-earnings.service.ts`'s `getPlatformListingGmv`) leaves the
+ * corresponding filter uncaptured and the tests below red.
  */
 function makeItemsQb(allItems: OrderItem[]) {
   let vendorIdFilter: string | undefined;
   let vendorFilterApplied = false;
+  let platformFilter: ListingType | undefined;
+  let cancelledFilter: OrderStatus | undefined;
+  let fromFilter: Date | undefined;
+  let toFilter: Date | undefined;
+
+  const capture = (params?: Record<string, unknown>) => {
+    if (!params) return;
+    if ('vendorId' in params) {
+      vendorIdFilter = params.vendorId as string;
+      vendorFilterApplied = true;
+    }
+    if ('platform' in params) {
+      platformFilter = params.platform as ListingType;
+    }
+    if ('cancelled' in params) {
+      cancelledFilter = params.cancelled as OrderStatus;
+    }
+    if ('from' in params) {
+      fromFilter = params.from as Date;
+    }
+    if ('to' in params) {
+      toFilter = params.to as Date;
+    }
+  };
 
   const qb: Record<string, jest.Mock> = {
     leftJoin: jest.fn(() => qb),
-    where: jest.fn(() => qb),
+    where: jest.fn((_cond: string, params?: Record<string, unknown>) => {
+      capture(params);
+      return qb;
+    }),
     andWhere: jest.fn((_cond: string, params?: Record<string, unknown>) => {
-      if (params && 'vendorId' in params) {
-        vendorIdFilter = params.vendorId as string;
-        vendorFilterApplied = true;
-      }
+      capture(params);
       return qb;
     }),
     getMany: jest.fn(() =>
       Promise.resolve(
         allItems.filter((item) => {
-          // Mirrors the real query: PLATFORM lines never carry a vendorId, so
-          // any vendorId filter yields nothing — asserted explicitly below,
-          // not hardcoded into this mock.
           if (vendorFilterApplied && item.vendorId !== vendorIdFilter) return false;
-          if (item.listingType !== ListingType.PLATFORM) return false;
-          if (item.order?.status === OrderStatus.CANCELLED) return false;
+          if (platformFilter !== undefined && item.listingType !== platformFilter) return false;
+          if (cancelledFilter !== undefined && item.order?.status === cancelledFilter) return false;
+          if (fromFilter && (!item.order || item.order.createdAt < fromFilter)) return false;
+          if (toFilter && (!item.order || item.order.createdAt > toFilter)) return false;
           return true;
         }),
       ),
@@ -380,6 +407,42 @@ describe('AdminEarningsService', () => {
 
     expect(result.platformListingGmvByCurrency).toEqual([
       { currency: CurrencyCode.ZAR, amount: 75 },
+    ]);
+  });
+
+  it('platformListingGmvByCurrency excludes VENDOR-listing lines even when staged alongside PLATFORM lines', async () => {
+    stagePlatformItems([
+      makeItem({ id: 'p1', unitPrice: '25.00' as never, quantity: 1 }), // 25, PLATFORM
+      makeItem({
+        id: 'v1',
+        unitPrice: '500.00' as never,
+        quantity: 1,
+        listingType: ListingType.VENDOR,
+        vendorId: 'vendor-1',
+      }),
+    ]);
+
+    const result = await service.getReport(QUERY);
+
+    expect(result.platformListingGmvByCurrency).toEqual([
+      { currency: CurrencyCode.ZAR, amount: 25 },
+    ]);
+  });
+
+  it('platformListingGmvByCurrency is NOT delivered-gated — a PENDING platform order still counts (GMV, not revenue)', async () => {
+    stagePlatformItems([
+      makeItem({
+        id: 'p1',
+        unitPrice: '40.00' as never,
+        quantity: 1,
+        order: makeOrder({ id: 'order-pending', status: OrderStatus.PENDING }),
+      }),
+    ]);
+
+    const result = await service.getReport(QUERY);
+
+    expect(result.platformListingGmvByCurrency).toEqual([
+      { currency: CurrencyCode.ZAR, amount: 40 },
     ]);
   });
 

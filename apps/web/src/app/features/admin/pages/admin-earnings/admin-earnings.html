@@ -15,7 +15,7 @@
 
   <!-- Window selector -->
   <div class="filter-tabs" role="tablist" aria-label="Reporting window">
-    @for (tab of windowTabs; track tab.value) {
+    @for (tab of windowTabs(); track tab.value) {
       <button
         class="tab-btn"
         role="tab"
@@ -46,6 +46,8 @@
         <h2 class="metric-card-title">Commission earned</h2>
         <p class="metric-card-caption">
           Platform revenue earned on eligible vendor lines (past the 48h damage-claim window).
+          Includes vendors no longer approved, so this can exceed the sum of the Commission
+          column below.
         </p>
         @if (data.platformCommissionByCurrency.length === 0) {
           <p class="metric-empty">No commission earned in this window.</p>

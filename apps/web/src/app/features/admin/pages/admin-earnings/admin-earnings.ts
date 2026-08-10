@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import {
   AdminEarningsReportDto,
   CurrencyCode,
@@ -32,23 +32,31 @@ export class AdminEarnings implements OnInit {
    *  the API's own default, so the initial fetch and the active tab agree. */
   readonly selectedWindow = signal<EarningsWindow>('1m');
 
-  /** Current month + year, for the "Last month" tab label — the AC requires the actual
-   *  month name (e.g. "August 2026") so admins don't misread it as a rolling 30-day window.
-   *  Computed once from the client clock at page load; the server resolves the real
-   *  `from`/`to`, this is display-only.
-   *  ponytail: a page load in the last instants of a month could show a label one tick
-   *  stale vs. the server-resolved window; upgrade trigger: derive from the loaded
-   *  report's `from` instead, if that ever causes a real mismatch complaint. */
-  private readonly currentMonthLabel = new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date());
+  /** Month + year for the "Last month" tab label — the AC requires the actual month
+   *  name (e.g. "August 2026") so admins don't misread it as a rolling 30-day window.
+   *  Derived from the loaded report's `from` (server-resolved, identical value on
+   *  server render and client hydration) rather than the client clock at page-load,
+   *  which would risk an SSR/hydration text mismatch: formatting `new Date()` without
+   *  an explicit `timeZone` uses each environment's local zone, so the server (often
+   *  UTC) and a client browser in another zone could disagree on the calendar month
+   *  right at a month boundary. `timeZone: 'UTC'` pins the format itself so server and
+   *  client always agree regardless of environment, even before the report has loaded
+   *  (using the client-clock fallback below). */
+  private readonly monthLabel = computed(() => {
+    const from = this.report()?.from;
+    const date = from ? new Date(from) : new Date();
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(date);
+  });
 
-  readonly windowTabs: WindowTab[] = [
+  readonly windowTabs = computed<WindowTab[]>(() => [
     { label: 'Last week', value: '1w' },
     { label: 'Last 2 weeks', value: '2w' },
-    { label: this.currentMonthLabel, value: '1m' },
-  ];
+    { label: this.monthLabel(), value: '1m' },
+  ]);
 
   ngOnInit(): void {
     this.fetchReport();

@@ -100,7 +100,7 @@ describe('AdminEarnings component', () => {
   });
 
   it('the "Last month" tab label includes the actual month name, not a generic label', () => {
-    const monthTab = component.windowTabs.find((t) => t.value === '1m');
+    const monthTab = component.windowTabs().find((t) => t.value === '1m');
     expect(monthTab).toBeTruthy();
     expect(monthTab!.label).not.toBe('Last month');
     expect(monthTab!.label).toMatch(/^[A-Z][a-z]+ \d{4}$/);

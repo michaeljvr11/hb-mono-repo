@@ -163,15 +163,17 @@ export class AdminEarningsService {
     }
   }
 
-  /** `grossByCurrency` is ALWAYS derived from commission + net — never independently computed. */
+  /**
+   * `grossByCurrency` is ALWAYS derived from commission + net — never
+   * independently computed. `commission` is already sorted (it comes from
+   * `toSortedTotals`), so no re-sort needed here.
+   */
   private deriveGross(commission: CurrencyTotalDto[], net: CurrencyTotalDto[]): CurrencyTotalDto[] {
     const netMap = new Map(net.map((c) => [c.currency, c.amount]));
-    return commission
-      .map((c) => ({
-        currency: c.currency,
-        amount: Math.round((c.amount + (netMap.get(c.currency) ?? 0)) * 100) / 100,
-      }))
-      .sort((a, b) => a.currency.localeCompare(b.currency));
+    return commission.map((c) => ({
+      currency: c.currency,
+      amount: Math.round((c.amount + (netMap.get(c.currency) ?? 0)) * 100) / 100,
+    }));
   }
 
   private sumHeldForVendors(byVendor: Map<string, VendorEarningsGroup>): CurrencyTotalDto[] {
@@ -216,10 +218,17 @@ export class AdminEarningsService {
     }
 
     const items = await qb.getMany();
-    const map = new Map<CurrencyCode, number>();
+    // Integer cents throughout, same anti-float-drift discipline as
+    // `VendorEarningsService.splitGrossNetCents` — convert to decimal only
+    // in the final map entry, not mid-accumulation.
+    const centsMap = new Map<CurrencyCode, number>();
     for (const item of items) {
-      const lineTotal = Number(item.unitPrice) * item.quantity;
-      map.set(item.currency, (map.get(item.currency) ?? 0) + lineTotal);
+      const lineTotalCents = Math.round(Number(item.unitPrice) * 100) * item.quantity;
+      centsMap.set(item.currency, (centsMap.get(item.currency) ?? 0) + lineTotalCents);
+    }
+    const map = new Map<CurrencyCode, number>();
+    for (const [currency, cents] of centsMap) {
+      map.set(currency, cents / 100);
     }
     return this.toSortedTotals(map);
   }

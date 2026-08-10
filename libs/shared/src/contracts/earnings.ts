@@ -49,8 +49,14 @@ export interface CommissionRateListDto {
  * `AdminAnalyticsQuery`'s rolling-window convention); `1m` is the CURRENT
  * CALENDAR MONTH (1st of the month through now), not a rolling 30 days —
  * deliberately mixed semantics, confirmed with the business.
+ *
+ * `EARNINGS_WINDOWS` is the single source of truth for the valid values —
+ * runtime validators (`class-validator`'s `@IsIn`) must derive from this
+ * array rather than restating the literal union, so adding/removing a preset
+ * here can't silently drift from what the API actually accepts.
  */
-export type EarningsWindow = '1w' | '2w' | '1m';
+export const EARNINGS_WINDOWS = ['1w', '2w', '1m'] as const;
+export type EarningsWindow = (typeof EARNINGS_WINDOWS)[number];
 
 /**
  * Query params for GET /admin/earnings (and the vendor-scoped own-earnings
@@ -112,6 +118,13 @@ export interface AdminEarningsReportDto {
   platformCommissionByCurrency: CurrencyTotalDto[];
   /** Gross GMV of PLATFORM-listing-type order lines in the window. GMV, not revenue. */
   platformListingGmvByCurrency: CurrencyTotalDto[];
-  /** VE-3's `accrued` bucket, platform-wide — money owed to vendors, not yet H&B revenue. */
+  /**
+   * VE-3's `accrued` bucket, platform-wide — money owed to vendors, not yet
+   * H&B revenue. Note: this is a "currently held" snapshot (relative to the
+   * real clock at request time), NOT a figure scoped to `[from, to]` the way
+   * every other field on this DTO is — querying a past window still reports
+   * what's held for vendors *right now*, not what was held during that past
+   * window.
+   */
   heldForVendorsByCurrency: CurrencyTotalDto[];
 }
