@@ -1,0 +1,75 @@
+<app-nav-bar />
+
+<main class="wishlist">
+  <h1 class="wishlist__title">Your Wishlist</h1>
+
+  @switch (state()) {
+    @case ('loading') {
+      <p class="wishlist__hint">Loading your wishlist…</p>
+    }
+    @case ('error') {
+      <p class="wishlist__hint wishlist__hint--error">
+        Could not load your wishlist right now. Please try again.
+      </p>
+    }
+    @case ('loaded') {
+      @if (isEmpty()) {
+        <div class="wishlist__empty">
+          <span class="material-symbols-outlined wishlist__empty-icon" aria-hidden="true">favorite</span>
+          <h2 class="wishlist__empty-title">Your wishlist is empty</h2>
+          <p class="wishlist__empty-text">Save products you love and find them here later.</p>
+          <a class="wishlist__empty-cta" routerLink="/shop">Browse products</a>
+        </div>
+      } @else {
+        <ul class="wishlist__items">
+          @for (item of items(); track item.id) {
+            <li class="wishlist__item" [class.wishlist__item--busy]="busyProductId() === item.productId">
+              @if (item.imageUrl) {
+                <img class="wishlist__item-image" [src]="item.imageUrl" [alt]="item.productName" />
+              } @else {
+                <div class="wishlist__item-image wishlist__item-image--placeholder" aria-hidden="true">
+                  <span class="material-symbols-outlined">image</span>
+                </div>
+              }
+
+              <div class="wishlist__item-body">
+                <a class="wishlist__item-name" [routerLink]="['/products', item.productId]">{{ item.productName }}</a>
+                <span class="wishlist__item-price">{{ format(item.price, item.currency) }}</span>
+
+                @if (item.stockQuantity === 0) {
+                  <span class="wishlist__item-badge">Out of stock</span>
+                }
+
+                <div class="wishlist__item-controls">
+                  <button
+                    type="button"
+                    class="wishlist__add-btn"
+                    [disabled]="item.stockQuantity === 0 || busyProductId() === item.productId"
+                    (click)="addToCart(item)"
+                    [attr.aria-label]="'Add ' + item.productName + ' to cart'"
+                  >
+                    <span class="material-symbols-outlined" aria-hidden="true">add_shopping_cart</span>
+                    Add to Cart
+                  </button>
+
+                  <button
+                    type="button"
+                    class="wishlist__remove-btn"
+                    [disabled]="busyProductId() === item.productId"
+                    (click)="remove(item)"
+                    [attr.aria-label]="'Remove ' + item.productName + ' from wishlist'"
+                  >
+                    <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    }
+  }
+</main>
+
+<app-footer />
