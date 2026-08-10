@@ -24,6 +24,7 @@ export class VendorShell {
 
   readonly navItems: readonly NavItem[] = [
     { label: 'Dashboard', path: 'dashboard', icon: 'dashboard' },
+    { label: 'Earnings',  path: 'earnings',  icon: 'payments' },
     { label: 'Products',  path: 'products',  icon: 'inventory_2' },
     { label: 'Orders',    path: 'orders',    icon: 'shopping_bag' },
     { label: 'Profile',   path: 'profile',   icon: 'person' },

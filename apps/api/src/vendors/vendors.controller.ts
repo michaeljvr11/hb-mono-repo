@@ -14,11 +14,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '@hb/shared';
 import { VendorsService } from './vendors.service';
 import { VendorAnalyticsService } from './vendor-analytics.service';
+import { VendorEarningsReportService } from './vendor-earnings-report.service';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { AdminCreateVendorDto } from './dto/admin-create-vendor.dto';
 import { UpdateVendorStatusDto } from './dto/update-vendor-status.dto';
 import { VendorAnalyticsQueryDto } from './dto/vendor-analytics-query.dto';
+import { VendorEarningsQueryDto } from './dto/vendor-earnings-query.dto';
 import { vendorImageMulterOptions } from './upload/vendor-image.multer.config';
 import { vendorImageFilePipe } from './upload/vendor-image-file.pipe';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -31,6 +33,7 @@ export class VendorsController {
   constructor(
     private readonly vendorsService: VendorsService,
     private readonly vendorAnalyticsService: VendorAnalyticsService,
+    private readonly vendorEarningsReportService: VendorEarningsReportService,
   ) {}
 
   // Admin only for now; public vendor directory later
@@ -85,6 +88,12 @@ export class VendorsController {
   @Roles(UserRole.VENDOR)
   getMyAnalytics(@Query() query: VendorAnalyticsQueryDto, @GetUser() user: User) {
     return this.vendorAnalyticsService.getAnalytics(user.id, query);
+  }
+
+  @Get('me/earnings')
+  @Roles(UserRole.VENDOR)
+  getMyEarnings(@Query() query: VendorEarningsQueryDto, @GetUser() user: User) {
+    return this.vendorEarningsReportService.getMyEarnings(user.id, query);
   }
 
   @Post('me/logo')

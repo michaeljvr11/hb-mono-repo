@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { CurrencyCode, OrderStatus, PaymentStatus } from '@hb/shared';
-import { VendorEarningsService } from './vendor-earnings.service';
+import { currentSettlementPeriodBounds, VendorEarningsService } from './vendor-earnings.service';
 import { OrderItem } from '../orders/entities/order-item.entity';
 import { Order } from '../orders/entities/order.entity';
 import { Payment } from '../payments/entities/payment.entity';
@@ -553,6 +553,55 @@ describe('VendorEarningsService', () => {
       stageItems([]);
       const result = await service.getEarningsByVendor({}, FROM, TO);
       expect(result.size).toBe(0);
+    });
+  });
+
+  describe('currentSettlementPeriodBounds', () => {
+    const PERIOD_LENGTH_MS = 14 * 24 * 60 * 60 * 1000;
+
+    it('returns the bi-weekly period bracketing `now`, anchored at SETTLEMENT_ANCHOR_DATE', () => {
+      const now = new Date('2027-03-03T10:00:00.000Z'); // well past the anchor, mid-period
+      const { periodStart, periodEnd } = currentSettlementPeriodBounds(now);
+
+      // Independently derived (not via the implementation's own periodIndexFor)
+      // so this actually catches a regression in the bucketing math.
+      const index = Math.floor(
+        (now.getTime() - SETTLEMENT_ANCHOR_DATE.getTime()) / PERIOD_LENGTH_MS,
+      );
+      const expectedStart = new Date(SETTLEMENT_ANCHOR_DATE.getTime() + index * PERIOD_LENGTH_MS);
+      const expectedEnd = new Date(expectedStart.getTime() + PERIOD_LENGTH_MS);
+
+      expect(periodStart).toEqual(expectedStart);
+      expect(periodEnd).toEqual(expectedEnd);
+      expect(periodStart.getTime()).toBeLessThanOrEqual(now.getTime());
+      expect(periodEnd.getTime()).toBeGreaterThan(now.getTime());
+      expect(periodEnd.getTime() - periodStart.getTime()).toBe(PERIOD_LENGTH_MS);
+    });
+
+    it('is exact and inclusive at a period-start boundary', () => {
+      const now = new Date(SETTLEMENT_ANCHOR_DATE.getTime() + 4 * PERIOD_LENGTH_MS);
+      const { periodStart, periodEnd } = currentSettlementPeriodBounds(now);
+
+      expect(periodStart).toEqual(now);
+      expect(periodEnd).toEqual(new Date(now.getTime() + PERIOD_LENGTH_MS));
+    });
+
+    it('handles a `now` before the anchor date (negative period index)', () => {
+      const now = new Date(SETTLEMENT_ANCHOR_DATE.getTime() - 5 * 24 * 60 * 60 * 1000);
+      const { periodStart, periodEnd } = currentSettlementPeriodBounds(now);
+
+      expect(periodStart.getTime()).toBeLessThanOrEqual(now.getTime());
+      expect(periodEnd.getTime()).toBeGreaterThan(now.getTime());
+      expect(periodEnd.getTime() - periodStart.getTime()).toBe(PERIOD_LENGTH_MS);
+    });
+
+    it('defaults `now` to the real clock when omitted', () => {
+      const before = Date.now();
+      const { periodStart, periodEnd } = currentSettlementPeriodBounds();
+      const after = Date.now();
+
+      expect(periodStart.getTime()).toBeLessThanOrEqual(before);
+      expect(periodEnd.getTime()).toBeGreaterThanOrEqual(after);
     });
   });
 });

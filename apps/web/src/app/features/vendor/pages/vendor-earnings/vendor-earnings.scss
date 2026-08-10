@@ -1,0 +1,341 @@
+/* Vendor Earnings page — tokens from docs/design/DESIGN.md */
+:host {
+  display: block;
+}
+
+/* ─── Page header ─────────────────────────────────────────────── */
+.earnings-page {
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 16px;
+}
+
+.page-title {
+  margin: 0 0 4px;
+  font: 600 32px/40px Inter, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--hb-on-surface);
+}
+
+.page-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ─── Statement, not payment notice ───────────────────────────── */
+.statement-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background: var(--hb-surface-container-low);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  color: var(--hb-on-surface-variant);
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    flex-shrink: 0;
+    color: var(--hb-primary);
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
+
+/* ─── Error banner ────────────────────────────────────────────── */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background: color-mix(in srgb, var(--hb-error) 10%, transparent);
+  color: var(--hb-error);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+}
+
+/* ─── Window selector tabs ────────────────────────────────────── */
+.filter-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 9999px;
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-on-surface-variant);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+
+  &:hover {
+    background: var(--hb-surface-container-low);
+    border-color: var(--hb-outline);
+    color: var(--hb-on-surface);
+  }
+
+  &--active {
+    background: color-mix(in srgb, var(--hb-primary) 12%, transparent);
+    border-color: var(--hb-primary);
+    color: var(--hb-primary);
+    font-weight: 600;
+  }
+}
+
+/* ─── Loading state ───────────────────────────────────────────── */
+.state-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: var(--hb-on-surface-variant);
+  font-size: 14px;
+
+  p {
+    margin: 0;
+  }
+
+  .state-icon {
+    font-size: 40px;
+    opacity: 0.5;
+  }
+}
+
+/* ─── Window range ────────────────────────────────────────────── */
+.range-sub {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ─── Section shell ───────────────────────────────────────────── */
+.summary-section,
+.balance-section,
+.settlement-section {
+  margin-bottom: 32px;
+}
+
+.section-header {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  margin: 0 0 4px;
+  font: 600 20px/28px Inter, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--hb-on-surface);
+}
+
+.section-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+.section-caption {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ─── Empty state ─────────────────────────────────────────────── */
+.list-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 16px;
+  color: var(--hb-on-surface-variant);
+  font-size: 14px;
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  text-align: center;
+
+  p {
+    margin: 0;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--hb-on-surface);
+  }
+
+  .material-symbols-outlined {
+    font-size: 40px;
+    opacity: 0.45;
+  }
+}
+
+.list-empty-sub {
+  font-size: 12px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ─── Tables (summary + settlement share this shell) ─────────── */
+.table-card {
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.summary-table,
+.settlement-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th,
+  td {
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--hb-outline-variant);
+    vertical-align: top;
+  }
+
+  th {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--hb-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: var(--hb-surface-container);
+  }
+
+  td {
+    color: var(--hb-on-surface);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.summary-net-cell {
+  font-weight: 700;
+  color: var(--hb-primary);
+}
+
+/* ─── Metrics grid / cards (balance split) ────────────────────── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metric-card-title {
+  margin: 0;
+  font: 600 16px/24px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+}
+
+.metric-card-caption {
+  margin: 0;
+  font-size: 12px;
+  color: var(--hb-on-surface-variant);
+}
+
+.metric-empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ─── Revenue list (balance split figures) ────────────────────── */
+.revenue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.revenue-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--hb-outline-variant);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.revenue-currency {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hb-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.revenue-amount {
+  font: 600 16px/24px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+}
+
+/* ─── Settlement status chip ──────────────────────────────────── */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--hb-surface-container);
+  color: var(--hb-on-surface-variant);
+
+  &--open {
+    background: color-mix(in srgb, var(--hb-primary) 14%, transparent);
+    color: var(--hb-primary);
+  }
+}
+
+.settlement-money-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settlement-money-line {
+  font-weight: 500;
+  white-space: nowrap;
+}
