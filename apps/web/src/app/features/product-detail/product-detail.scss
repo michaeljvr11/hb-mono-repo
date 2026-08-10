@@ -396,6 +396,9 @@
   position: fixed;
   bottom: 0;
   left: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
   width: 100%;
   z-index: 40;
   padding: 8px 16px calc(16px + env(safe-area-inset-bottom));
@@ -411,7 +414,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
+  flex: 1;
   padding: 16px;
   border: none;
   border-radius: 12px;
@@ -429,6 +432,53 @@
 
   &:hover {
     filter: brightness(1.05);
+  }
+}
+
+// Hero/sticky-bar wishlist toggle for the page's own product. Same visual
+// language as the product-card corner heart (filled via the FILL axis, no
+// reflow) but scoped to this component — never reach into product-card.scss.
+.pdp__wishlist-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 0 20px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-on-surface-variant);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  &:hover {
+    background: var(--hb-surface-container-low);
+  }
+
+  &--active {
+    border-color: color-mix(in srgb, var(--hb-error) 45%, var(--hb-outline-variant));
+    background: color-mix(in srgb, var(--hb-error) 8%, var(--hb-surface-container-lowest));
+    color: var(--hb-error);
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1;
+    }
+  }
+}
+
+.pdp__wishlist-btn-label {
+  // Icon-only on narrow viewports (matches the product-card corner heart);
+  // the aria-label still carries the accessible name.
+  @media (max-width: 767px) {
+    display: none;
   }
 }
 

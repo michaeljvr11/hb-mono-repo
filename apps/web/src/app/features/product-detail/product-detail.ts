@@ -205,13 +205,21 @@ export class ProductDetail {
     this.addProductToCart(product);
   }
 
+  /**
+   * Shared anonymous gate for add-to-cart and wishlist actions: navigates to
+   * `/login` with the current URL as `returnUrl` and returns `true` if the
+   * caller must bail out; returns `false` for signed-in users.
+   */
+  private redirectAnonymous(): boolean {
+    if (this.authService.isLoggedIn()) return false;
+    void this.router.navigate(['/login'], {
+      queryParams: { returnUrl: this.router.url },
+    });
+    return true;
+  }
+
   private addProductToCart(product: ProductDto): void {
-    if (!this.authService.isLoggedIn()) {
-      void this.router.navigate(['/login'], {
-        queryParams: { returnUrl: this.router.url },
-      });
-      return;
-    }
+    if (this.redirectAnonymous()) return;
     this.cartService.addItem(product.id).subscribe({
       next: () => {
         this.analyticsService.track(AnalyticsEventType.ADD_TO_CART, {
@@ -246,16 +254,59 @@ export class ProductDetail {
 
   /** Wishlist toggle for the "You May Also Like" related-products grid. */
   onRelatedWishlistToggle(product: ProductDto): void {
-    if (!this.authService.isLoggedIn()) {
-      void this.router.navigate(['/login'], {
-        queryParams: { returnUrl: this.router.url },
-      });
-      return;
-    }
+    if (this.redirectAnonymous()) return;
     // No optimistic mutation — the heart only reflects a successful server
     // response (via WishlistService's signal), so a failure can never leave
     // it lying about the real state.
     this.wishlistService.toggle(product.id).subscribe({
+      error: (err: { error?: { message?: string } }) => {
+        this.snackBar.open(err?.error?.message ?? 'Could not update your wishlist.', 'Close', {
+          duration: 4000,
+          horizontalPosition: 'end',
+          panelClass: ['hb-info-snackbar'],
+          verticalPosition: 'top',
+        });
+      },
+    });
+  }
+
+  /**
+   * Wishlist toggle for the PDP hero / sticky bar (shared handler — only
+   * one heart control exists for the page's own product, so there is no
+   * risk of divergent state between call sites).
+   */
+  onWishlistToggle(): void {
+    const product = this.product();
+    if (!product) return;
+    if (this.redirectAnonymous()) return;
+
+    // Capture intent before the request resolves — WishlistService only
+    // flips `has()` once the server confirms, so this can't drift from the
+    // eventual heart state.
+    const wasWishlisted = this.wishlistService.has(product.id);
+
+    this.wishlistService.toggle(product.id).subscribe({
+      next: () => {
+        if (wasWishlisted) {
+          this.snackBar.open(`Removed '${product.name}' from your wishlist.`, 'Close', {
+            duration: 3000,
+            horizontalPosition: 'end',
+            panelClass: ['hb-info-snackbar'],
+            verticalPosition: 'top',
+          });
+          return;
+        }
+        this.snackBar
+          .open(`Added '${product.name}' to your wishlist.`, 'View wishlist', {
+            duration: 4000,
+            horizontalPosition: 'end',
+            panelClass: ['hb-info-snackbar'],
+            verticalPosition: 'top',
+          })
+          .onAction()
+          .subscribe(() => void this.router.navigate(['/wishlist']));
+      },
+      // No optimistic mutation here either — see onRelatedWishlistToggle.
       error: (err: { error?: { message?: string } }) => {
         this.snackBar.open(err?.error?.message ?? 'Could not update your wishlist.', 'Close', {
           duration: 4000,
