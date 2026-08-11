@@ -61,6 +61,14 @@
       </button>
       <button
         type="button"
+        class="nav-bar__wishlist-btn"
+        aria-label="View wishlist"
+        (click)="onWishlistClick()"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+      </button>
+      <button
+        type="button"
         class="nav-bar__cart-btn"
         aria-label="View cart"
         (click)="onCartClick()"

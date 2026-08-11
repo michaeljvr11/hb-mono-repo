@@ -26,6 +26,7 @@ import { SearchService } from '../../core/api/search.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
+import { WishlistService } from '../../core/api/wishlist.service';
 import { environment } from '../../../environments/environment';
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
@@ -106,6 +107,14 @@ interface GaStub {
   addToCart: ReturnType<typeof vi.fn>;
 }
 
+interface WishlistStub {
+  has: ReturnType<typeof vi.fn>;
+  toggle: ReturnType<typeof vi.fn>;
+  load: ReturnType<typeof vi.fn>;
+  wishlist: ReturnType<typeof vi.fn>;
+  itemCount: ReturnType<typeof vi.fn>;
+}
+
 function makeStubs(): {
   productsStub: ProductsStub;
   categoriesStub: CategoriesStub;
@@ -114,6 +123,7 @@ function makeStubs(): {
   authStub: AuthStub;
   analyticsStub: AnalyticsStub;
   gaStub: GaStub;
+  wishlistStub: WishlistStub;
 } {
   return {
     productsStub: {
@@ -141,6 +151,13 @@ function makeStubs(): {
     gaStub: {
       addToCart: vi.fn(),
     },
+    wishlistStub: {
+      has: vi.fn(() => false),
+      toggle: vi.fn(() => of({ items: [], itemCount: 0 })),
+      load: vi.fn(() => of({ items: [], itemCount: 0 })),
+      wishlist: vi.fn(() => null),
+      itemCount: vi.fn(() => 0),
+    },
   };
 }
 
@@ -152,6 +169,7 @@ async function setupTestBed(
   authStub: AuthStub,
   analyticsStub: AnalyticsStub,
   gaStub: GaStub,
+  wishlistStub: WishlistStub,
 ): Promise<void> {
   return TestBed.configureTestingModule({
     imports: [Discover],
@@ -167,6 +185,7 @@ async function setupTestBed(
       { provide: AuthService, useValue: authStub },
       { provide: AnalyticsService, useValue: analyticsStub },
       { provide: GoogleAnalyticsService, useValue: gaStub },
+      { provide: WishlistService, useValue: wishlistStub },
     ],
   }).compileComponents();
 }
@@ -185,9 +204,10 @@ describe('Discover', () => {
   let authStub: AuthStub;
   let analyticsStub: AnalyticsStub;
   let gaStub: GaStub;
+  let wishlistStub: WishlistStub;
 
   beforeEach(async () => {
-    ({ productsStub, categoriesStub, vendorsStub, searchStub, authStub, analyticsStub, gaStub } =
+    ({ productsStub, categoriesStub, vendorsStub, searchStub, authStub, analyticsStub, gaStub, wishlistStub } =
       makeStubs());
     await setupTestBed(
       productsStub,
@@ -197,6 +217,7 @@ describe('Discover', () => {
       authStub,
       analyticsStub,
       gaStub,
+      wishlistStub,
     );
 
     fixture = TestBed.createComponent(Discover);
@@ -346,6 +367,48 @@ describe('Discover', () => {
       queryParams: { returnUrl: router.url },
     });
     expect(analyticsStub.track).not.toHaveBeenCalled();
+  });
+
+  // ── Wishlist toggle ────────────────────────────────────────────────────
+
+  it('anonymous wishlist toggle routes to /login and never calls the wishlist API', () => {
+    authStub.isLoggedIn.mockReturnValue(false);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onWishlistToggle(VENDOR_LISTING);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/login'], {
+      queryParams: { returnUrl: router.url },
+    });
+    expect(wishlistStub.toggle).not.toHaveBeenCalled();
+  });
+
+  it('authenticated wishlist toggle calls WishlistService.toggle with the product id', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+
+    component.onWishlistToggle(VENDOR_LISTING);
+
+    expect(wishlistStub.toggle).toHaveBeenCalledWith('p2');
+  });
+
+  it('the hydration gate starts closed: isWishlisted reads false immediately after construction, before any render', () => {
+    // WishlistService already reports membership, but the SSR-rendered
+    // markup and the client's pre-hydration DOM must still agree on an
+    // empty heart. `hydrated` only flips inside the `afterNextRender`
+    // callback registered in the constructor, which requires an actual
+    // render pass — checking immediately after construction, before any
+    // `detectChanges()`, is the one place it can't have fired yet. If the
+    // gate were ever dropped (`isWishlisted` calling `has()` directly),
+    // this would read `true` here and fail. (Not asserted post-hydration
+    // here — this suite's product list resolves synchronously from a
+    // stubbed observable, so the first `detectChanges()` both renders the
+    // cards and flips `hydrated` in the same pass, which trips Angular's
+    // dev-mode "changed after checked" guard; the shop.spec.ts suite covers
+    // the full closed→open transition against a real, unflushed HTTP load.)
+    wishlistStub.has.mockReturnValue(true);
+    const freshComponent = TestBed.createComponent(Discover).componentInstance;
+
+    expect(freshComponent.isWishlisted('p2')).toBe(false);
   });
 
   it('SME toggle filters out products without a vendor (platform listings)', () => {

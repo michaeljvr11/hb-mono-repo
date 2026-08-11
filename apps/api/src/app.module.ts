@@ -16,6 +16,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { VendorsModule } from './vendors/vendors.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { CartModule } from './cart/cart.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ShippingModule } from './shipping/shipping.module';
@@ -52,6 +53,7 @@ import { EarningsModule } from './earnings/earnings.module';
     VendorsModule,
     AddressesModule,
     CartModule,
+    WishlistModule,
     OrdersModule,
     PaymentsModule,
     ShippingModule,

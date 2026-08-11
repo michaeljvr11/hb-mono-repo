@@ -21,6 +21,7 @@ import { PublicVendorProfile } from './vendor-profile';
 import { VendorsService } from '../../../core/api/vendors.service';
 import { ProductsService } from '../../../core/api/products.service';
 import { CartService } from '../../../core/api/cart.service';
+import { WishlistService } from '../../../core/api/wishlist.service';
 import { AnalyticsService } from '../../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../../core/analytics/google-analytics.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -184,6 +185,14 @@ interface GaStub {
   addToCart: ReturnType<typeof vi.fn>;
 }
 
+interface WishlistStub {
+  has: ReturnType<typeof vi.fn>;
+  toggle: ReturnType<typeof vi.fn>;
+  load: ReturnType<typeof vi.fn>;
+  wishlist: ReturnType<typeof signal<null>>;
+  itemCount: ReturnType<typeof signal<number>>;
+}
+
 function makeStubs(): {
   vendorsStub: VendorsStub;
   productsStub: ProductsStub;
@@ -191,6 +200,7 @@ function makeStubs(): {
   cartStub: CartStub;
   analyticsStub: AnalyticsStub;
   gaStub: GaStub;
+  wishlistStub: WishlistStub;
 } {
   return {
     vendorsStub: {
@@ -214,6 +224,13 @@ function makeStubs(): {
     gaStub: {
       addToCart: vi.fn(),
     },
+    wishlistStub: {
+      has: vi.fn(() => false),
+      toggle: vi.fn(() => of({ items: [], itemCount: 0 })),
+      load: vi.fn(() => of({ items: [], itemCount: 0 })),
+      wishlist: signal(null),
+      itemCount: signal(0),
+    },
   };
 }
 
@@ -224,6 +241,7 @@ async function setupTestBed(
   cartStub: CartStub,
   analyticsStub: AnalyticsStub,
   gaStub: GaStub,
+  wishlistStub: WishlistStub,
   paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>,
 ): Promise<void> {
   return TestBed.configureTestingModule({
@@ -237,6 +255,7 @@ async function setupTestBed(
       { provide: ProductsService, useValue: productsStub },
       { provide: AuthService, useValue: authStub },
       { provide: CartService, useValue: cartStub },
+      { provide: WishlistService, useValue: wishlistStub },
       { provide: AnalyticsService, useValue: analyticsStub },
       { provide: GoogleAnalyticsService, useValue: gaStub },
       {
@@ -259,10 +278,12 @@ describe('PublicVendorProfile', () => {
   let cartStub: CartStub;
   let analyticsStub: AnalyticsStub;
   let gaStub: GaStub;
+  let wishlistStub: WishlistStub;
   let paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   beforeEach(async () => {
-    ({ vendorsStub, productsStub, authStub, cartStub, analyticsStub, gaStub } = makeStubs());
+    ({ vendorsStub, productsStub, authStub, cartStub, analyticsStub, gaStub, wishlistStub } =
+      makeStubs());
     paramMap$ = new BehaviorSubject(convertToParamMap({ id: 'v1' }));
 
     await setupTestBed(
@@ -272,6 +293,7 @@ describe('PublicVendorProfile', () => {
       cartStub,
       analyticsStub,
       gaStub,
+      wishlistStub,
       paramMap$,
     );
 
@@ -384,6 +406,43 @@ describe('PublicVendorProfile', () => {
 
     expect(cartStub.addItem).toHaveBeenCalledWith('p1');
     expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  // ── Wishlist toggle ──────────────────────────────────────────────────────
+
+  it('anonymous onWishlistToggle routes to /login with the current returnUrl', () => {
+    authStub.isLoggedIn.mockReturnValue(false);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onWishlistToggle(HONEY);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/login'], {
+      queryParams: { returnUrl: router.url },
+    });
+    expect(wishlistStub.toggle).not.toHaveBeenCalled();
+  });
+
+  it('authenticated onWishlistToggle calls WishlistService.toggle with the product id', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+
+    component.onWishlistToggle(HONEY);
+
+    expect(wishlistStub.toggle).toHaveBeenCalledWith('p1');
+  });
+
+  it('the hydration gate starts closed: isWishlisted reads false immediately after construction, before any render', () => {
+    // WishlistService already reports membership, but the SSR-rendered
+    // markup and the client's pre-hydration DOM must still agree on an
+    // empty heart. `hydrated` only flips inside the `afterNextRender`
+    // callback registered in the constructor, which requires an actual
+    // render pass — checking immediately after construction, before any
+    // `detectChanges()`, is the one place it can't have fired yet. If the
+    // gate were ever dropped (`isWishlisted` calling `has()` directly),
+    // this would read `true` here and fail.
+    wishlistStub.has.mockReturnValue(true);
+    const freshComponent = TestBed.createComponent(PublicVendorProfile).componentInstance;
+
+    expect(freshComponent.isWishlisted('p1')).toBe(false);
   });
 
   // ─── VPC-5: vendor branding + profile-section rendering ────────────────────

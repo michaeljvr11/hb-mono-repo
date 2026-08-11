@@ -23,6 +23,17 @@
         <span class="product-card__badge-label">SME VERIFIED</span>
       </div>
     }
+
+    <button
+      type="button"
+      class="product-card__wishlist-btn"
+      [class.product-card__wishlist-btn--active]="wishlisted()"
+      [attr.aria-pressed]="wishlisted()"
+      [attr.aria-label]="wishlisted() ? 'Remove from wishlist' : 'Add to wishlist'"
+      (click)="onWishlistToggle($event)"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+    </button>
   </div>
 
   <div class="product-card__body">

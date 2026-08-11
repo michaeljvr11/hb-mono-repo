@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import type { AuthUser, CartDto, UserDto } from '@hb/shared';
@@ -18,11 +19,23 @@ import {
 import { ProductDetail } from './product-detail';
 import { ProductsService } from '../../core/api/products.service';
 import { CartService } from '../../core/api/cart.service';
+import { WishlistService } from '../../core/api/wishlist.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { AuthService } from '../../core/auth/auth.service';
 
 const EMPTY_CART: CartDto = { id: 'cart-1', items: [], totals: [], itemCount: 0, updatedAt: '' };
+
+/**
+ * `snackBar` is a private field on ProductDetail — TS privacy is
+ * compile-time only, so this reads the exact MatSnackBar instance the
+ * component actually injected. Needed because the standalone component's
+ * own `MatSnackBarModule` import can resolve a different instance than
+ * `TestBed.inject(MatSnackBar)`.
+ */
+function getComponentSnackBar(component: ProductDetail): MatSnackBar {
+  return (component as unknown as { snackBar: MatSnackBar }).snackBar;
+}
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
 
@@ -94,12 +107,21 @@ interface GaStub {
   addToCart: ReturnType<typeof vi.fn>;
 }
 
+interface WishlistStub {
+  has: ReturnType<typeof vi.fn>;
+  toggle: ReturnType<typeof vi.fn>;
+  load: ReturnType<typeof vi.fn>;
+  wishlist: ReturnType<typeof signal<null>>;
+  itemCount: ReturnType<typeof signal<number>>;
+}
+
 function makeStubs(): {
   productsStub: ProductsStub;
   authStub: AuthStub;
   cartStub: CartStub;
   analyticsStub: AnalyticsStub;
   gaStub: GaStub;
+  wishlistStub: WishlistStub;
 } {
   return {
     productsStub: {
@@ -125,6 +147,13 @@ function makeStubs(): {
       viewItem: vi.fn(),
       addToCart: vi.fn(),
     },
+    wishlistStub: {
+      has: vi.fn(() => false),
+      toggle: vi.fn(() => of({ items: [], itemCount: 0 })),
+      load: vi.fn(() => of({ items: [], itemCount: 0 })),
+      wishlist: signal(null),
+      itemCount: signal(0),
+    },
   };
 }
 
@@ -134,6 +163,7 @@ async function setupTestBed(
   cartStub: CartStub,
   analyticsStub: AnalyticsStub,
   gaStub: GaStub,
+  wishlistStub: WishlistStub,
   paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>,
 ): Promise<void> {
   return TestBed.configureTestingModule({
@@ -146,6 +176,7 @@ async function setupTestBed(
       { provide: ProductsService, useValue: productsStub },
       { provide: AuthService, useValue: authStub },
       { provide: CartService, useValue: cartStub },
+      { provide: WishlistService, useValue: wishlistStub },
       { provide: AnalyticsService, useValue: analyticsStub },
       { provide: GoogleAnalyticsService, useValue: gaStub },
       {
@@ -167,13 +198,22 @@ describe('ProductDetail', () => {
   let cartStub: CartStub;
   let analyticsStub: AnalyticsStub;
   let gaStub: GaStub;
+  let wishlistStub: WishlistStub;
   let paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   beforeEach(async () => {
-    ({ productsStub, authStub, cartStub, analyticsStub, gaStub } = makeStubs());
+    ({ productsStub, authStub, cartStub, analyticsStub, gaStub, wishlistStub } = makeStubs());
     paramMap$ = new BehaviorSubject(convertToParamMap({ id: 'p1' }));
 
-    await setupTestBed(productsStub, authStub, cartStub, analyticsStub, gaStub, paramMap$);
+    await setupTestBed(
+      productsStub,
+      authStub,
+      cartStub,
+      analyticsStub,
+      gaStub,
+      wishlistStub,
+      paramMap$,
+    );
 
     fixture = TestBed.createComponent(ProductDetail);
     component = fixture.componentInstance;
@@ -333,6 +373,28 @@ describe('ProductDetail', () => {
     expect(cartStub.addItem).toHaveBeenCalledWith('p2');
   });
 
+  // ── Wishlist toggle (related-products grid) ─────────────────────────────
+
+  it('anonymous related-product wishlist toggle routes to /login with the current returnUrl', () => {
+    authStub.isLoggedIn.mockReturnValue(false);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onRelatedWishlistToggle(RELATED_SAME_CATEGORY);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/login'], {
+      queryParams: { returnUrl: router.url },
+    });
+    expect(wishlistStub.toggle).not.toHaveBeenCalled();
+  });
+
+  it('authenticated related-product wishlist toggle calls WishlistService.toggle with the product id', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+
+    component.onRelatedWishlistToggle(RELATED_SAME_CATEGORY);
+
+    expect(wishlistStub.toggle).toHaveBeenCalledWith('p2');
+  });
+
   it('surfaces the API error message when add-to-cart fails', () => {
     authStub.isLoggedIn.mockReturnValue(true);
     cartStub.addItem.mockReturnValue(
@@ -346,5 +408,138 @@ describe('ProductDetail', () => {
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
     component.viewStorefront();
     expect(navigateSpy).toHaveBeenCalledWith(['/vendors', 'v1']);
+  });
+
+  // ── Wishlist toggle (PDP hero / sticky bar) ─────────────────────────────
+
+  it('anonymous hero wishlist toggle routes to /login with the current returnUrl and never calls the API', () => {
+    authStub.isLoggedIn.mockReturnValue(false);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onWishlistToggle();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/login'], {
+      queryParams: { returnUrl: router.url },
+    });
+    expect(wishlistStub.toggle).not.toHaveBeenCalled();
+  });
+
+  it('authenticated hero wishlist toggle adds the page product when not yet wishlisted', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+    wishlistStub.has.mockReturnValue(false);
+
+    component.onWishlistToggle();
+
+    expect(wishlistStub.toggle).toHaveBeenCalledWith('p1');
+  });
+
+  it('authenticated hero wishlist toggle removes the page product when already wishlisted', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+    wishlistStub.has.mockReturnValue(true);
+
+    component.onWishlistToggle();
+
+    expect(wishlistStub.toggle).toHaveBeenCalledWith('p1');
+  });
+
+  it('hero heart state reflects WishlistService membership via the hydration-gated helper', () => {
+    wishlistStub.has.mockReturnValue(true);
+    expect(component.isWishlisted('p1')).toBe(true);
+
+    wishlistStub.has.mockReturnValue(false);
+    expect(component.isWishlisted('p1')).toBe(false);
+  });
+
+  it('the hydration gate starts closed: isWishlisted reads false immediately after construction, before any render', () => {
+    // WishlistService already reports membership, but the SSR-rendered
+    // markup and the client's pre-hydration DOM must still agree on an
+    // empty heart. `hydrated` only flips inside the `afterNextRender`
+    // callback registered in the constructor, which requires an actual
+    // render pass — checking immediately after construction, before any
+    // `detectChanges()`, is the one place it can't have fired yet (unlike
+    // the test above, which runs after the shared `beforeEach` has already
+    // hydrated the fixture). If the gate were ever dropped (`isWishlisted`
+    // calling `has()` directly), this would read `true` here and fail.
+    wishlistStub.has.mockReturnValue(true);
+    const freshComponent = TestBed.createComponent(ProductDetail).componentInstance;
+
+    expect(freshComponent.isWishlisted('p1')).toBe(false);
+  });
+
+  it('renders the hero/sticky-bar wishlist button reflecting saved state', async () => {
+    // Pre-set the wishlisted mock and build a fresh fixture so the "saved"
+    // state is present from the very first render — mutating an
+    // already-rendered fixture's stub and re-detecting would fight the
+    // ExpressionChangedAfterItHasBeenCheckedError guard, since `has()` isn't
+    // itself a tracked signal read in the template.
+    const savedStubs = makeStubs();
+    savedStubs.wishlistStub.has.mockReturnValue(true);
+    const savedParamMap$ = new BehaviorSubject(convertToParamMap({ id: 'p1' }));
+
+    TestBed.resetTestingModule();
+    await setupTestBed(
+      savedStubs.productsStub,
+      savedStubs.authStub,
+      savedStubs.cartStub,
+      savedStubs.analyticsStub,
+      savedStubs.gaStub,
+      savedStubs.wishlistStub,
+      savedParamMap$,
+    );
+    const savedFixture = TestBed.createComponent(ProductDetail);
+    savedFixture.detectChanges();
+    await savedFixture.whenStable();
+    savedFixture.detectChanges();
+
+    const btn: HTMLButtonElement | null =
+      savedFixture.nativeElement.querySelector('.pdp__wishlist-btn');
+    expect(btn).toBeTruthy();
+    expect(btn?.getAttribute('aria-pressed')).toBe('true');
+    expect(btn?.textContent).toContain('Saved');
+  });
+
+  it('a failed hero wishlist toggle surfaces the info snackbar and leaves state untouched (no optimistic mutation)', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+    wishlistStub.has.mockReturnValue(false);
+    wishlistStub.toggle.mockReturnValue(
+      throwError(() => ({ error: { message: 'Could not save this item.' } })),
+    );
+    // Spy on the exact MatSnackBar instance the component holds (its
+    // standalone `MatSnackBarModule` import resolves its own instance —
+    // TestBed.inject(MatSnackBar) is not guaranteed to be reference-equal).
+    const componentSnackBar = getComponentSnackBar(component);
+    const openSpy = vi.spyOn(componentSnackBar, 'open');
+
+    expect(() => component.onWishlistToggle()).not.toThrow();
+
+    expect(openSpy).toHaveBeenCalledWith(
+      'Could not save this item.',
+      'Close',
+      expect.objectContaining({ panelClass: ['hb-info-snackbar'] }),
+    );
+    // wishlistStub.has still reflects the untouched signal-backed state.
+    expect(component.isWishlisted('p1')).toBe(false);
+  });
+
+  it('the add-success snackbar exposes a "View wishlist" action that navigates to /wishlist', () => {
+    authStub.isLoggedIn.mockReturnValue(true);
+    wishlistStub.has.mockReturnValue(false);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const componentSnackBar = getComponentSnackBar(component);
+    const snackBarRef = {
+      onAction: () => ({ subscribe: (cb: () => void) => cb() }),
+    };
+    const openSpy = vi
+      .spyOn(componentSnackBar, 'open')
+      .mockReturnValue(snackBarRef as unknown as ReturnType<MatSnackBar['open']>);
+
+    component.onWishlistToggle();
+
+    expect(openSpy).toHaveBeenCalledWith(
+      `Added '${HONEY.name}' to your wishlist.`,
+      'View wishlist',
+      expect.any(Object),
+    );
+    expect(navigateSpy).toHaveBeenCalledWith(['/wishlist']);
   });
 });

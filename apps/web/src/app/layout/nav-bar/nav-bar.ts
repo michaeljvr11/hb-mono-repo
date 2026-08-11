@@ -10,6 +10,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
+import { WishlistService } from '../../core/api/wishlist.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -21,6 +22,7 @@ export class NavBar {
   private readonly snackBar = inject(MatSnackBar);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
+  private readonly wishlistService = inject(WishlistService);
   private readonly router = inject(Router);
 
   // Raw signal from the auth observable — always starts null (safe for SSR).
@@ -53,6 +55,12 @@ export class NavBar {
       if (this.authService.isLoggedIn() && this.cartService.cart() === null) {
         this.cartService.load().subscribe({ error: () => undefined });
       }
+      // Prime the wishlist too — the nav-bar shows no badge itself (icon-only,
+      // by design), but this keeps the radial-nav's wishlist badge fed on any
+      // page where the nav-bar is present.
+      if (this.authService.isLoggedIn() && this.wishlistService.wishlist() === null) {
+        this.wishlistService.load().subscribe({ error: () => undefined });
+      }
     });
   }
 
@@ -72,6 +80,16 @@ export class NavBar {
   onCartClick(): void {
     if (this.isAuthenticated()) {
       void this.router.navigate(['/cart']);
+      return;
+    }
+    void this.router.navigate(['/login'], {
+      queryParams: { returnUrl: this.router.url },
+    });
+  }
+
+  onWishlistClick(): void {
+    if (this.isAuthenticated()) {
+      void this.router.navigate(['/wishlist']);
       return;
     }
     void this.router.navigate(['/login'], {

@@ -1,10 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { Router, provideRouter } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { vi } from 'vitest';
 import {
   AnalyticsEventType,
@@ -20,6 +21,7 @@ import { Shop, deriveCategoryCounts, CategoryWithCount } from './shop';
 import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
+import { WishlistService } from '../../core/api/wishlist.service';
 import { environment } from '../../../environments/environment';
 
 describe('Shop', () => {
@@ -32,6 +34,13 @@ describe('Shop', () => {
   };
   let analyticsStub: { track: ReturnType<typeof vi.fn> };
   let gaStub: { addToCart: ReturnType<typeof vi.fn> };
+  let wishlistStub: {
+    has: ReturnType<typeof vi.fn>;
+    toggle: ReturnType<typeof vi.fn>;
+    load: ReturnType<typeof vi.fn>;
+    wishlist: ReturnType<typeof signal<null>>;
+    itemCount: ReturnType<typeof signal<number>>;
+  };
 
   const categories: CategoryDto[] = [
     { id: 'c1', name: 'Agriculture', displayOrder: 0 },
@@ -80,6 +89,13 @@ describe('Shop', () => {
     };
     analyticsStub = { track: vi.fn() };
     gaStub = { addToCart: vi.fn() };
+    wishlistStub = {
+      has: vi.fn().mockReturnValue(false),
+      toggle: vi.fn(() => of({ items: [], itemCount: 0 })),
+      load: vi.fn(() => of({ items: [], itemCount: 0 })),
+      wishlist: signal(null),
+      itemCount: signal(0),
+    };
 
     await TestBed.configureTestingModule({
       imports: [Shop],
@@ -91,6 +107,7 @@ describe('Shop', () => {
         { provide: AuthService, useValue: authStub },
         { provide: AnalyticsService, useValue: analyticsStub },
         { provide: GoogleAnalyticsService, useValue: gaStub },
+        { provide: WishlistService, useValue: wishlistStub },
       ],
     }).compileComponents();
 
@@ -322,7 +339,66 @@ describe('Shop', () => {
     );
   });
 
-  it('shows a coming-soon notice for orders/wishlist radial nav items', () => {
+  // ── Wishlist toggle ─────────────────────────────────────────────────────
+
+  it('routes anonymous wishlist toggle to /login with the current returnUrl and never calls the API', () => {
+    flushLoads();
+    fixture.detectChanges();
+    authStub.isLoggedIn.mockReturnValue(false);
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onWishlistToggle(products[0]);
+
+    expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: router.url } });
+    expect(wishlistStub.toggle).not.toHaveBeenCalled();
+  });
+
+  it('authenticated wishlist toggle calls WishlistService.toggle with the product id', () => {
+    flushLoads();
+    fixture.detectChanges();
+    authStub.isLoggedIn.mockReturnValue(true);
+
+    component.onWishlistToggle(products[0]);
+
+    expect(wishlistStub.toggle).toHaveBeenCalledWith('p1');
+  });
+
+  it('shows an empty heart before the first render — the hydration gate starts closed (SSR/first-paint parity)', () => {
+    // WishlistService already reports membership, but the SSR-rendered
+    // markup and the client's pre-hydration DOM must still agree on an
+    // empty heart. `hydrated` only flips inside the `afterNextRender`
+    // callback registered in the constructor, which requires an actual
+    // render pass — so checking immediately after construction, before any
+    // `detectChanges()`, is the one place this can't have fired yet. If the
+    // gate were ever dropped (`isWishlisted` calling `has()` directly),
+    // this would read `true` here and fail.
+    wishlistStub.has.mockReturnValue(true);
+    flushLoads(); // satisfy the outer fixture's pending loads from beforeEach
+
+    const freshFixture = TestBed.createComponent(Shop);
+    const freshComponent = freshFixture.componentInstance;
+
+    expect(freshComponent.isWishlisted('p1')).toBe(false);
+
+    freshFixture.detectChanges();
+    flushLoads();
+  });
+
+  it('reflects real wishlist membership once hydrated', () => {
+    wishlistStub.has.mockReturnValue(true);
+    flushLoads();
+
+    const freshFixture = TestBed.createComponent(Shop);
+    const freshComponent = freshFixture.componentInstance;
+    freshFixture.detectChanges();
+
+    expect(freshComponent.isWishlisted('p1')).toBe(true);
+
+    flushLoads();
+  });
+
+  it('shows a coming-soon notice for the orders radial nav item', () => {
     flushLoads();
     fixture.detectChanges();
     const snackBar = fixture.debugElement.injector.get(MatSnackBar);
@@ -331,13 +407,6 @@ describe('Shop', () => {
     component.onRadialNavSelect('orders');
     expect(openSpy).toHaveBeenCalledWith(
       expect.stringContaining('My Orders'),
-      expect.anything(),
-      expect.anything(),
-    );
-
-    component.onRadialNavSelect('wishlist');
-    expect(openSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Wishlist'),
       expect.anything(),
       expect.anything(),
     );

@@ -1,0 +1,224 @@
+.wishlist {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  min-height: 60vh;
+
+  @media (min-width: 768px) {
+    padding: 32px 40px 80px;
+  }
+}
+
+.wishlist__title {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 36px;
+  color: var(--hb-on-surface);
+  margin: 0 0 24px;
+
+  @media (min-width: 768px) {
+    font-size: 32px;
+    line-height: 40px;
+    letter-spacing: -0.01em;
+  }
+}
+
+.wishlist__hint {
+  font-size: 16px;
+  color: var(--hb-on-surface-variant);
+
+  &--error {
+    color: var(--hb-error);
+  }
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+
+.wishlist__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 64px 16px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  background: var(--hb-surface-container-low);
+}
+
+.wishlist__empty-icon {
+  font-size: 48px;
+  color: var(--hb-outline);
+}
+
+.wishlist__empty-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--hb-on-surface);
+}
+
+.wishlist__empty-text {
+  font-size: 16px;
+  color: var(--hb-on-surface-variant);
+  margin: 0 0 16px;
+}
+
+.wishlist__empty-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  border-radius: 8px;
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--hb-primary-container);
+  }
+}
+
+/* ── Items ───────────────────────────────────────────────────────────────── */
+
+.wishlist__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--hb-surface-container-lowest);
+}
+
+.wishlist__item {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  align-items: flex-start;
+
+  & + & {
+    border-top: 1px solid var(--hb-outline-variant);
+  }
+
+  &--busy {
+    opacity: 0.6;
+  }
+}
+
+.wishlist__item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--hb-outline-variant);
+  flex-shrink: 0;
+
+  &--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--hb-outline);
+    background: var(--hb-surface-container-low);
+  }
+}
+
+.wishlist__item-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.wishlist__item-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--hb-on-surface);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--hb-primary);
+  }
+}
+
+.wishlist__item-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--hb-primary);
+}
+
+.wishlist__item-badge {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hb-error);
+  background: color-mix(in srgb, var(--hb-error) 12%, transparent);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.wishlist__item-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.wishlist__add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--hb-primary-container);
+  }
+
+  &:disabled {
+    background: var(--hb-outline-variant);
+    color: var(--hb-on-surface-variant);
+    cursor: not-allowed;
+  }
+}
+
+.wishlist__remove-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--hb-error);
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--hb-surface-container-low);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

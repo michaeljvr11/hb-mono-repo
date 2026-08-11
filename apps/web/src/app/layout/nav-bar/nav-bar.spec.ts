@@ -9,6 +9,7 @@ import { AuthUser, CartDto, UserDto, UserRole } from '@hb/shared';
 import { NavBar } from './nav-bar';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
+import { WishlistService } from '../../core/api/wishlist.service';
 
 describe('NavBar', () => {
   let component: NavBar;
@@ -24,6 +25,11 @@ describe('NavBar', () => {
   let cartStub: {
     cart: ReturnType<typeof signal<CartDto | null>>;
     itemCount: ReturnType<typeof signal<number>>;
+    load: ReturnType<typeof vi.fn>;
+  };
+  let wishlistSignal: ReturnType<typeof signal<null>>;
+  let wishlistStub: {
+    wishlist: ReturnType<typeof signal<null>>;
     load: ReturnType<typeof vi.fn>;
   };
 
@@ -57,6 +63,11 @@ describe('NavBar', () => {
       itemCount: countSignal,
       load: vi.fn(() => of({ id: 'c1', items: [], totals: [], itemCount: 0, updatedAt: '' })),
     };
+    wishlistSignal = signal(null);
+    wishlistStub = {
+      wishlist: wishlistSignal,
+      load: vi.fn(() => of({ items: [], itemCount: 0 })),
+    };
 
     await TestBed.configureTestingModule({
       imports: [NavBar],
@@ -65,6 +76,7 @@ describe('NavBar', () => {
         provideRouter([]),
         { provide: AuthService, useValue: authStub },
         { provide: CartService, useValue: cartStub },
+        { provide: WishlistService, useValue: wishlistStub },
       ],
     }).compileComponents();
 
@@ -200,6 +212,57 @@ describe('NavBar', () => {
     await signedInFixture.whenStable();
 
     expect(cartStub.load).toHaveBeenCalledTimes(1);
+  });
+
+  it('primes the wishlist state for signed-in users on first client render', async () => {
+    // Same afterNextRender block as the cart priming above.
+    authStub.isLoggedIn.mockReturnValue(true);
+    const signedInFixture = TestBed.createComponent(NavBar);
+    signedInFixture.detectChanges();
+    await signedInFixture.whenStable();
+
+    expect(wishlistStub.load).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not prime the wishlist for anonymous users', async () => {
+    authStub.isLoggedIn.mockReturnValue(false);
+    const anonFixture = TestBed.createComponent(NavBar);
+    anonFixture.detectChanges();
+    await anonFixture.whenStable();
+
+    expect(wishlistStub.load).not.toHaveBeenCalled();
+  });
+
+  // ── Wishlist icon button ────────────────────────────────────────────────
+
+  it('renders no wishlist count badge — icon-only by design (diverges from the cart badge)', async () => {
+    await hydrate();
+    expect(fixture.nativeElement.querySelector('.nav-bar__wishlist-btn')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.nav-bar__wishlist-badge')).toBeNull();
+  });
+
+  it('routes an anonymous wishlist click to /login with the current returnUrl', async () => {
+    await hydrate();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const wishlistBtn = fixture.nativeElement.querySelector('.nav-bar__wishlist-btn') as HTMLButtonElement;
+    wishlistBtn.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/login'], {
+      queryParams: { returnUrl: router.url },
+    });
+  });
+
+  it('navigates to /wishlist on wishlist click when authenticated', async () => {
+    userSubject.next(jane);
+    await hydrate();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onWishlistClick();
+
+    expect(navigate).toHaveBeenCalledWith(['/wishlist']);
   });
 
   it('navigates to /discover when the search icon is clicked', async () => {

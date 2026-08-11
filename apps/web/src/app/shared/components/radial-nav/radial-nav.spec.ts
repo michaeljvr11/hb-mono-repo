@@ -69,16 +69,17 @@ describe('RadialNav', () => {
     expect(component.open()).toBe(false);
   });
 
-  it('renders Home, Search, and Profile as routerLinks to /shop, /discover, and /profile', async () => {
+  it('renders Home, Search, Profile, and Wishlist as routerLinks to /shop, /discover, /profile, and /wishlist', async () => {
     await setup();
     const links = fixture.nativeElement.querySelectorAll('a.radial-nav__item');
     const hrefs = Array.from(links).map((a) => (a as HTMLAnchorElement).getAttribute('href'));
     expect(hrefs).toContain('/shop');
     expect(hrefs).toContain('/discover');
     expect(hrefs).toContain('/profile');
+    expect(hrefs).toContain('/wishlist');
   });
 
-  it('emits itemSelected for non-routed items (orders/cart/wishlist) and collapses', async () => {
+  it('emits itemSelected for non-routed items (orders/cart) and collapses', async () => {
     await setup();
     const spy = vi.fn();
     component.itemSelected.subscribe(spy);
@@ -95,6 +96,52 @@ describe('RadialNav', () => {
 
     expect(spy).toHaveBeenCalledWith('cart');
     expect(component.open()).toBe(false);
+  });
+
+  it('does not emit itemSelected for the wishlist item — it navigates via routerLink instead', async () => {
+    // Exercised via selectItem() directly rather than a real anchor click:
+    // clicking a routerLink anchor triggers async navigation that can outlive
+    // the test's TestBed teardown (NG0205 in an unrelated later test).
+    await setup();
+    const spy = vi.fn();
+    component.itemSelected.subscribe(spy);
+
+    const wishlistItem = component.positionedItems().find((item) => item.id === 'wishlist');
+    expect(wishlistItem?.routerLink).toBe('/wishlist');
+
+    component.selectItem(wishlistItem!);
+
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  // ── Wishlist badge ───────────────────────────────────────────────────────
+
+  it('renders the wishlist badge when wishlistCount > 0', async () => {
+    await setup();
+    fixture.componentRef.setInput('wishlistCount', 3);
+    fixture.detectChanges();
+
+    const links = fixture.nativeElement.querySelectorAll('a.radial-nav__item');
+    const wishlistLink = Array.from(links).find(
+      (a) => (a as HTMLElement).getAttribute('aria-label') === 'Wishlist',
+    ) as HTMLElement;
+
+    const badge = wishlistLink.querySelector('.radial-nav__badge');
+    expect(badge).toBeTruthy();
+    expect(badge?.textContent?.trim()).toBe('3');
+  });
+
+  it('hides the wishlist badge when wishlistCount is 0', async () => {
+    await setup();
+    fixture.componentRef.setInput('wishlistCount', 0);
+    fixture.detectChanges();
+
+    const links = fixture.nativeElement.querySelectorAll('a.radial-nav__item');
+    const wishlistLink = Array.from(links).find(
+      (a) => (a as HTMLElement).getAttribute('aria-label') === 'Wishlist',
+    ) as HTMLElement;
+
+    expect(wishlistLink.querySelector('.radial-nav__badge')).toBeNull();
   });
 
   it('marks the active item per the active input', async () => {

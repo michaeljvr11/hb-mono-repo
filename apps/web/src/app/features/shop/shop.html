@@ -82,7 +82,9 @@
             role="listitem"
             variant="carousel"
             [product]="product"
+            [wishlisted]="isWishlisted(product.id)"
             (addToCart)="onAddToCart($event)"
+            (wishlistToggle)="onWishlistToggle($event)"
           />
         }
       </div>
@@ -195,4 +197,4 @@
 <app-footer />
 
 <!-- ── Mobile-only: radial nav ─────────────────────────────────────────── -->
-<app-radial-nav active="home" [cartCount]="cartCount()" (itemSelected)="onRadialNavSelect($event)" />
+<app-radial-nav active="home" [cartCount]="cartCount()" [wishlistCount]="wishlistCount()" (itemSelected)="onRadialNavSelect($event)" />

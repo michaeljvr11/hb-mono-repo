@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, afterNextRender, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -16,6 +16,7 @@ import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { ProductsService } from '../../core/api/products.service';
 import { CartService } from '../../core/api/cart.service';
+import { WishlistService } from '../../core/api/wishlist.service';
 import { CategoriesService } from '../../core/api/categories.service';
 import { VendorsService } from '../../core/api/vendors.service';
 import { SearchService } from '../../core/api/search.service';
@@ -64,12 +65,26 @@ export class Discover {
   private readonly searchService = inject(SearchService);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
+  private readonly wishlistService = inject(WishlistService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly gaService = inject(GoogleAnalyticsService);
   private readonly snackBar = inject(MatSnackBar);
 
   /** Real cart count for the radial-nav badge. */
   readonly cartCount = this.cartService.itemCount;
+
+  // Hydration gate: server render and first client render must both show
+  // empty hearts (no anonymous-vs-signed-in DOM mismatch) — see nav-bar.ts.
+  private readonly hydrated = signal(false);
+
+  /** True once hydrated and the product is on the signed-in user's wishlist. */
+  readonly isWishlisted = (productId: string): boolean =>
+    this.hydrated() && this.wishlistService.has(productId);
+
+  /** Real wishlist count for the radial-nav badge — 0 until hydrated, same gate as isWishlisted. */
+  readonly wishlistCount = computed(() =>
+    this.hydrated() ? this.wishlistService.itemCount() : 0,
+  );
 
   // ── URL-driven params (single source of truth) ─────────────────────────
   private readonly paramMap = toSignal<ParamMap | null>(this.route.queryParamMap, {
@@ -129,6 +144,15 @@ export class Discover {
   readonly suggestLoading = signal(false);
 
   constructor() {
+    afterNextRender(() => {
+      this.hydrated.set(true);
+      // Prime the wishlist once per page load for signed-in users; toggles
+      // elsewhere keep the shared WishlistService signal fresh.
+      if (this.authService.isLoggedIn() && this.wishlistService.wishlist() === null) {
+        this.wishlistService.load().subscribe({ error: () => undefined });
+      }
+    });
+
     this.categoriesService.list().subscribe({
       next: (list) => this.categories.set(list),
       error: () => this.categories.set([]),
@@ -304,6 +328,28 @@ export class Discover {
             verticalPosition: 'top',
           },
         );
+      },
+    });
+  }
+
+  onWishlistToggle(product: ProductDto): void {
+    if (!this.authService.isLoggedIn()) {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url },
+      });
+      return;
+    }
+    // No optimistic mutation — the heart only reflects a successful server
+    // response (via WishlistService's signal), so a failure can never leave
+    // it lying about the real state.
+    this.wishlistService.toggle(product.id).subscribe({
+      error: (err: { error?: { message?: string } }) => {
+        this.snackBar.open(err?.error?.message ?? 'Could not update your wishlist.', 'Close', {
+          duration: 4000,
+          horizontalPosition: 'end',
+          panelClass: ['hb-info-snackbar'],
+          verticalPosition: 'top',
+        });
       },
     });
   }

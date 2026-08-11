@@ -21,8 +21,10 @@ export type ProductCardVariant = 'grid' | 'carousel';
 export class ProductCard {
   readonly product = input.required<ProductDto>();
   readonly variant = input<ProductCardVariant>('grid');
+  readonly wishlisted = input(false);
 
   readonly addToCart = output<ProductDto>();
+  readonly wishlistToggle = output<ProductDto>();
 
   readonly primaryImage = computed(() => {
     const images = this.product().images;
@@ -49,5 +51,12 @@ export class ProductCard {
     event.stopPropagation();
     event.preventDefault();
     this.addToCart.emit(this.product());
+  }
+
+  onWishlistToggle(event: Event): void {
+    // Prevent the click from bubbling into the card's own routerLink navigation.
+    event.stopPropagation();
+    event.preventDefault();
+    this.wishlistToggle.emit(this.product());
   }
 }

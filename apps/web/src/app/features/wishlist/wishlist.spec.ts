@@ -1,0 +1,167 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { AuthUser, CurrencyCode, WishlistDto } from '@hb/shared';
+
+import { Wishlist } from './wishlist';
+import { AuthService } from '../../core/auth/auth.service';
+import { CartService } from '../../core/api/cart.service';
+import { environment } from '../../../environments/environment';
+
+const WISHLIST: WishlistDto = {
+  items: [
+    {
+      id: 'wi-1',
+      productId: 'p1',
+      productName: 'Fynbos Honey',
+      price: 185,
+      currency: CurrencyCode.ZAR,
+      stockQuantity: 3,
+      imageUrl: 'https://example.com/honey.jpg',
+      addedAt: '2026-07-07T09:00:00.000Z',
+    },
+    {
+      id: 'wi-2',
+      productId: 'p2',
+      productName: 'Namib Salt',
+      price: 19.99,
+      currency: CurrencyCode.NAD,
+      stockQuantity: 0,
+      addedAt: '2026-07-07T09:05:00.000Z',
+    },
+  ],
+  itemCount: 2,
+};
+
+const EMPTY: WishlistDto = { items: [], itemCount: 0 };
+
+describe('Wishlist page', () => {
+  let fixture: ComponentFixture<Wishlist>;
+  let component: Wishlist;
+  let httpMock: HttpTestingController;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [Wishlist],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideNoopAnimations(),
+        provideRouter([]),
+        {
+          provide: AuthService,
+          useValue: {
+            // false so the embedded NavBar does not also prime the cart —
+            // this suite pins the page's own single GET /wishlist.
+            isLoggedIn: vi.fn(() => false),
+            currentUser$: new BehaviorSubject<AuthUser | null>(null),
+          },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(Wishlist);
+    component = fixture.componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+    fixture.detectChanges(); // triggers ngOnInit → GET /wishlist
+  });
+
+  afterEach(() => {
+    httpMock.verify();
+  });
+
+  function flushWishlist(wishlist: WishlistDto = WISHLIST): void {
+    httpMock.expectOne(`${environment.apiBaseUrl}/wishlist`).flush(wishlist);
+    fixture.detectChanges();
+  }
+
+  it('shows the loading hint before the wishlist resolves', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Loading your wishlist');
+
+    flushWishlist();
+  });
+
+  it('renders items with live per-item prices, never conflating ZAR and NAD', () => {
+    flushWishlist();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Fynbos Honey');
+    expect(el.textContent).toContain('Namib Salt');
+    expect(el.textContent).toMatch(/R\s?185[.,]00/); // ZAR item price
+    expect(el.textContent).toMatch(/N\$\s?19[.,]99/); // NAD item price
+  });
+
+  it('shows the empty state with a browse CTA when the wishlist has no items', () => {
+    flushWishlist(EMPTY);
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Your wishlist is empty');
+    expect(el.querySelector('a.wishlist__empty-cta')?.getAttribute('href')).toBe('/shop');
+  });
+
+  it('shows an error hint when the load fails', () => {
+    httpMock.expectOne(`${environment.apiBaseUrl}/wishlist`).flush(
+      { message: 'boom' },
+      { status: 500, statusText: 'Server Error' },
+    );
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Could not load your wishlist');
+  });
+
+  it('removes an item via DELETE and re-renders from the server response (no local splice)', () => {
+    flushWishlist();
+
+    component.remove(WISHLIST.items[0]);
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/wishlist/items/p1`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush({ items: [WISHLIST.items[1]], itemCount: 1 });
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).not.toContain('Fynbos Honey');
+    expect(el.textContent).toContain('Namib Salt');
+  });
+
+  it('shows an out-of-stock badge and disables add-to-cart for a zero-stock item', () => {
+    flushWishlist();
+
+    const rows = fixture.nativeElement.querySelectorAll('.wishlist__item');
+    const outOfStockRow = rows[1] as HTMLElement;
+    expect(outOfStockRow.textContent).toContain('Out of stock');
+
+    const addBtn = outOfStockRow.querySelector('.wishlist__add-btn') as HTMLButtonElement;
+    expect(addBtn.disabled).toBe(true);
+  });
+
+  it('adds an in-stock item to the cart via CartService', () => {
+    flushWishlist();
+    const cartService = TestBed.inject(CartService);
+    const addItem = vi.spyOn(cartService, 'addItem');
+
+    component.addToCart(WISHLIST.items[0]);
+
+    expect(addItem).toHaveBeenCalledWith('p1');
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/cart/items`);
+    expect(req.request.method).toBe('POST');
+    req.flush({ id: 'cart-1', items: [], totals: [], itemCount: 1, updatedAt: '' });
+  });
+
+  it('does not add an out-of-stock item to the cart', () => {
+    flushWishlist();
+    const cartService = TestBed.inject(CartService);
+    const addItem = vi.spyOn(cartService, 'addItem');
+
+    component.addToCart(WISHLIST.items[1]);
+
+    expect(addItem).not.toHaveBeenCalled();
+    httpMock.expectNone(`${environment.apiBaseUrl}/cart/items`);
+  });
+});

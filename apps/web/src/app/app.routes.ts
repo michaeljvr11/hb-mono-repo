@@ -68,6 +68,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/checkout/checkout').then(m => m.Checkout)
   },
+  // Wishlist — any authenticated role (no roleGuard), same auth boundary as cart.
+  {
+    path: 'wishlist',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/wishlist/wishlist').then(m => m.Wishlist)
+  },
 
   // Vendor onboarding — auth-only (no roleGuard); must be before the role-gated 'vendor' block
   {

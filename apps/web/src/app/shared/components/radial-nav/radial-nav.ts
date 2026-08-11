@@ -52,6 +52,9 @@ export class RadialNav {
   /** Real cart item count — shows a badge on the cart item when > 0. */
   readonly cartCount = input(0);
 
+  /** Real wishlist item count — shows a badge on the wishlist item when > 0. */
+  readonly wishlistCount = input(0);
+
   readonly itemSelected = output<RadialNavItemId>();
 
   readonly open = signal(false);
@@ -63,7 +66,7 @@ export class RadialNav {
     { id: 'orders', icon: 'receipt_long', label: 'My Orders' },
     { id: 'profile', icon: 'person', label: 'Profile', routerLink: '/profile' },
     { id: 'cart', icon: 'shopping_cart', label: 'Cart' },
-    { id: 'wishlist', icon: 'favorite', label: 'Wishlist' },
+    { id: 'wishlist', icon: 'favorite', label: 'Wishlist', routerLink: '/wishlist' },
   ];
 
   /** Angles per ring size, matching the original's ANG lookup table. */

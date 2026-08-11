@@ -134,7 +134,13 @@
         <h2 class="pdp__section-title">You May Also Like</h2>
         <div class="pdp__related-grid">
           @for (related of relatedProducts(); track related.id) {
-            <app-product-card [product]="related" variant="grid" (addToCart)="onRelatedAddToCart($event)" />
+            <app-product-card
+              [product]="related"
+              variant="grid"
+              [wishlisted]="isWishlisted(related.id)"
+              (addToCart)="onRelatedAddToCart($event)"
+              (wishlistToggle)="onRelatedWishlistToggle($event)"
+            />
           }
         </div>
       </section>
@@ -142,6 +148,17 @@
 
     <!-- â”€â”€ Sticky add-to-cart bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <div class="pdp__sticky-bar">
+      <button
+        type="button"
+        class="pdp__wishlist-btn"
+        [class.pdp__wishlist-btn--active]="isWishlisted(product.id)"
+        [attr.aria-pressed]="isWishlisted(product.id)"
+        [attr.aria-label]="isWishlisted(product.id) ? 'Saved' : 'Save to wishlist'"
+        (click)="onWishlistToggle()"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+        <span class="pdp__wishlist-btn-label">{{ isWishlisted(product.id) ? 'Saved' : 'Save to wishlist' }}</span>
+      </button>
       <button type="button" class="pdp__add-to-cart-btn" (click)="onAddToCart()">
         <span class="material-symbols-outlined" aria-hidden="true">add_shopping_cart</span>
         Add to Cart - {{ priceLabel() }}
@@ -153,4 +170,4 @@
 
 <app-footer />
 
-<app-radial-nav active="search" [cartCount]="cartCount()" />
+<app-radial-nav active="search" [cartCount]="cartCount()" [wishlistCount]="wishlistCount()" />

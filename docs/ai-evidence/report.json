@@ -1,45 +1,45 @@
 {
-  "generatedAt": "2026-08-10T15:23:22.852Z",
+  "generatedAt": "2026-08-10T21:11:02.235Z",
   "git": {
-    "totalCommits": 180,
-    "aiCommits": 169,
+    "totalCommits": 193,
+    "aiCommits": 182,
     "aiPct": 94,
-    "appCommits": 122,
-    "ins": 77390,
-    "del": 6934,
-    "net": 70456,
-    "aiIns": 63876,
-    "aiDel": 6760,
-    "filesTouched": 611,
+    "appCommits": 132,
+    "ins": 82182,
+    "del": 7270,
+    "net": 74912,
+    "aiIns": 68668,
+    "aiDel": 7096,
+    "filesTouched": 637,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 71,
-        "ins": 37944,
-        "del": 1748
+        "commits": 80,
+        "ins": 40852,
+        "del": 1807
       },
       {
         "name": "API (NestJS)",
-        "commits": 67,
-        "ins": 21146,
-        "del": 938
+        "commits": 71,
+        "ins": 22410,
+        "del": 942
       },
       {
         "name": "Docs",
-        "commits": 55,
-        "ins": 14146,
-        "del": 4106
+        "commits": 58,
+        "ins": 14629,
+        "del": 4379
       },
       {
         "name": "AI Factory config",
-        "commits": 60,
-        "ins": 1988,
+        "commits": 63,
+        "ins": 2018,
         "del": 104
       },
       {
         "name": "Shared contracts",
-        "commits": 26,
-        "ins": 1184,
+        "commits": 28,
+        "ins": 1291,
         "del": 14
       },
       {
@@ -59,63 +59,63 @@
     "lastDate": "2026-08-10",
     "recent": [
       {
-        "hash": "8bb3f83",
-        "subject": "fix(earnings): address code review — validator drift, test mock, SSR hydration",
+        "hash": "cdc015b",
+        "subject": "fix(web): clear cart state on logout so the nav badge does not leak",
         "ai": true
       },
       {
-        "hash": "3623356",
-        "subject": "feat(web): admin cross-vendor earnings report UI",
+        "hash": "433d80c",
+        "subject": "chore(evidence): recompile AI-authorship report for the wishlist batch",
         "ai": true
       },
       {
-        "hash": "5977836",
-        "subject": "feat(api): admin cross-vendor earnings report (VE-4)",
+        "hash": "be481c8",
+        "subject": "test: close hydration-gate and unique-violation coverage gaps",
         "ai": true
       },
       {
-        "hash": "90de6cb",
-        "subject": "tightened ship-card methodology",
-        "ai": false
-      },
-      {
-        "hash": "5155b2f",
-        "subject": "index on fix/profile-icon-nav-link: a408383 fix(web): wire the profile icon to /profile in both nav components",
-        "ai": false
-      },
-      {
-        "hash": "a408383",
-        "subject": "fix(web): wire the profile icon to /profile in both nav components",
+        "hash": "0e8c0ed",
+        "subject": "feat(web): wishlist nav entry + badge, removing the coming-soon stub (WL-5)",
         "ai": true
       },
       {
-        "hash": "2f4ca90",
-        "subject": "chore(evidence): recompile AI-factory evidence report",
+        "hash": "1d349e5",
+        "subject": "feat(web): \"Save to wishlist\" action on the product-detail page (WL-3)",
         "ai": true
       },
       {
-        "hash": "f980849",
-        "subject": "feat(api): payout-eligibility data model + net vendor earnings engine (VE-3)",
+        "hash": "9682e6e",
+        "subject": "feat(web): /wishlist list-view page + route (WL-4)",
         "ai": true
       },
       {
-        "hash": "7b44cda",
-        "subject": "chore(evidence): recompile AI-factory evidence report",
+        "hash": "4364852",
+        "subject": "feat(web): WishlistService + heart toggle across storefront surfaces (WL-2)",
         "ai": true
       },
       {
-        "hash": "95a7c9a",
-        "subject": "fix(web): close review findings on commission-rate screen (VE-2)",
+        "hash": "e81840f",
+        "subject": "feat(api): wishlist data model + API (WL-1)",
         "ai": true
       },
       {
-        "hash": "b5adf98",
-        "subject": "feat(web): admin commission-rate management screen (VE-2)",
+        "hash": "1095fe5",
+        "subject": "fix(earnings): address code review — settlement-bounds coverage, exclusive periodEnd rendering",
         "ai": true
       },
       {
-        "hash": "4d72652",
-        "subject": "chore(evidence): recompile AI-factory evidence report",
+        "hash": "5ee25c5",
+        "subject": "feat(web): vendor own-earnings report screen (VE-5 frontend)",
+        "ai": true
+      },
+      {
+        "hash": "7406b7a",
+        "subject": "feat(api): vendor own-earnings report (VE-5 backend)",
+        "ai": true
+      },
+      {
+        "hash": "55beb2a",
+        "subject": "chore(evidence): log PR-open guardrail event",
         "ai": true
       }
     ]
@@ -185,6 +185,11 @@
       "branch": "feat/WIZ4pJtk-admin-commission-rate-screen",
       "cardId": "WIZ4pJtk",
       "slug": "admin-commission-rate-screen"
+    },
+    {
+      "branch": "feat/WrPOgQDa-vendor-own-earnings",
+      "cardId": "WrPOgQDa",
+      "slug": "vendor-own-earnings"
     },
     {
       "branch": "feat/Z1ADCLQm-admin-portal-shell",
@@ -257,6 +262,11 @@
       "slug": "product-pagination-sort"
     },
     {
+      "branch": "feat/rtBV85cQ-product-wishlist",
+      "cardId": "rtBV85cQ",
+      "slug": "product-wishlist"
+    },
+    {
       "branch": "feat/sKd1xhQl-vendor-orders-fulfilment",
       "cardId": "sKd1xhQl",
       "slug": "vendor-orders-fulfilment"
@@ -318,12 +328,12 @@
     }
   ],
   "tests": {
-    "total": 99,
-    "api": 41,
-    "web": 58
+    "total": 105,
+    "api": 43,
+    "web": 62
   },
   "design": {
-    "files": 31,
+    "files": 33,
     "screens": [
       "checkout",
       "claude-design",
@@ -333,30 +343,31 @@
       "register",
       "storefront",
       "vendor-dashboard",
-      "vendor-profile"
+      "vendor-profile",
+      "wishlist"
     ]
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 20,
+    "prodBlocks": 21,
     "blockReasons": {
-      "push names a protected branch": 16,
+      "push names a protected branch": 17,
       "force push": 1,
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 31,
+    "gatePass": 34,
     "gateFail": 2,
-    "edits": 481,
-    "editsUnfixable": 170,
+    "edits": 493,
+    "editsUnfixable": 173,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-10T15:16:57.153Z",
+    "lastTs": "2026-08-10T21:10:48.179Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 24,
+          "invocations": 26,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -365,15 +376,6 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 13,
-          "inputTokens": 0,
-          "outputTokens": 0,
-          "cacheReadTokens": 0,
-          "cacheCreationTokens": 0,
-          "totalTokens": 0
-        },
-        {
-          "agentType": "frontend-engineer",
           "invocations": 14,
           "inputTokens": 0,
           "outputTokens": 0,
@@ -382,8 +384,17 @@
           "totalTokens": 0
         },
         {
+          "agentType": "frontend-engineer",
+          "invocations": 18,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cacheReadTokens": 0,
+          "cacheCreationTokens": 0,
+          "totalTokens": 0
+        },
+        {
           "agentType": "test-engineer",
-          "invocations": 6,
+          "invocations": 7,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -392,7 +403,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 17,
+          "invocations": 18,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -410,7 +421,7 @@
         },
         {
           "agentType": "docs-writer",
-          "invocations": 11,
+          "invocations": 12,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -446,56 +457,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-07-30T18:43:02.431Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-30T18:46:01.608Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-07-30T18:46:30.063Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-03T17:12:43.699Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-03T17:18:48.533Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-03T17:27:07.037Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-03T19:28:20.280Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-03T19:30:53.809Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-03T19:35:59.745Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-03T20:11:32.828Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-03T20:19:49.329Z",
           "agentType": "code-reviewer",
@@ -545,6 +506,56 @@
           "ts": "2026-08-10T15:12:22.979Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T20:01:25.346Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T20:13:30.255Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T20:19:32.197Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T20:24:59.644Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T20:35:45.180Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T20:54:49.949Z",
+          "agentType": "test-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T20:59:49.012Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T21:02:40.573Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T21:07:03.442Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T21:10:48.179Z",
+          "agentType": "unknown",
+          "totalTokens": 0
         }
       ]
     }
@@ -552,6 +563,27 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/rtBV85cQ-product-wishlist",
+      "number": 49,
+      "state": "OPEN",
+      "title": "Product Wishlist (WL-1…WL-5): data model, API, storefront hearts, /wishlist page, nav entry",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/49"
+    },
+    {
+      "headRefName": "feat/WrPOgQDa-vendor-own-earnings",
+      "number": 48,
+      "state": "MERGED",
+      "title": "VE-5: Vendor own-earnings report — GET /vendors/me/earnings + vendor portal screen",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/48"
+    },
+    {
+      "headRefName": "feat/1DAb9a1I-admin-earnings-report",
+      "number": 47,
+      "state": "MERGED",
+      "title": "feat(api,web): admin cross-vendor earnings report (VE-4)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/47"
+    },
     {
       "headRefName": "fix/profile-icon-nav-link",
       "number": 46,
@@ -882,19 +914,19 @@
     },
     {
       "name": "To Do",
-      "cards": 11
+      "cards": 5
     },
     {
       "name": "In Progress",
-      "cards": 1
-    },
-    {
-      "name": "In Review",
       "cards": 0
     },
     {
+      "name": "In Review",
+      "cards": 5
+    },
+    {
       "name": "Done",
-      "cards": 56
+      "cards": 58
     },
     {
       "name": "Fable Documentation",
