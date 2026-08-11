@@ -125,15 +125,7 @@ export class Discover {
   // ── Vendor filter chip (resolved name for the active vendorId) ─────────
   readonly activeVendor = signal<VendorDto | null>(null);
 
-  // ── SME toggle (client-side composition on top of server results) ──────
-  readonly smeOnly = signal(true);
-
-  readonly filteredProducts = computed(() => {
-    const products = this.products();
-    return this.smeOnly() ? products.filter((p) => !!p.vendor) : products;
-  });
-
-  readonly resultCount = computed(() => this.filteredProducts().length);
+  readonly resultCount = computed(() => this.products().length);
 
   readonly hasActiveFilters = computed(
     () => !!this.q() || !!this.categoryId() || !!this.vendorId(),
@@ -219,10 +211,6 @@ export class Discover {
 
   onCategorySelect(categoryId: string | null): void {
     this.navigateMerge({ categoryId, page: null });
-  }
-
-  onSmeToggle(checked: boolean): void {
-    this.smeOnly.set(checked);
   }
 
   dismissVendorFilter(): void {

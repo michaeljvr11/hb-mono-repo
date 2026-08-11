@@ -65,16 +65,6 @@ describe('ProductCard', () => {
     expect(el.querySelector('.product-card__placeholder')).toBeTruthy();
   });
 
-  it('shows the SME Verified badge when the product has a vendor', async () => {
-    await setup();
-    expect(fixture.nativeElement.querySelector('.product-card__badge')).toBeTruthy();
-  });
-
-  it('hides the badge when the product has no vendor', async () => {
-    await setup({ ...baseProduct, vendor: undefined });
-    expect(fixture.nativeElement.querySelector('.product-card__badge')).toBeNull();
-  });
-
   it('applies the carousel modifier class for the carousel variant', async () => {
     await setup();
     fixture.componentRef.setInput('variant', 'carousel');

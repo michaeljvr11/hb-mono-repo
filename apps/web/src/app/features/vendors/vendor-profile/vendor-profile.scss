@@ -75,26 +75,6 @@
   color: var(--hb-on-surface-variant);
 }
 
-.vendor-profile__hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  background: var(--hb-sme-badge-bg);
-  border: 1px solid color-mix(in srgb, var(--hb-primary) 10%, transparent);
-  color: var(--hb-primary);
-
-  .material-symbols-outlined {
-    font-size: 16px;
-  }
-
-  span:last-child {
-    font-size: 14px;
-    font-weight: 600;
-  }
-}
-
 .vendor-profile__name {
   margin: 0;
   font-size: 28px;

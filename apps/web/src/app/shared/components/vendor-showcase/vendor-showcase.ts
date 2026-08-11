@@ -41,8 +41,4 @@ export class VendorShowcase {
   countryLabel(countryCode: string): string {
     return countryCode === 'ZA' ? 'South Africa' : countryCode === 'NA' ? 'Namibia' : countryCode;
   }
-
-  isVerified(vendor: VendorDto): boolean {
-    return vendor.status === 'approved';
-  }
 }

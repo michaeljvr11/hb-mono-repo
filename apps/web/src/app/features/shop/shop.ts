@@ -164,10 +164,6 @@ export class Shop implements OnInit {
     void this.router.navigate(['/discover']);
   }
 
-  onHeroSmeVerification(): void {
-    this.notifyComingSoon('SME Verification');
-  }
-
   onNewsletterJoin(): void {
     this.notifyComingSoon('Newsletter');
   }

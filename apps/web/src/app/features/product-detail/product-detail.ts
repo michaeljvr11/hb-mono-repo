@@ -101,8 +101,6 @@ export class ProductDetail {
     return formatPrice(p.price, p.currency);
   });
 
-  readonly isVendorListing = computed(() => !!this.product()?.vendor);
-
   readonly vendorInitials = computed(() => {
     const name = this.product()?.vendor?.businessName;
     if (!name) return '';
