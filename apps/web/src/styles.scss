@@ -340,21 +340,29 @@ body {
   color: var(--hb-error);
 }
 
-/* Snackbar themes (rendered at the overlay root, so they must be global) */
+/* Snackbar themes (rendered at the overlay root, so they must be global).
+   The names must be the `--mat-snack-bar-*` tokens Angular Material actually reads
+   (see `.mat-mdc-snack-bar-container .mat-mdc-snackbar-surface` in the snack-bar
+   component styles). These were `--mdc-snackbar-container-color` /
+   `--mdc-snackbar-supporting-text-color`, which Material no longer consumes, so the
+   surface fell through to `var(--mat-sys-inverse-surface)` — undefined, since the app
+   loads no Material theme — and rendered fully transparent with inherited dark body
+   text. Only the button token was already correct, which is why the action label was
+   the one part that picked up its colour. */
 .hb-success-snackbar {
-  --mdc-snackbar-container-color: #015300;
-  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mat-snack-bar-container-color: #015300;
+  --mat-snack-bar-supporting-text-color: #ffffff;
   --mat-snack-bar-button-color: #98f982;
 }
 
 .hb-info-snackbar {
-  --mdc-snackbar-container-color: #313030;
-  --mdc-snackbar-supporting-text-color: #f3f0ef;
+  --mat-snack-bar-container-color: #313030;
+  --mat-snack-bar-supporting-text-color: #f3f0ef;
   --mat-snack-bar-button-color: #7ddc69;
 }
 
 .hb-error-snackbar {
-  --mdc-snackbar-container-color: #ba1a1a;
-  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mat-snack-bar-container-color: #ba1a1a;
+  --mat-snack-bar-supporting-text-color: #ffffff;
   --mat-snack-bar-button-color: #ffdad6;
 }
