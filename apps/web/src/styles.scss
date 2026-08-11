@@ -1,5 +1,25 @@
 /* Global styles. Per-screen styling lives in scoped component SCSS. */
 
+/* Box-model reset (UIC-3). No global box-sizing rule existed before this — only nine
+   components opted into border-box locally (vendor-profile, vendor-products, six admin
+   pages, checkout). Every other `width: 100%` + padding combo (nav-bar, discover, shop,
+   the PDP sticky bar, several auth cards) was content-box, so padding added on top of the
+   100%/max-width box and overflowed the viewport. Inheritance-friendly form (`html` sets
+   border-box, everything else inherits) rather than a blanket `*, *::before, *::after {
+   box-sizing: border-box }` so a future subtree that genuinely needs content-box can still
+   set it once at its root and have descendants inherit that instead of fighting a universal
+   selector's specificity. The nine pre-existing local `box-sizing: border-box` declarations
+   become redundant but are left in place — removing them is out of scope for this fix. */
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 :root {
   /* HB design tokens — see docs/design/DESIGN.md (canonical) */
   --hb-primary: #015300;

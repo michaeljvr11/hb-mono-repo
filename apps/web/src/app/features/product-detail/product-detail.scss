@@ -372,17 +372,23 @@
 .pdp__sticky-bar {
   position: fixed;
   bottom: 0;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: stretch;
   gap: 12px;
   width: 100%;
+  max-width: 1280px;
   z-index: 40;
   padding: 8px 16px calc(16px + env(safe-area-inset-bottom));
   background: linear-gradient(to top, var(--hb-background) 60%, transparent);
 
   @media (min-width: 768px) {
     padding: 8px 40px calc(16px + env(safe-area-inset-bottom));
+    /* Bar itself still tracks the .pdp content column; centring the mobile-pattern
+       button pair inside it (rather than letting add-to-cart flex to fill) is what
+       keeps it from reading as a full-bleed slab at desktop widths. */
+    justify-content: center;
   }
 }
 
@@ -402,6 +408,12 @@
   box-shadow: 0 4px 12px rgba(28, 27, 27, 0.16);
   cursor: pointer;
   transition: transform 150ms ease, filter 150ms ease;
+
+  @media (min-width: 768px) {
+    /* Mobile pattern is a full-bleed slab by design; desktop caps it to a normal
+       CTA width instead of stretching across the (already 1280px-capped) bar. */
+    flex: 0 1 400px;
+  }
 
   &:active {
     transform: scale(0.98);
