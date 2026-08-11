@@ -1,16 +1,16 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { sanitizeReturnUrl } from '../../core/auth/return-url';
+import { NotificationService } from '../../core/notifications/notification.service';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, LoginRequest, UserRole } from '@hb/shared';
 
 @Component({
   selector: 'app-login',
-  imports: [MatSnackBarModule, ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -19,7 +19,7 @@ export class Login {
   private readonly formBuilder = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notificationService = inject(NotificationService);
 
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal('');
@@ -82,21 +82,11 @@ export class Login {
   // Password reset and Google sign-in are not built yet (see Auth & Roles note).
   // Surface an honest "coming soon" message instead of wiring a fake flow.
   notifyComingSoon(feature: string): void {
-    this.snackBar.open(`${feature} is coming soon.`, 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
-    });
+    this.notificationService.info(`${feature} is coming soon.`);
   }
 
   private showSuccessMessage(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-success-snackbar'],
-      verticalPosition: 'top',
-    });
+    this.notificationService.success(message);
   }
 
   private getErrorMessage(error: unknown, fallback: string): string {

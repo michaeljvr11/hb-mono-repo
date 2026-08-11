@@ -4,7 +4,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { Router, provideRouter } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, of } from 'rxjs';
 import { vi } from 'vitest';
 import {
@@ -22,6 +21,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { WishlistService } from '../../core/api/wishlist.service';
+import { NotificationService } from '../../core/notifications/notification.service';
 import { environment } from '../../../environments/environment';
 
 describe('Shop', () => {
@@ -288,12 +288,12 @@ describe('Shop', () => {
     expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: router.url } });
   });
 
-  it('authenticated add-to-cart POSTs to the cart API and confirms via snackbar', () => {
+  it('authenticated add-to-cart POSTs to the cart API and confirms via a success notification', () => {
     flushLoads();
     fixture.detectChanges();
     authStub.isLoggedIn.mockReturnValue(true);
-    const snackBar = fixture.debugElement.injector.get(MatSnackBar);
-    const openSpy = vi.spyOn(snackBar, 'open');
+    const notificationService = TestBed.inject(NotificationService);
+    const successSpy = vi.spyOn(notificationService, 'success');
 
     component.onAddToCart(products[0]);
 
@@ -302,10 +302,9 @@ describe('Shop', () => {
     expect(req.request.body).toEqual({ productId: 'p1', quantity: 1 });
     req.flush({ id: 'cart-1', items: [], totals: [], itemCount: 1, updatedAt: '' });
 
-    expect(openSpy).toHaveBeenCalledWith(
+    expect(successSpy).toHaveBeenCalledWith(
       expect.stringContaining('Organic Dried Fruit Hamper'),
       'View cart',
-      expect.anything(),
     );
     expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.ADD_TO_CART, {
       productId: 'p1',
@@ -323,8 +322,8 @@ describe('Shop', () => {
     flushLoads();
     fixture.detectChanges();
     authStub.isLoggedIn.mockReturnValue(true);
-    const snackBar = fixture.debugElement.injector.get(MatSnackBar);
-    const openSpy = vi.spyOn(snackBar, 'open');
+    const notificationService = TestBed.inject(NotificationService);
+    const errorSpy = vi.spyOn(notificationService, 'error');
 
     component.onAddToCart(products[0]);
 
@@ -332,11 +331,7 @@ describe('Shop', () => {
       .expectOne(`${environment.apiBaseUrl}/cart/items`)
       .flush({ message: "'Organic Dried Fruit Hamper' is out of stock" }, { status: 409, statusText: 'Conflict' });
 
-    expect(openSpy).toHaveBeenCalledWith(
-      expect.stringContaining('out of stock'),
-      'Close',
-      expect.anything(),
-    );
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('out of stock'));
   });
 
   // ── Wishlist toggle ─────────────────────────────────────────────────────
@@ -401,15 +396,11 @@ describe('Shop', () => {
   it('shows a coming-soon notice for the orders radial nav item', () => {
     flushLoads();
     fixture.detectChanges();
-    const snackBar = fixture.debugElement.injector.get(MatSnackBar);
-    const openSpy = vi.spyOn(snackBar, 'open');
+    const notificationService = TestBed.inject(NotificationService);
+    const infoSpy = vi.spyOn(notificationService, 'info');
 
     component.onRadialNavSelect('orders');
-    expect(openSpy).toHaveBeenCalledWith(
-      expect.stringContaining('My Orders'),
-      expect.anything(),
-      expect.anything(),
-    );
+    expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining('My Orders'));
   });
 });
 

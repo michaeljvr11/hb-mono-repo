@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { switchMap } from 'rxjs';
 import { AnalyticsEventType, ProductDto } from '@hb/shared';
 import { AnalyticsService } from '../../core/api/analytics.service';
@@ -18,6 +17,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
 import { WishlistService } from '../../core/api/wishlist.service';
 import { ProductsService } from '../../core/api/products.service';
+import { NotificationService } from '../../core/notifications/notification.service';
 import { formatPrice } from '../../shared/format-price';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
@@ -37,7 +37,7 @@ const RELATED_LIMIT = 4;
  */
 @Component({
   selector: 'app-product-detail',
-  imports: [NavBar, Footer, MatSnackBarModule, ProductCard, RadialNav, RouterLink],
+  imports: [NavBar, Footer, ProductCard, RadialNav, RouterLink],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
 })
@@ -51,7 +51,7 @@ export class ProductDetail {
   private readonly wishlistService = inject(WishlistService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly gaService = inject(GoogleAnalyticsService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notificationService = inject(NotificationService);
   private readonly platformId = inject(PLATFORM_ID);
 
   /** Real cart count for the radial-nav badge. */
@@ -231,27 +231,13 @@ export class ProductDetail {
           vendorId: product.vendor?.id,
         });
         this.gaService.addToCart(product.id, product.name, product.price, product.currency);
-        this.snackBar
-          .open(`Added '${product.name}' to your cart.`, 'View cart', {
-            duration: 4000,
-            horizontalPosition: 'end',
-            panelClass: ['hb-info-snackbar'],
-            verticalPosition: 'top',
-          })
+        this.notificationService
+          .success(`Added '${product.name}' to your cart.`, 'View cart')
           .onAction()
           .subscribe(() => void this.router.navigate(['/cart']));
       },
       error: (err: { error?: { message?: string } }) => {
-        this.snackBar.open(
-          err?.error?.message ?? 'Could not add this item to your cart.',
-          'Close',
-          {
-            duration: 5000,
-            horizontalPosition: 'end',
-            panelClass: ['hb-error-snackbar'],
-            verticalPosition: 'top',
-          },
-        );
+        this.notificationService.error(err?.error?.message ?? 'Could not add this item to your cart.');
       },
     });
   }
@@ -264,12 +250,7 @@ export class ProductDetail {
     // it lying about the real state.
     this.wishlistService.toggle(product.id).subscribe({
       error: (err: { error?: { message?: string } }) => {
-        this.snackBar.open(err?.error?.message ?? 'Could not update your wishlist.', 'Close', {
-          duration: 4000,
-          horizontalPosition: 'end',
-          panelClass: ['hb-info-snackbar'],
-          verticalPosition: 'top',
-        });
+        this.notificationService.error(err?.error?.message ?? 'Could not update your wishlist.');
       },
     });
   }
@@ -292,32 +273,17 @@ export class ProductDetail {
     this.wishlistService.toggle(product.id).subscribe({
       next: () => {
         if (wasWishlisted) {
-          this.snackBar.open(`Removed '${product.name}' from your wishlist.`, 'Close', {
-            duration: 3000,
-            horizontalPosition: 'end',
-            panelClass: ['hb-info-snackbar'],
-            verticalPosition: 'top',
-          });
+          this.notificationService.info(`Removed '${product.name}' from your wishlist.`);
           return;
         }
-        this.snackBar
-          .open(`Added '${product.name}' to your wishlist.`, 'View wishlist', {
-            duration: 4000,
-            horizontalPosition: 'end',
-            panelClass: ['hb-info-snackbar'],
-            verticalPosition: 'top',
-          })
+        this.notificationService
+          .success(`Added '${product.name}' to your wishlist.`, 'View wishlist')
           .onAction()
           .subscribe(() => void this.router.navigate(['/wishlist']));
       },
       // No optimistic mutation here either — see onRelatedWishlistToggle.
       error: (err: { error?: { message?: string } }) => {
-        this.snackBar.open(err?.error?.message ?? 'Could not update your wishlist.', 'Close', {
-          duration: 4000,
-          horizontalPosition: 'end',
-          panelClass: ['hb-info-snackbar'],
-          verticalPosition: 'top',
-        });
+        this.notificationService.error(err?.error?.message ?? 'Could not update your wishlist.');
       },
     });
   }
