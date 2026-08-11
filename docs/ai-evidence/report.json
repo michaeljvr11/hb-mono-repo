@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-08-10T20:59:56.386Z",
+  "generatedAt": "2026-08-10T21:11:02.235Z",
   "git": {
-    "totalCommits": 191,
-    "aiCommits": 180,
+    "totalCommits": 193,
+    "aiCommits": 182,
     "aiPct": 94,
-    "appCommits": 131,
-    "ins": 81938,
-    "del": 7122,
-    "net": 74816,
-    "aiIns": 68424,
-    "aiDel": 6948,
+    "appCommits": 132,
+    "ins": 82182,
+    "del": 7270,
+    "net": 74912,
+    "aiIns": 68668,
+    "aiDel": 7096,
     "filesTouched": 637,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 79,
-        "ins": 40796,
-        "del": 1801
+        "commits": 80,
+        "ins": 40852,
+        "del": 1807
       },
       {
         "name": "API (NestJS)",
@@ -26,14 +26,14 @@
       },
       {
         "name": "Docs",
-        "commits": 57,
-        "ins": 14460,
-        "del": 4237
+        "commits": 58,
+        "ins": 14629,
+        "del": 4379
       },
       {
         "name": "AI Factory config",
-        "commits": 62,
-        "ins": 1999,
+        "commits": 63,
+        "ins": 2018,
         "del": 104
       },
       {
@@ -58,6 +58,16 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-08-10",
     "recent": [
+      {
+        "hash": "cdc015b",
+        "subject": "fix(web): clear cart state on logout so the nav badge does not leak",
+        "ai": true
+      },
+      {
+        "hash": "433d80c",
+        "subject": "chore(evidence): recompile AI-authorship report for the wishlist batch",
+        "ai": true
+      },
       {
         "hash": "be481c8",
         "subject": "test: close hydration-gate and unique-violation coverage gaps",
@@ -106,16 +116,6 @@
       {
         "hash": "55beb2a",
         "subject": "chore(evidence): log PR-open guardrail event",
-        "ai": true
-      },
-      {
-        "hash": "8a42246",
-        "subject": "chore(evidence): recompile AI-factory evidence report",
-        "ai": true
-      },
-      {
-        "hash": "8bb3f83",
-        "subject": "fix(earnings): address code review — validator drift, test mock, SSR hydration",
         "ai": true
       }
     ]
@@ -349,25 +349,25 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 20,
+    "prodBlocks": 21,
     "blockReasons": {
-      "push names a protected branch": 16,
+      "push names a protected branch": 17,
       "force push": 1,
       "gh pr merge is human-only": 2,
       "merge/rebase while on protected branch 'main'": 1
     },
-    "gatePass": 32,
+    "gatePass": 34,
     "gateFail": 2,
     "edits": 493,
     "editsUnfixable": 173,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-10T20:59:49.012Z",
+    "lastTs": "2026-08-10T21:10:48.179Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 24,
+          "invocations": 26,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -421,7 +421,7 @@
         },
         {
           "agentType": "docs-writer",
-          "invocations": 11,
+          "invocations": 12,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -457,21 +457,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-08-03T19:30:53.809Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-03T19:35:59.745Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-03T20:11:32.828Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-03T20:19:49.329Z",
           "agentType": "code-reviewer",
@@ -556,6 +541,21 @@
           "ts": "2026-08-10T20:59:49.012Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T21:02:40.573Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T21:07:03.442Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-10T21:10:48.179Z",
+          "agentType": "unknown",
+          "totalTokens": 0
         }
       ]
     }
@@ -563,6 +563,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/rtBV85cQ-product-wishlist",
+      "number": 49,
+      "state": "OPEN",
+      "title": "Product Wishlist (WL-1…WL-5): data model, API, storefront hearts, /wishlist page, nav entry",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/49"
+    },
     {
       "headRefName": "feat/WrPOgQDa-vendor-own-earnings",
       "number": 48,
@@ -911,11 +918,11 @@
     },
     {
       "name": "In Progress",
-      "cards": 5
+      "cards": 0
     },
     {
       "name": "In Review",
-      "cards": 0
+      "cards": 5
     },
     {
       "name": "Done",

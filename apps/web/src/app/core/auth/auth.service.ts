@@ -17,6 +17,7 @@ import {
   VerifyEmailRequest,
 } from '@hb/shared';
 import { environment } from '../../../environments/environment';
+import { CartService } from '../api/cart.service';
 import { WishlistService } from '../api/wishlist.service';
 
 @Injectable({
@@ -27,9 +28,10 @@ export class AuthService {
   private readonly ACCESS_TOKEN_KEY = 'access_token';
   // SSR: no localStorage on the server — storage access is platform-guarded.
   private readonly platformId = inject(PLATFORM_ID);
-  // WishlistService only depends on HttpClient, so this is safe to inject
-  // directly — no DI cycle back to AuthService.
+  // Wishlist/CartService only depend on HttpClient, so these are safe to
+  // inject directly — no DI cycle back to AuthService.
   private readonly wishlistService = inject(WishlistService);
+  private readonly cartService = inject(CartService);
   private currentUserSubject = new BehaviorSubject<AuthUser | UserDto | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -110,11 +112,12 @@ export class AuthService {
         localStorage.removeItem(this.ACCESS_TOKEN_KEY);
       }
       this.currentUserSubject.next(null);
-      // Drop in-memory wishlist state so it doesn't leak into the next
-      // session in the same tab — wishlist rows themselves are account-bound
-      // in Postgres and survive sign-out. (Cart has the same gap today but
-      // that is deliberately out of scope here — see follow-up card.)
+      // Drop in-memory wishlist/cart state so it doesn't leak into the next
+      // session in the same tab — the rows themselves are account-bound in
+      // Postgres and survive sign-out; only the client-side signals (and the
+      // nav badges derived from them) need clearing.
       this.wishlistService.reset();
+      this.cartService.reset();
       this.router.navigate(['/login']);
     };
 
