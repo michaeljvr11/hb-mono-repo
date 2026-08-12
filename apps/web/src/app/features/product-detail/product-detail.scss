@@ -303,25 +303,12 @@
   min-width: 0;
 }
 
-.pdp__vendor-name-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
 .pdp__vendor-name {
   margin: 0;
   font-size: 20px;
   font-weight: 500;
   line-height: 28px;
   color: var(--hb-on-surface);
-}
-
-.pdp__vendor-verified {
-  flex-shrink: 0;
-  font-size: 18px;
-  color: var(--hb-primary);
 }
 
 .pdp__vendor-country {

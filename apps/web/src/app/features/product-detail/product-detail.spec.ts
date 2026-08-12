@@ -262,11 +262,16 @@ describe('ProductDetail', () => {
     expect(paragraphs.length).toBe(2);
   });
 
-  it('renders the vendor card with initials, name and verified badge when a vendor exists', () => {
+  it('renders the vendor card with initials and name, and no verification badge, when a vendor exists', () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.pdp__vendor-card')).toBeTruthy();
     expect(el.textContent).toContain('Leko Organics');
     expect(el.querySelector('.pdp__vendor-avatar')?.textContent?.trim()).toBe('LO');
+    // Every publicly visible vendor is approved by construction, so a verification
+    // mark on the vendor card carries no information — same reason the badge was
+    // dropped from the product card, the PDP hero and the vendor showcase.
+    expect(el.querySelector('.pdp__vendor-verified')).toBeNull();
+    expect(el.querySelector('[aria-label="Verified vendor"]')).toBeNull();
   });
 
   it('omits the vendor card for platform (vendor-less) listings', async () => {

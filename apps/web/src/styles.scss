@@ -349,6 +349,19 @@ body {
    loads no Material theme — and rendered fully transparent with inherited dark body
    text. Only the button token was already correct, which is why the action label was
    the one part that picked up its colour. */
+/* Shape and label typography have the same problem: their `--mat-sys-*` fallbacks are
+   undefined without a Material theme, so the surface rendered with a 0px radius and the
+   label fell through to inherited 16px/normal. Set them once for all three variants. */
+.hb-success-snackbar,
+.hb-info-snackbar,
+.hb-error-snackbar {
+  --mat-snack-bar-container-shape: 4px;
+  --mat-snack-bar-supporting-text-font: 'Inter', sans-serif;
+  --mat-snack-bar-supporting-text-size: 14px;
+  --mat-snack-bar-supporting-text-weight: 400;
+  --mat-snack-bar-supporting-text-line-height: 20px;
+}
+
 .hb-success-snackbar {
   --mat-snack-bar-container-color: #015300;
   --mat-snack-bar-supporting-text-color: #ffffff;
