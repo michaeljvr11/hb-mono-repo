@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-08-10T21:11:02.235Z",
+  "generatedAt": "2026-08-12T12:08:20.445Z",
   "git": {
-    "totalCommits": 193,
-    "aiCommits": 182,
+    "totalCommits": 199,
+    "aiCommits": 188,
     "aiPct": 94,
-    "appCommits": 132,
-    "ins": 82182,
-    "del": 7270,
-    "net": 74912,
-    "aiIns": 68668,
-    "aiDel": 7096,
-    "filesTouched": 637,
+    "appCommits": 137,
+    "ins": 82567,
+    "del": 7902,
+    "net": 74665,
+    "aiIns": 69053,
+    "aiDel": 7728,
+    "filesTouched": 639,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 80,
-        "ins": 40852,
-        "del": 1807
+        "commits": 85,
+        "ins": 41149,
+        "del": 2364
       },
       {
         "name": "API (NestJS)",
@@ -26,14 +26,14 @@
       },
       {
         "name": "Docs",
-        "commits": 58,
-        "ins": 14629,
-        "del": 4379
+        "commits": 59,
+        "ins": 14711,
+        "del": 4454
       },
       {
         "name": "AI Factory config",
-        "commits": 63,
-        "ins": 2018,
+        "commits": 64,
+        "ins": 2024,
         "del": 104
       },
       {
@@ -56,8 +56,38 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-10",
+    "lastDate": "2026-08-12",
     "recent": [
+      {
+        "hash": "d7e53a3",
+        "subject": "fix(web): drop the last verification badge and the SCSS it left behind",
+        "ai": true
+      },
+      {
+        "hash": "96a2a3d",
+        "subject": "fix(web): use the snackbar token names Material actually reads",
+        "ai": true
+      },
+      {
+        "hash": "7419bd5",
+        "subject": "fix(web): add a global border-box reset and size the PDP sticky bar",
+        "ai": true
+      },
+      {
+        "hash": "28b5153",
+        "subject": "refactor(web): centralise snackbar config in a NotificationService",
+        "ai": true
+      },
+      {
+        "hash": "94c7b8f",
+        "subject": "refactor(web): remove dead nav items and the \"SME Verified\" concept",
+        "ai": true
+      },
+      {
+        "hash": "d2c459f",
+        "subject": "chore(evidence): recompile AI-authorship report for the cart-logout fix",
+        "ai": true
+      },
       {
         "hash": "cdc015b",
         "subject": "fix(web): clear cart state on logout so the nav badge does not leak",
@@ -86,36 +116,6 @@
       {
         "hash": "9682e6e",
         "subject": "feat(web): /wishlist list-view page + route (WL-4)",
-        "ai": true
-      },
-      {
-        "hash": "4364852",
-        "subject": "feat(web): WishlistService + heart toggle across storefront surfaces (WL-2)",
-        "ai": true
-      },
-      {
-        "hash": "e81840f",
-        "subject": "feat(api): wishlist data model + API (WL-1)",
-        "ai": true
-      },
-      {
-        "hash": "1095fe5",
-        "subject": "fix(earnings): address code review — settlement-bounds coverage, exclusive periodEnd rendering",
-        "ai": true
-      },
-      {
-        "hash": "5ee25c5",
-        "subject": "feat(web): vendor own-earnings report screen (VE-5 frontend)",
-        "ai": true
-      },
-      {
-        "hash": "7406b7a",
-        "subject": "feat(api): vendor own-earnings report (VE-5 backend)",
-        "ai": true
-      },
-      {
-        "hash": "55beb2a",
-        "subject": "chore(evidence): log PR-open guardrail event",
         "ai": true
       }
     ]
@@ -155,6 +155,11 @@
       "branch": "feat/EXPtZCJL-vendor-portal-shell",
       "cardId": "EXPtZCJL",
       "slug": "vendor-portal-shell"
+    },
+    {
+      "branch": "feat/IP59Crue-storefront-ui-cleanup",
+      "cardId": "IP59Crue",
+      "slug": "storefront-ui-cleanup"
     },
     {
       "branch": "feat/LKIGKUVM-analytics-reporting",
@@ -328,9 +333,9 @@
     }
   ],
   "tests": {
-    "total": 105,
+    "total": 106,
     "api": 43,
-    "web": 62
+    "web": 63
   },
   "design": {
     "files": 33,
@@ -361,13 +366,13 @@
     "edits": 493,
     "editsUnfixable": 173,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-10T21:10:48.179Z",
+    "lastTs": "2026-08-11T21:30:26.447Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 26,
+          "invocations": 29,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -385,7 +390,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 18,
+          "invocations": 21,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -403,7 +408,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 18,
+          "invocations": 19,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -439,7 +444,7 @@
         },
         {
           "agentType": "product-planner",
-          "invocations": 1,
+          "invocations": 4,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -457,56 +462,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-08-03T20:19:49.329Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-03T20:29:39.617Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-03T20:35:08.464Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-06T18:15:36.697Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T14:36:08.179Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T14:54:13.147Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T14:56:02.451Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T15:03:09.875Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T15:04:16.467Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T15:12:22.979Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-10T20:01:25.346Z",
           "agentType": "backend-engineer",
@@ -556,6 +511,56 @@
           "ts": "2026-08-10T21:10:48.179Z",
           "agentType": "unknown",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-11T19:43:05.279Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-11T20:07:28.273Z",
+          "agentType": "product-planner",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-11T20:17:43.034Z",
+          "agentType": "product-planner",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-11T20:20:47.259Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-11T20:29:33.868Z",
+          "agentType": "product-planner",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-11T20:34:57.276Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-11T20:49:26.634Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-11T21:01:12.973Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-11T21:08:49.212Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-11T21:30:26.447Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
         }
       ]
     }
@@ -564,9 +569,16 @@
   "extractionCandidates": null,
   "prs": [
     {
+      "headRefName": "fix/cart-reset-on-logout",
+      "number": 50,
+      "state": "MERGED",
+      "title": "fix(web): clear cart state on logout so the nav badge does not leak",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/50"
+    },
+    {
       "headRefName": "feat/rtBV85cQ-product-wishlist",
       "number": 49,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "Product Wishlist (WL-1…WL-5): data model, API, storefront hearts, /wishlist page, nav entry",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/49"
     },
@@ -914,19 +926,19 @@
     },
     {
       "name": "To Do",
-      "cards": 5
+      "cards": 11
     },
     {
       "name": "In Progress",
-      "cards": 0
+      "cards": 3
     },
     {
       "name": "In Review",
-      "cards": 5
+      "cards": 0
     },
     {
       "name": "Done",
-      "cards": 58
+      "cards": 63
     },
     {
       "name": "Fable Documentation",
