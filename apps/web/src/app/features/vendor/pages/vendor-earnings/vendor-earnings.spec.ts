@@ -2,6 +2,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -83,10 +84,42 @@ const EMPTY_REPORT: VendorEarningsReportDto = {
   ],
 };
 
+/** Builds a long "All time"-style settlement history: `closedCount` closed
+ *  periods followed by the single always-present trailing 'open' period —
+ *  matching `settlementPreview`'s documented ordering. */
+function buildLongSettlementHistory(closedCount: number) {
+  const closed = Array.from({ length: closedCount }, (_, i) => ({
+    periodStart: new Date(2020, 0, 1 + i * 14).toISOString(),
+    periodEnd: new Date(2020, 0, 15 + i * 14).toISOString(),
+    orderCount: 1,
+    netByCurrency: [{ currency: CurrencyCode.ZAR, amount: 100 }],
+    status: 'closed' as const,
+  }));
+  const open = {
+    periodStart: new Date(2026, 7, 1).toISOString(),
+    periodEnd: new Date(2026, 7, 15).toISOString(),
+    orderCount: 0,
+    netByCurrency: [],
+    status: 'open' as const,
+  };
+  return [...closed, open];
+}
+
 // ─── Stub shape ──────────────────────────────────────────────────────────────
 
 interface VendorEarningsServiceStub {
   getReport: ReturnType<typeof vi.fn>;
+}
+
+/** Finds a rendered `.tab-btn` (owned by the nested `EarningsRangeSelector`)
+ *  by its visible label. `fixture.nativeElement.querySelectorAll` traverses
+ *  the whole rendered subtree regardless of component boundaries — Angular's
+ *  emulated encapsulation is still a single real DOM tree. */
+function findTab(fixture: ComponentFixture<VendorEarnings>, label: string): HTMLButtonElement {
+  const tabs: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.tab-btn'));
+  const tab = tabs.find((btn) => btn.textContent?.trim() === label);
+  if (!tab) throw new Error(`No tab found with label "${label}"`);
+  return tab;
 }
 
 // ─── Component integration tests ─────────────────────────────────────────────
@@ -108,6 +141,7 @@ describe('VendorEarnings component', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideNativeDateAdapter(),
         { provide: VendorEarningsService, useValue: stub },
       ],
     }).compileComponents();
@@ -130,30 +164,47 @@ describe('VendorEarnings component', () => {
   });
 
   it('the "Last month" tab label includes the actual month name, not a generic label', () => {
-    const monthTab = component.windowTabs().find((t) => t.value === '1m');
-    expect(monthTab).toBeTruthy();
-    expect(monthTab!.label).not.toBe('Last month');
-    expect(monthTab!.label).toMatch(/^[A-Z][a-z]+ \d{4}$/);
+    const tabs: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.tab-btn'));
+    const labels = tabs.map((btn) => btn.textContent?.trim());
+    const monthLabel = labels.find((label) => !['Last week', 'Last 2 weeks', 'All time'].includes(label ?? ''));
+    expect(monthLabel).toBeTruthy();
+    expect(monthLabel).toMatch(/^[A-Z][a-z]+ \d{4}$/);
   });
 
   it('selecting "Last week" issues a request with window: "1w" and refetches', () => {
-    component.setWindow('1w');
+    findTab(fixture, 'Last week').click();
+    fixture.detectChanges();
 
     expect(stub.getReport).toHaveBeenCalledTimes(2);
     expect(stub.getReport).toHaveBeenLastCalledWith({ window: '1w' });
-    expect(component.selectedWindow()).toBe('1w');
+    expect(component.currentQuery()).toEqual({ window: '1w' });
   });
 
   it('selecting "Last 2 weeks" issues a request with window: "2w" and refetches', () => {
-    component.setWindow('2w');
+    findTab(fixture, 'Last 2 weeks').click();
+    fixture.detectChanges();
 
     expect(stub.getReport).toHaveBeenCalledTimes(2);
     expect(stub.getReport).toHaveBeenLastCalledWith({ window: '2w' });
-    expect(component.selectedWindow()).toBe('2w');
+    expect(component.currentQuery()).toEqual({ window: '2w' });
+  });
+
+  it('selecting "All time" issues a request with window: "all" and renders "All time" instead of the sentinel date', () => {
+    findTab(fixture, 'All time').click();
+    fixture.detectChanges();
+
+    expect(stub.getReport).toHaveBeenCalledTimes(2);
+    expect(stub.getReport).toHaveBeenLastCalledWith({ window: 'all' });
+    expect(component.currentQuery()).toEqual({ window: 'all' });
+
+    const subHeader = fixture.nativeElement.querySelector('.range-sub');
+    expect(subHeader.textContent.trim()).toBe('All time');
   });
 
   it('re-selecting the already-active window is a no-op (no extra request)', () => {
-    component.setWindow('1m');
+    const activeTab: HTMLButtonElement = fixture.nativeElement.querySelector('.tab-btn--active');
+    activeTab.click();
+    fixture.detectChanges();
 
     expect(stub.getReport).toHaveBeenCalledTimes(1);
   });
@@ -191,6 +242,10 @@ describe('VendorEarnings component', () => {
     expect(html).toContain('R 600.00 ZAR');
     expect(html).toContain('R 250.00 ZAR');
   });
+
+  it('does not render pagination controls when the history fits on one page', () => {
+    expect(fixture.nativeElement.querySelector('.settlement-pagination')).toBeFalsy();
+  });
 });
 
 // ─── Empty / zero-activity state ──────────────────────────────────────────────
@@ -208,6 +263,7 @@ describe('VendorEarnings — empty/zero-activity state', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideNativeDateAdapter(),
         { provide: VendorEarningsService, useValue: stub },
       ],
     }).compileComponents();
@@ -227,6 +283,54 @@ describe('VendorEarnings — empty/zero-activity state', () => {
   });
 });
 
+// ─── Settlement pagination (wide/"All time" history) ───────────────────────────
+
+describe('VendorEarnings — settlement pagination', () => {
+  it('paginates a long settlement history and defaults to the last page so the open period is immediately visible', async () => {
+    const longReport: VendorEarningsReportDto = {
+      ...MOCK_REPORT,
+      settlementPreview: buildLongSettlementHistory(23), // 23 closed + 1 open = 24 → 3 pages of 10
+    };
+    const stub: VendorEarningsServiceStub = {
+      getReport: vi.fn(() => of(longReport)),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [VendorEarnings],
+      providers: [
+        provideNoopAnimations(),
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideNativeDateAdapter(),
+        { provide: VendorEarningsService, useValue: stub },
+      ],
+    }).compileComponents();
+
+    const longFixture = TestBed.createComponent(VendorEarnings);
+    const longComponent = longFixture.componentInstance;
+    longFixture.detectChanges();
+    await longFixture.whenStable();
+
+    expect(longComponent.settlementPage()).toBe(3);
+    const rows = longFixture.nativeElement.querySelectorAll('.settlement-table tbody tr');
+    expect(rows.length).toBe(4); // periods 21-23 (closed) + the trailing open period
+    expect(rows[rows.length - 1].textContent).toContain('Current period');
+
+    const pagination = longFixture.nativeElement.querySelector('.settlement-pagination');
+    expect(pagination).toBeTruthy();
+    expect(pagination.textContent).toContain('Page 3 of 3');
+
+    const prevBtn: HTMLButtonElement = longFixture.nativeElement.querySelector('.pagination-btn');
+    prevBtn.click();
+    longFixture.detectChanges();
+
+    expect(longComponent.settlementPage()).toBe(2);
+    const page2Rows = longFixture.nativeElement.querySelectorAll('.settlement-table tbody tr');
+    expect(page2Rows.length).toBe(10);
+  });
+});
+
 // ─── Load error path ──────────────────────────────────────────────────────────
 
 describe('VendorEarnings — load error path', () => {
@@ -242,6 +346,7 @@ describe('VendorEarnings — load error path', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideNativeDateAdapter(),
         { provide: VendorEarningsService, useValue: failStub },
       ],
     }).compileComponents();

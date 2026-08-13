@@ -1,23 +1,23 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import {
-  CurrencyCode,
-  CurrencyTotalDto,
-  EarningsWindow,
-  SettlementPeriodPreviewDto,
-  VendorEarningsReportDto,
-} from '@hb/shared';
+import { CurrencyCode, CurrencyTotalDto, SettlementPeriodPreviewDto, VendorEarningsReportDto } from '@hb/shared';
 import { VendorEarningsService } from '../../../../core/api/vendor-earnings.service';
+import {
+  EarningsRangeQuery,
+  EarningsRangeSelector,
+} from '../../../../shared/components/earnings-range-selector/earnings-range-selector';
 
-interface WindowTab {
-  label: string;
-  value: EarningsWindow;
-}
+/** Client-side settlement-period page size. Server-side paging isn't an
+ *  option here: `VendorEarningsReportDto.settlementPreview` is a fixed,
+ *  unchanged array per the contract, so "All time" (and any wide custom
+ *  range) can return years of bi-weekly periods that must not render as one
+ *  unbounded list. */
+const SETTLEMENT_PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-vendor-earnings',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, EarningsRangeSelector],
   templateUrl: './vendor-earnings.html',
   styleUrl: './vendor-earnings.scss',
 })
@@ -28,53 +28,45 @@ export class VendorEarnings implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
-  /** Server-side reporting window. Defaults to '1m' (current calendar month) — matches
-   *  the API's own default, so the initial fetch and the active tab agree. */
-  readonly selectedWindow = signal<EarningsWindow>('1m');
+  /** The currently-active query fragment — a preset window or an explicit
+   *  custom range, sourced from `EarningsRangeSelector`'s emissions. Defaults
+   *  to '1m' (current calendar month) to match the API's own default AND
+   *  `EarningsRangeSelector`'s own default active tab, so the initial fetch
+   *  and the active tab agree without the selector needing to emit on init. */
+  readonly currentQuery = signal<EarningsRangeQuery>({ window: '1m' });
 
-  /** Month + year for the "Last month" tab label, derived from the loaded report's
-   *  server-resolved `from` with an explicit `timeZone: 'UTC'` — identical technique to
-   *  `AdminEarnings.monthLabel`, avoiding the SSR/hydration text-mismatch that formatting
-   *  a client-clock `new Date()` without a pinned zone can produce at month boundaries. */
-  private readonly monthLabel = computed(() => {
-    const from = this.report()?.from;
-    const date = from ? new Date(from) : new Date();
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'UTC',
-    }).format(date);
+  readonly isAllTime = computed(() => {
+    const query = this.currentQuery();
+    return 'window' in query && query.window === 'all';
   });
 
-  readonly windowTabs = computed<WindowTab[]>(() => [
-    { label: 'Last week', value: '1w' },
-    { label: 'Last 2 weeks', value: '2w' },
-    { label: this.monthLabel(), value: '1m' },
-  ]);
+  /** 1-based current page of the settlement-period table. */
+  readonly settlementPage = signal(1);
 
   ngOnInit(): void {
+    this.fetchReport();
+  }
+
+  onRangeSelected(query: EarningsRangeQuery): void {
+    this.currentQuery.set(query);
+    this.settlementPage.set(1);
     this.fetchReport();
   }
 
   private fetchReport(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.earningsService.getReport({ window: this.selectedWindow() }).subscribe({
+    this.earningsService.getReport(this.currentQuery()).subscribe({
       next: (data) => {
         this.report.set(data);
         this.loading.set(false);
+        this.settlementPage.set(this.defaultSettlementPage(data.settlementPreview));
       },
       error: () => {
         this.error.set('Failed to load your earnings report. Please refresh the page.');
         this.loading.set(false);
       },
     });
-  }
-
-  setWindow(value: EarningsWindow): void {
-    if (this.selectedWindow() === value) return;
-    this.selectedWindow.set(value);
-    this.fetchReport();
   }
 
   private amountFor(entries: CurrencyTotalDto[], currency: CurrencyCode): number {
@@ -114,6 +106,37 @@ export class VendorEarnings implements OnInit {
 
   periodNet(period: SettlementPeriodPreviewDto, currency: CurrencyCode): number {
     return this.amountFor(period.netByCurrency, currency);
+  }
+
+  /** Total pages for the settlement table at the current page size. Always
+   *  at least 1 so page controls have something sane to render against even
+   *  for an empty (impossible, but defensive) list. */
+  settlementPageCount(periods: SettlementPeriodPreviewDto[]): number {
+    return Math.max(1, Math.ceil(periods.length / SETTLEMENT_PAGE_SIZE));
+  }
+
+  /** The current page's slice of settlement periods, oldest-closed-first
+   *  (unchanged order), page-size 10. */
+  pagedSettlementPeriods(periods: SettlementPeriodPreviewDto[]): SettlementPeriodPreviewDto[] {
+    const page = this.settlementPage();
+    const start = (page - 1) * SETTLEMENT_PAGE_SIZE;
+    return periods.slice(start, start + SETTLEMENT_PAGE_SIZE);
+  }
+
+  setSettlementPage(page: number): void {
+    this.settlementPage.set(page);
+  }
+
+  /** The single always-present `'open'` period is appended LAST in
+   *  `settlementPreview` (contract doc comment) — so on a long "All time"
+   *  history it would land on the FINAL page, which a vendor checking their
+   *  current accruing balance would never think to click to. Land on that
+   *  last page by default whenever the list is non-trivial, so the open
+   *  period is immediately visible rather than merely "reachable". A vendor
+   *  who then pages backward through history keeps that state until their
+   *  next range change resets it to the open period's page again. */
+  private defaultSettlementPage(periods: SettlementPeriodPreviewDto[]): number {
+    return this.settlementPageCount(periods);
   }
 
   /** Known currency symbols. Unknown currencies fall back to the ISO code only —

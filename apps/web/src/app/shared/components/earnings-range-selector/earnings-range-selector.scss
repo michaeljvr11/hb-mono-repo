@@ -1,0 +1,98 @@
+/* Earnings range selector — tokens from docs/design/DESIGN.md.
+ * Shared by AdminEarnings and VendorEarnings (was duplicated in both). */
+:host {
+  display: block;
+}
+
+.earnings-range-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* ─── Preset tabs — unchanged from the pages' former inline markup ───────── */
+.filter-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 9999px;
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-on-surface-variant);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+
+  &:hover {
+    background: var(--hb-surface-container-low);
+    border-color: var(--hb-outline);
+    color: var(--hb-on-surface);
+  }
+
+  &--active {
+    background: color-mix(in srgb, var(--hb-primary) 12%, transparent);
+    border-color: var(--hb-primary);
+    color: var(--hb-primary);
+    font-weight: 600;
+  }
+}
+
+/* ─── Custom date range ────────────────────────────────────────────────────
+ * These CSS custom properties are Material's own M3 component tokens
+ * (`--mat-form-field-*`, `--mat-datepicker-toggle-*`) — the app loads no
+ * `mat.core()`/theme, so without explicit values they fall through to
+ * undefined `--mat-sys-*` fallbacks (the same root cause already fixed for
+ * the snackbar in styles.scss). Custom-property inheritance isn't blocked by
+ * Angular's view encapsulation, so scoping these under `.custom-range` themes
+ * the closed-state field correctly. The calendar POPUP is rendered into the
+ * CDK overlay container appended to <body> — outside this component's DOM —
+ * so its tokens are set globally in styles.scss instead, where :root is a
+ * shared ancestor of both. */
+.custom-range {
+  --mat-form-field-container-text-font: 'Inter', system-ui, sans-serif;
+  --mat-form-field-outlined-outline-color: var(--hb-outline-variant);
+  --mat-form-field-outlined-hover-outline-color: var(--hb-outline);
+  --mat-form-field-outlined-focus-outline-color: var(--hb-primary);
+  --mat-form-field-outlined-label-text-color: var(--hb-on-surface-variant);
+  --mat-form-field-outlined-hover-label-text-color: var(--hb-on-surface);
+  --mat-form-field-outlined-focus-label-text-color: var(--hb-primary);
+  --mat-form-field-outlined-input-text-color: var(--hb-on-surface);
+  --mat-form-field-error-text-color: var(--hb-error);
+  --mat-form-field-subscript-text-font: 'Inter', system-ui, sans-serif;
+  --mat-form-field-trailing-icon-color: var(--hb-on-surface-variant);
+  --mat-datepicker-toggle-icon-color: var(--hb-on-surface-variant);
+  --mat-datepicker-toggle-active-state-icon-color: var(--hb-primary);
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.range-field {
+  width: 160px;
+  font-size: 14px;
+}
+
+.range-field-sep {
+  color: var(--hb-on-surface-variant);
+  line-height: 56px; /* vertically centers against the outlined field's default height */
+}
+
+.range-error {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--hb-error);
+}

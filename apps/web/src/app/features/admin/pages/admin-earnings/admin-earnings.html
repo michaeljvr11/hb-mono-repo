@@ -14,20 +14,10 @@
   }
 
   <!-- Window selector -->
-  <div class="filter-tabs" role="tablist" aria-label="Reporting window">
-    @for (tab of windowTabs(); track tab.value) {
-      <button
-        class="tab-btn"
-        role="tab"
-        [class.tab-btn--active]="selectedWindow() === tab.value"
-        [attr.aria-selected]="selectedWindow() === tab.value"
-        type="button"
-        (click)="setWindow(tab.value)"
-      >
-        {{ tab.label }}
-      </button>
-    }
-  </div>
+  <app-earnings-range-selector
+    [reportFrom]="report()?.from ?? null"
+    (rangeSelected)="onRangeSelected($event)"
+  ></app-earnings-range-selector>
 
   <!-- Loading state -->
   @if (loading()) {
@@ -38,7 +28,11 @@
   }
 
   @if (!loading() && !error() && report(); as data) {
-    <p class="range-sub">{{ data.from | date:'d MMM y' }} – {{ data.to | date:'d MMM y' }}</p>
+    @if (isAllTime()) {
+      <p class="range-sub">All time</p>
+    } @else {
+      <p class="range-sub">{{ data.from | date:'d MMM y' }} – {{ data.to | date:'d MMM y' }}</p>
+    }
 
     <!-- Headline figures -->
     <div class="metrics-grid">
@@ -69,7 +63,7 @@
           Money owed to vendors that's eligible but not yet in a settled payout batch.
         </p>
         @if (data.heldForVendorsByCurrency.length === 0) {
-          <p class="metric-empty">Nothing held for vendors in this window.</p>
+          <p class="metric-empty">Nothing held for vendors right now.</p>
         } @else {
           <ul class="revenue-list" aria-label="Held for vendors by currency">
             @for (entry of data.heldForVendorsByCurrency; track entry.currency) {
@@ -106,7 +100,7 @@
     <section class="vendor-section">
       <header class="section-header">
         <h2 class="section-title">Vendor earnings</h2>
-        <p class="section-sub">Payout-eligible earnings per vendor for the selected window (not all-time sales).</p>
+        <p class="section-sub">Payout-eligible earnings per vendor for the selected range above.</p>
       </header>
 
       @if (data.vendors.length === 0) {

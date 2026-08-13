@@ -379,3 +379,29 @@ body {
   --mat-snack-bar-supporting-text-color: #ffffff;
   --mat-snack-bar-button-color: #ffdad6;
 }
+
+/* Datepicker calendar popup (earnings-range-selector's custom date range).
+   Same root cause as the snackbar fix above: the app loads no
+   `mat.core()`/theme, so Material's M3 `--mat-datepicker-calendar-*` tokens
+   fall through to undefined `--mat-sys-*` fallbacks. The calendar panel is
+   rendered by Angular CDK into `.cdk-overlay-container`, appended as a
+   sibling of <app-root> under <body> — NOT a descendant of the component
+   that opens it — so these tokens must live somewhere both share an
+   ancestor. `:root` is that shared ancestor; CSS custom properties inherit
+   down the real DOM tree regardless of Angular's per-component view
+   encapsulation. */
+:root {
+  --mat-datepicker-calendar-container-background-color: var(--hb-surface-container-lowest);
+  --mat-datepicker-calendar-container-text-color: var(--hb-on-surface);
+  --mat-datepicker-calendar-text-font: 'Inter', system-ui, sans-serif;
+  --mat-datepicker-calendar-header-text-color: var(--hb-on-surface-variant);
+  --mat-datepicker-calendar-header-divider-color: var(--hb-outline-variant);
+  --mat-datepicker-calendar-date-text-color: var(--hb-on-surface);
+  --mat-datepicker-calendar-date-hover-state-background-color: var(--hb-surface-container);
+  --mat-datepicker-calendar-date-selected-state-background-color: var(--hb-primary);
+  --mat-datepicker-calendar-date-selected-state-text-color: var(--hb-on-primary);
+  --mat-datepicker-calendar-date-today-outline-color: var(--hb-primary);
+  --mat-datepicker-calendar-date-disabled-state-text-color: color-mix(in srgb, var(--hb-on-surface-variant) 40%, transparent);
+  --mat-datepicker-calendar-period-button-text-color: var(--hb-on-surface);
+  --mat-datepicker-calendar-navigation-button-icon-color: var(--hb-on-surface-variant);
+}
