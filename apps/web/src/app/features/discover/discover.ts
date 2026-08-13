@@ -1,7 +1,6 @@
 import { Component, afterNextRender, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   AnalyticsEventType,
   CategoryDto,
@@ -20,6 +19,7 @@ import { WishlistService } from '../../core/api/wishlist.service';
 import { CategoriesService } from '../../core/api/categories.service';
 import { VendorsService } from '../../core/api/vendors.service';
 import { SearchService } from '../../core/api/search.service';
+import { NotificationService } from '../../core/notifications/notification.service';
 import { formatPrice } from '../../shared/format-price';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
@@ -52,7 +52,7 @@ const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
  */
 @Component({
   selector: 'app-discover',
-  imports: [NavBar, Footer, MatSnackBarModule, ProductCard, CategoryChips, SearchBar, RadialNav],
+  imports: [NavBar, Footer, ProductCard, CategoryChips, SearchBar, RadialNav],
   templateUrl: './discover.html',
   styleUrl: './discover.scss',
 })
@@ -68,7 +68,7 @@ export class Discover {
   private readonly wishlistService = inject(WishlistService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly gaService = inject(GoogleAnalyticsService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notificationService = inject(NotificationService);
 
   /** Real cart count for the radial-nav badge. */
   readonly cartCount = this.cartService.itemCount;
@@ -125,15 +125,7 @@ export class Discover {
   // ── Vendor filter chip (resolved name for the active vendorId) ─────────
   readonly activeVendor = signal<VendorDto | null>(null);
 
-  // ── SME toggle (client-side composition on top of server results) ──────
-  readonly smeOnly = signal(true);
-
-  readonly filteredProducts = computed(() => {
-    const products = this.products();
-    return this.smeOnly() ? products.filter((p) => !!p.vendor) : products;
-  });
-
-  readonly resultCount = computed(() => this.filteredProducts().length);
+  readonly resultCount = computed(() => this.products().length);
 
   readonly hasActiveFilters = computed(
     () => !!this.q() || !!this.categoryId() || !!this.vendorId(),
@@ -221,10 +213,6 @@ export class Discover {
     this.navigateMerge({ categoryId, page: null });
   }
 
-  onSmeToggle(checked: boolean): void {
-    this.smeOnly.set(checked);
-  }
-
   dismissVendorFilter(): void {
     this.navigateMerge({ vendorId: null, page: null });
   }
@@ -307,27 +295,13 @@ export class Discover {
           vendorId: product.vendor?.id,
         });
         this.gaService.addToCart(product.id, product.name, product.price, product.currency);
-        this.snackBar
-          .open(`Added '${product.name}' to your cart.`, 'View cart', {
-            duration: 4000,
-            horizontalPosition: 'end',
-            panelClass: ['hb-info-snackbar'],
-            verticalPosition: 'top',
-          })
+        this.notificationService
+          .success(`Added '${product.name}' to your cart.`, 'View cart')
           .onAction()
           .subscribe(() => void this.router.navigate(['/cart']));
       },
       error: (err: { error?: { message?: string } }) => {
-        this.snackBar.open(
-          err?.error?.message ?? 'Could not add this item to your cart.',
-          'Close',
-          {
-            duration: 5000,
-            horizontalPosition: 'end',
-            panelClass: ['hb-error-snackbar'],
-            verticalPosition: 'top',
-          },
-        );
+        this.notificationService.error(err?.error?.message ?? 'Could not add this item to your cart.');
       },
     });
   }
@@ -344,12 +318,7 @@ export class Discover {
     // it lying about the real state.
     this.wishlistService.toggle(product.id).subscribe({
       error: (err: { error?: { message?: string } }) => {
-        this.snackBar.open(err?.error?.message ?? 'Could not update your wishlist.', 'Close', {
-          duration: 4000,
-          horizontalPosition: 'end',
-          panelClass: ['hb-info-snackbar'],
-          verticalPosition: 'top',
-        });
+        this.notificationService.error(err?.error?.message ?? 'Could not update your wishlist.');
       },
     });
   }

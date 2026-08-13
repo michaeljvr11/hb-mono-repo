@@ -1,11 +1,11 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CartItemDto } from '@hb/shared';
 import { CartService } from '../../core/api/cart.service';
 import { formatPrice } from '../../shared/format-price';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
+import { NotificationService } from '../../core/notifications/notification.service';
 
 type LoadState = 'loading' | 'loaded' | 'error';
 
@@ -16,13 +16,13 @@ type LoadState = 'loading' | 'loaded' | 'error';
  */
 @Component({
   selector: 'app-cart',
-  imports: [NavBar, Footer, MatSnackBarModule, RouterLink],
+  imports: [NavBar, Footer, RouterLink],
   templateUrl: './cart.html',
   styleUrl: './cart.scss',
 })
 export class Cart implements OnInit {
   private readonly cartService = inject(CartService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
 
   readonly state = signal<LoadState>('loading');
@@ -43,7 +43,7 @@ export class Cart implements OnInit {
 
   increment(item: CartItemDto): void {
     if (item.quantity >= item.stockQuantity) {
-      this.notify(`Only ${item.stockQuantity} in stock.`);
+      this.notificationService.info(`Only ${item.stockQuantity} in stock.`);
       return;
     }
     this.mutate(item, this.cartService.updateItem(item.id, item.quantity + 1));
@@ -72,17 +72,8 @@ export class Cart implements OnInit {
       next: () => this.busyItemId.set(null),
       error: (err: { error?: { message?: string } }) => {
         this.busyItemId.set(null);
-        this.notify(err?.error?.message ?? 'Could not update your cart.');
+        this.notificationService.error(err?.error?.message ?? 'Could not update your cart.');
       },
-    });
-  }
-
-  private notify(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
     });
   }
 }

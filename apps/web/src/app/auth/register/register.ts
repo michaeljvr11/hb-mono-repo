@@ -1,16 +1,16 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { sanitizeReturnUrl } from '../../core/auth/return-url';
+import { NotificationService } from '../../core/notifications/notification.service';
 import { environment } from '../../../environments/environment';
 import { RegisterRequest } from '@hb/shared';
 
 @Component({
   selector: 'app-register',
-  imports: [MatSnackBarModule, ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
@@ -19,7 +19,7 @@ export class Register {
   private readonly formBuilder = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notificationService = inject(NotificationService);
 
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal('');
@@ -98,12 +98,7 @@ export class Register {
   }
 
   private showSuccessMessage(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-success-snackbar'],
-      verticalPosition: 'top',
-    });
+    this.notificationService.success(message);
   }
 
   private getErrorMessage(error: unknown, fallback: string): string {

@@ -7,19 +7,19 @@ import {
 } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
 import { WishlistService } from '../../core/api/wishlist.service';
+import { NotificationService } from '../../core/notifications/notification.service';
 
 @Component({
   selector: 'app-nav-bar',
-  imports: [RouterLink, RouterLinkActive, MatSnackBarModule],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './nav-bar.html',
   styleUrl: './nav-bar.scss',
 })
 export class NavBar {
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notificationService = inject(NotificationService);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
   private readonly wishlistService = inject(WishlistService);
@@ -65,12 +65,7 @@ export class NavBar {
   }
 
   notifyComingSoon(feature: string): void {
-    this.snackBar.open(`${feature} is coming soon.`, 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
-    });
+    this.notificationService.info(`${feature} is coming soon.`);
   }
 
   onSearchClick(): void {

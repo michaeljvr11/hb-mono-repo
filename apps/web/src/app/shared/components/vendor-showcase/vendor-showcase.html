@@ -11,14 +11,6 @@
       <div class="vendor-card__body">
         <div class="vendor-card__name-row">
           <h3 class="vendor-card__name">{{ displayName(vendor) }}</h3>
-          @if (isVerified(vendor)) {
-            <span
-              class="material-symbols-outlined vendor-card__verified"
-              aria-label="Verified vendor"
-              title="Verified vendor"
-              style="font-variation-settings: 'FILL' 1"
-            >verified</span>
-          }
         </div>
 
         <p class="vendor-card__location">

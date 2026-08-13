@@ -9,7 +9,6 @@ import {
   signal,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AnalyticsEventType, CategoryDto, ProductDto, VendorDto } from '@hb/shared';
 import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
@@ -19,6 +18,7 @@ import { WishlistService } from '../../core/api/wishlist.service';
 import { CategoriesService } from '../../core/api/categories.service';
 import { ProductsService } from '../../core/api/products.service';
 import { VendorsService } from '../../core/api/vendors.service';
+import { NotificationService } from '../../core/notifications/notification.service';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
 import { ProductCard } from '../../shared/components/product-card/product-card';
@@ -64,7 +64,6 @@ export function deriveCategoryCounts(
     NavBar,
     Footer,
     RouterLink,
-    MatSnackBarModule,
     ProductCard,
     CategoryChips,
     SearchBar,
@@ -79,7 +78,7 @@ export class Shop implements OnInit {
   private readonly productsService = inject(ProductsService);
   private readonly categoriesService = inject(CategoriesService);
   private readonly vendorsService = inject(VendorsService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notificationService = inject(NotificationService);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
   private readonly wishlistService = inject(WishlistService);
@@ -164,10 +163,6 @@ export class Shop implements OnInit {
     void this.router.navigate(['/discover']);
   }
 
-  onHeroSmeVerification(): void {
-    this.notifyComingSoon('SME Verification');
-  }
-
   onNewsletterJoin(): void {
     this.notifyComingSoon('Newsletter');
   }
@@ -231,42 +226,22 @@ export class Shop implements OnInit {
   }
 
   private notifyComingSoon(feature: string): void {
-    this.snackBar.open(`${feature} is coming soon.`, 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
-    });
+    this.notificationService.info(`${feature} is coming soon.`);
   }
 
   private notifyAddedToCart(productName: string): void {
-    this.snackBar
-      .open(`Added '${productName}' to your cart.`, 'View cart', {
-        duration: 4000,
-        horizontalPosition: 'end',
-        panelClass: ['hb-info-snackbar'],
-        verticalPosition: 'top',
-      })
+    this.notificationService
+      .success(`Added '${productName}' to your cart.`, 'View cart')
       .onAction()
       .subscribe(() => void this.router.navigate(['/cart']));
   }
 
   private notifyCartError(message?: string): void {
-    this.snackBar.open(message ?? 'Could not add this item to your cart.', 'Close', {
-      duration: 5000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-error-snackbar'],
-      verticalPosition: 'top',
-    });
+    this.notificationService.error(message ?? 'Could not add this item to your cart.');
   }
 
   private notifyWishlistError(message?: string): void {
-    this.snackBar.open(message ?? 'Could not update your wishlist.', 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
-    });
+    this.notificationService.error(message ?? 'Could not update your wishlist.');
   }
 
   // ── Category helpers ──────────────────────────────────────────────────────

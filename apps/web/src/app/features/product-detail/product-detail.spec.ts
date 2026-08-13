@@ -3,7 +3,6 @@ import { signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import type { AuthUser, CartDto, UserDto } from '@hb/shared';
@@ -23,18 +22,20 @@ import { WishlistService } from '../../core/api/wishlist.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { NotificationService } from '../../core/notifications/notification.service';
 
 const EMPTY_CART: CartDto = { id: 'cart-1', items: [], totals: [], itemCount: 0, updatedAt: '' };
 
 /**
- * `snackBar` is a private field on ProductDetail — TS privacy is
- * compile-time only, so this reads the exact MatSnackBar instance the
- * component actually injected. Needed because the standalone component's
- * own `MatSnackBarModule` import can resolve a different instance than
- * `TestBed.inject(MatSnackBar)`.
+ * `notificationService` is a private field on ProductDetail — TS privacy is
+ * compile-time only, so this reads the exact NotificationService instance
+ * the component actually injected (it's `providedIn: 'root'`, so this is
+ * reference-equal to `TestBed.inject(NotificationService)`, but reading it
+ * off the component keeps the test independent of that implementation detail).
  */
-function getComponentSnackBar(component: ProductDetail): MatSnackBar {
-  return (component as unknown as { snackBar: MatSnackBar }).snackBar;
+function getComponentNotificationService(component: ProductDetail): NotificationService {
+  return (component as unknown as { notificationService: NotificationService })
+    .notificationService;
 }
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
@@ -261,11 +262,16 @@ describe('ProductDetail', () => {
     expect(paragraphs.length).toBe(2);
   });
 
-  it('renders the vendor card with initials, name and verified badge when a vendor exists', () => {
+  it('renders the vendor card with initials and name, and no verification badge, when a vendor exists', () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.pdp__vendor-card')).toBeTruthy();
     expect(el.textContent).toContain('Leko Organics');
     expect(el.querySelector('.pdp__vendor-avatar')?.textContent?.trim()).toBe('LO');
+    // Every publicly visible vendor is approved by construction, so a verification
+    // mark on the vendor card carries no information — same reason the badge was
+    // dropped from the product card, the PDP hero and the vendor showcase.
+    expect(el.querySelector('.pdp__vendor-verified')).toBeNull();
+    expect(el.querySelector('[aria-label="Verified vendor"]')).toBeNull();
   });
 
   it('omits the vendor card for platform (vendor-less) listings', async () => {
@@ -498,47 +504,39 @@ describe('ProductDetail', () => {
     expect(btn?.textContent).toContain('Saved');
   });
 
-  it('a failed hero wishlist toggle surfaces the info snackbar and leaves state untouched (no optimistic mutation)', () => {
+  it('a failed hero wishlist toggle surfaces the error notification and leaves state untouched (no optimistic mutation)', () => {
     authStub.isLoggedIn.mockReturnValue(true);
     wishlistStub.has.mockReturnValue(false);
     wishlistStub.toggle.mockReturnValue(
       throwError(() => ({ error: { message: 'Could not save this item.' } })),
     );
-    // Spy on the exact MatSnackBar instance the component holds (its
-    // standalone `MatSnackBarModule` import resolves its own instance —
-    // TestBed.inject(MatSnackBar) is not guaranteed to be reference-equal).
-    const componentSnackBar = getComponentSnackBar(component);
-    const openSpy = vi.spyOn(componentSnackBar, 'open');
+    const notificationService = getComponentNotificationService(component);
+    const errorSpy = vi.spyOn(notificationService, 'error');
 
     expect(() => component.onWishlistToggle()).not.toThrow();
 
-    expect(openSpy).toHaveBeenCalledWith(
-      'Could not save this item.',
-      'Close',
-      expect.objectContaining({ panelClass: ['hb-info-snackbar'] }),
-    );
+    expect(errorSpy).toHaveBeenCalledWith('Could not save this item.');
     // wishlistStub.has still reflects the untouched signal-backed state.
     expect(component.isWishlisted('p1')).toBe(false);
   });
 
-  it('the add-success snackbar exposes a "View wishlist" action that navigates to /wishlist', () => {
+  it('the add-success notification exposes a "View wishlist" action that navigates to /wishlist', () => {
     authStub.isLoggedIn.mockReturnValue(true);
     wishlistStub.has.mockReturnValue(false);
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
-    const componentSnackBar = getComponentSnackBar(component);
+    const notificationService = getComponentNotificationService(component);
     const snackBarRef = {
       onAction: () => ({ subscribe: (cb: () => void) => cb() }),
     };
-    const openSpy = vi
-      .spyOn(componentSnackBar, 'open')
-      .mockReturnValue(snackBarRef as unknown as ReturnType<MatSnackBar['open']>);
+    const successSpy = vi
+      .spyOn(notificationService, 'success')
+      .mockReturnValue(snackBarRef as unknown as ReturnType<NotificationService['success']>);
 
     component.onWishlistToggle();
 
-    expect(openSpy).toHaveBeenCalledWith(
+    expect(successSpy).toHaveBeenCalledWith(
       `Added '${HONEY.name}' to your wishlist.`,
       'View wishlist',
-      expect.any(Object),
     );
     expect(navigateSpy).toHaveBeenCalledWith(['/wishlist']);
   });

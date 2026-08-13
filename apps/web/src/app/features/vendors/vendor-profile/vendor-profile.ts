@@ -7,7 +7,6 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   AnalyticsEventType,
   CountryCode,
@@ -23,6 +22,7 @@ import { CartService } from '../../../core/api/cart.service';
 import { WishlistService } from '../../../core/api/wishlist.service';
 import { ProductsService } from '../../../core/api/products.service';
 import { VendorsService } from '../../../core/api/vendors.service';
+import { NotificationService } from '../../../core/notifications/notification.service';
 import { Footer } from '../../../layout/footer/footer';
 import { NavBar } from '../../../layout/nav-bar/nav-bar';
 import { ProductCard } from '../../../shared/components/product-card/product-card';
@@ -51,7 +51,7 @@ const PRODUCT_LIST_MAX = 100;
  */
 @Component({
   selector: 'app-vendor-profile',
-  imports: [NavBar, Footer, MatSnackBarModule, ProductCard, RadialNav, RouterLink],
+  imports: [NavBar, Footer, ProductCard, RadialNav, RouterLink],
   templateUrl: './vendor-profile.html',
   styleUrl: './vendor-profile.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -66,7 +66,7 @@ export class PublicVendorProfile {
   private readonly wishlistService = inject(WishlistService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly gaService = inject(GoogleAnalyticsService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notificationService = inject(NotificationService);
 
   /** Real cart count for the radial-nav badge. */
   readonly cartCount = this.cartService.itemCount;
@@ -230,27 +230,13 @@ export class PublicVendorProfile {
           vendorId: product.vendor?.id,
         });
         this.gaService.addToCart(product.id, product.name, product.price, product.currency);
-        this.snackBar
-          .open(`Added '${product.name}' to your cart.`, 'View cart', {
-            duration: 4000,
-            horizontalPosition: 'end',
-            panelClass: ['hb-info-snackbar'],
-            verticalPosition: 'top',
-          })
+        this.notificationService
+          .success(`Added '${product.name}' to your cart.`, 'View cart')
           .onAction()
           .subscribe(() => void this.router.navigate(['/cart']));
       },
       error: (err: { error?: { message?: string } }) => {
-        this.snackBar.open(
-          err?.error?.message ?? 'Could not add this item to your cart.',
-          'Close',
-          {
-            duration: 5000,
-            horizontalPosition: 'end',
-            panelClass: ['hb-error-snackbar'],
-            verticalPosition: 'top',
-          },
-        );
+        this.notificationService.error(err?.error?.message ?? 'Could not add this item to your cart.');
       },
     });
   }
@@ -267,12 +253,7 @@ export class PublicVendorProfile {
     // it lying about the real state.
     this.wishlistService.toggle(product.id).subscribe({
       error: (err: { error?: { message?: string } }) => {
-        this.snackBar.open(err?.error?.message ?? 'Could not update your wishlist.', 'Close', {
-          duration: 4000,
-          horizontalPosition: 'end',
-          panelClass: ['hb-info-snackbar'],
-          verticalPosition: 'top',
-        });
+        this.notificationService.error(err?.error?.message ?? 'Could not update your wishlist.');
       },
     });
   }

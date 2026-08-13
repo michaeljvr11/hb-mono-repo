@@ -46,13 +46,6 @@ describe('VendorShowcase', () => {
     expect(cards[1].textContent).toContain('Namibia');
   });
 
-  it('shows the verified badge only for approved vendors', async () => {
-    await setup();
-    const cards = fixture.nativeElement.querySelectorAll('.vendor-card');
-    expect(cards[0].querySelector('.vendor-card__verified')).toBeTruthy();
-    expect(cards[1].querySelector('.vendor-card__verified')).toBeNull();
-  });
-
   it('renders 5 static rating stars per vendor', async () => {
     await setup();
     const cards = fixture.nativeElement.querySelectorAll('.vendor-card');

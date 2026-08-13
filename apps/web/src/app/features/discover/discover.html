@@ -30,25 +30,6 @@
       </div>
     }
 
-    <!-- SME Verification Toggle -->
-    <div class="discover__sme-toggle">
-      <div class="discover__sme-toggle-label">
-        <span class="material-symbols-outlined discover__sme-icon" style="font-variation-settings: 'FILL' 1" aria-hidden="true">verified_user</span>
-        <div>
-          <p class="discover__sme-title">Verified SME Vendors</p>
-          <p class="discover__sme-sub">Only show verified ZA &amp; NA businesses</p>
-        </div>
-      </div>
-      <label class="discover__switch">
-        <input
-          type="checkbox"
-          [checked]="smeOnly()"
-          (change)="onSmeToggle($any($event.target).checked)"
-        />
-        <span class="discover__switch-track" aria-hidden="true"></span>
-      </label>
-    </div>
-
     @if (q()) {
       <p class="discover__result-count">
         {{ resultCount() }} result{{ resultCount() === 1 ? '' : 's' }} for "{{ q() }}"
@@ -88,7 +69,7 @@
         <span class="material-symbols-outlined state-message__icon">error_outline</span>
         <p>Could not load products right now. Please try again later.</p>
       </div>
-    } @else if (filteredProducts().length === 0) {
+    } @else if (products().length === 0) {
       <div class="state-message" role="status">
         <span class="material-symbols-outlined state-message__icon">search_off</span>
         <p>No products match your search/filters.</p>
@@ -98,7 +79,7 @@
       </div>
     } @else {
       <div class="discover__grid">
-        @for (product of filteredProducts(); track product.id) {
+        @for (product of products(); track product.id) {
           <app-product-card
             [product]="product"
             variant="grid"

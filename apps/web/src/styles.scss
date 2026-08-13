@@ -1,5 +1,25 @@
 /* Global styles. Per-screen styling lives in scoped component SCSS. */
 
+/* Box-model reset (UIC-3). No global box-sizing rule existed before this — only nine
+   components opted into border-box locally (vendor-profile, vendor-products, six admin
+   pages, checkout). Every other `width: 100%` + padding combo (nav-bar, discover, shop,
+   the PDP sticky bar, several auth cards) was content-box, so padding added on top of the
+   100%/max-width box and overflowed the viewport. Inheritance-friendly form (`html` sets
+   border-box, everything else inherits) rather than a blanket `*, *::before, *::after {
+   box-sizing: border-box }` so a future subtree that genuinely needs content-box can still
+   set it once at its root and have descendants inherit that instead of fighting a universal
+   selector's specificity. The nine pre-existing local `box-sizing: border-box` declarations
+   become redundant but are left in place — removing them is out of scope for this fix. */
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 :root {
   /* HB design tokens — see docs/design/DESIGN.md (canonical) */
   --hb-primary: #015300;
@@ -19,9 +39,6 @@
   --hb-outline-variant: #bfcab7;
   --hb-error: #ba1a1a;
   --hb-scrim: rgba(0, 0, 0, 0.35);
-
-  /* from design export - not yet in DESIGN.md token table */
-  --hb-sme-badge-bg: #e8f5e9;
 }
 
 html,
@@ -323,21 +340,42 @@ body {
   color: var(--hb-error);
 }
 
-/* Snackbar themes (rendered at the overlay root, so they must be global) */
+/* Snackbar themes (rendered at the overlay root, so they must be global).
+   The names must be the `--mat-snack-bar-*` tokens Angular Material actually reads
+   (see `.mat-mdc-snack-bar-container .mat-mdc-snackbar-surface` in the snack-bar
+   component styles). These were `--mdc-snackbar-container-color` /
+   `--mdc-snackbar-supporting-text-color`, which Material no longer consumes, so the
+   surface fell through to `var(--mat-sys-inverse-surface)` — undefined, since the app
+   loads no Material theme — and rendered fully transparent with inherited dark body
+   text. Only the button token was already correct, which is why the action label was
+   the one part that picked up its colour. */
+/* Shape and label typography have the same problem: their `--mat-sys-*` fallbacks are
+   undefined without a Material theme, so the surface rendered with a 0px radius and the
+   label fell through to inherited 16px/normal. Set them once for all three variants. */
+.hb-success-snackbar,
+.hb-info-snackbar,
+.hb-error-snackbar {
+  --mat-snack-bar-container-shape: 4px;
+  --mat-snack-bar-supporting-text-font: 'Inter', sans-serif;
+  --mat-snack-bar-supporting-text-size: 14px;
+  --mat-snack-bar-supporting-text-weight: 400;
+  --mat-snack-bar-supporting-text-line-height: 20px;
+}
+
 .hb-success-snackbar {
-  --mdc-snackbar-container-color: #015300;
-  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mat-snack-bar-container-color: #015300;
+  --mat-snack-bar-supporting-text-color: #ffffff;
   --mat-snack-bar-button-color: #98f982;
 }
 
 .hb-info-snackbar {
-  --mdc-snackbar-container-color: #313030;
-  --mdc-snackbar-supporting-text-color: #f3f0ef;
+  --mat-snack-bar-container-color: #313030;
+  --mat-snack-bar-supporting-text-color: #f3f0ef;
   --mat-snack-bar-button-color: #7ddc69;
 }
 
 .hb-error-snackbar {
-  --mdc-snackbar-container-color: #ba1a1a;
-  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mat-snack-bar-container-color: #ba1a1a;
+  --mat-snack-bar-supporting-text-color: #ffffff;
   --mat-snack-bar-button-color: #ffdad6;
 }

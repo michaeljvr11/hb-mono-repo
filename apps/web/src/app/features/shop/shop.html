@@ -5,7 +5,7 @@
   <!-- ── Mobile-only: search + category chips row ───────────────────────── -->
   <section class="mobile-toolbar" aria-label="Search and category filters">
     <app-search-bar
-      placeholder="Search verified SME products…"
+      placeholder="Search SME products…"
       [suggestions]="null"
       (search)="onMobileSearch($event)"
       (termChange)="onMobileSearch($event)"
@@ -29,7 +29,7 @@
         <span class="hero__headline-accent">ZA to NA</span>
       </h1>
       <p class="hero__body">
-        Connecting verified South African SMEs with discerning Namibian consumers
+        Connecting South African SMEs with discerning Namibian consumers
         through reliable logistics and secure regional payments.
       </p>
       <div class="hero__cta-group">
@@ -38,11 +38,6 @@
           class="btn btn--primary"
           (click)="onHeroShopNow()"
         >Shop New Arrivals</button>
-        <button
-          type="button"
-          class="btn btn--ghost"
-          (click)="onHeroSmeVerification()"
-        >SME Verification</button>
       </div>
     </div>
   </section>

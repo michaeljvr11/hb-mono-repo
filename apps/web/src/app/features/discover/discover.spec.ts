@@ -411,14 +411,13 @@ describe('Discover', () => {
     expect(freshComponent.isWishlisted('p2')).toBe(false);
   });
 
-  it('SME toggle filters out products without a vendor (platform listings)', () => {
-    expect(component.smeOnly()).toBe(true);
-    expect(component.filteredProducts().length).toBe(1);
-    expect(component.filteredProducts()[0].id).toBe('p2');
+  it('renders the full server result set, including a platform-fulfilled listing with no vendor, with no filters applied', () => {
+    expect(component.products().length).toBe(2);
+    expect(component.products().some((p) => p.id === PLATFORM_LISTING.id && !p.vendor)).toBe(true);
 
-    component.onSmeToggle(false);
-    fixture.detectChanges();
-    expect(component.filteredProducts().length).toBe(2);
+    const el: HTMLElement = fixture.nativeElement;
+    const cards = el.querySelectorAll('app-product-card');
+    expect(cards.length).toBe(2);
   });
 
   it('shows an empty state with a clear-all action when no products match', async () => {

@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { WishlistItemDto } from '@hb/shared';
 import { WishlistService } from '../../core/api/wishlist.service';
 import { CartService } from '../../core/api/cart.service';
 import { formatPrice } from '../../shared/format-price';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
+import { NotificationService } from '../../core/notifications/notification.service';
 
 type LoadState = 'loading' | 'loaded' | 'error';
 
@@ -18,7 +18,7 @@ type LoadState = 'loading' | 'loaded' | 'error';
  */
 @Component({
   selector: 'app-wishlist',
-  imports: [NavBar, Footer, MatSnackBarModule, RouterLink],
+  imports: [NavBar, Footer, RouterLink],
   templateUrl: './wishlist.html',
   styleUrl: './wishlist.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,7 +26,7 @@ type LoadState = 'loading' | 'loaded' | 'error';
 export class Wishlist implements OnInit {
   private readonly wishlistService = inject(WishlistService);
   private readonly cartService = inject(CartService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notificationService = inject(NotificationService);
 
   readonly state = signal<LoadState>('loading');
   /** Product id currently being mutated (disables its row controls while in flight). */
@@ -49,7 +49,7 @@ export class Wishlist implements OnInit {
       next: () => this.busyProductId.set(null),
       error: (err: { error?: { message?: string } }) => {
         this.busyProductId.set(null);
-        this.notify(err?.error?.message ?? 'Could not remove this item.');
+        this.notificationService.error(err?.error?.message ?? 'Could not remove this item.');
       },
     });
   }
@@ -60,25 +60,16 @@ export class Wishlist implements OnInit {
     this.cartService.addItem(item.productId).subscribe({
       next: () => {
         this.busyProductId.set(null);
-        this.notify(`${item.productName} added to cart.`);
+        this.notificationService.success(`${item.productName} added to cart.`);
       },
       error: (err: { error?: { message?: string } }) => {
         this.busyProductId.set(null);
-        this.notify(err?.error?.message ?? 'Could not add this item to your cart.');
+        this.notificationService.error(err?.error?.message ?? 'Could not add this item to your cart.');
       },
     });
   }
 
   format(amount: number, currency: string): string {
     return formatPrice(amount, currency);
-  }
-
-  private notify(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      panelClass: ['hb-info-snackbar'],
-      verticalPosition: 'top',
-    });
   }
 }
