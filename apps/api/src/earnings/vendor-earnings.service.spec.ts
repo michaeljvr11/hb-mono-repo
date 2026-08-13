@@ -395,8 +395,13 @@ describe('VendorEarningsService', () => {
         ...result.accrued,
         ...result.settlementPreview.flatMap((p) => p.netByCurrency),
       ][0].amount;
-      const commission = 1.56; // rounded independently, the documented drift-prone case
-      expect(Math.round((net + commission) * 100) / 100).toBe(10);
+      // Assert the DERIVED net directly rather than re-adding a hardcoded
+      // commission: at 15.55% on gross 10.00, rounding both sides independently
+      // gives 1.56 + 8.45 = 10.01 (drift). Deriving net by subtraction gives
+      // 8.44, so pinning 8.44 is what actually catches a second rounding pass —
+      // a `toBe(10)` sum would still pass if net drifted and commission moved
+      // to match. Widening the range to all-time must not change this.
+      expect(net).toBe(8.44);
     });
   });
 

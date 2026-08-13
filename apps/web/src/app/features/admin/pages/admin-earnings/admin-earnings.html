@@ -14,10 +14,7 @@
   }
 
   <!-- Window selector -->
-  <app-earnings-range-selector
-    [reportFrom]="report()?.from ?? null"
-    (rangeSelected)="onRangeSelected($event)"
-  ></app-earnings-range-selector>
+  <app-earnings-range-selector (rangeSelected)="onRangeSelected($event)"></app-earnings-range-selector>
 
   <!-- Loading state -->
   @if (loading()) {

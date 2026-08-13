@@ -49,7 +49,6 @@ export class VendorEarnings implements OnInit {
 
   onRangeSelected(query: EarningsRangeQuery): void {
     this.currentQuery.set(query);
-    this.settlementPage.set(1);
     this.fetchReport();
   }
 
@@ -60,7 +59,13 @@ export class VendorEarnings implements OnInit {
       next: (data) => {
         this.report.set(data);
         this.loading.set(false);
-        this.settlementPage.set(this.defaultSettlementPage(data.settlementPreview));
+        // The single always-present 'open' period is appended LAST in
+        // settlementPreview (contract doc comment) — so on a long "All time"
+        // history it would land on the FINAL page, which a vendor checking
+        // their current accruing balance would never think to click to.
+        // Land on that last page on every successful load so the open
+        // period is immediately visible rather than merely "reachable".
+        this.settlementPage.set(this.settlementPageCount(data.settlementPreview));
       },
       error: () => {
         this.error.set('Failed to load your earnings report. Please refresh the page.');
@@ -108,11 +113,11 @@ export class VendorEarnings implements OnInit {
     return this.amountFor(period.netByCurrency, currency);
   }
 
-  /** Total pages for the settlement table at the current page size. Always
-   *  at least 1 so page controls have something sane to render against even
-   *  for an empty (impossible, but defensive) list. */
+  /** Total pages for the settlement table at the current page size. The
+   *  contract guarantees exactly one always-present 'open' period, so
+   *  `periods` is never empty and this is never 0. */
   settlementPageCount(periods: SettlementPeriodPreviewDto[]): number {
-    return Math.max(1, Math.ceil(periods.length / SETTLEMENT_PAGE_SIZE));
+    return Math.ceil(periods.length / SETTLEMENT_PAGE_SIZE);
   }
 
   /** The current page's slice of settlement periods, oldest-closed-first
@@ -125,18 +130,6 @@ export class VendorEarnings implements OnInit {
 
   setSettlementPage(page: number): void {
     this.settlementPage.set(page);
-  }
-
-  /** The single always-present `'open'` period is appended LAST in
-   *  `settlementPreview` (contract doc comment) — so on a long "All time"
-   *  history it would land on the FINAL page, which a vendor checking their
-   *  current accruing balance would never think to click to. Land on that
-   *  last page by default whenever the list is non-trivial, so the open
-   *  period is immediately visible rather than merely "reachable". A vendor
-   *  who then pages backward through history keeps that state until their
-   *  next range change resets it to the open period's page again. */
-  private defaultSettlementPage(periods: SettlementPeriodPreviewDto[]): number {
-    return this.settlementPageCount(periods);
   }
 
   /** Known currency symbols. Unknown currencies fall back to the ISO code only —

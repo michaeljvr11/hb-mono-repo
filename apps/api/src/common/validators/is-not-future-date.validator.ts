@@ -1,4 +1,4 @@
-import { registerDecorator, ValidationOptions } from 'class-validator';
+import { registerDecorator, ValidationArguments, ValidationOptions } from 'class-validator';
 
 /**
  * Rejects a date string strictly later than today, evaluated in UTC (the
@@ -44,8 +44,11 @@ export function IsNotFutureDate(validationOptions?: ValidationOptions) {
 
           return valueUtcDateOnly <= todayUtcDateOnly;
         },
-        defaultMessage(): string {
-          return '`to` cannot be a future date';
+        defaultMessage(args: ValidationArguments): string {
+          // Named off the property rather than hardcoding `to` — this decorator
+          // is generic, and the message must not lie the first time someone
+          // applies it to `from`, `effectiveFrom`, or anything else.
+          return `\`${args.property}\` cannot be a future date`;
         },
       },
     });

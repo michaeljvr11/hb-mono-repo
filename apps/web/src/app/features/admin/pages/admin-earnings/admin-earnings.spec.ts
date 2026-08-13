@@ -148,6 +148,12 @@ describe('AdminEarnings component', () => {
 
     const subHeader = fixture.nativeElement.querySelector('.range-sub');
     expect(subHeader.textContent.trim()).toBe('All time');
+
+    // The epoch sentinel the server echoes back as `from` under 'all' must
+    // never leak into any rendered tab label (regression guard for FAIL 1).
+    const allTimeTabs: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.tab-btn'));
+    const tabLabels = allTimeTabs.map((btn) => btn.textContent?.trim() ?? '');
+    expect(tabLabels.some((label) => label.includes('1970'))).toBe(false);
   });
 
   it('re-selecting the already-active window is a no-op (no extra request)', () => {
