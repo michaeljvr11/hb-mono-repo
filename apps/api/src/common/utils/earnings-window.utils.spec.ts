@@ -1,4 +1,4 @@
-import { resolveEarningsWindow } from './earnings-window.utils';
+import { ALL_TIME_START, resolveEarningsWindow } from './earnings-window.utils';
 
 describe('resolveEarningsWindow', () => {
   it('defaults to the current calendar month when neither window nor from/to are supplied', () => {
@@ -106,5 +106,49 @@ describe('resolveEarningsWindow', () => {
 
   it('throws when `from` is after `to`', () => {
     expect(() => resolveEarningsWindow({ from: '2026-02-01', to: '2026-01-01' })).toThrow();
+  });
+
+  it('from === to (a single-day custom range) captures the whole UTC day inclusive, 00:00:00.000 through 23:59:59.999', () => {
+    const { from, to } = resolveEarningsWindow({ from: '2026-03-15', to: '2026-03-15' });
+
+    expect(from).toEqual(new Date('2026-03-15T00:00:00.000Z'));
+    expect(to).toEqual(new Date('2026-03-15T23:59:59.999Z'));
+  });
+
+  describe("window: 'all'", () => {
+    it('resolves to { from: ALL_TIME_START, to: now }, asserted against the exported constant', () => {
+      const now = new Date('2026-08-13T10:00:00.000Z');
+      const { from, to } = resolveEarningsWindow({ window: 'all' }, now);
+
+      expect(from).toEqual(ALL_TIME_START);
+      expect(to).toEqual(now);
+    });
+
+    it('returns a FRESH Date each call — mutating a previously-returned `from` cannot corrupt a later call', () => {
+      const now = new Date('2026-08-13T10:00:00.000Z');
+      const originalSentinelTime = ALL_TIME_START.getTime();
+
+      const first = resolveEarningsWindow({ window: 'all' }, now);
+      first.from.setFullYear(2099); // mutate the Date this call handed back
+
+      // The exported sentinel itself must be untouched by that mutation.
+      expect(ALL_TIME_START.getTime()).toBe(originalSentinelTime);
+
+      // A subsequent call is unaffected — still resolves to the real epoch.
+      const second = resolveEarningsWindow({ window: 'all' }, now);
+      expect(second.from).toEqual(ALL_TIME_START);
+      expect(second.from.getTime()).toBe(originalSentinelTime);
+    });
+
+    it('explicit from/to still wins over window: "all"', () => {
+      const now = new Date('2026-08-13T10:00:00.000Z');
+      const { from, to } = resolveEarningsWindow(
+        { window: 'all', from: '2026-01-01', to: '2026-01-31' },
+        now,
+      );
+
+      expect(from).toEqual(new Date('2026-01-01T00:00:00.000Z'));
+      expect(to).toEqual(new Date('2026-01-31T23:59:59.999Z'));
+    });
   });
 });

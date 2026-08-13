@@ -6,6 +6,7 @@ import { OrderItem } from '../orders/entities/order-item.entity';
 import { Order } from '../orders/entities/order.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
 import { VendorEarningsGroup, VendorEarningsService } from '../earnings/vendor-earnings.service';
+import { ALL_TIME_START } from '../common/utils/earnings-window.utils';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -479,5 +480,57 @@ describe('AdminEarningsService', () => {
     const result = await service.getReport({ ...QUERY, vendorId: 'vendor-1' });
 
     expect(result.platformListingGmvByCurrency).toEqual([]);
+  });
+
+  describe("window: 'all'", () => {
+    it('resolves `from` to the ALL_TIME_START sentinel and returns empty (not null) arrays with zero data', async () => {
+      const result = await service.getReport({ window: 'all' });
+
+      expect(result.from).toBe(ALL_TIME_START.toISOString());
+      expect(result.vendors).toEqual([]);
+      expect(result.platformCommissionByCurrency).toEqual([]);
+      expect(result.platformListingGmvByCurrency).toEqual([]);
+      expect(result.heldForVendorsByCurrency).toEqual([]);
+    });
+
+    it('still excludes pendingClaimWindow from the per-vendor row and keeps ZAR/NAD separate — widening the range never relaxes the accounting rules', async () => {
+      vendorRepo.find.mockResolvedValue([makeVendor({ id: 'vendor-1' })]);
+      vendorEarningsService.getEarningsByVendor.mockResolvedValue(
+        new Map([
+          [
+            'vendor-1',
+            makeGroup({
+              pendingClaimWindow: {
+                orderCount: 5,
+                byCurrency: [
+                  { currency: CurrencyCode.ZAR, commissionAmount: 500, netAmount: 2500 },
+                ],
+              },
+              accrued: {
+                orderCount: 1,
+                byCurrency: [
+                  { currency: CurrencyCode.ZAR, commissionAmount: 15, netAmount: 85 },
+                  { currency: CurrencyCode.NAD, commissionAmount: 15, netAmount: 85 },
+                ],
+              },
+            }),
+          ],
+        ]),
+      );
+
+      const result = await service.getReport({ window: 'all' });
+
+      // pendingClaimWindow's 5 orders/R2500 never leak into the eligible row.
+      expect(result.vendors[0].orderCount).toBe(1);
+      expect(result.vendors[0].netByCurrency).toEqual(
+        expect.arrayContaining([
+          { currency: CurrencyCode.ZAR, amount: 85 },
+          { currency: CurrencyCode.NAD, amount: 85 },
+        ]),
+      );
+      expect(result.vendors[0].netByCurrency).not.toEqual(
+        expect.arrayContaining([expect.objectContaining({ amount: 170 })]),
+      );
+    });
   });
 });
