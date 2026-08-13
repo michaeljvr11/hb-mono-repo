@@ -2,6 +2,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -59,6 +60,17 @@ interface AdminEarningsServiceStub {
   getReport: ReturnType<typeof vi.fn>;
 }
 
+/** Finds a rendered `.tab-btn` (owned by the nested `EarningsRangeSelector`)
+ *  by its visible label. `fixture.nativeElement.querySelectorAll` traverses
+ *  the whole rendered subtree regardless of component boundaries — Angular's
+ *  emulated encapsulation is still a single real DOM tree. */
+function findTab(fixture: ComponentFixture<AdminEarnings>, label: string): HTMLButtonElement {
+  const tabs: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.tab-btn'));
+  const tab = tabs.find((btn) => btn.textContent?.trim() === label);
+  if (!tab) throw new Error(`No tab found with label "${label}"`);
+  return tab;
+}
+
 // ─── Component integration tests ─────────────────────────────────────────────
 
 describe('AdminEarnings component', () => {
@@ -78,6 +90,7 @@ describe('AdminEarnings component', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideNativeDateAdapter(),
         { provide: AdminEarningsService, useValue: stub },
       ],
     }).compileComponents();
@@ -100,30 +113,53 @@ describe('AdminEarnings component', () => {
   });
 
   it('the "Last month" tab label includes the actual month name, not a generic label', () => {
-    const monthTab = component.windowTabs().find((t) => t.value === '1m');
-    expect(monthTab).toBeTruthy();
-    expect(monthTab!.label).not.toBe('Last month');
-    expect(monthTab!.label).toMatch(/^[A-Z][a-z]+ \d{4}$/);
+    const tabs: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.tab-btn'));
+    const labels = tabs.map((btn) => btn.textContent?.trim());
+    const monthLabel = labels.find((label) => !['Last week', 'Last 2 weeks', 'All time'].includes(label ?? ''));
+    expect(monthLabel).toBeTruthy();
+    expect(monthLabel).toMatch(/^[A-Z][a-z]+ \d{4}$/);
   });
 
   it('selecting "Last week" issues a request with window: "1w"', () => {
-    component.setWindow('1w');
+    findTab(fixture, 'Last week').click();
+    fixture.detectChanges();
 
     expect(stub.getReport).toHaveBeenCalledTimes(2);
     expect(stub.getReport).toHaveBeenLastCalledWith({ window: '1w' });
-    expect(component.selectedWindow()).toBe('1w');
+    expect(component.currentQuery()).toEqual({ window: '1w' });
   });
 
   it('selecting "Last 2 weeks" issues a request with window: "2w"', () => {
-    component.setWindow('2w');
+    findTab(fixture, 'Last 2 weeks').click();
+    fixture.detectChanges();
 
     expect(stub.getReport).toHaveBeenCalledTimes(2);
     expect(stub.getReport).toHaveBeenLastCalledWith({ window: '2w' });
-    expect(component.selectedWindow()).toBe('2w');
+    expect(component.currentQuery()).toEqual({ window: '2w' });
+  });
+
+  it('selecting "All time" issues a request with window: "all" and renders "All time" instead of the sentinel date', () => {
+    findTab(fixture, 'All time').click();
+    fixture.detectChanges();
+
+    expect(stub.getReport).toHaveBeenCalledTimes(2);
+    expect(stub.getReport).toHaveBeenLastCalledWith({ window: 'all' });
+    expect(component.currentQuery()).toEqual({ window: 'all' });
+
+    const subHeader = fixture.nativeElement.querySelector('.range-sub');
+    expect(subHeader.textContent.trim()).toBe('All time');
+
+    // The epoch sentinel the server echoes back as `from` under 'all' must
+    // never leak into any rendered tab label (regression guard for FAIL 1).
+    const allTimeTabs: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.tab-btn'));
+    const tabLabels = allTimeTabs.map((btn) => btn.textContent?.trim() ?? '');
+    expect(tabLabels.some((label) => label.includes('1970'))).toBe(false);
   });
 
   it('re-selecting the already-active window is a no-op (no extra request)', () => {
-    component.setWindow('1m');
+    const activeTab: HTMLButtonElement = fixture.nativeElement.querySelector('.tab-btn--active');
+    activeTab.click();
+    fixture.detectChanges();
 
     expect(stub.getReport).toHaveBeenCalledTimes(1);
   });
@@ -175,6 +211,7 @@ describe('AdminEarnings — empty vendors state', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideNativeDateAdapter(),
         { provide: AdminEarningsService, useValue: stub },
       ],
     }).compileComponents();
@@ -204,6 +241,7 @@ describe('AdminEarnings — load error path', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideNativeDateAdapter(),
         { provide: AdminEarningsService, useValue: failStub },
       ],
     }).compileComponents();

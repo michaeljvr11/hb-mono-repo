@@ -1,46 +1,46 @@
 {
-  "generatedAt": "2026-08-12T12:08:20.445Z",
+  "generatedAt": "2026-08-13T19:43:23.761Z",
   "git": {
-    "totalCommits": 199,
-    "aiCommits": 188,
-    "aiPct": 94,
-    "appCommits": 137,
-    "ins": 82567,
-    "del": 7902,
-    "net": 74665,
-    "aiIns": 69053,
-    "aiDel": 7728,
-    "filesTouched": 639,
+    "totalCommits": 204,
+    "aiCommits": 193,
+    "aiPct": 95,
+    "appCommits": 141,
+    "ins": 84300,
+    "del": 8342,
+    "net": 75958,
+    "aiIns": 70786,
+    "aiDel": 8168,
+    "filesTouched": 647,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 85,
-        "ins": 41149,
-        "del": 2364
+        "commits": 88,
+        "ins": 42238,
+        "del": 2667
       },
       {
         "name": "API (NestJS)",
-        "commits": 71,
-        "ins": 22410,
-        "del": 942
+        "commits": 74,
+        "ins": 22894,
+        "del": 952
       },
       {
         "name": "Docs",
-        "commits": 59,
-        "ins": 14711,
-        "del": 4454
+        "commits": 60,
+        "ins": 14849,
+        "del": 4579
       },
       {
         "name": "AI Factory config",
-        "commits": 64,
-        "ins": 2024,
+        "commits": 65,
+        "ins": 2034,
         "del": 104
       },
       {
         "name": "Shared contracts",
-        "commits": 28,
-        "ins": 1291,
-        "del": 14
+        "commits": 29,
+        "ins": 1303,
+        "del": 16
       },
       {
         "name": "Root & config",
@@ -56,8 +56,33 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-12",
+    "lastDate": "2026-08-13",
     "recent": [
+      {
+        "hash": "9bc1071",
+        "subject": "fix: stop the epoch sentinel leaking into the tab label and align the date cap",
+        "ai": true
+      },
+      {
+        "hash": "425d95b",
+        "subject": "test: cover all-time range, future-date guard and the picker timezone trap",
+        "ai": true
+      },
+      {
+        "hash": "ece94ea",
+        "subject": "feat(web): share one earnings range selector with all-time and custom dates",
+        "ai": true
+      },
+      {
+        "hash": "6e1fabf",
+        "subject": "feat(api): add all-time earnings window, future-date guard and range indexes",
+        "ai": true
+      },
+      {
+        "hash": "ae7ff40",
+        "subject": "chore(evidence): recompile AI-authorship report for the storefront UI cleanup batch",
+        "ai": true
+      },
       {
         "hash": "d7e53a3",
         "subject": "fix(web): drop the last verification badge and the SCSS it left behind",
@@ -92,31 +117,6 @@
         "hash": "cdc015b",
         "subject": "fix(web): clear cart state on logout so the nav badge does not leak",
         "ai": true
-      },
-      {
-        "hash": "433d80c",
-        "subject": "chore(evidence): recompile AI-authorship report for the wishlist batch",
-        "ai": true
-      },
-      {
-        "hash": "be481c8",
-        "subject": "test: close hydration-gate and unique-violation coverage gaps",
-        "ai": true
-      },
-      {
-        "hash": "0e8c0ed",
-        "subject": "feat(web): wishlist nav entry + badge, removing the coming-soon stub (WL-5)",
-        "ai": true
-      },
-      {
-        "hash": "1d349e5",
-        "subject": "feat(web): \"Save to wishlist\" action on the product-detail page (WL-3)",
-        "ai": true
-      },
-      {
-        "hash": "9682e6e",
-        "subject": "feat(web): /wishlist list-view page + route (WL-4)",
-        "ai": true
       }
     ]
   },
@@ -145,6 +145,11 @@
       "branch": "feat/DD6Z0NUW-admin-vendor-approvals",
       "cardId": "DD6Z0NUW",
       "slug": "admin-vendor-approvals"
+    },
+    {
+      "branch": "feat/EDR-1-earnings-date-range-picker",
+      "cardId": "EDR",
+      "slug": "1-earnings-date-range-picker"
     },
     {
       "branch": "feat/EFXHykuT-auth-aware-nav",
@@ -333,9 +338,9 @@
     }
   ],
   "tests": {
-    "total": 106,
-    "api": 43,
-    "web": 63
+    "total": 109,
+    "api": 45,
+    "web": 64
   },
   "design": {
     "files": 33,
@@ -363,16 +368,16 @@
     },
     "gatePass": 34,
     "gateFail": 2,
-    "edits": 493,
-    "editsUnfixable": 173,
+    "edits": 515,
+    "editsUnfixable": 179,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-11T21:30:26.447Z",
+    "lastTs": "2026-08-13T19:41:09.062Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 29,
+          "invocations": 37,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -381,7 +386,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 14,
+          "invocations": 15,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -390,7 +395,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 21,
+          "invocations": 23,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -399,7 +404,7 @@
         },
         {
           "agentType": "test-engineer",
-          "invocations": 7,
+          "invocations": 8,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -408,7 +413,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 19,
+          "invocations": 20,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -444,7 +449,7 @@
         },
         {
           "agentType": "product-planner",
-          "invocations": 4,
+          "invocations": 5,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -462,76 +467,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-08-10T20:01:25.346Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T20:13:30.255Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T20:19:32.197Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T20:24:59.644Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T20:35:45.180Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T20:54:49.949Z",
-          "agentType": "test-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T20:59:49.012Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T21:02:40.573Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T21:07:03.442Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-10T21:10:48.179Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-11T19:43:05.279Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-11T20:07:28.273Z",
-          "agentType": "product-planner",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-11T20:17:43.034Z",
-          "agentType": "product-planner",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-11T20:20:47.259Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-11T20:29:33.868Z",
           "agentType": "product-planner",
@@ -561,6 +496,76 @@
           "ts": "2026-08-11T21:30:26.447Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T16:57:25.121Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T17:03:09.672Z",
+          "agentType": "product-planner",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T17:06:56.911Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T17:24:43.092Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T18:56:38.166Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T18:59:01.310Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T18:59:43.234Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T19:06:57.188Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T19:09:35.213Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T19:22:27.196Z",
+          "agentType": "test-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T19:24:10.593Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T19:29:10.192Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T19:32:14.936Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-13T19:41:09.062Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
         }
       ]
     }
@@ -568,6 +573,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/IP59Crue-storefront-ui-cleanup",
+      "number": 51,
+      "state": "MERGED",
+      "title": "Storefront UI cleanup batch: remove the SME Verified concept, centralise snackbars, fix the box-model overflow (UIC-1/2/3)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/51"
+    },
     {
       "headRefName": "fix/cart-reset-on-logout",
       "number": 50,
@@ -926,11 +938,11 @@
     },
     {
       "name": "To Do",
-      "cards": 11
+      "cards": 16
     },
     {
       "name": "In Progress",
-      "cards": 3
+      "cards": 1
     },
     {
       "name": "In Review",
@@ -938,7 +950,7 @@
     },
     {
       "name": "Done",
-      "cards": 63
+      "cards": 66
     },
     {
       "name": "Fable Documentation",

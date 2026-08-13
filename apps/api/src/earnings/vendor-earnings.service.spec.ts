@@ -6,6 +6,7 @@ import { OrderItem } from '../orders/entities/order-item.entity';
 import { Order } from '../orders/entities/order.entity';
 import { Payment } from '../payments/entities/payment.entity';
 import { SETTLEMENT_ANCHOR_DATE } from './earnings.constants';
+import { ALL_TIME_START } from '../common/utils/earnings-window.utils';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -317,6 +318,91 @@ describe('VendorEarningsService', () => {
     expect(result.pendingClaimWindow).toEqual([]);
     expect(result.accrued).toEqual([]);
     expect(result.settlementPreview).toEqual([]);
+  });
+
+  describe("an all-time range (ALL_TIME_START through now, as resolveEarningsWindow('all') would produce)", () => {
+    it('with zero orders in range, returns EMPTY per-currency arrays — never null, never a zero-filled ZAR entry', async () => {
+      stageItems([]);
+
+      const result = await service.getEarnings({}, ALL_TIME_START, new Date());
+
+      expect(result.pendingClaimWindow).toEqual([]);
+      expect(result.accrued).toEqual([]);
+      expect(result.settlementPreview).toEqual([]);
+    });
+
+    it('still excludes a pendingClaimWindow line from every eligible bucket, and keeps ZAR/NAD separate — widening the range changes scope only, never the accounting rules', async () => {
+      const now = new Date('2026-08-13T10:00:00.000Z');
+      const recentlyDelivered = new Date(now.getTime() - 10 * HOUR_MS); // inside the 48h claim window
+      const longAgoDelivered = new Date('2020-01-10T00:00:00.000Z'); // eligible, well past 48h
+      stageItems([
+        makeItem({
+          id: 'inside-claim-window',
+          orderId: 'order-recent',
+          order: makeOrder({ id: 'order-recent', deliveredAt: recentlyDelivered }),
+          currency: CurrencyCode.ZAR,
+        }),
+        makeItem({
+          id: 'eligible-zar',
+          orderId: 'order-old-zar',
+          order: makeOrder({ id: 'order-old-zar', deliveredAt: longAgoDelivered }),
+          currency: CurrencyCode.ZAR,
+        }),
+        makeItem({
+          id: 'eligible-nad',
+          orderId: 'order-old-nad',
+          order: makeOrder({ id: 'order-old-nad', deliveredAt: longAgoDelivered }),
+          currency: CurrencyCode.NAD,
+        }),
+      ]);
+
+      const result = await service.getEarnings({}, ALL_TIME_START, now, now);
+
+      // The 48h-pending line contributes nothing to the eligible buckets.
+      expect(result.pendingClaimWindow).toHaveLength(1);
+      const eligibleZar = [
+        ...result.accrued,
+        ...result.settlementPreview.flatMap((p) => p.netByCurrency),
+      ].filter((c) => c.currency === CurrencyCode.ZAR);
+      expect(eligibleZar).toHaveLength(1); // only the old ZAR line, not the pending one
+      // ZAR and NAD never collapse into one total.
+      const totals = [
+        ...result.accrued,
+        ...result.settlementPreview.flatMap((p) => p.netByCurrency),
+      ];
+      expect(totals).toEqual(
+        expect.arrayContaining([
+          { currency: CurrencyCode.ZAR, amount: 85 },
+          { currency: CurrencyCode.NAD, amount: 85 },
+        ]),
+      );
+    });
+
+    it('commission + net === gross exactly across a wide/all-time range, including a drift-prone rate', async () => {
+      const now = new Date('2026-08-13T10:00:00.000Z');
+      const deliveredAt = new Date('2020-06-01T00:00:00.000Z');
+      stageItems([
+        makeItem({
+          order: makeOrder({ deliveredAt }),
+          unitPrice: '10.00' as never,
+          quantity: 1,
+          commissionRatePercent: 15.55,
+        }),
+      ]);
+
+      const result = await service.getEarnings({}, ALL_TIME_START, now, now);
+      const net = [
+        ...result.accrued,
+        ...result.settlementPreview.flatMap((p) => p.netByCurrency),
+      ][0].amount;
+      // Assert the DERIVED net directly rather than re-adding a hardcoded
+      // commission: at 15.55% on gross 10.00, rounding both sides independently
+      // gives 1.56 + 8.45 = 10.01 (drift). Deriving net by subtraction gives
+      // 8.44, so pinning 8.44 is what actually catches a second rounding pass —
+      // a `toBe(10)` sum would still pass if net drifted and commission moved
+      // to match. Widening the range to all-time must not change this.
+      expect(net).toBe(8.44);
+    });
   });
 
   describe('settlement-anchor bucketing', () => {

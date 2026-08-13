@@ -9,6 +9,7 @@ import {
   VendorEarningsGroup,
   VendorEarningsService,
 } from '../earnings/vendor-earnings.service';
+import { ALL_TIME_START } from '../common/utils/earnings-window.utils';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -364,5 +365,44 @@ describe('VendorEarningsReportService', () => {
       NOW,
       NOW,
     );
+  });
+
+  it("window: 'all' resolves `from` to the ALL_TIME_START sentinel and passes it straight through to VendorEarningsService", async () => {
+    vendorRepo.findOne.mockResolvedValue(makeVendor());
+
+    const result = await service.getMyEarnings('user-1', { window: 'all' }, NOW);
+
+    expect(result.from).toBe(ALL_TIME_START.toISOString());
+    expect(result.to).toBe(NOW.toISOString());
+    expect(vendorEarningsService.getEarningsByVendor).toHaveBeenCalledWith(
+      { vendorId: 'vendor-1' },
+      ALL_TIME_START,
+      NOW,
+      NOW,
+    );
+  });
+
+  it('a custom range with no eligible lines returns an all-zero report, exactly like the zero-activity default case', async () => {
+    vendorRepo.findOne.mockResolvedValue(makeVendor());
+    vendorEarningsService.getEarningsByVendor.mockResolvedValue(new Map());
+
+    const result = await service.getMyEarnings(
+      'user-1',
+      { from: '2019-01-01', to: '2019-12-31' },
+      NOW,
+    );
+
+    expect(result.from).toBe(new Date('2019-01-01T00:00:00.000Z').toISOString());
+    expect(result.to).toBe(new Date('2019-12-31T23:59:59.999Z').toISOString());
+    expect(result.summary.orderCount).toBe(0);
+    expect(result.summary.grossByCurrency).toEqual([]);
+    expect(result.balance).toEqual({ pendingClaimWindowByCurrency: [], accruedByCurrency: [] });
+    // Still exactly one synthetic 'open' settlement entry, all-zero — never a missing row.
+    expect(result.settlementPreview).toHaveLength(1);
+    expect(result.settlementPreview[0]).toMatchObject({
+      orderCount: 0,
+      netByCurrency: [],
+      status: 'open',
+    });
   });
 });

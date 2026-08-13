@@ -24,20 +24,7 @@
   }
 
   <!-- Window selector -->
-  <div class="filter-tabs" role="tablist" aria-label="Reporting window">
-    @for (tab of windowTabs(); track tab.value) {
-      <button
-        class="tab-btn"
-        role="tab"
-        [class.tab-btn--active]="selectedWindow() === tab.value"
-        [attr.aria-selected]="selectedWindow() === tab.value"
-        type="button"
-        (click)="setWindow(tab.value)"
-      >
-        {{ tab.label }}
-      </button>
-    }
-  </div>
+  <app-earnings-range-selector (rangeSelected)="onRangeSelected($event)"></app-earnings-range-selector>
 
   <!-- Loading state -->
   @if (loading()) {
@@ -48,7 +35,11 @@
   }
 
   @if (!loading() && !error() && report(); as data) {
-    <p class="range-sub">{{ data.from | date:'d MMM y' }} – {{ data.to | date:'d MMM y' }}</p>
+    @if (isAllTime()) {
+      <p class="range-sub">All time</p>
+    } @else {
+      <p class="range-sub">{{ data.from | date:'d MMM y' }} – {{ data.to | date:'d MMM y' }}</p>
+    }
 
     <!-- Gross / fee / net summary -->
     <section class="summary-section">
@@ -160,7 +151,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (period of data.settlementPreview; track period.periodStart) {
+            @for (period of pagedSettlementPeriods(data.settlementPreview); track period.periodStart) {
               <tr>
                 <td>{{ period.periodStart | date:'d MMM y' }} – {{ periodDisplayEnd(period) | date:'d MMM y' }}</td>
                 <td>
@@ -183,6 +174,29 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Only shown once the history spans more than one page — the "All time" case
+           this pagination exists for. The current 'open' period is always the LAST
+           entry in settlementPreview (contract-guaranteed), so it lands on the last
+           page; fetchReport() defaults settlementPage to that last page so it's
+           immediately visible rather than merely reachable. -->
+      @if (settlementPageCount(data.settlementPreview) > 1) {
+        <nav class="settlement-pagination" aria-label="Settlement period pages">
+          <button
+            type="button"
+            class="pagination-btn"
+            [disabled]="settlementPage() === 1"
+            (click)="setSettlementPage(settlementPage() - 1)"
+          >Previous</button>
+          <span class="pagination-status">Page {{ settlementPage() }} of {{ settlementPageCount(data.settlementPreview) }}</span>
+          <button
+            type="button"
+            class="pagination-btn"
+            [disabled]="settlementPage() === settlementPageCount(data.settlementPreview)"
+            (click)="setSettlementPage(settlementPage() + 1)"
+          >Next</button>
+        </nav>
+      }
     </section>
   }
 </section>

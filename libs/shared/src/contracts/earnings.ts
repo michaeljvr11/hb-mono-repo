@@ -50,12 +50,22 @@ export interface CommissionRateListDto {
  * CALENDAR MONTH (1st of the month through now), not a rolling 30 days —
  * deliberately mixed semantics, confirmed with the business.
  *
+ * `all` (vault: "Earnings Date-Range Filtering", resolved 2026-08-11) is the
+ * FULL HISTORY — a fixed epoch sentinel start through now. The sentinel is a
+ * server-side implementation detail (`ALL_TIME_START` in
+ * `earnings-window.utils.ts`): the resolved `from` still echoes back on the
+ * report DTO, but clients must render the label "All time" rather than that
+ * raw date. Widening the range changes only WHICH lines are in scope — it
+ * never makes an ineligible line eligible, and no accounting rule shifts.
+ *
  * `EARNINGS_WINDOWS` is the single source of truth for the valid values —
  * runtime validators (`class-validator`'s `@IsIn`) must derive from this
  * array rather than restating the literal union, so adding/removing a preset
- * here can't silently drift from what the API actually accepts.
+ * here can't silently drift from what the API actually accepts. Adding `all`
+ * here is therefore the whole contract change for that preset: both query
+ * DTOs widen with no `@IsIn` edit.
  */
-export const EARNINGS_WINDOWS = ['1w', '2w', '1m'] as const;
+export const EARNINGS_WINDOWS = ['1w', '2w', '1m', 'all'] as const;
 export type EarningsWindow = (typeof EARNINGS_WINDOWS)[number];
 
 /**

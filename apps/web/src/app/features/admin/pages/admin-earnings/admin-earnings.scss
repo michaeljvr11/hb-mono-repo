@@ -44,43 +44,6 @@
   }
 }
 
-/* ─── Window selector tabs ────────────────────────────────────── */
-.filter-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.tab-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border: 1px solid var(--hb-outline-variant);
-  border-radius: 9999px;
-  background: var(--hb-surface-container-lowest);
-  color: var(--hb-on-surface-variant);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
-
-  &:hover {
-    background: var(--hb-surface-container-low);
-    border-color: var(--hb-outline);
-    color: var(--hb-on-surface);
-  }
-
-  &--active {
-    background: color-mix(in srgb, var(--hb-primary) 12%, transparent);
-    border-color: var(--hb-primary);
-    color: var(--hb-primary);
-    font-weight: 600;
-  }
-}
-
 /* ─── Loading state ───────────────────────────────────────────── */
 .state-placeholder {
   display: flex;
