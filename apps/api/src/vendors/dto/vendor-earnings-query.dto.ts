@@ -1,6 +1,7 @@
 import { IsDateString, IsIn, IsOptional } from 'class-validator';
 import { EARNINGS_WINDOWS, VendorEarningsQuery } from '@hb/shared';
 import type { EarningsWindow } from '@hb/shared';
+import { IsNotFutureDate } from '../../common/validators/is-not-future-date.validator';
 
 /**
  * Mirrors `AdminEarningsQueryDto` but implements `VendorEarningsQuery` —
@@ -19,5 +20,6 @@ export class VendorEarningsQueryDto implements VendorEarningsQuery {
 
   @IsOptional()
   @IsDateString()
+  @IsNotFutureDate()
   to?: string;
 }
