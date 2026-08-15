@@ -89,6 +89,32 @@ export class MailService {
   }
 
   /**
+   * Customer order confirmation (TE-5) — the full order (every vendor's
+   * lines + any platform-fulfilled lines) plus the order total, sent once to
+   * the ordering customer. Same figures as the platform email; never a
+   * commission/earnings/payout figure (those never leave vendor/platform-ops
+   * mail — see sendVendorOrderNotification and sendPlatformOrderNotification).
+   */
+  async sendCustomerOrderConfirmation(
+    to: string,
+    recipientName: string,
+    orderId: string,
+    lines: { productName: string; unitPrice: number; currency: string; quantity: number }[],
+    total: number,
+    currency: string,
+  ): Promise<void> {
+    await this.send(to, `Your order ${orderId} is confirmed`, [
+      { type: 'heading', text: `Thanks for your order, ${recipientName}` },
+      { type: 'paragraph', text: `Order ${orderId} includes the following item(s):` },
+      ...lines.map((line) => ({
+        type: 'paragraph' as const,
+        text: `${line.productName} × ${line.quantity} — ${line.unitPrice} ${line.currency}`,
+      })),
+      { type: 'paragraph', text: `Order total: ${total} ${currency}` },
+    ]);
+  }
+
+  /**
    * The single transport seam. Rendering, client resolution and dispatch all
    * sit inside the try: this is the boundary that guarantees no email failure
    * escapes into a caller, and a renderer or config throw would otherwise

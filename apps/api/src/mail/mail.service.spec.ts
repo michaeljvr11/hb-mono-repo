@@ -194,4 +194,47 @@ describe('MailService with RESEND_API_KEY configured', () => {
     expect(payload.html).toContain('Platform Widget');
     expect(payload.html).toContain('420 ZAR');
   });
+
+  // ── TE-5: customer order confirmation ───────────────────────────────────────
+
+  it('sends a customer order confirmation with every line, the order total and explicit currency', async () => {
+    await service.sendCustomerOrderConfirmation(
+      'customer@hb.com',
+      'Casey',
+      'order-1',
+      [
+        { productName: 'Fynbos Honey', unitPrice: 185, currency: 'ZAR', quantity: 2 },
+        { productName: 'Platform Widget', unitPrice: 50, currency: 'ZAR', quantity: 1 },
+      ],
+      420,
+      'ZAR',
+    );
+
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const payload = lastSendPayload();
+    expect(payload.to).toBe('customer@hb.com');
+    expect(payload.html).toContain('Casey');
+    expect(payload.html).toContain('Fynbos Honey');
+    expect(payload.html).toContain('Platform Widget');
+    expect(payload.html).toContain('420 ZAR');
+    // Never a commission/earnings/payout figure — those never leave
+    // vendor/platform-ops mail (see the sendVendorOrderNotification doc comment).
+    expect(payload.html.toLowerCase()).not.toContain('commission');
+    expect(payload.html.toLowerCase()).not.toContain('payout');
+  });
+
+  it('renders the customer order confirmation with the explicit NAD currency, never converting to ZAR', async () => {
+    await service.sendCustomerOrderConfirmation(
+      'customer@hb.com',
+      'Casey',
+      'order-1',
+      [{ productName: 'Fynbos Honey', unitPrice: 185, currency: 'NAD', quantity: 2 }],
+      370,
+      'NAD',
+    );
+
+    const payload = lastSendPayload();
+    expect(payload.html).toContain('185 NAD');
+    expect(payload.html).toContain('370 NAD');
+  });
 });

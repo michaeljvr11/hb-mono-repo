@@ -16,17 +16,15 @@ const RELATIONS = ['items', 'items.vendor', 'items.vendor.user', 'user'];
  * Sends the paid-and-confirmed transactional emails triggered by
  * {@link OrderEvents.PAID}: one per distinct vendor on the order (that
  * vendor's lines only) + exactly one platform-ops email (full line list +
- * order total, to every configured recipient).
+ * order total, to every configured recipient) + exactly one customer
+ * confirmation email (full line list + order total, to the ordering
+ * customer — TE-5).
  *
  * Best-effort, non-blocking — modelled on SearchIndexerService's
  * reload-by-id + `safely()` shape, but see the OrderEvents doc comment:
  * unlike search indexing there is no daily-reindex-style safety net here.
  * Every send (including per-vendor sends within the same event) is isolated
  * so one failure never prevents another recipient's email from going out.
- *
- * TE-5 (next slice) extends this listener with the customer-facing email —
- * kept as a plain class with clearly separated per-recipient-type private
- * methods so that slice is a straightforward addition, not a rewrite.
  */
 @Injectable()
 export class OrderNotificationsListener {
@@ -63,6 +61,7 @@ export class OrderNotificationsListener {
       }
 
       await this.notifyPlatform(order, items);
+      await this.notifyCustomer(order, items);
     });
   }
 
@@ -112,6 +111,25 @@ export class OrderNotificationsListener {
           currency: line.currency,
           quantity: line.quantity,
           vendorId: line.vendorId ?? undefined,
+        })),
+        Number(order.total),
+        order.currency,
+      );
+    });
+  }
+
+  private async notifyCustomer(order: Order, items: OrderItem[]): Promise<void> {
+    await this.safely(`order.paid ${order.id} customer`, async () => {
+      const recipientName = order.user?.firstName ?? 'there';
+      await this.mailService.sendCustomerOrderConfirmation(
+        order.user.email,
+        recipientName,
+        order.id,
+        items.map((line) => ({
+          productName: line.productName,
+          unitPrice: Number(line.unitPrice),
+          currency: line.currency,
+          quantity: line.quantity,
         })),
         Number(order.total),
         order.currency,

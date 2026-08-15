@@ -38,10 +38,11 @@ function makeOrder(overrides: Partial<Order> = {}): Order {
     originCountry: 'ZA',
     destinationCountry: 'NA',
     items: [],
+    user: { id: 'user-1', email: 'customer@hb.com', firstName: 'Casey' } as never,
     createdAt: NOW,
     updatedAt: NOW,
     ...overrides,
-  } as Order;
+  };
 }
 
 describe('OrderNotificationsListener', () => {
@@ -60,6 +61,7 @@ describe('OrderNotificationsListener', () => {
     mailService = {
       sendVendorOrderNotification: jest.fn().mockResolvedValue(undefined),
       sendPlatformOrderNotification: jest.fn().mockResolvedValue(undefined),
+      sendCustomerOrderConfirmation: jest.fn().mockResolvedValue(undefined),
     };
 
     const module = await Test.createTestingModule({
@@ -81,9 +83,10 @@ describe('OrderNotificationsListener', () => {
     await expect(listener.handleOrderPaid({ orderId: 'gone' })).resolves.toBeUndefined();
     expect(mailService.sendVendorOrderNotification).not.toHaveBeenCalled();
     expect(mailService.sendPlatformOrderNotification).not.toHaveBeenCalled();
+    expect(mailService.sendCustomerOrderConfirmation).not.toHaveBeenCalled();
   });
 
-  it('sends one vendor email + one platform email for a single-vendor order', async () => {
+  it('sends one vendor email + one platform email + one customer email for a single-vendor order', async () => {
     const order = makeOrder({ items: [makeOrderItem()] });
     orderRepo.findOne.mockResolvedValue(order);
 
@@ -91,6 +94,7 @@ describe('OrderNotificationsListener', () => {
 
     expect(mailService.sendVendorOrderNotification).toHaveBeenCalledTimes(1);
     expect(mailService.sendPlatformOrderNotification).toHaveBeenCalledTimes(1);
+    expect(mailService.sendCustomerOrderConfirmation).toHaveBeenCalledTimes(1);
   });
 
   it("groups lines per vendor: each vendor email contains only that vendor's lines, never the total", async () => {
@@ -137,7 +141,7 @@ describe('OrderNotificationsListener', () => {
     expect(bCall[3]).toEqual([expect.objectContaining({ productName: 'Rooibos Tea' })]);
   });
 
-  it('multi-vendor order dispatches N vendor emails + exactly 1 platform email', async () => {
+  it('multi-vendor order dispatches N vendor emails + exactly 1 platform email + exactly 1 customer email', async () => {
     const items = [
       makeOrderItem({ id: 'line-a', vendorId: 'vendor-a' }),
       makeOrderItem({ id: 'line-b', vendorId: 'vendor-b' }),
@@ -151,6 +155,47 @@ describe('OrderNotificationsListener', () => {
     // Two distinct vendors (a, b) → two vendor emails, not three (one per line).
     expect(mailService.sendVendorOrderNotification).toHaveBeenCalledTimes(2);
     expect(mailService.sendPlatformOrderNotification).toHaveBeenCalledTimes(1);
+    expect(mailService.sendCustomerOrderConfirmation).toHaveBeenCalledTimes(1);
+  });
+
+  it('gives the customer email every line across every vendor (unlike a vendor email, which is scoped)', async () => {
+    const items = [
+      makeOrderItem({
+        id: 'line-a',
+        vendorId: 'vendor-a',
+        productName: 'Kalahari Salt',
+        vendor: { id: 'vendor-a', businessName: 'Salt Co' } as never,
+      }),
+      makeOrderItem({
+        id: 'line-b',
+        vendorId: 'vendor-b',
+        productName: 'Rooibos Tea',
+        vendor: { id: 'vendor-b', businessName: 'Tea Co' } as never,
+      }),
+    ];
+    const order = makeOrder({ items });
+    orderRepo.findOne.mockResolvedValue(order);
+
+    await listener.handleOrderPaid({ orderId: order.id });
+
+    expect(mailService.sendCustomerOrderConfirmation).toHaveBeenCalledTimes(1);
+    const calls = mailService.sendCustomerOrderConfirmation.mock.calls as unknown as [
+      string,
+      string,
+      string,
+      { productName: string }[],
+      number,
+      string,
+    ][];
+    const [to, , orderId, lines, total, currency] = calls[0];
+    expect(to).toBe('customer@hb.com');
+    expect(orderId).toBe(order.id);
+    expect(lines).toEqual([
+      expect.objectContaining({ productName: 'Kalahari Salt' }),
+      expect.objectContaining({ productName: 'Rooibos Tea' }),
+    ]);
+    expect(total).toBe(370);
+    expect(currency).toBe(CurrencyCode.ZAR);
   });
 
   it('platform-only order (no vendorId lines) sends 0 vendor emails + 1 platform email', async () => {
@@ -229,6 +274,14 @@ describe('OrderNotificationsListener', () => {
       expect.any(Number),
       CurrencyCode.ZAR,
     );
+    expect(mailService.sendCustomerOrderConfirmation).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      order.id,
+      [expect.objectContaining({ currency: CurrencyCode.ZAR })],
+      expect.any(Number),
+      CurrencyCode.ZAR,
+    );
   });
 
   it('does not propagate a throwing/rejecting vendor mail send — other sends still happen', async () => {
@@ -267,6 +320,28 @@ describe('OrderNotificationsListener', () => {
     orderRepo.findOne.mockResolvedValue(order);
 
     await expect(listener.handleOrderPaid({ orderId: order.id })).resolves.toBeUndefined();
+  });
+
+  it('a failing customer-email send does not prevent the vendor/platform sends from completing', async () => {
+    mailService.sendCustomerOrderConfirmation.mockRejectedValue(new Error('Resend down'));
+    const order = makeOrder({ items: [makeOrderItem()] });
+    orderRepo.findOne.mockResolvedValue(order);
+
+    await expect(listener.handleOrderPaid({ orderId: order.id })).resolves.toBeUndefined();
+
+    expect(mailService.sendVendorOrderNotification).toHaveBeenCalledTimes(1);
+    expect(mailService.sendPlatformOrderNotification).toHaveBeenCalledTimes(1);
+  });
+
+  it('a failing vendor/platform send does not prevent the customer send from completing', async () => {
+    mailService.sendVendorOrderNotification.mockRejectedValue(new Error('Resend down'));
+    mailService.sendPlatformOrderNotification.mockRejectedValue(new Error('Resend down'));
+    const order = makeOrder({ items: [makeOrderItem()] });
+    orderRepo.findOne.mockResolvedValue(order);
+
+    await expect(listener.handleOrderPaid({ orderId: order.id })).resolves.toBeUndefined();
+
+    expect(mailService.sendCustomerOrderConfirmation).toHaveBeenCalledTimes(1);
   });
 
   it('reloads the order by id with the relations needed for vendor/user resolution', async () => {
