@@ -49,11 +49,11 @@
 
   &--secondary {
     background: rgba(245, 124, 0, 0.1);
-    color: var(--hb-secondary);
+    color: var(--hb-on-secondary-container);
   }
 
   &--tertiary {
-    background: rgba(2, 110, 0, 0.15);
+    background: rgba(67, 160, 71, 0.15);
     color: var(--hb-primary);
   }
 }

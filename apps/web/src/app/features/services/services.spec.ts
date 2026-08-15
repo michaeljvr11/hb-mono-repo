@@ -47,7 +47,7 @@ describe('Services', () => {
     expect(el.textContent).toContain('Our Services');
     expect(el.textContent).toContain('Personal & Business Import Service');
     expect(el.textContent).toContain('How It Works');
-    expect(el.textContent).toContain('Also Shop the H&B Marketplace');
+    expect(el.textContent).toContain('The H&B Marketplace');
   });
 
   it('links the quote CTA to /contact', () => {

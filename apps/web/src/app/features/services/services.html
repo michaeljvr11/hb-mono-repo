@@ -3,11 +3,11 @@
 <main class="services" aria-label="Our Services">
 
   <!-- ── Hero ──────────────────────────────────────────────────────────── -->
-  <section class="services-hero" [style.--services-hero-image]="heroImage" aria-labelledby="services-hero-heading">
-    <div class="services-hero__overlay" aria-hidden="true"></div>
-    <div class="services-hero__content">
-      <h1 id="services-hero-heading" class="services-hero__title">Our Services</h1>
-      <p class="services-hero__subtitle">
+  <section class="services-hero marketing-hero" [style.--services-hero-image]="heroImage" aria-labelledby="services-hero-heading">
+    <div class="services-hero__overlay marketing-hero__overlay" aria-hidden="true"></div>
+    <div class="services-hero__content marketing-hero__content">
+      <h1 id="services-hero-heading" class="services-hero__title marketing-hero__title">Our Services</h1>
+      <p class="services-hero__subtitle marketing-hero__subtitle">
         We make it easy to get almost anything from South Africa (and beyond) delivered reliably to Namibia.
       </p>
     </div>
@@ -16,7 +16,7 @@
   <!-- ── Procurement Service ──────────────────────────────────────────── -->
   <section class="services-section" aria-labelledby="import-service-heading">
     <div class="services-section__inner">
-      <h2 id="import-service-heading" class="services-section__title">Personal &amp; Business Import Service</h2>
+      <h2 id="import-service-heading" class="services-section__title marketing-section__title">Personal &amp; Business Import Service</h2>
       <p class="services-section__subtitle">
         Can't get it shipped directly? Our <strong>Procurement Service</strong> sources, buys, consolidates,
         and delivers it for you — hassle-free.
@@ -54,7 +54,7 @@
       </div>
 
       <div class="services-cta">
-        <a routerLink="/contact" class="services-cta__btn">Request a Quote Now</a>
+        <a routerLink="/contact" class="services-cta__btn marketing-cta__btn">Request a Quote Now</a>
         <p class="services-cta__text">Whether it's one item or a business bulk order — we're ready to help.</p>
       </div>
     </div>
@@ -63,17 +63,16 @@
   <!-- ── Marketplace cross-link ────────────────────────────────────────── -->
   <section class="services-section services-section--marketplace" aria-labelledby="marketplace-heading">
     <div class="services-section__inner">
-      <h2 id="marketplace-heading" class="services-section__title">Also Shop the H&amp;B Marketplace</h2>
+      <h2 id="marketplace-heading" class="services-section__title marketing-section__title">The H&amp;B Marketplace</h2>
       <div class="services-marketplace-card">
         <p class="services-marketplace-card__lead">
           The <a routerLink="/shop">H&amp;B marketplace</a> lets independent vendors across South Africa and
           Namibia sell their own products directly to you — every listing is vendor-owned stock, not H&amp;B's.
         </p>
         <p class="services-marketplace-card__callout">
-          The Procurement Service above isn't a placeholder while the marketplace grows — it's a standing,
-          complementary service, permanent alongside the marketplace. For anything not listed on the
-          <a routerLink="/shop">marketplace</a>, we source it from South Africa (and beyond) and import it into
-          Namibia on your behalf.
+          The Procurement Service above is a standing, permanent service alongside the marketplace — not a
+          stand-in for it. For anything not listed on the <a routerLink="/shop">marketplace</a>, we source it
+          from South Africa (and beyond) and import it into Namibia on your behalf.
         </p>
       </div>
     </div>
