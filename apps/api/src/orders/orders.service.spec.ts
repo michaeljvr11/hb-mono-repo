@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   BadRequestException,
   ConflictException,
@@ -9,6 +10,7 @@ import {
 import { DataSource, EntityManager, IsNull } from 'typeorm';
 import { CurrencyCode, ListingType, OrderStatus, PaymentStatus, UserRole } from '@hb/shared';
 import { ORDER_STATUS_TRANSITIONS, OrdersService } from './orders.service';
+import { OrderEvents } from '../common/events/domain-events';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Cart } from '../cart/entities/cart.entity';
@@ -103,6 +105,7 @@ describe('OrdersService', () => {
   let orderItemsRepo: Record<string, jest.Mock>;
   let paymentProvider: Record<string, jest.Mock>;
   let commissionRateService: Record<string, jest.Mock>;
+  let eventEmitter: Record<string, jest.Mock>;
   let manager: Record<string, jest.Mock>;
 
   /** Per-entity dispatch for the transactional EntityManager mock. */
@@ -161,6 +164,7 @@ describe('OrdersService', () => {
         }),
       ),
     };
+    eventEmitter = { emit: jest.fn() };
 
     const dataSource = {
       transaction: jest.fn((cb: (m: EntityManager) => Promise<unknown>) =>
@@ -178,6 +182,7 @@ describe('OrdersService', () => {
         { provide: PAYMENT_PROVIDER, useValue: paymentProvider },
         { provide: DataSource, useValue: dataSource },
         { provide: CommissionRateService, useValue: commissionRateService },
+        { provide: EventEmitter2, useValue: eventEmitter },
       ],
     }).compile();
 
@@ -452,6 +457,37 @@ describe('OrdersService', () => {
         expect.objectContaining({ status: PaymentStatus.FAILED }),
       );
       expect(ordersRepo.save).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── order.paid domain event (TE-4) ─────────────────────────────────────────
+
+  describe('create — order.paid domain event', () => {
+    it('emits order.paid exactly once when payment is captured as PAID', async () => {
+      stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct()]);
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
+      expect(eventEmitter.emit).toHaveBeenCalledWith(OrderEvents.PAID, { orderId: 'order-1' });
+    });
+
+    it('does not emit order.paid when payment is FAILED', async () => {
+      stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct()]);
+      paymentProvider.getPaymentStatus.mockResolvedValue('failed');
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('does not emit order.paid when payment is PENDING', async () => {
+      stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct()]);
+      paymentProvider.getPaymentStatus.mockResolvedValue('pending');
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
     });
   });
 

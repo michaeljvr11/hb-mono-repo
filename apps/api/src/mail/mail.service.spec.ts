@@ -150,4 +150,91 @@ describe('MailService with RESEND_API_KEY configured', () => {
     expect(payload.html).not.toContain('javascript:');
     expect(payload.html).toContain('href="#"');
   });
+
+  // ── TE-4: order.paid notifications ─────────────────────────────────────────
+
+  it("sends a vendor order notification with that vendor's lines and explicit per-line currency, no total", async () => {
+    await service.sendVendorOrderNotification('vendor@hb.com', 'Honey Co', 'order-1', [
+      { productName: 'Fynbos Honey', unitPrice: 185, currency: 'ZAR', quantity: 2 },
+    ]);
+
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const payload = lastSendPayload();
+    expect(payload.to).toBe('vendor@hb.com');
+    expect(payload.html).toContain('Honey Co');
+    expect(payload.html).toContain('Fynbos Honey');
+    expect(payload.html).toContain('185.00 ZAR');
+    // Never a commission/earnings/payout figure or an order total.
+    expect(payload.html.toLowerCase()).not.toContain('commission');
+    expect(payload.html.toLowerCase()).not.toContain('total');
+  });
+
+  it('sends a platform order notification to every recipient with the full line list and order total', async () => {
+    await service.sendPlatformOrderNotification(
+      ['ops1@hb.com', 'ops2@hb.com'],
+      'order-1',
+      [
+        {
+          productName: 'Fynbos Honey',
+          unitPrice: 185,
+          currency: 'ZAR',
+          quantity: 2,
+          vendorId: 'v1',
+        },
+        { productName: 'Platform Widget', unitPrice: 50, currency: 'ZAR', quantity: 1 },
+      ],
+      420,
+      'ZAR',
+    );
+
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const payload = lastSendPayload();
+    expect(payload.to).toEqual(['ops1@hb.com', 'ops2@hb.com']);
+    expect(payload.html).toContain('Fynbos Honey');
+    expect(payload.html).toContain('Platform Widget');
+    expect(payload.html).toContain('420.00 ZAR');
+  });
+
+  // ── TE-5: customer order confirmation ───────────────────────────────────────
+
+  it('sends a customer order confirmation with every line, the order total and explicit currency', async () => {
+    await service.sendCustomerOrderConfirmation(
+      'customer@hb.com',
+      'Casey',
+      'order-1',
+      [
+        { productName: 'Fynbos Honey', unitPrice: 185, currency: 'ZAR', quantity: 2 },
+        { productName: 'Platform Widget', unitPrice: 50, currency: 'ZAR', quantity: 1 },
+      ],
+      420,
+      'ZAR',
+    );
+
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const payload = lastSendPayload();
+    expect(payload.to).toBe('customer@hb.com');
+    expect(payload.html).toContain('Casey');
+    expect(payload.html).toContain('Fynbos Honey');
+    expect(payload.html).toContain('Platform Widget');
+    expect(payload.html).toContain('420.00 ZAR');
+    // Never a commission/earnings/payout figure — those never leave
+    // vendor/platform-ops mail (see the sendVendorOrderNotification doc comment).
+    expect(payload.html.toLowerCase()).not.toContain('commission');
+    expect(payload.html.toLowerCase()).not.toContain('payout');
+  });
+
+  it('renders the customer order confirmation with the explicit NAD currency, never converting to ZAR', async () => {
+    await service.sendCustomerOrderConfirmation(
+      'customer@hb.com',
+      'Casey',
+      'order-1',
+      [{ productName: 'Fynbos Honey', unitPrice: 185, currency: 'NAD', quantity: 2 }],
+      370,
+      'NAD',
+    );
+
+    const payload = lastSendPayload();
+    expect(payload.html).toContain('185.00 NAD');
+    expect(payload.html).toContain('370.00 NAD');
+  });
 });

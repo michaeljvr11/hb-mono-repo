@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-08-15T09:38:39.851Z",
+  "generatedAt": "2026-08-15T10:31:21.174Z",
   "git": {
-    "totalCommits": 211,
-    "aiCommits": 200,
+    "totalCommits": 216,
+    "aiCommits": 205,
     "aiPct": 95,
-    "appCommits": 147,
-    "ins": 86455,
-    "del": 8537,
-    "net": 77918,
-    "aiIns": 72941,
-    "aiDel": 8363,
-    "filesTouched": 666,
+    "appCommits": 150,
+    "ins": 87529,
+    "del": 8721,
+    "net": 78808,
+    "aiIns": 74015,
+    "aiDel": 8547,
+    "filesTouched": 668,
     "areaRows": [
       {
         "name": "Web (Angular)",
@@ -20,20 +20,20 @@
       },
       {
         "name": "API (NestJS)",
-        "commits": 78,
-        "ins": 23949,
-        "del": 1007
+        "commits": 81,
+        "ins": 24740,
+        "del": 1027
       },
       {
         "name": "Docs",
-        "commits": 61,
-        "ins": 14997,
-        "del": 4714
+        "commits": 63,
+        "ins": 15181,
+        "del": 4878
       },
       {
         "name": "AI Factory config",
-        "commits": 66,
-        "ins": 2070,
+        "commits": 71,
+        "ins": 2169,
         "del": 104
       },
       {
@@ -58,6 +58,31 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-08-15",
     "recent": [
+      {
+        "hash": "f5d523f",
+        "subject": "fix(api): render order-email amounts to 2dp, guard unloaded customer relation",
+        "ai": true
+      },
+      {
+        "hash": "00a4e67",
+        "subject": "feat(api): order.paid listener also sends customer order confirmation",
+        "ai": true
+      },
+      {
+        "hash": "ac38234",
+        "subject": "feat(api): order.paid event fans out vendor + platform notification emails",
+        "ai": true
+      },
+      {
+        "hash": "f265501",
+        "subject": "chore(evidence): recompile AI-authorship report post PR #53",
+        "ai": true
+      },
+      {
+        "hash": "5ef3292",
+        "subject": "chore(evidence): recompile AI-authorship report for the TE-1/2/3 batch",
+        "ai": true
+      },
       {
         "hash": "2aa2348",
         "subject": "fix(api): contain render failures inside the mail transport guard",
@@ -91,31 +116,6 @@
       {
         "hash": "f01e5b5",
         "subject": "chore(evidence): recompile AI-authorship report for the EDR-1 batch",
-        "ai": true
-      },
-      {
-        "hash": "9bc1071",
-        "subject": "fix: stop the epoch sentinel leaking into the tab label and align the date cap",
-        "ai": true
-      },
-      {
-        "hash": "425d95b",
-        "subject": "test: cover all-time range, future-date guard and the picker timezone trap",
-        "ai": true
-      },
-      {
-        "hash": "ece94ea",
-        "subject": "feat(web): share one earnings range selector with all-time and custom dates",
-        "ai": true
-      },
-      {
-        "hash": "6e1fabf",
-        "subject": "feat(api): add all-time earnings window, future-date guard and range indexes",
-        "ai": true
-      },
-      {
-        "hash": "ae7ff40",
-        "subject": "chore(evidence): recompile AI-authorship report for the storefront UI cleanup batch",
         "ai": true
       }
     ]
@@ -302,6 +302,11 @@
       "slug": "public-vendor-profile"
     },
     {
+      "branch": "feat/wygImWJb-order-paid-notifications",
+      "cardId": "wygImWJb",
+      "slug": "order-paid-notifications"
+    },
+    {
       "branch": "feat/y3fz4TC2-vendor-profile-editor",
       "cardId": "y3fz4TC2",
       "slug": "vendor-profile-editor"
@@ -343,8 +348,8 @@
     }
   ],
   "tests": {
-    "total": 115,
-    "api": 50,
+    "total": 116,
+    "api": 51,
     "web": 65
   },
   "design": {
@@ -364,25 +369,26 @@
   },
   "telemetry": {
     "present": true,
-    "prodBlocks": 21,
+    "prodBlocks": 23,
     "blockReasons": {
       "push names a protected branch": 17,
       "force push": 1,
       "gh pr merge is human-only": 2,
-      "merge/rebase while on protected branch 'main'": 1
+      "merge/rebase while on protected branch 'main'": 2,
+      "bare push from protected branch 'main'": 1
     },
     "gatePass": 34,
     "gateFail": 2,
-    "edits": 562,
-    "editsUnfixable": 191,
+    "edits": 599,
+    "editsUnfixable": 201,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-15T09:37:27.143Z",
+    "lastTs": "2026-08-15T10:30:50.018Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 40,
+          "invocations": 41,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -391,7 +397,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 18,
+          "invocations": 20,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -418,7 +424,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 21,
+          "invocations": 22,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -436,7 +442,7 @@
         },
         {
           "agentType": "docs-writer",
-          "invocations": 12,
+          "invocations": 13,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -472,31 +478,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-08-13T17:24:43.092Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-13T18:56:38.166Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-13T18:59:01.310Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-13T18:59:43.234Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-13T19:06:57.188Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-13T19:09:35.213Z",
           "agentType": "unknown",
@@ -571,6 +552,31 @@
           "ts": "2026-08-15T09:34:18.918Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T09:57:08.395Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T10:11:37.157Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T10:16:37.066Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T10:23:31.634Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T10:30:50.018Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
         }
       ]
     }
@@ -578,6 +584,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/e7WlyfLC-transactional-email-foundations",
+      "number": 53,
+      "state": "MERGED",
+      "title": "Transactional email foundations (TE-1/TE-2/TE-3): branded template, platform notification setting, vendor override",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/53"
+    },
     {
       "headRefName": "feat/EDR-1-earnings-date-range-picker",
       "number": 52,
@@ -954,7 +967,7 @@
     },
     {
       "name": "In Progress",
-      "cards": 3
+      "cards": 2
     },
     {
       "name": "In Review",
@@ -962,7 +975,7 @@
     },
     {
       "name": "Done",
-      "cards": 67
+      "cards": 70
     },
     {
       "name": "Fable Documentation",

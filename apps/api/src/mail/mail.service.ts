@@ -4,6 +4,15 @@ import { Resend } from 'resend';
 import { EmailContentBlock, renderEmail } from './email-template';
 
 /**
+ * `numeric(12,2)` columns come back from TypeORM as strings; `Number()`
+ * alone drops trailing zeros (`"185.00"` → `185`). Every money interpolation
+ * in this file must go through here so `1250.5` never reaches an inbox.
+ */
+function formatMoney(amount: number): string {
+  return amount.toFixed(2);
+}
+
+/**
  * Transactional email via Resend. The API key lives in apps/api/.env
  * (RESEND_API_KEY) — never committed. When the key is absent (CI / fresh dev
  * checkout) sends are skipped with a warning instead of throwing, so auth flows
@@ -33,6 +42,84 @@ export class MailService {
       { type: 'paragraph', text: 'Welcome to H&B.' },
       { type: 'link', text: 'Verify your email address', href: link },
       { type: 'paragraph', text: 'This link expires in 24 hours and unlocks checkout.' },
+    ]);
+  }
+
+  /**
+   * Vendor-scoped order notification (TE-4) — only this vendor's lines, no
+   * order total, no commission/earnings/payout figures (vault: Vendor
+   * Earnings & Commission — those numbers live in the vendor earnings
+   * report, never a transactional email).
+   */
+  async sendVendorOrderNotification(
+    to: string,
+    businessName: string,
+    orderId: string,
+    lines: { productName: string; unitPrice: number; currency: string; quantity: number }[],
+  ): Promise<void> {
+    await this.send(to, `New order — ${orderId}`, [
+      { type: 'heading', text: `New order for ${businessName}` },
+      { type: 'paragraph', text: `Order ${orderId} includes the following item(s) from you:` },
+      ...lines.map((line) => ({
+        type: 'paragraph' as const,
+        text: `${line.productName} × ${line.quantity} — ${formatMoney(line.unitPrice)} ${line.currency}`,
+      })),
+    ]);
+  }
+
+  /**
+   * Platform-ops order notification (TE-4) — the full order (vendor +
+   * platform lines) plus the order total, sent once to every configured
+   * recipient in a single dispatch.
+   */
+  async sendPlatformOrderNotification(
+    to: string[],
+    orderId: string,
+    lines: {
+      productName: string;
+      unitPrice: number;
+      currency: string;
+      quantity: number;
+      vendorId?: string;
+    }[],
+    total: number,
+    currency: string,
+  ): Promise<void> {
+    await this.send(to, `New paid order — ${orderId}`, [
+      { type: 'heading', text: `Order ${orderId} paid and confirmed` },
+      ...lines.map((line) => ({
+        type: 'paragraph' as const,
+        text: `${line.productName} × ${line.quantity} — ${formatMoney(line.unitPrice)} ${line.currency}${
+          line.vendorId ? ` (vendor ${line.vendorId})` : ' (platform)'
+        }`,
+      })),
+      { type: 'paragraph', text: `Order total: ${formatMoney(total)} ${currency}` },
+    ]);
+  }
+
+  /**
+   * Customer order confirmation (TE-5) — the full order (every vendor's
+   * lines + any platform-fulfilled lines) plus the order total, sent once to
+   * the ordering customer. Same figures as the platform email; never a
+   * commission/earnings/payout figure (those never leave vendor/platform-ops
+   * mail — see sendVendorOrderNotification and sendPlatformOrderNotification).
+   */
+  async sendCustomerOrderConfirmation(
+    to: string,
+    recipientName: string,
+    orderId: string,
+    lines: { productName: string; unitPrice: number; currency: string; quantity: number }[],
+    total: number,
+    currency: string,
+  ): Promise<void> {
+    await this.send(to, `Your order ${orderId} is confirmed`, [
+      { type: 'heading', text: `Thanks for your order, ${recipientName}` },
+      { type: 'paragraph', text: `Order ${orderId} includes the following item(s):` },
+      ...lines.map((line) => ({
+        type: 'paragraph' as const,
+        text: `${line.productName} × ${line.quantity} — ${formatMoney(line.unitPrice)} ${line.currency}`,
+      })),
+      { type: 'paragraph', text: `Order total: ${formatMoney(total)} ${currency}` },
     ]);
   }
 
