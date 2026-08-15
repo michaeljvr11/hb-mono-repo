@@ -92,8 +92,11 @@
   font-weight: 600;
   text-decoration: none;
 
+  /* LSM-1 contrast fix: white on --hb-primary-container is 3.30:1 (fails
+     AA); flip text to --hb-on-surface on hover (~5.20:1) instead of the fill. */
   &:hover {
     background: var(--hb-primary-container);
+    color: var(--hb-on-surface);
   }
 }
 
@@ -132,7 +135,7 @@
   align-items: center;
   gap: 4px;
   background: #e8f5e9;
-  border: 1px solid rgba(1, 83, 0, 0.2);
+  border: 1px solid rgba(46, 125, 50, 0.2);
   color: var(--hb-primary);
   font-size: 10px;
   font-weight: 700;
@@ -282,7 +285,7 @@
   &:focus {
     outline: none;
     border-color: var(--hb-primary);
-    box-shadow: 0 0 0 2px rgba(1, 83, 0, 0.1);
+    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
   }
 }
 
@@ -300,7 +303,7 @@
   padding: 16px;
   border: 2px solid var(--hb-primary);
   border-radius: 12px;
-  background: rgba(1, 83, 0, 0.05);
+  background: rgba(46, 125, 50, 0.05);
 
   .material-symbols-outlined {
     color: var(--hb-primary);
@@ -424,7 +427,7 @@
   margin: 16px 0;
   padding: 8px;
   border-radius: 8px;
-  border: 1px solid rgba(150, 73, 0, 0.3);
+  border: 1px solid rgba(245, 124, 0, 0.3);
   background: rgba(255, 220, 199, 0.2);
   font-size: 12px;
   color: var(--hb-on-secondary-container, #703500);
@@ -443,8 +446,12 @@
   width: 100%;
   padding: 16px;
   border: none;
-  border-radius: 12px;
-  background: var(--hb-primary-container);
+  border-radius: var(--hb-radius-pill);
+  /* LSM-1 contrast fix: white on the resting fill needs AA. --hb-primary
+     (#2e7d32) is 5.13:1; the old resting fill --hb-primary-container
+     (#43a047) was only 3.30:1. Swapped so the lighter container is the
+     hover-only accent, matching its documented "hover accents" role. */
+  background: var(--hb-primary);
   color: var(--hb-on-primary);
   font-family: inherit;
   font-size: 14px;
@@ -452,8 +459,13 @@
   cursor: pointer;
   transition: transform 100ms ease, background 150ms ease;
 
+  /* Same contrast issue reappears here on hover (white text unchanged, fill
+     goes to --hb-primary-container = 3.30:1): flip text to --hb-on-surface
+     (~5.20:1) on hover too. This also makes the hover state read more
+     clearly as a state change (fill + text both shift), not less. */
   &:hover:not(:disabled) {
-    background: var(--hb-primary);
+    background: var(--hb-primary-container);
+    color: var(--hb-on-surface);
   }
 
   &:active:not(:disabled) {

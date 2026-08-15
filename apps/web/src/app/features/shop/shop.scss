@@ -37,6 +37,7 @@
   transition: filter 150ms ease, background 150ms ease;
 
   &--primary {
+    border-radius: var(--hb-radius-pill);
     background: var(--hb-primary);
     color: var(--hb-on-primary);
 
@@ -171,8 +172,8 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    rgba(1, 83, 0, 0.55),
-    rgba(1, 83, 0, 0.3)
+    rgba(46, 125, 50, 0.55),
+    rgba(46, 125, 50, 0.3)
   );
   pointer-events: none;
 }
@@ -282,7 +283,7 @@
 
   &:hover {
     border-color: var(--hb-primary);
-    box-shadow: 0 2px 8px rgba(1, 83, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
   }
 }
 
@@ -293,7 +294,7 @@
   width: 56px;
   height: 56px;
   border-radius: 12px;
-  background: rgba(1, 83, 0, 0.08);
+  background: rgba(46, 125, 50, 0.08);
   color: var(--hb-primary);
 }
 
@@ -422,7 +423,7 @@
   &:focus {
     outline: none;
     border-color: var(--hb-primary);
-    box-shadow: 0 0 0 2px rgba(1, 83, 0, 0.1);
+    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
   }
 }
 

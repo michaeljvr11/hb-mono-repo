@@ -11,6 +11,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
 import { WishlistService } from '../../core/api/wishlist.service';
 import { NotificationService } from '../../core/notifications/notification.service';
+import { SITE_IMAGES } from '../../shared/constants/image.constants';
 
 @Component({
   selector: 'app-nav-bar',
@@ -19,6 +20,8 @@ import { NotificationService } from '../../core/notifications/notification.servi
   styleUrl: './nav-bar.scss',
 })
 export class NavBar {
+  protected readonly brandLogo = SITE_IMAGES.logo;
+
   private readonly notificationService = inject(NotificationService);
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);

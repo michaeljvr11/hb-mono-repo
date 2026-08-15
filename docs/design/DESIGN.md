@@ -31,10 +31,10 @@ Tokens in this file are **canonical** — exported HTML is reference material, n
 ### Colors
 | Token | Value | Usage |
 |---|---|---|
-| `--hb-primary` | `#015300` | Primary actions, links, focus ring |
-| `--hb-primary-container` | `#026e00` | Lighter primary / hover accents |
+| `--hb-primary` | `#2e7d32` | Primary actions, links, focus ring |
+| `--hb-primary-container` | `#43a047` | Lighter primary / hover accents (hand-picked, not Material-generated — see LSM-1) |
 | `--hb-on-primary` | `#ffffff` | Text/icons on primary |
-| `--hb-secondary` | `#964900` | Accent (earth-tone), auxiliary icons |
+| `--hb-secondary` | `#f57c00` | Accent (earth-tone), auxiliary icons |
 | `--hb-secondary-fixed` | `#ffdcc7` | Soft accent fill (badges, status pills) |
 | `--hb-on-secondary-container` | `#703500` | Text/icons on secondary-fixed |
 | `--hb-background` | `#fcf9f8` | Page background |
@@ -49,7 +49,7 @@ Tokens in this file are **canonical** — exported HTML is reference material, n
 | `--hb-error` | `#ba1a1a` | Validation / error text |
 | `--hb-scrim` | `rgba(0,0,0,0.35)` | Modal / drawer overlay scrim |
 
-Focus ring: border `#015300` + `box-shadow: 0 0 0 2px rgba(1,83,0,0.1)`.
+Focus ring: border `#2e7d32` + `box-shadow: 0 0 0 2px rgba(46,125,50,0.1)`.
 
 ### Typography
 | Token | Value |
@@ -71,7 +71,9 @@ Icons: **Material Symbols Outlined** (loaded in `apps/web/src/index.html`).
 ### Spacing & shape
 Base-8 scale: `stack-xs 4px`, `stack-sm 8px`, `stack-md 16px`, `stack-lg 24px`, `stack-xl 48px`;
 page margins `16px` (mobile) / `40px` (desktop); container max `1280px`.
-Radius: `4px` (small), `8px` / `lg` (buttons, inputs, cards), `12px` / `xl` (large cards, modals), `full`.
+Radius: `4px` (small), `8px` / `lg` (buttons, inputs, cards), `12px` / `xl` (large cards, modals),
+`full` — token `--hb-radius-pill: 9999px`, applied to primary/CTA buttons only (auth
+primary actions, storefront/PDP/cart/checkout CTAs); not a global button override.
 
 ## Screens
 All seven screens are pulled into `docs/design/<screen>/` and mirrored as `@dsCard` cards in

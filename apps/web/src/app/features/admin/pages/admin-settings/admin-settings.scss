@@ -146,7 +146,7 @@
     &:focus {
       outline: none;
       border-color: var(--hb-primary);
-      box-shadow: 0 0 0 2px rgba(1, 83, 0, 0.1);
+      box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
     }
 
     &:disabled {
@@ -190,8 +190,10 @@
     background: var(--hb-primary);
     color: var(--hb-on-primary);
 
+    /* LSM-1 contrast fix: white on --hb-primary-container is 3.30:1 (fails AA). */
     &:hover:not(:disabled) {
       background: var(--hb-primary-container);
+      color: var(--hb-on-surface);
     }
   }
 

@@ -34,7 +34,7 @@
   bottom: 0;
   border-radius: 50%;
   border: 1.5px solid rgba(255, 255, 255, 0.55);
-  background: radial-gradient(circle at center, rgba(1, 83, 0, 0) 60%, rgba(1, 83, 0, 0.06) 100%);
+  background: radial-gradient(circle at center, rgba(46, 125, 50, 0) 60%, rgba(46, 125, 50, 0.06) 100%);
   opacity: 0;
   transform: translate(50%, 50%) scale(0.4);
   transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
@@ -58,7 +58,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-primary);
   text-decoration: none;
-  box-shadow: 0 8px 22px -6px rgba(1, 40, 0, 0.45), inset 0 0 0 1px rgba(1, 83, 0, 0.12);
+  box-shadow: 0 8px 22px -6px rgba(22, 60, 24, 0.45), inset 0 0 0 1px rgba(46, 125, 50, 0.12);
   transform: translate(var(--dx), var(--dy)) scale(0.2);
   opacity: 0;
   pointer-events: none;
@@ -94,7 +94,9 @@
   justify-content: center;
   border-radius: 9999px;
   background: var(--hb-secondary);
-  color: var(--hb-on-primary);
+  /* LSM-1 contrast fix: white-on-secondary was 2.70:1 (fails AA) against the
+     new brighter #f57c00. --hb-on-surface on --hb-secondary is ~6.35:1. */
+  color: var(--hb-on-surface);
   font-size: 11px;
   font-weight: 700;
   line-height: 1;
@@ -143,7 +145,7 @@
   padding: 0;
   border-top-left-radius: 100%;
   background: radial-gradient(120% 120% at 100% 100%, var(--hb-primary-container) 0%, var(--hb-primary) 70%);
-  box-shadow: -6px -6px 22px -6px rgba(1, 40, 0, 0.5);
+  box-shadow: -6px -6px 22px -6px rgba(22, 60, 24, 0.5);
   pointer-events: auto;
   cursor: pointer;
   z-index: 5;
@@ -186,13 +188,13 @@
 
 @keyframes radial-nav-pulse {
   0% {
-    box-shadow: -2px -2px 0 0 rgba(1, 83, 0, 0.4);
+    box-shadow: -2px -2px 0 0 rgba(46, 125, 50, 0.4);
   }
   70% {
-    box-shadow: -22px -22px 0 14px rgba(1, 83, 0, 0);
+    box-shadow: -22px -22px 0 14px rgba(46, 125, 50, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(1, 83, 0, 0);
+    box-shadow: 0 0 0 0 rgba(46, 125, 50, 0);
   }
 }
 

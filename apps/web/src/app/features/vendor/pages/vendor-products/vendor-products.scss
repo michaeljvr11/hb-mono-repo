@@ -49,7 +49,8 @@
   transition: background 150ms ease;
 
   .material-symbols-outlined { font-size: 18px; }
-  &:hover:not(:disabled) { background: var(--hb-primary-container); }
+  /* LSM-1 contrast fix: white on --hb-primary-container is 3.30:1 (fails AA). */
+  &:hover:not(:disabled) { background: var(--hb-primary-container); color: var(--hb-on-surface); }
   &:disabled { opacity: 0.5; cursor: default; }
 }
 
@@ -385,7 +386,8 @@
     border: 0;
     background: var(--hb-primary);
     color: var(--hb-on-primary);
-    &:hover:not(:disabled) { background: var(--hb-primary-container); }
+    /* LSM-1 contrast fix: white on --hb-primary-container is 3.30:1 (fails AA). */
+    &:hover:not(:disabled) { background: var(--hb-primary-container); color: var(--hb-on-surface); }
   }
 
   &--secondary {

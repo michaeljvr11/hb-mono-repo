@@ -187,8 +187,11 @@ form {
   transition: background 160ms ease;
   align-self: flex-start;
 
+  /* LSM-1 contrast fix: white on --hb-primary-container is 3.30:1 (fails
+     AA); flip text to --hb-on-surface on hover (~5.20:1) instead of the fill. */
   &:hover:not(:disabled) {
     background: var(--hb-primary-container);
+    color: var(--hb-on-surface);
   }
 
   &:disabled {

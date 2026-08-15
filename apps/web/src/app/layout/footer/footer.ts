@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { SITE_IMAGES } from '../../shared/constants/image.constants';
 
 @Component({
   selector: 'app-footer',
@@ -8,4 +9,5 @@ import { Component } from '@angular/core';
 })
 export class Footer {
   readonly currentYear = new Date().getFullYear();
+  protected readonly brandLogo = SITE_IMAGES.logo;
 }
