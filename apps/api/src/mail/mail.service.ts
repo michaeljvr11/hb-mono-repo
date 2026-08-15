@@ -37,6 +37,58 @@ export class MailService {
   }
 
   /**
+   * Vendor-scoped order notification (TE-4) — only this vendor's lines, no
+   * order total, no commission/earnings/payout figures (vault: Vendor
+   * Earnings & Commission — those numbers live in the vendor earnings
+   * report, never a transactional email).
+   */
+  async sendVendorOrderNotification(
+    to: string,
+    businessName: string,
+    orderId: string,
+    lines: { productName: string; unitPrice: number; currency: string; quantity: number }[],
+  ): Promise<void> {
+    await this.send(to, `New order — ${orderId}`, [
+      { type: 'heading', text: `New order for ${businessName}` },
+      { type: 'paragraph', text: `Order ${orderId} includes the following item(s) from you:` },
+      ...lines.map((line) => ({
+        type: 'paragraph' as const,
+        text: `${line.productName} × ${line.quantity} — ${line.unitPrice} ${line.currency}`,
+      })),
+    ]);
+  }
+
+  /**
+   * Platform-ops order notification (TE-4) — the full order (vendor +
+   * platform lines) plus the order total, sent once to every configured
+   * recipient in a single dispatch.
+   */
+  async sendPlatformOrderNotification(
+    to: string[],
+    orderId: string,
+    lines: {
+      productName: string;
+      unitPrice: number;
+      currency: string;
+      quantity: number;
+      vendorId?: string;
+    }[],
+    total: number,
+    currency: string,
+  ): Promise<void> {
+    await this.send(to, `New paid order — ${orderId}`, [
+      { type: 'heading', text: `Order ${orderId} paid and confirmed` },
+      ...lines.map((line) => ({
+        type: 'paragraph' as const,
+        text: `${line.productName} × ${line.quantity} — ${line.unitPrice} ${line.currency}${
+          line.vendorId ? ` (vendor ${line.vendorId})` : ' (platform)'
+        }`,
+      })),
+      { type: 'paragraph', text: `Order total: ${total} ${currency}` },
+    ]);
+  }
+
+  /**
    * The single transport seam. Rendering, client resolution and dispatch all
    * sit inside the try: this is the boundary that guarantees no email failure
    * escapes into a caller, and a renderer or config throw would otherwise

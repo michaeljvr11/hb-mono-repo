@@ -752,3 +752,19 @@
 {"ts":"2026-08-15T09:56:48.957Z","type":"prod_fence_block","reason":"bare push from protected branch 'main'","command":"cd \"C:/Users/michael.jvanrensburg/vscode/hb-vault\" && git add \"Earnings Date-Range Filtering.md\" && git commit -m \"$(cat <<'EOF'\ndocs(edr-1): link EDR-2/EDR-3 follow-up cards, fix missing SQL bullet\n\nFollow-ups section only spelled out the composite-index item; the\nSQL-aggregation item was buried in"}
 {"ts":"2026-08-15T09:57:08.395Z","type":"agent_token_usage","agentType":"unknown","agentId":"a317896eb2a9f90fc","sessionId":"66da8c68-a202-4876-bdcb-742ef3bcf2d2","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
 {"ts":"2026-08-15T10:00:11.284Z","type":"prod_fence_block","reason":"merge/rebase while on protected branch 'main'","command":"git add .claude/factory-log.jsonl docs/ai-evidence/REPORT.md docs/ai-evidence/report.js docs/ai-evidence/report.json && git commit -m \"$(cat <<'EOF'\nchore(evidence): recompile AI-authorship report after PR #53 merge\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\""}
+{"ts":"2026-08-15T10:05:50.010Z","type":"edit_lint","file":"apps/api/src/common/events/domain-events.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-15T10:06:01.307Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-08-15T10:06:07.993Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-08-15T10:06:14.959Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-08-15T10:06:21.889Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-15T10:06:42.140Z","type":"edit_lint","file":"apps/api/src/mail/mail.service.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-15T10:07:04.221Z","type":"edit_lint","file":"apps/api/src/orders/order-notifications.listener.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-08-15T10:07:19.476Z","type":"edit_lint","file":"apps/api/src/orders/orders.module.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-15T10:07:43.827Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-08-15T10:07:54.942Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-08-15T10:08:01.872Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-08-15T10:08:08.844Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":false,"tool":"Edit"}
+{"ts":"2026-08-15T10:08:24.440Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-15T10:09:04.041Z","type":"edit_lint","file":"apps/api/src/orders/order-notifications.listener.spec.ts","autofixed":true,"tool":"Write"}
+{"ts":"2026-08-15T10:09:20.473Z","type":"edit_lint","file":"apps/api/src/mail/mail.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-15T10:11:37.157Z","type":"agent_token_usage","agentType":"backend-engineer","agentId":"a9d3f833fbc0ac49a","sessionId":"2095cbfc-cabd-4d8d-923a-efc8ab5d2454","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}

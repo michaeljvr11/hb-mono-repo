@@ -150,4 +150,48 @@ describe('MailService with RESEND_API_KEY configured', () => {
     expect(payload.html).not.toContain('javascript:');
     expect(payload.html).toContain('href="#"');
   });
+
+  // ── TE-4: order.paid notifications ─────────────────────────────────────────
+
+  it("sends a vendor order notification with that vendor's lines and explicit per-line currency, no total", async () => {
+    await service.sendVendorOrderNotification('vendor@hb.com', 'Honey Co', 'order-1', [
+      { productName: 'Fynbos Honey', unitPrice: 185, currency: 'ZAR', quantity: 2 },
+    ]);
+
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const payload = lastSendPayload();
+    expect(payload.to).toBe('vendor@hb.com');
+    expect(payload.html).toContain('Honey Co');
+    expect(payload.html).toContain('Fynbos Honey');
+    expect(payload.html).toContain('185 ZAR');
+    // Never a commission/earnings/payout figure or an order total.
+    expect(payload.html.toLowerCase()).not.toContain('commission');
+    expect(payload.html.toLowerCase()).not.toContain('total');
+  });
+
+  it('sends a platform order notification to every recipient with the full line list and order total', async () => {
+    await service.sendPlatformOrderNotification(
+      ['ops1@hb.com', 'ops2@hb.com'],
+      'order-1',
+      [
+        {
+          productName: 'Fynbos Honey',
+          unitPrice: 185,
+          currency: 'ZAR',
+          quantity: 2,
+          vendorId: 'v1',
+        },
+        { productName: 'Platform Widget', unitPrice: 50, currency: 'ZAR', quantity: 1 },
+      ],
+      420,
+      'ZAR',
+    );
+
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const payload = lastSendPayload();
+    expect(payload.to).toEqual(['ops1@hb.com', 'ops2@hb.com']);
+    expect(payload.html).toContain('Fynbos Honey');
+    expect(payload.html).toContain('Platform Widget');
+    expect(payload.html).toContain('420 ZAR');
+  });
 });

@@ -8,6 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DataSource, IsNull, Repository } from 'typeorm';
 import {
   AddressDto,
@@ -33,6 +34,7 @@ import { PAYMENT_PROVIDER } from '../payments/payment-provider.port';
 import type { PaymentProviderPort } from '../payments/payment-provider.port';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CommissionRateService } from '../commission/commission-rate.service';
+import { OrderEvents } from '../common/events/domain-events';
 
 /**
  * Order State Machine (vault: "Order State Machine", confirmed 2026-06-18):
@@ -77,6 +79,7 @@ export class OrdersService {
     private readonly paymentProvider: PaymentProviderPort,
     private readonly dataSource: DataSource,
     private readonly commissionRateService: CommissionRateService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async findAllForUser(userId: string): Promise<OrderDto[]> {
@@ -349,6 +352,11 @@ export class OrdersService {
       this.assertValidTransition(order.status, OrderStatus.CONFIRMED);
       order.status = OrderStatus.CONFIRMED;
       await this.ordersRepository.save(order);
+
+      // Paid-and-confirmed → vendor/platform transactional notifications
+      // (OrderNotificationsListener). Best-effort, no safety net (see
+      // OrderEvents doc comment) — must never affect this request/response.
+      this.eventEmitter.emit(OrderEvents.PAID, { orderId: order.id });
     } else {
       this.logger.warn(
         `Payment for order ${order.id} is '${providerStatus}' — order stays '${order.status}'`,
