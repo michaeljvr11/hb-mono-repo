@@ -191,6 +191,36 @@ describe('VendorsService', () => {
       );
       expect(result.notificationEmail).toBe('orders@roots-and-shoots.example');
     });
+
+    // The clear path is the subtle one: Object.assign copies an explicit null
+    // but skips an omitted key, so null has to survive all the way to save()
+    // for a vendor to be able to drop back to the account-email default.
+    it('persists an explicit null so the override clears back to the account email', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(
+        mockVendor({ id: 'v1', userId: 'u1', notificationEmail: 'old@example.com' }),
+      );
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+
+      const result = await service.update('v1', { notificationEmail: null }, owner);
+
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ notificationEmail: null }),
+      );
+      expect(result.notificationEmail).toBeNull();
+    });
+
+    it('leaves an existing override untouched when the field is omitted', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(
+        mockVendor({ id: 'v1', userId: 'u1', notificationEmail: 'keep@example.com' }),
+      );
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+
+      const result = await service.update('v1', { businessName: 'Renamed' }, owner);
+
+      expect(result.notificationEmail).toBe('keep@example.com');
+    });
   });
 
   describe('update (profile sections)', () => {

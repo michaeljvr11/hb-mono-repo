@@ -113,11 +113,41 @@ describe('MailService with RESEND_API_KEY configured', () => {
     await (service as unknown as { send: (...args: unknown[]) => Promise<void> }).send(
       recipients,
       'Test subject',
-      '<p>hi</p>',
-      'hi',
+      [{ type: 'paragraph', text: 'hi' }],
     );
 
     expect(sendMock).toHaveBeenCalledTimes(1);
     expect(lastSendPayload().to).toEqual(recipients);
+  });
+
+  // apps/api runs with strictNullChecks: false, so an optional field reaching a
+  // content block type-checks clean. TE-4 interpolates order_items.productName,
+  // Vendor.businessName and shipping recipientName on the post-payment path,
+  // where a render throw escaping send() would 500 an already-paid order.
+  it('does not throw when a content block carries a nullish value', async () => {
+    await expect(
+      (service as unknown as { send: (...args: unknown[]) => Promise<void> }).send(
+        'a@b.com',
+        'Test subject',
+        [
+          { type: 'paragraph', text: undefined },
+          { type: 'heading', text: null },
+        ],
+      ),
+    ).resolves.toBeUndefined();
+
+    expect(sendMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses to emit a non-http(s) link href', async () => {
+    await (service as unknown as { send: (...args: unknown[]) => Promise<void> }).send(
+      'a@b.com',
+      'Test subject',
+      [{ type: 'link', text: 'click', href: 'javascript:alert(1)' }],
+    );
+
+    const payload = lastSendPayload();
+    expect(payload.html).not.toContain('javascript:');
+    expect(payload.html).toContain('href="#"');
   });
 });

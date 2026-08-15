@@ -5,7 +5,6 @@ import {
   IsOptional,
   IsString,
   MaxLength,
-  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
@@ -47,9 +46,10 @@ export class UpdateVendorDto implements UpdateVendorRequest {
   // override and fall back to the account email at read time; '' is
   // normalised to null here so VendorsService.update's Object.assign never
   // persists an empty string.
+  // @IsOptional() already short-circuits every validator below it for null and
+  // undefined alike, so the cleared case never reaches @IsEmail.
   @IsOptional()
   @Transform(({ value }: { value: unknown }) => (value === '' ? null : value))
-  @ValidateIf((dto: UpdateVendorDto) => dto.notificationEmail !== null)
   @IsEmail({}, { message: 'notificationEmail must be a valid email address' })
   notificationEmail?: string | null;
 }

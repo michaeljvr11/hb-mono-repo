@@ -50,12 +50,27 @@ export interface RenderedEmail {
 }
 
 function escapeHtml(value: string): string {
-  return value
+  // Coerce before replacing. apps/api runs with strictNullChecks: false, so a
+  // caller passing an optional field (TE-4 interpolates order_items.productName,
+  // Vendor.businessName, shipping recipientName) type-checks clean and would
+  // otherwise TypeError here — on the post-payment path, where a throw is not
+  // survivable.
+  return String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+/**
+ * Only http(s) links are emitted. Escaping the quotes in an href stops attribute
+ * breakout but not a `javascript:` / `data:` scheme, and TE-4 will render links
+ * built from vendor-supplied data. Anything else collapses to '#'.
+ */
+function safeHref(href: string): string {
+  const value = String(href ?? '').trim();
+  return /^https?:\/\//i.test(value) ? value : '#';
 }
 
 function blockToHtml(block: EmailContentBlock): string {
@@ -65,23 +80,14 @@ function blockToHtml(block: EmailContentBlock): string {
     case 'paragraph':
       return `<tr><td style="padding:0 0 16px 0; font-family:${FONT_STACK}; font-size:16px; line-height:24px; font-weight:400; color:${COLORS.onSurface};">${escapeHtml(block.text)}</td></tr>`;
     case 'link':
-      return `<tr><td style="padding:0 0 16px 0;"><a href="${escapeHtml(block.href)}" style="font-family:${FONT_STACK}; font-size:16px; line-height:24px; font-weight:600; color:${COLORS.primary}; text-decoration:underline;">${escapeHtml(block.text)}</a></td></tr>`;
+      return `<tr><td style="padding:0 0 16px 0;"><a href="${escapeHtml(safeHref(block.href))}" style="font-family:${FONT_STACK}; font-size:16px; line-height:24px; font-weight:600; color:${COLORS.primary}; text-decoration:underline;">${escapeHtml(block.text)}</a></td></tr>`;
     case 'rawHtml':
       return `<tr><td style="padding:0 0 16px 0;">${block.html}</td></tr>`;
   }
 }
 
 function blockToText(block: EmailContentBlock): string {
-  switch (block.type) {
-    case 'heading':
-      return block.text;
-    case 'paragraph':
-      return block.text;
-    case 'link':
-      return `${block.text}: ${block.href}`;
-    case 'rawHtml':
-      return block.text;
-  }
+  return block.type === 'link' ? `${block.text}: ${block.href}` : String(block.text ?? '');
 }
 
 function renderHtmlDocument(subject: string, blocks: EmailContentBlock[]): string {
