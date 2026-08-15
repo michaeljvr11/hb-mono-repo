@@ -14,4 +14,5 @@ export class VendorSelfResponseDto implements VendorSelfDto {
   profileSections?: VendorProfileSection[];
   website?: string;
   description?: string;
+  notificationEmail?: string | null;
 }

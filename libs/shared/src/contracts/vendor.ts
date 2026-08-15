@@ -33,6 +33,10 @@ export interface AdminVendorDto extends VendorDto {
 export interface VendorSelfDto extends VendorDto {
   website?: string;
   description?: string;
+  // Vendor-portal override for TE-4's notification recipient. null (or an
+  // omitted value) means "use the account email" — see VendorsService
+  // resolveNotificationEmail(). Never present on the public VendorDto shape.
+  notificationEmail?: string | null;
 }
 
 export interface CreateVendorRequest {
@@ -56,6 +60,9 @@ export interface UpdateVendorRequest {
   description?: string;
   slogan?: string;
   profileSections?: VendorProfileSection[];
+  // Set to a valid email to override the notification recipient; set to null
+  // or '' to clear the override and fall back to the account email.
+  notificationEmail?: string | null;
 }
 
 export interface UpdateVendorStatusRequest {
