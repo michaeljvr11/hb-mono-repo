@@ -1,0 +1,69 @@
+<app-nav-bar />
+
+<main class="about" aria-label="About H&amp;B">
+
+  <!-- ── Hero ──────────────────────────────────────────────────────────── -->
+  <section class="about-hero" [style.--about-hero-image]="heroImage" aria-labelledby="about-hero-heading">
+    <div class="about-hero__overlay" aria-hidden="true"></div>
+    <div class="about-hero__content">
+      <h1 id="about-hero-heading" class="about-hero__title">About H&amp;B</h1>
+      <p class="about-hero__subtitle">
+        Built by South African and Namibian entrepreneurs, H&amp;B set out to close a real gap between the two markets.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Our Story ─────────────────────────────────────────────────────── -->
+  <section class="about-section" aria-labelledby="story-heading">
+    <div class="about-section__inner">
+      <h2 id="story-heading" class="about-section__title">Our Story</h2>
+      <div class="about-card">
+        <p class="about-card__lead">
+          We grew up loving the products and culture that flow between South Africa and Namibia — but we saw
+          how hard it was for small businesses to reach customers across the border. Informal networks, high
+          logistics costs, trust issues, and no easy digital way to connect.
+        </p>
+        <p>
+          As young Namibians and South Africans, we knew the demand was there: Namibians want quality SA goods
+          without hassle, and SA SMEs want new markets without the complexity. So we created H&amp;B — a bridge
+          built on care, reliability, and real people helping real people.
+        </p>
+        <p class="about-card__callout">
+          H&amp;B runs on two engines: a procurement service that sources and imports what you can't get
+          locally, and a marketplace that connects customers directly with vendors across the corridor.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Our Mission ───────────────────────────────────────────────────── -->
+  <section class="about-section about-section--mission" aria-labelledby="mission-heading">
+    <div class="about-section__inner">
+      <h2 id="mission-heading" class="about-section__title">Our Mission</h2>
+      <blockquote class="about-quote">
+        &ldquo;To simplify cross-border trade between South Africa and Namibia by creating a structured,
+        digital platform that empowers small businesses to reach customers directly — with transparency,
+        reliability, and genuine care every step of the way.&rdquo;
+      </blockquote>
+      <p class="about-mission-text">
+        We believe in building long-term relationships, not one-off transactions. That's why we handle every
+        import personally, communicate clearly, and treat your order like it's our own.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Closing CTA ───────────────────────────────────────────────────── -->
+  <section class="about-cta" aria-labelledby="about-cta-heading">
+    <div class="about-section__inner">
+      <h2 id="about-cta-heading">Ready to Bridge the Gap with Us?</h2>
+      <p class="about-cta__text">
+        Whether it's an import request, or you're interested in partnering with us as a vendor — we're here to
+        help with care and reliability.
+      </p>
+      <a routerLink="/contact" class="about-cta__btn">Get in Touch</a>
+    </div>
+  </section>
+
+</main>
+
+<app-footer />
