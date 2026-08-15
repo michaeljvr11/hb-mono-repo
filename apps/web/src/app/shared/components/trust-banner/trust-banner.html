@@ -1,4 +1,4 @@
-<section class="trust-banner" aria-label="Why shop with H&amp;B">
+<section class="trust-banner" [attr.aria-label]="label()">
   <div class="trust-banner__grid">
     @for (item of items(); track item.title) {
       <div class="trust-card">

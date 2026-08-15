@@ -43,4 +43,6 @@ const DEFAULT_ITEMS: TrustBannerItem[] = [
 })
 export class TrustBanner {
   readonly items = input<TrustBannerItem[]>(DEFAULT_ITEMS);
+  /** Accessible label for the wrapping <section>. Defaults to the storefront's copy. */
+  readonly label = input<string>('Why shop with H&B');
 }

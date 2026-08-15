@@ -1,0 +1,226 @@
+/* ── Page ──────────────────────────────────────────────────────────────── */
+
+.services {
+  background: var(--hb-background);
+  color: var(--hb-on-surface);
+}
+
+.services-section__inner {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 48px 16px;
+  text-align: center;
+
+  @media (min-width: 768px) {
+    padding: 64px 40px;
+  }
+}
+
+.services-section__title {
+  margin: 0 0 16px;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 40px;
+  letter-spacing: -0.01em;
+  color: var(--hb-primary);
+
+  &::after {
+    content: '';
+    display: block;
+    width: 64px;
+    height: 4px;
+    margin: 16px auto 0;
+    background: var(--hb-secondary);
+    border-radius: var(--hb-radius-pill);
+  }
+}
+
+.services-section__subtitle {
+  margin: 0 auto 32px;
+  max-width: 680px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────── */
+
+.services-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+  padding: 96px 16px;
+  background-image: var(--services-hero-image);
+  background-size: cover;
+  background-position: center;
+  text-align: center;
+  color: #fff;
+
+  @media (min-width: 768px) {
+    min-height: 480px;
+  }
+}
+
+.services-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(28, 27, 27, 0.5), rgba(28, 27, 27, 0.55));
+  pointer-events: none;
+}
+
+.services-hero__content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+}
+
+.services-hero__title {
+  margin: 0 0 16px;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+
+  @media (max-width: 767px) {
+    font-size: 32px;
+  }
+}
+
+.services-hero__subtitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+}
+
+/* ── How It Works ──────────────────────────────────────────────────────── */
+
+.services-process {
+  margin: 48px auto 0;
+  max-width: 1000px;
+}
+
+.services-process__title {
+  margin: 0 0 32px;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--hb-on-surface);
+}
+
+.services-steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.services-step {
+  padding: 32px 24px;
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(28, 27, 27, 0.06);
+}
+
+.services-step__number {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--hb-radius-pill);
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.services-step__title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--hb-on-surface);
+}
+
+.services-step__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ── CTA ───────────────────────────────────────────────────────────────── */
+
+.services-cta {
+  margin-top: 48px;
+}
+
+.services-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 48px;
+  border-radius: var(--hb-radius-pill);
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-decoration: none;
+  transition: filter 150ms ease;
+
+  &:hover {
+    filter: brightness(1.1);
+  }
+}
+
+.services-cta__text {
+  margin: 16px 0 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ── Marketplace cross-link ────────────────────────────────────────────── */
+
+.services-section--marketplace {
+  background: var(--hb-surface-container-low);
+}
+
+.services-marketplace-card {
+  max-width: 780px;
+  margin: 0 auto;
+  text-align: left;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--hb-on-surface);
+
+  a {
+    color: var(--hb-primary);
+    font-weight: 600;
+  }
+}
+
+.services-marketplace-card__lead {
+  margin: 0 0 20px;
+}
+
+.services-marketplace-card__callout {
+  margin: 0;
+  padding: 16px 20px;
+  background: var(--hb-surface-container-lowest);
+  border-left: 4px solid var(--hb-primary);
+  border-radius: 0 8px 8px 0;
+}

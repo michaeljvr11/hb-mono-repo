@@ -137,6 +137,10 @@ export const routes: Routes = [
     path: 'about',
     loadComponent: () => import('./features/about/about').then(m => m.About)
   },
+  {
+    path: 'services',
+    loadComponent: () => import('./features/services/services').then(m => m.Services)
+  },
 
   // Catch-all route
   {
