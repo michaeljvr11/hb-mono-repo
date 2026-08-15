@@ -1,0 +1,113 @@
+<section class="settings-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Notification Settings</h1>
+    <p class="page-sub">Manage who receives platform order and payment notification emails.</p>
+  </header>
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading settings…</p>
+    </div>
+  }
+
+  <!-- Load error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+    <div class="detail-card form-card">
+      <h2 class="section-title">Notification recipients</h2>
+      <p class="helper-text">
+        These addresses receive order and payment notification emails from the platform.
+        An empty list means no platform notifications will be sent.
+      </p>
+
+      <!-- Add address -->
+      <form (ngSubmit)="addEmail()" class="add-form">
+        <div class="form-row">
+          <label for="newEmail">Add address</label>
+          <input
+            id="newEmail"
+            name="newEmail"
+            type="email"
+            placeholder="ops@example.com"
+            [ngModel]="newEmail()"
+            (ngModelChange)="newEmail.set($event)"
+            [disabled]="pending()"
+          />
+        </div>
+
+        @if (addError()) {
+          <div class="error-banner error-banner--inline" role="alert">
+            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+            <span>{{ addError() }}</span>
+          </div>
+        }
+
+        <div class="action-bar">
+          <button class="action-btn action-btn--secondary" type="submit" [disabled]="pending()">
+            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+            Add address
+          </button>
+        </div>
+      </form>
+
+      <!-- Recipient list -->
+      @if (emails().length === 0) {
+        <div class="list-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">mail_off</span>
+          <p>No recipients configured. No platform notifications will be sent until you add at least one address.</p>
+        </div>
+      } @else {
+        <ul class="email-list">
+          @for (email of emails(); track email) {
+            <li class="email-row">
+              <span class="email-value">{{ email }}</span>
+              <button
+                type="button"
+                class="remove-btn"
+                [disabled]="pending()"
+                [attr.aria-label]="'Remove ' + email"
+                (click)="removeEmail(email)"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+              </button>
+            </li>
+          }
+        </ul>
+        <p class="count-note">{{ emails().length }} / {{ maxEmails }} addresses</p>
+      }
+
+      <!-- Save action + feedback -->
+      @if (saveError()) {
+        <div class="error-banner error-banner--inline" role="alert">
+          <span class="material-symbols-outlined" aria-hidden="true">error</span>
+          <span>{{ saveError() }}</span>
+        </div>
+      }
+
+      @if (saveSuccess()) {
+        <div class="success-banner" role="status">
+          <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+          <span>Settings saved.</span>
+        </div>
+      }
+
+      <div class="action-bar">
+        <button class="action-btn action-btn--activate" type="button" [disabled]="pending()" (click)="save()">
+          @if (pending()) {
+            <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+          }
+          Save changes
+        </button>
+      </div>
+    </div>
+  }
+</section>

@@ -64,6 +64,13 @@ export class Vendor {
   @Column({ type: 'jsonb', nullable: true })
   profileSections?: VendorProfileSection[];
 
+  // Vendor-portal override for where TE-4 sends order/transactional notifications.
+  // NULL means "use the account email" (this.user.email) — resolved by
+  // VendorsService.resolveNotificationEmail(). Format-validated only (@IsEmail
+  // on the DTO); not reused with the account's isVerified machinery.
+  @Column({ type: 'varchar', nullable: true })
+  notificationEmail?: string | null;
+
   // The User account that owns/manages this vendor
   @OneToOne(() => User)
   @JoinColumn({ name: 'userId' })

@@ -32,6 +32,7 @@ export class AdminShell {
     { label: 'Commission', path: 'commission-rates', icon: 'percent' },
     { label: 'Earnings',  path: 'earnings',  icon: 'payments' },
     { label: 'Logs',      path: 'logs',      icon: 'receipt_long' },
+    { label: 'Settings',  path: 'settings',  icon: 'settings' },
   ] as const;
 
   toggleSidebar(): void {

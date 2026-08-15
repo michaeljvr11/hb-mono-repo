@@ -17,6 +17,7 @@ export const AuditAction = {
   PRODUCT_DELETED: 'product.deleted',
   ADMIN_BOOTSTRAPPED: 'admin.bootstrapped',
   COMMISSION_RATE_CREATED: 'commission_rate.created',
+  PLATFORM_SETTINGS_UPDATED: 'platform_settings.updated',
 } as const;
 
 function toDto(log: AuditLog): AuditLogDto {

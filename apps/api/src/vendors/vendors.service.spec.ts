@@ -164,6 +164,63 @@ describe('VendorsService', () => {
         description: 'Updated bio',
       });
     });
+
+    it('forbids a non-owner, non-admin vendor from setting another vendor’s notificationEmail', async () => {
+      const other = mockUser({ id: 'u2', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+
+      await expect(
+        service.update('v1', { notificationEmail: 'hijack@example.com' }, other),
+      ).rejects.toThrow(ForbiddenException);
+      expect(vendorRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('persists the owner’s own notificationEmail override and echoes it in the self-view', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+
+      const result = await service.update(
+        'v1',
+        { notificationEmail: 'orders@roots-and-shoots.example' },
+        owner,
+      );
+
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ notificationEmail: 'orders@roots-and-shoots.example' }),
+      );
+      expect(result.notificationEmail).toBe('orders@roots-and-shoots.example');
+    });
+
+    // The clear path is the subtle one: Object.assign copies an explicit null
+    // but skips an omitted key, so null has to survive all the way to save()
+    // for a vendor to be able to drop back to the account-email default.
+    it('persists an explicit null so the override clears back to the account email', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(
+        mockVendor({ id: 'v1', userId: 'u1', notificationEmail: 'old@example.com' }),
+      );
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+
+      const result = await service.update('v1', { notificationEmail: null }, owner);
+
+      expect(vendorRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ notificationEmail: null }),
+      );
+      expect(result.notificationEmail).toBeNull();
+    });
+
+    it('leaves an existing override untouched when the field is omitted', async () => {
+      const owner = mockUser({ id: 'u1', role: UserRole.VENDOR });
+      vendorRepo.findOne.mockResolvedValue(
+        mockVendor({ id: 'v1', userId: 'u1', notificationEmail: 'keep@example.com' }),
+      );
+      vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
+
+      const result = await service.update('v1', { businessName: 'Renamed' }, owner);
+
+      expect(result.notificationEmail).toBe('keep@example.com');
+    });
   });
 
   describe('update (profile sections)', () => {
@@ -567,6 +624,19 @@ describe('VendorsService', () => {
       );
     });
 
+    it('never leaks notificationEmail on the public vendor payload, even when it is set', async () => {
+      const vendor = mockVendor({
+        id: 'v1',
+        status: VendorStatus.APPROVED,
+        notificationEmail: 'orders@zulu-weaves.example',
+      });
+      vendorRepo.findOne.mockImplementation(respectsWhere(vendor));
+
+      const result = await service.findOne('v1');
+
+      expect(result).not.toHaveProperty('notificationEmail');
+    });
+
     // Only approved vendors are public-facing; every other status must 404, never leak.
     const nonApproved: VendorStatus[] = [
       VendorStatus.PENDING,
@@ -625,6 +695,68 @@ describe('VendorsService', () => {
       const result = await service.findByUserId('no-vendor-user');
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('resolveNotificationEmail (TE-4 recipient resolution)', () => {
+    it('prefers the notificationEmail override over the account email', async () => {
+      vendorRepo.findOne.mockResolvedValue(
+        mockVendor({
+          id: 'v1',
+          notificationEmail: 'orders@roots-and-shoots.example',
+          user: { email: 'owner@example.com' } as User,
+        }),
+      );
+
+      const result = await service.resolveNotificationEmail('v1');
+
+      expect(vendorRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'v1' },
+        relations: ['user'],
+      });
+      expect(result).toBe('orders@roots-and-shoots.example');
+    });
+
+    it('falls back to the account email when notificationEmail is null', async () => {
+      vendorRepo.findOne.mockResolvedValue(
+        mockVendor({
+          id: 'v1',
+          notificationEmail: null,
+          user: { email: 'owner@example.com' } as User,
+        }),
+      );
+
+      const result = await service.resolveNotificationEmail('v1');
+
+      expect(result).toBe('owner@example.com');
+    });
+
+    it('falls back to the account email when notificationEmail is undefined', async () => {
+      vendorRepo.findOne.mockResolvedValue(
+        mockVendor({ id: 'v1', user: { email: 'owner@example.com' } as User }),
+      );
+
+      const result = await service.resolveNotificationEmail('v1');
+
+      expect(result).toBe('owner@example.com');
+    });
+
+    it('resolves to null (no recipient) without throwing for a userless, admin-created vendor', async () => {
+      vendorRepo.findOne.mockResolvedValue(
+        mockVendor({ id: 'v1', userId: undefined, user: undefined, notificationEmail: undefined }),
+      );
+
+      const result = await service.resolveNotificationEmail('v1');
+
+      expect(result).toBeNull();
+    });
+
+    it('throws NotFoundException when the vendor does not exist', async () => {
+      vendorRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.resolveNotificationEmail('missing')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
   });
 

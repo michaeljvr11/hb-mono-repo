@@ -1,45 +1,45 @@
 {
-  "generatedAt": "2026-08-13T19:43:23.761Z",
+  "generatedAt": "2026-08-15T09:38:39.851Z",
   "git": {
-    "totalCommits": 204,
-    "aiCommits": 193,
+    "totalCommits": 211,
+    "aiCommits": 200,
     "aiPct": 95,
-    "appCommits": 141,
-    "ins": 84300,
-    "del": 8342,
-    "net": 75958,
-    "aiIns": 70786,
-    "aiDel": 8168,
-    "filesTouched": 647,
+    "appCommits": 147,
+    "ins": 86455,
+    "del": 8537,
+    "net": 77918,
+    "aiIns": 72941,
+    "aiDel": 8363,
+    "filesTouched": 666,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 88,
-        "ins": 42238,
-        "del": 2667
+        "commits": 90,
+        "ins": 43124,
+        "del": 2672
       },
       {
         "name": "API (NestJS)",
-        "commits": 74,
-        "ins": 22894,
-        "del": 952
+        "commits": 78,
+        "ins": 23949,
+        "del": 1007
       },
       {
         "name": "Docs",
-        "commits": 60,
-        "ins": 14849,
-        "del": 4579
+        "commits": 61,
+        "ins": 14997,
+        "del": 4714
       },
       {
         "name": "AI Factory config",
-        "commits": 65,
-        "ins": 2034,
+        "commits": 66,
+        "ins": 2070,
         "del": 104
       },
       {
         "name": "Shared contracts",
-        "commits": 29,
-        "ins": 1303,
+        "commits": 31,
+        "ins": 1333,
         "del": 16
       },
       {
@@ -56,8 +56,43 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-13",
+    "lastDate": "2026-08-15",
     "recent": [
+      {
+        "hash": "2aa2348",
+        "subject": "fix(api): contain render failures inside the mail transport guard",
+        "ai": true
+      },
+      {
+        "hash": "cab39a6",
+        "subject": "feat(web): vendor notification email field with account-email fallback",
+        "ai": true
+      },
+      {
+        "hash": "703f802",
+        "subject": "feat(web): admin settings page for platform notification recipients",
+        "ai": true
+      },
+      {
+        "hash": "1082cd3",
+        "subject": "feat(api): vendor notification email override with account-email fallback",
+        "ai": true
+      },
+      {
+        "hash": "631b8f2",
+        "subject": "feat(api): platform notification email setting with audit-logged admin API",
+        "ai": true
+      },
+      {
+        "hash": "e2ceb07",
+        "subject": "feat(api): branded email template, multi-recipient send, transport hardening",
+        "ai": true
+      },
+      {
+        "hash": "f01e5b5",
+        "subject": "chore(evidence): recompile AI-authorship report for the EDR-1 batch",
+        "ai": true
+      },
       {
         "hash": "9bc1071",
         "subject": "fix: stop the epoch sentinel leaking into the tab label and align the date cap",
@@ -81,41 +116,6 @@
       {
         "hash": "ae7ff40",
         "subject": "chore(evidence): recompile AI-authorship report for the storefront UI cleanup batch",
-        "ai": true
-      },
-      {
-        "hash": "d7e53a3",
-        "subject": "fix(web): drop the last verification badge and the SCSS it left behind",
-        "ai": true
-      },
-      {
-        "hash": "96a2a3d",
-        "subject": "fix(web): use the snackbar token names Material actually reads",
-        "ai": true
-      },
-      {
-        "hash": "7419bd5",
-        "subject": "fix(web): add a global border-box reset and size the PDP sticky bar",
-        "ai": true
-      },
-      {
-        "hash": "28b5153",
-        "subject": "refactor(web): centralise snackbar config in a NotificationService",
-        "ai": true
-      },
-      {
-        "hash": "94c7b8f",
-        "subject": "refactor(web): remove dead nav items and the \"SME Verified\" concept",
-        "ai": true
-      },
-      {
-        "hash": "d2c459f",
-        "subject": "chore(evidence): recompile AI-authorship report for the cart-logout fix",
-        "ai": true
-      },
-      {
-        "hash": "cdc015b",
-        "subject": "fix(web): clear cart state on logout so the nav badge does not leak",
         "ai": true
       }
     ]
@@ -225,6 +225,11 @@
       "branch": "feat/d7IHQ8Rm-vendor-profile-section-builder",
       "cardId": "d7IHQ8Rm",
       "slug": "vendor-profile-section-builder"
+    },
+    {
+      "branch": "feat/e7WlyfLC-transactional-email-foundations",
+      "cardId": "e7WlyfLC",
+      "slug": "transactional-email-foundations"
     },
     {
       "branch": "feat/eOI6gKpN-returnurl-guard-capture",
@@ -338,9 +343,9 @@
     }
   ],
   "tests": {
-    "total": 109,
-    "api": 45,
-    "web": 64
+    "total": 115,
+    "api": 50,
+    "web": 65
   },
   "design": {
     "files": 33,
@@ -368,16 +373,16 @@
     },
     "gatePass": 34,
     "gateFail": 2,
-    "edits": 515,
-    "editsUnfixable": 179,
+    "edits": 562,
+    "editsUnfixable": 191,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-13T19:41:09.062Z",
+    "lastTs": "2026-08-15T09:37:27.143Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 37,
+          "invocations": 40,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -386,7 +391,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 15,
+          "invocations": 18,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -395,7 +400,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 23,
+          "invocations": 25,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -413,7 +418,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 20,
+          "invocations": 21,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -468,51 +473,6 @@
       ],
       "recent": [
         {
-          "ts": "2026-08-11T20:29:33.868Z",
-          "agentType": "product-planner",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-11T20:34:57.276Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-11T20:49:26.634Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-11T21:01:12.973Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-11T21:08:49.212Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-11T21:30:26.447Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-13T16:57:25.121Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-13T17:03:09.672Z",
-          "agentType": "product-planner",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-13T17:06:56.911Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
           "ts": "2026-08-13T17:24:43.092Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -566,6 +526,51 @@
           "ts": "2026-08-13T19:41:09.062Z",
           "agentType": "frontend-engineer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T09:13:27.033Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T09:15:10.746Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T09:20:09.093Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T09:20:11.344Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T09:22:16.142Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T09:25:41.701Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T09:25:54.805Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T09:32:48.737Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-15T09:34:18.918Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
         }
       ]
     }
@@ -573,6 +578,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/EDR-1-earnings-date-range-picker",
+      "number": 52,
+      "state": "MERGED",
+      "title": "feat(EDR-1): all-time preset and custom date-range picker for earnings",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/52"
+    },
     {
       "headRefName": "feat/IP59Crue-storefront-ui-cleanup",
       "number": 51,
@@ -938,11 +950,11 @@
     },
     {
       "name": "To Do",
-      "cards": 16
+      "cards": 13
     },
     {
       "name": "In Progress",
-      "cards": 1
+      "cards": 3
     },
     {
       "name": "In Review",
@@ -950,7 +962,7 @@
     },
     {
       "name": "Done",
-      "cards": 66
+      "cards": 67
     },
     {
       "name": "Fable Documentation",

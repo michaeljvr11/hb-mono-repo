@@ -82,6 +82,7 @@ export class VendorsService {
       ...this.toResponseDto(vendor),
       website: vendor.website,
       description: vendor.description,
+      notificationEmail: vendor.notificationEmail ?? null,
     };
   }
 
@@ -197,6 +198,22 @@ export class VendorsService {
   async findByUserId(userId: string): Promise<VendorSelfResponseDto | null> {
     const vendor = await this.vendorRepository.findOne({ where: { userId } });
     return vendor ? this.toSelfResponseDto(vendor) : null;
+  }
+
+  // Resolves the address TE-4 should send this vendor's transactional-email
+  // notifications to: the vendor-portal override wins when set, otherwise the
+  // owning account's email. Admin-created vendors can have no linked user at
+  // all (Vendor.userId is nullable — see vendor.entity.ts), so a vendor with
+  // neither an override nor a user resolves to null ("no recipient") rather
+  // than throwing — callers (TE-4) should skip-and-warn on null, not crash.
+  async resolveNotificationEmail(vendorId: string): Promise<string | null> {
+    const vendor = await this.vendorRepository.findOne({
+      where: { id: vendorId },
+      relations: ['user'],
+    });
+    if (!vendor) throw new NotFoundException('Vendor not found');
+
+    return vendor.notificationEmail || vendor.user?.email || null;
   }
 
   // Structural + ownership validation for profileSections, run before persisting:

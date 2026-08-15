@@ -154,6 +154,26 @@
             }
           </div>
 
+          <div class="field">
+            <label class="field-label" for="vp-notificationEmail">Notification email</label>
+            <input
+              id="vp-notificationEmail"
+              class="field-input"
+              type="email"
+              formControlName="notificationEmail"
+              autocomplete="email"
+              placeholder="orders@yourbusiness.com"
+              [class.field-input--error]="profileForm.get('notificationEmail')?.invalid && profileForm.get('notificationEmail')?.touched"
+            />
+            @if (profileForm.get('notificationEmail')?.hasError('email') && profileForm.get('notificationEmail')?.touched) {
+              <p class="field-hint field-hint--error">Enter a valid email address.</p>
+            } @else if (accountEmail(); as email) {
+              <p class="field-hint">Leave blank to use your account email ({{ email }}) instead.</p>
+            } @else {
+              <p class="field-hint">Leave blank to use your account email — the address you sign in with.</p>
+            }
+          </div>
+
           @if (saveError()) {
             <div class="error-banner error-banner--inline" role="alert">
               <span class="material-symbols-outlined" aria-hidden="true">error</span>
