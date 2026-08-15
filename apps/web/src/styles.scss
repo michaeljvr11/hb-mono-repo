@@ -415,9 +415,10 @@ body {
 
 /* Shared static-marketing-page primitives (LSM-2 /about + LSM-3 /services share these;
    LSM-4 /contact is a planned third consumer). Each page still owns its own BEM block name
-   (`.about-hero`, `.services-hero`, ...) for its per-page deltas — the hero's background-image
-   var and the section-title's margin-bottom — and adds the matching `.marketing-*` class
-   alongside it in the template for the shared geometry/color rules below. */
+   (`.about-hero`, `.services-hero`, ...) for its per-page deltas — currently just the
+   section-title's margin-bottom — and adds the matching `.marketing-*` class alongside it
+   in the template for the shared geometry/color rules below. The hero artwork itself is a
+   real <picture> bound from the component, not a background-image. */
 .marketing-hero {
   position: relative;
   display: flex;
@@ -425,14 +426,31 @@ body {
   justify-content: center;
   min-height: 420px;
   padding: 96px 16px;
-  background-size: cover;
-  background-position: center;
+  overflow: hidden;
   text-align: center;
   color: var(--hb-on-primary);
 
   @media (min-width: 768px) {
     min-height: 480px;
   }
+}
+
+/* Takes the <picture> out of the flex flow entirely; only the <img> inside it
+   participates in layout, and that is absolutely positioned. */
+.marketing-hero__picture {
+  display: contents;
+}
+
+/* The hero artwork. Absolutely positioned beneath `.marketing-hero__overlay`, which
+   follows it in DOM order and so paints on top. `object-fit` here does the job the
+   old `background-size: cover` / `background-position: center` pair used to. */
+.marketing-hero__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .marketing-hero__overlay {

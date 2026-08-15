@@ -3,7 +3,23 @@
 <main class="services" aria-label="Our Services">
 
   <!-- ── Hero ──────────────────────────────────────────────────────────── -->
-  <section class="services-hero marketing-hero" [style.--services-hero-image]="heroImage" aria-labelledby="services-hero-heading">
+  <section class="services-hero marketing-hero" aria-labelledby="services-hero-heading">
+    <picture class="services-hero__picture marketing-hero__picture">
+      <source type="image/webp" [srcset]="heroImage.webpSrcset" [sizes]="heroSizes" />
+      <img
+        class="services-hero__image marketing-hero__image"
+        [src]="heroImage.src"
+        [srcset]="heroImage.jpegSrcset"
+        [sizes]="heroSizes"
+        [width]="heroImage.width"
+        [height]="heroImage.height"
+        alt=""
+        aria-hidden="true"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+      />
+    </picture>
     <div class="services-hero__overlay marketing-hero__overlay" aria-hidden="true"></div>
     <div class="services-hero__content marketing-hero__content">
       <h1 id="services-hero-heading" class="services-hero__title marketing-hero__title">Our Services</h1>

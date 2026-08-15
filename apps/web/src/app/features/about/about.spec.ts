@@ -50,6 +50,34 @@ describe('About', () => {
     expect(el.textContent).toContain('Ready to Bridge the Gap with Us?');
   });
 
+  it('serves the hero as a responsive picture with a WebP source and a JPEG fallback', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const source = el.querySelector('.about-hero__picture source') as HTMLSourceElement;
+    const img = el.querySelector('.about-hero__image') as HTMLImageElement;
+
+    expect(source.type).toBe('image/webp');
+    expect(source.srcset).toContain('.webp 640w');
+    expect(source.srcset).toContain('.webp 1536w');
+    expect(img.getAttribute('srcset')).toContain('.jpg 640w');
+    expect(img.getAttribute('sizes')).toBe('100vw');
+  });
+
+  it('marks the hero as the LCP element and reserves its box', () => {
+    const img = (fixture.nativeElement as HTMLElement).querySelector(
+      '.about-hero__image',
+    ) as HTMLImageElement;
+
+    // Decorative: the <h1> carries the meaning, so the image must stay out of the a11y tree.
+    expect(img.getAttribute('alt')).toBe('');
+    expect(img.getAttribute('aria-hidden')).toBe('true');
+    // Priority hints — the hero must not be lazy-loaded or deprioritised.
+    expect(img.getAttribute('fetchpriority')).toBe('high');
+    expect(img.getAttribute('loading')).toBe('eager');
+    // Intrinsic dimensions prevent layout shift before the image arrives.
+    expect(img.getAttribute('width')).toBe('1536');
+    expect(img.getAttribute('height')).toBe('1024');
+  });
+
   it('links the closing CTA to /contact', () => {
     const el: HTMLElement = fixture.nativeElement;
     const cta = el.querySelector('.about-cta__btn') as HTMLAnchorElement;

@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
 import { TrustBanner, TrustBannerItem } from '../../shared/components/trust-banner/trust-banner';
-import { cssImageUrl, SITE_IMAGES } from '../../shared/constants/image.constants';
+import { HERO_SIZES, SITE_IMAGES } from '../../shared/constants/image.constants';
 
 /** LSM-3 — matches the Title/Meta pattern established by /about (LSM-2). */
 const PAGE_TITLE = 'Procurement Service | H&B — Personal & Business Import, South Africa to Namibia';
@@ -22,7 +22,10 @@ export class Services {
   private readonly meta = inject(Meta);
 
   /** CSS custom-property value for the hero section's background image. */
-  readonly heroImage = cssImageUrl(SITE_IMAGES.servicesHero);
+  /** Hero artwork. A real `<img>` rather than a CSS background so the browser's
+   * preload scanner can start it from the prerendered HTML — it is the LCP element. */
+  readonly heroImage = SITE_IMAGES.servicesHero;
+  readonly heroSizes = HERO_SIZES;
 
   /** Reuses app-trust-banner's 3-card layout instead of a bespoke grid. */
   readonly valueItems: TrustBannerItem[] = [

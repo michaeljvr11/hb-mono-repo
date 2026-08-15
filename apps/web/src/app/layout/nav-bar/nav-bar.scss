@@ -43,9 +43,9 @@
   }
 }
 
-/* Intrinsic hb-logo.png is 2000x2000 (1:1). Sized explicitly (both the
-   `width`/`height` attrs on the <img> and here) so the image reserves its
-   box before it loads — no layout shift. */
+/* Intrinsic hb-logo.png is 96x96 (1:1) — 3x the 32px render, for DPR 3 screens.
+   Sized explicitly (both the `width`/`height` attrs on the <img> and here) so the
+   image reserves its box before it loads — no layout shift. */
 .nav-bar__logo {
   display: block;
   width: 32px;
