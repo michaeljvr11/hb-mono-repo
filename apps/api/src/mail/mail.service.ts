@@ -4,6 +4,15 @@ import { Resend } from 'resend';
 import { EmailContentBlock, renderEmail } from './email-template';
 
 /**
+ * `numeric(12,2)` columns come back from TypeORM as strings; `Number()`
+ * alone drops trailing zeros (`"185.00"` → `185`). Every money interpolation
+ * in this file must go through here so `1250.5` never reaches an inbox.
+ */
+function formatMoney(amount: number): string {
+  return amount.toFixed(2);
+}
+
+/**
  * Transactional email via Resend. The API key lives in apps/api/.env
  * (RESEND_API_KEY) — never committed. When the key is absent (CI / fresh dev
  * checkout) sends are skipped with a warning instead of throwing, so auth flows
@@ -53,7 +62,7 @@ export class MailService {
       { type: 'paragraph', text: `Order ${orderId} includes the following item(s) from you:` },
       ...lines.map((line) => ({
         type: 'paragraph' as const,
-        text: `${line.productName} × ${line.quantity} — ${line.unitPrice} ${line.currency}`,
+        text: `${line.productName} × ${line.quantity} — ${formatMoney(line.unitPrice)} ${line.currency}`,
       })),
     ]);
   }
@@ -80,11 +89,11 @@ export class MailService {
       { type: 'heading', text: `Order ${orderId} paid and confirmed` },
       ...lines.map((line) => ({
         type: 'paragraph' as const,
-        text: `${line.productName} × ${line.quantity} — ${line.unitPrice} ${line.currency}${
+        text: `${line.productName} × ${line.quantity} — ${formatMoney(line.unitPrice)} ${line.currency}${
           line.vendorId ? ` (vendor ${line.vendorId})` : ' (platform)'
         }`,
       })),
-      { type: 'paragraph', text: `Order total: ${total} ${currency}` },
+      { type: 'paragraph', text: `Order total: ${formatMoney(total)} ${currency}` },
     ]);
   }
 
@@ -108,9 +117,9 @@ export class MailService {
       { type: 'paragraph', text: `Order ${orderId} includes the following item(s):` },
       ...lines.map((line) => ({
         type: 'paragraph' as const,
-        text: `${line.productName} × ${line.quantity} — ${line.unitPrice} ${line.currency}`,
+        text: `${line.productName} × ${line.quantity} — ${formatMoney(line.unitPrice)} ${line.currency}`,
       })),
-      { type: 'paragraph', text: `Order total: ${total} ${currency}` },
+      { type: 'paragraph', text: `Order total: ${formatMoney(total)} ${currency}` },
     ]);
   }
 

@@ -163,7 +163,7 @@ describe('MailService with RESEND_API_KEY configured', () => {
     expect(payload.to).toBe('vendor@hb.com');
     expect(payload.html).toContain('Honey Co');
     expect(payload.html).toContain('Fynbos Honey');
-    expect(payload.html).toContain('185 ZAR');
+    expect(payload.html).toContain('185.00 ZAR');
     // Never a commission/earnings/payout figure or an order total.
     expect(payload.html.toLowerCase()).not.toContain('commission');
     expect(payload.html.toLowerCase()).not.toContain('total');
@@ -192,7 +192,7 @@ describe('MailService with RESEND_API_KEY configured', () => {
     expect(payload.to).toEqual(['ops1@hb.com', 'ops2@hb.com']);
     expect(payload.html).toContain('Fynbos Honey');
     expect(payload.html).toContain('Platform Widget');
-    expect(payload.html).toContain('420 ZAR');
+    expect(payload.html).toContain('420.00 ZAR');
   });
 
   // ── TE-5: customer order confirmation ───────────────────────────────────────
@@ -216,7 +216,7 @@ describe('MailService with RESEND_API_KEY configured', () => {
     expect(payload.html).toContain('Casey');
     expect(payload.html).toContain('Fynbos Honey');
     expect(payload.html).toContain('Platform Widget');
-    expect(payload.html).toContain('420 ZAR');
+    expect(payload.html).toContain('420.00 ZAR');
     // Never a commission/earnings/payout figure — those never leave
     // vendor/platform-ops mail (see the sendVendorOrderNotification doc comment).
     expect(payload.html.toLowerCase()).not.toContain('commission');
@@ -234,7 +234,7 @@ describe('MailService with RESEND_API_KEY configured', () => {
     );
 
     const payload = lastSendPayload();
-    expect(payload.html).toContain('185 NAD');
-    expect(payload.html).toContain('370 NAD');
+    expect(payload.html).toContain('185.00 NAD');
+    expect(payload.html).toContain('370.00 NAD');
   });
 });

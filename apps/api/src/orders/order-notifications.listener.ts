@@ -120,9 +120,15 @@ export class OrderNotificationsListener {
 
   private async notifyCustomer(order: Order, items: OrderItem[]): Promise<void> {
     await this.safely(`order.paid ${order.id} customer`, async () => {
+      const to = order.user?.email;
+      if (!to) {
+        this.logger.warn(`No user relation loaded for order ${order.id} — skipping customer email`);
+        return;
+      }
+
       const recipientName = order.user?.firstName ?? 'there';
       await this.mailService.sendCustomerOrderConfirmation(
-        order.user.email,
+        to,
         recipientName,
         order.id,
         items.map((line) => ({

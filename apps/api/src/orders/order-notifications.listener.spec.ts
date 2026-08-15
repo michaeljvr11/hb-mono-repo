@@ -252,6 +252,18 @@ describe('OrderNotificationsListener', () => {
     expect(mailService.sendVendorOrderNotification).toHaveBeenCalledTimes(1);
   });
 
+  it('skips the customer email when no user relation is loaded (warns, does not throw)', async () => {
+    const order = makeOrder({ items: [makeOrderItem()], user: undefined });
+    orderRepo.findOne.mockResolvedValue(order);
+
+    await expect(listener.handleOrderPaid({ orderId: order.id })).resolves.toBeUndefined();
+
+    expect(mailService.sendCustomerOrderConfirmation).not.toHaveBeenCalled();
+    // The vendor and platform emails are unaffected by the customer skip.
+    expect(mailService.sendVendorOrderNotification).toHaveBeenCalledTimes(1);
+    expect(mailService.sendPlatformOrderNotification).toHaveBeenCalledTimes(1);
+  });
+
   it('renders each line with its own explicit currency', async () => {
     const items = [
       makeOrderItem({ id: 'line-a', vendorId: 'vendor-a', currency: CurrencyCode.ZAR }),
