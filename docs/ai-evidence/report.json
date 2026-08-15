@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-08-15T09:38:39.851Z",
+  "generatedAt": "2026-08-15T09:54:44.413Z",
   "git": {
-    "totalCommits": 211,
-    "aiCommits": 200,
+    "totalCommits": 212,
+    "aiCommits": 201,
     "aiPct": 95,
     "appCommits": 147,
-    "ins": 86455,
-    "del": 8537,
-    "net": 77918,
-    "aiIns": 72941,
-    "aiDel": 8363,
+    "ins": 86655,
+    "del": 8668,
+    "net": 77987,
+    "aiIns": 73141,
+    "aiDel": 8494,
     "filesTouched": 666,
     "areaRows": [
       {
@@ -26,14 +26,14 @@
       },
       {
         "name": "Docs",
-        "commits": 61,
-        "ins": 14997,
-        "del": 4714
+        "commits": 62,
+        "ins": 15141,
+        "del": 4845
       },
       {
         "name": "AI Factory config",
-        "commits": 66,
-        "ins": 2070,
+        "commits": 67,
+        "ins": 2126,
         "del": 104
       },
       {
@@ -58,6 +58,11 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-08-15",
     "recent": [
+      {
+        "hash": "5ef3292",
+        "subject": "chore(evidence): recompile AI-authorship report for the TE-1/2/3 batch",
+        "ai": true
+      },
       {
         "hash": "2aa2348",
         "subject": "fix(api): contain render failures inside the mail transport guard",
@@ -111,11 +116,6 @@
       {
         "hash": "6e1fabf",
         "subject": "feat(api): add all-time earnings window, future-date guard and range indexes",
-        "ai": true
-      },
-      {
-        "hash": "ae7ff40",
-        "subject": "chore(evidence): recompile AI-authorship report for the storefront UI cleanup batch",
         "ai": true
       }
     ]
@@ -579,6 +579,13 @@
   "extractionCandidates": null,
   "prs": [
     {
+      "headRefName": "feat/e7WlyfLC-transactional-email-foundations",
+      "number": 53,
+      "state": "MERGED",
+      "title": "Transactional email foundations (TE-1/TE-2/TE-3): branded template, platform notification setting, vendor override",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/53"
+    },
+    {
       "headRefName": "feat/EDR-1-earnings-date-range-picker",
       "number": 52,
       "state": "MERGED",
@@ -954,11 +961,11 @@
     },
     {
       "name": "In Progress",
-      "cards": 3
+      "cards": 0
     },
     {
       "name": "In Review",
-      "cards": 0
+      "cards": 3
     },
     {
       "name": "Done",
