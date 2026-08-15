@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
+import { renderEmail } from './email-template';
 
 /**
  * Transactional email via Resend. The API key lives in apps/api/.env
@@ -18,37 +19,54 @@ export class MailService {
 
   async sendPasswordReset(email: string, rawToken: string): Promise<void> {
     const link = `${this.webUrl()}/reset-password?token=${encodeURIComponent(rawToken)}`;
-    await this.send(
-      email,
-      'Reset your H&B password',
-      `<p>We received a request to reset your H&amp;B password.</p>
-       <p><a href="${link}">Choose a new password</a>. This link expires in 1 hour.</p>
-       <p>If you didn't ask for this, you can safely ignore this email.</p>`,
-    );
+    const subject = 'Reset your H&B password';
+    const { html, text } = renderEmail(subject, [
+      { type: 'paragraph', text: 'We received a request to reset your H&B password.' },
+      { type: 'link', text: 'Choose a new password', href: link },
+      { type: 'paragraph', text: 'This link expires in 1 hour.' },
+      { type: 'paragraph', text: "If you didn't ask for this, you can safely ignore this email." },
+    ]);
+    await this.send(email, subject, html, text);
   }
 
   async sendEmailVerification(email: string, rawToken: string): Promise<void> {
     const link = `${this.webUrl()}/verify-email?token=${encodeURIComponent(rawToken)}`;
-    await this.send(
-      email,
-      'Verify your H&B email address',
-      `<p>Welcome to H&amp;B.</p>
-       <p><a href="${link}">Verify your email address</a> to unlock checkout. This link expires in 24 hours.</p>`,
-    );
+    const subject = 'Verify your H&B email address';
+    const { html, text } = renderEmail(subject, [
+      { type: 'paragraph', text: 'Welcome to H&B.' },
+      { type: 'link', text: 'Verify your email address', href: link },
+      { type: 'paragraph', text: 'This link expires in 24 hours and unlocks checkout.' },
+    ]);
+    await this.send(email, subject, html, text);
   }
 
-  private async send(to: string, subject: string, html: string): Promise<void> {
+  private async send(
+    to: string | string[],
+    subject: string,
+    html: string,
+    text: string,
+  ): Promise<void> {
     const client = this.getClient();
+    const recipients = Array.isArray(to) ? to.join(', ') : to;
+
     if (!client) {
-      this.logger.warn(`RESEND_API_KEY not set — skipping email "${subject}" to ${to}.`);
+      this.logger.warn(`RESEND_API_KEY not set — skipping email "${subject}" to ${recipients}.`);
       return;
     }
 
-    const { error } = await client.emails.send({ from: this.from(), to, subject, html });
-    if (error) {
-      // Don't let a transient email failure break the surrounding auth flow —
-      // log and move on (the user can re-request reset / resend verification).
-      this.logger.error(`Resend failed to send "${subject}" to ${to}: ${error.message}`);
+    try {
+      const { error } = await client.emails.send({ from: this.from(), to, subject, html, text });
+      if (error) {
+        // Don't let a transient email failure break the surrounding flow —
+        // log and move on (the user can re-request reset / resend verification).
+        this.logger.error(`Resend failed to send "${subject}" to ${recipients}: ${error.message}`);
+      }
+    } catch (err) {
+      // A rejected transport call (DNS failure, socket timeout, 5xx) must
+      // never propagate out of send() — callers on unrecoverable paths
+      // (e.g. paid-order confirmation) can't survive an email throw.
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Resend transport error sending "${subject}" to ${recipients}: ${message}`);
     }
   }
 
