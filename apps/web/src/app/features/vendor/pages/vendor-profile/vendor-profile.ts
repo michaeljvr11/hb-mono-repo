@@ -1,8 +1,10 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Component, OnDestroy, OnInit, PLATFORM_ID, WritableSignal, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ProductCategoryDto, ProductDto, UpdateVendorRequest, VendorProfileSection, VendorSectionType, VendorSelfDto } from '@hb/shared';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { ProductsService } from '../../../../core/api/products.service';
 import { VendorsService } from '../../../../core/api/vendors.service';
 import { extractErrorMessage } from '../../../../shared/extract-error-message';
@@ -34,8 +36,14 @@ const SECTION_TITLE_PRESETS = ['Top Picks', 'New Arrivals'];
 export class VendorProfile implements OnInit, OnDestroy {
   private readonly vendorsService = inject(VendorsService);
   private readonly productsService = inject(ProductsService);
+  private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly platformId = inject(PLATFORM_ID);
+
+  /** Signed-in user, for showing the literal account-email fallback next to the notification-email field. */
+  private readonly currentUser = toSignal(this.authService.currentUser$, { initialValue: null });
+  /** VendorSelfDto doesn't expose the account email (out of scope for TE-3) — sourced from AuthService instead. */
+  readonly accountEmail = computed(() => this.currentUser()?.email ?? null);
 
   readonly ALLOWED_IMAGE_TYPES = ALLOWED_IMAGE_TYPES;
   readonly VendorSectionType = VendorSectionType;
@@ -55,6 +63,7 @@ export class VendorProfile implements OnInit, OnDestroy {
     website: [''],
     description: [''],
     slogan: ['', Validators.maxLength(SLOGAN_MAX_LENGTH)],
+    notificationEmail: ['', Validators.email],
   });
 
   readonly savePending = signal(false);
@@ -136,6 +145,7 @@ export class VendorProfile implements OnInit, OnDestroy {
           website: vendor.website ?? '',
           description: vendor.description ?? '',
           slogan: vendor.slogan ?? '',
+          notificationEmail: vendor.notificationEmail ?? '',
         });
         this.sections.set(vendor.profileSections ?? []);
         this.vendorLoading.set(false);
@@ -175,12 +185,17 @@ export class VendorProfile implements OnInit, OnDestroy {
     this.saveSuccess.set(null);
 
     const raw = this.profileForm.getRawValue();
+    const notificationEmail = raw.notificationEmail.trim();
     const payload: UpdateVendorRequest = {
       businessName: raw.businessName,
       tradingName: raw.tradingName || undefined,
       website: raw.website || undefined,
       description: raw.description || undefined,
       slogan: raw.slogan || undefined,
+      // Unlike the fields above, blank here is a deliberate clear signal (-> null), not "leave
+      // unchanged" (-> undefined) — it's the only way a vendor can drop back to the account-email
+      // default once an override is set (server: '' also normalises to null, but don't rely on it).
+      notificationEmail: notificationEmail ? notificationEmail : null,
     };
 
     this.vendorsService.update(vendor.id, payload)

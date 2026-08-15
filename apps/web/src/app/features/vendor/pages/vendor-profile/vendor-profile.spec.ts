@@ -1,12 +1,14 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { of, Subject, throwError } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import {
+  AuthUser,
   CountryCode,
   CurrencyCode,
   ListingType,
   PagedResponse,
   ProductDto,
+  UserRole,
   VendorProfileSection,
   VendorSectionType,
   VendorSelfDto,
@@ -14,6 +16,7 @@ import {
 } from '@hb/shared';
 
 import { VendorProfile } from './vendor-profile';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { ProductsService } from '../../../../core/api/products.service';
 import { VendorsService } from '../../../../core/api/vendors.service';
 
@@ -81,6 +84,12 @@ const MOCK_PRODUCTS_PAGE: PagedResponse<ProductDto> = {
   limit: 100,
 };
 
+const MOCK_USER: AuthUser = {
+  id: 'user-1',
+  email: 'signed-in@example.com',
+  role: UserRole.VENDOR,
+};
+
 function fileChangeEvent(file: File): Event {
   const input = document.createElement('input');
   input.type = 'file';
@@ -101,6 +110,10 @@ interface ProductsStub {
   list: ReturnType<typeof vi.fn>;
 }
 
+interface AuthStub {
+  currentUser$: Observable<AuthUser | null>;
+}
+
 function makeVendorsStub(): VendorsStub {
   return {
     getMe: vi.fn(() => of(MOCK_VENDOR)),
@@ -116,12 +129,21 @@ function makeProductsStub(): ProductsStub {
   };
 }
 
-async function setupTestBed(vendorsStub: VendorsStub, productsStub: ProductsStub = makeProductsStub()): Promise<void> {
+function makeAuthStub(user: AuthUser | null = MOCK_USER): AuthStub {
+  return { currentUser$: of(user) };
+}
+
+async function setupTestBed(
+  vendorsStub: VendorsStub,
+  productsStub: ProductsStub = makeProductsStub(),
+  authStub: AuthStub = makeAuthStub(),
+): Promise<void> {
   return TestBed.configureTestingModule({
     imports: [VendorProfile],
     providers: [
       { provide: VendorsService, useValue: vendorsStub },
       { provide: ProductsService, useValue: productsStub },
+      { provide: AuthService, useValue: authStub },
     ],
   }).compileComponents();
 }
@@ -161,6 +183,7 @@ describe('VendorProfile component', () => {
         website: 'https://mystore.example',
         description: 'We sell great things.',
         slogan: 'Quality you can trust',
+        notificationEmail: '',
       });
     });
 
@@ -190,6 +213,7 @@ describe('VendorProfile component', () => {
         website: 'https://mystore.example',
         description: 'We sell great things.',
         slogan: 'Quality you can trust',
+        notificationEmail: null,
       });
     });
 
@@ -207,6 +231,7 @@ describe('VendorProfile component', () => {
         website: undefined,
         description: undefined,
         slogan: undefined,
+        notificationEmail: null,
       });
     });
 
@@ -273,6 +298,97 @@ describe('VendorProfile component', () => {
       component.profileForm.patchValue({ businessName: 'Something else' });
 
       expect(component.saveSuccess()).toBeNull();
+    });
+  });
+
+  // ── Notification email (TE-3) ──────────────────────────────────────────
+
+  describe('notification email', () => {
+    it('renders the current override value in the form', async () => {
+      vendorsStub.getMe.mockReturnValue(of({ ...MOCK_VENDOR, notificationEmail: 'orders@mystore.example' }));
+      TestBed.resetTestingModule();
+      await setupTestBed(vendorsStub, productsStub);
+      const overrideFixture = TestBed.createComponent(VendorProfile);
+      overrideFixture.detectChanges();
+      await overrideFixture.whenStable();
+
+      expect(overrideFixture.componentInstance.profileForm.get('notificationEmail')?.value).toBe(
+        'orders@mystore.example',
+      );
+    });
+
+    it('renders blank, with the account-email fallback shown, when no override is set', () => {
+      // MOCK_VENDOR has no notificationEmail — vendor.notificationEmail ?? '' patches the control blank.
+      expect(component.profileForm.get('notificationEmail')?.value).toBe('');
+      expect(component.accountEmail()).toBe('signed-in@example.com');
+
+      fixture.detectChanges();
+      const hint: HTMLElement = fixture.nativeElement.querySelector('#vp-notificationEmail')
+        .closest('.field')
+        .querySelector('.field-hint');
+      expect(hint.textContent).toContain('signed-in@example.com');
+    });
+
+    it('saves a new override address', async () => {
+      const updated = { ...MOCK_VENDOR, notificationEmail: 'orders@mystore.example' };
+      vendorsStub.update.mockReturnValue(of(updated));
+
+      component.profileForm.patchValue({ notificationEmail: 'orders@mystore.example' });
+      component.submitProfile();
+      await fixture.whenStable();
+
+      const [, payload] = vendorsStub.update.mock.calls[0] as [string, Record<string, unknown>];
+      expect(payload['notificationEmail']).toBe('orders@mystore.example');
+      expect(component.saveSuccess()).toBeTruthy();
+      expect(component.vendor()?.notificationEmail).toBe('orders@mystore.example');
+    });
+
+    it('clears an existing override back to the account-email default by sending null, not empty string or undefined', async () => {
+      vendorsStub.getMe.mockReturnValue(of({ ...MOCK_VENDOR, notificationEmail: 'orders@mystore.example' }));
+      TestBed.resetTestingModule();
+      await setupTestBed(vendorsStub, productsStub);
+      const seededFixture = TestBed.createComponent(VendorProfile);
+      const seededComponent = seededFixture.componentInstance;
+      seededFixture.detectChanges();
+      await seededFixture.whenStable();
+
+      vendorsStub.update.mockReturnValue(of({ ...MOCK_VENDOR, notificationEmail: null }));
+      seededComponent.profileForm.patchValue({ notificationEmail: '' });
+      seededComponent.submitProfile();
+      await seededFixture.whenStable();
+
+      const [, payload] = vendorsStub.update.mock.calls[0] as [string, Record<string, unknown>];
+      expect(payload['notificationEmail']).toBeNull();
+      expect(payload['notificationEmail']).not.toBe('');
+      expect(payload['notificationEmail']).not.toBeUndefined();
+    });
+
+    it('surfaces a client-side validation error for a malformed address without submitting', () => {
+      component.profileForm.patchValue({ notificationEmail: 'not-an-email' });
+
+      expect(component.profileForm.get('notificationEmail')?.hasError('email')).toBe(true);
+      expect(component.profileForm.invalid).toBe(true);
+
+      component.submitProfile();
+      expect(vendorsStub.update).not.toHaveBeenCalled();
+    });
+
+    it('renders a server-side 400 validation error inline through the saveError banner', async () => {
+      vendorsStub.update.mockReturnValue(
+        throwError(() => ({ error: { message: 'notificationEmail must be a valid email address' } })),
+      );
+
+      component.profileForm.patchValue({ notificationEmail: 'bad@bad' });
+      // Client-side Validators.email may also flag this; force the save path regardless to
+      // assert the server-error rendering contract independently of client validation.
+      component.profileForm.get('notificationEmail')?.setErrors(null);
+      component.submitProfile();
+      await fixture.whenStable();
+
+      expect(component.saveError()).toBe('notificationEmail must be a valid email address');
+      fixture.detectChanges();
+      const errorBanner = fixture.nativeElement.querySelector('.details-form .error-banner');
+      expect(errorBanner?.textContent).toContain('notificationEmail must be a valid email address');
     });
   });
 
