@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-08-15T19:06:04.516Z",
+  "generatedAt": "2026-08-16T14:46:58.883Z",
   "git": {
-    "totalCommits": 221,
-    "aiCommits": 210,
+    "totalCommits": 223,
+    "aiCommits": 212,
     "aiPct": 95,
-    "appCommits": 154,
-    "ins": 88864,
-    "del": 9087,
-    "net": 79777,
-    "aiIns": 75350,
-    "aiDel": 8913,
-    "filesTouched": 682,
+    "appCommits": 155,
+    "ins": 89434,
+    "del": 9233,
+    "net": 80201,
+    "aiIns": 75920,
+    "aiDel": 9059,
+    "filesTouched": 719,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 94,
-        "ins": 44330,
-        "del": 2921
+        "commits": 95,
+        "ins": 44515,
+        "del": 2955
       },
       {
         "name": "API (NestJS)",
@@ -26,14 +26,14 @@
       },
       {
         "name": "Docs",
-        "commits": 66,
-        "ins": 15309,
-        "del": 4995
+        "commits": 68,
+        "ins": 15550,
+        "del": 5107
       },
       {
         "name": "AI Factory config",
-        "commits": 72,
-        "ins": 2170,
+        "commits": 73,
+        "ins": 2181,
         "del": 104
       },
       {
@@ -44,8 +44,8 @@
       },
       {
         "name": "Root & config",
-        "commits": 14,
-        "ins": 782,
+        "commits": 15,
+        "ins": 915,
         "del": 22
       },
       {
@@ -58,6 +58,16 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-08-15",
     "recent": [
+      {
+        "hash": "a2e7242",
+        "subject": "perf(web): optimize the LSM brand assets and serve heroes responsively",
+        "ai": true
+      },
+      {
+        "hash": "44383b8",
+        "subject": "chore(evidence): recompile AI-authorship report for the LSM-1/2/3 batch",
+        "ai": true
+      },
       {
         "hash": "a3abfcd",
         "subject": "fix(web): address code review on the landing-site migration batch",
@@ -106,16 +116,6 @@
       {
         "hash": "5ef3292",
         "subject": "chore(evidence): recompile AI-authorship report for the TE-1/2/3 batch",
-        "ai": true
-      },
-      {
-        "hash": "2aa2348",
-        "subject": "fix(api): contain render failures inside the mail transport guard",
-        "ai": true
-      },
-      {
-        "hash": "cab39a6",
-        "subject": "feat(web): vendor notification email field with account-email fallback",
         "ai": true
       }
     ]
@@ -363,7 +363,7 @@
     "web": 67
   },
   "design": {
-    "files": 33,
+    "files": 34,
     "screens": [
       "checkout",
       "claude-design",
@@ -594,6 +594,20 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/lsm-asset-optimization",
+      "number": 56,
+      "state": "MERGED",
+      "title": "perf(web): optimize the LSM brand assets and serve the marketing heroes responsively",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/56"
+    },
+    {
+      "headRefName": "feat/kdro0zYC-landing-site-migration",
+      "number": 55,
+      "state": "MERGED",
+      "title": "feat(web): landing-site migration batch — brand assets, hybrid design tokens, /about and /services (LSM-1/2/3)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/55"
+    },
     {
       "headRefName": "feat/wygImWJb-order-paid-notifications",
       "number": 54,
@@ -984,11 +998,11 @@
     },
     {
       "name": "In Progress",
-      "cards": 3
+      "cards": 0
     },
     {
       "name": "In Review",
-      "cards": 0
+      "cards": 3
     },
     {
       "name": "Done",
