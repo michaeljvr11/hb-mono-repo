@@ -17,3 +17,4 @@ export * from './synonym';
 export * from './analytics';
 export * from './earnings';
 export * from './settings';
+export * from './inquiry';

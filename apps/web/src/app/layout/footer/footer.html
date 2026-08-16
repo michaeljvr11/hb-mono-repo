@@ -11,7 +11,7 @@
           alt=""
           aria-hidden="true"
         />
-        <h2 class="site-footer__brand">H&amp;B Market</h2>
+        <h2 class="site-footer__brand">H&amp;B E-Commerce</h2>
       </div>
       <p class="site-footer__blurb">
         Your reliable bridge for cross-border trade between South African SMEs and Namibian customers.
@@ -26,15 +26,17 @@
     <!-- Trade Info column -->
     <div class="site-footer__col">
       <p class="site-footer__col-heading">Trade Info</p>
+      <a class="site-footer__link" routerLink="/about">About Us</a>
+      <a class="site-footer__link" routerLink="/services">Services</a>
       <a class="site-footer__link" href="#">Shipping Policy</a>
       <a class="site-footer__link" href="#">Terms of Trade</a>
-      <a class="site-footer__link" href="#">Contact Support</a>
+      <a class="site-footer__link" routerLink="/contact">Contact Support</a>
     </div>
 
     <!-- SME Access column -->
     <div class="site-footer__col">
       <p class="site-footer__col-heading">SME Access</p>
-      <a class="site-footer__link" href="#">Register as Vendor</a>
+      <a class="site-footer__link" routerLink="/vendor/apply">Register as Vendor</a>
       <a class="site-footer__link" href="#">Export Documentation</a>
       <a class="site-footer__link" href="#">Success Stories</a>
     </div>
@@ -49,6 +51,6 @@
   </div>
 
   <div class="site-footer__copyright">
-    <p>&copy; {{ currentYear }} H&amp;B Cross-Border Marketplace. Empowering Regional Trade.</p>
+    <p>&copy; {{ currentYear }} H&amp;B E-Commerce. Empowering Regional Trade.</p>
   </div>
 </footer>

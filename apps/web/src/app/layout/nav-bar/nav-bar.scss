@@ -11,13 +11,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 12px;
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
   padding: 16px 16px;
 
   @media (min-width: 768px) {
+    padding: 16px 24px;
+  }
+
+  @media (min-width: 1024px) {
+    gap: 24px;
     padding: 16px 40px;
   }
 }
@@ -52,14 +57,23 @@
   height: 32px;
 }
 
-/* Desktop nav links — hidden on mobile */
+/* Desktop nav links — hidden on mobile. Gap/padding tighten between 768–1023px
+   (four links now share the row with the brand, Sell-on-H&B, and utilities;
+   full spacing returns once there's room at 1024px+). */
 .nav-bar__links {
   display: none;
   align-items: center;
-  gap: 24px;
+  gap: 8px;
+  flex-wrap: wrap;
+  row-gap: 4px;
 
   @media (min-width: 768px) {
     display: flex;
+  }
+
+  @media (min-width: 1024px) {
+    gap: 24px;
+    flex-wrap: nowrap;
   }
 }
 
@@ -69,9 +83,14 @@
   line-height: 24px;
   color: var(--hb-on-surface-variant);
   text-decoration: none;
-  padding: 4px 8px;
+  padding: 4px 6px;
   border-radius: 4px;
+  white-space: nowrap;
   transition: background 150ms ease, color 150ms ease;
+
+  @media (min-width: 1024px) {
+    padding: 4px 8px;
+  }
 
   &:hover {
     background: var(--hb-surface-container);

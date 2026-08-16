@@ -52,7 +52,7 @@ describe('VendorShell', () => {
 
   it('shows the wordmark and Vendor Portal badge in the top bar', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('H&B Market');
+    expect(el.textContent).toContain('H&B E-Commerce');
     expect(el.textContent).toContain('Vendor Portal');
   });
 

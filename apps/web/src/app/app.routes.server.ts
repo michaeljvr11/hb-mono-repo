@@ -22,6 +22,7 @@ export const serverRoutes: ServerRoute[] = [
   // Static marketing pages — no user-specific data, safe to prerender at build time.
   { path: 'about', renderMode: RenderMode.Prerender },
   { path: 'services', renderMode: RenderMode.Prerender },
+  { path: 'contact', renderMode: RenderMode.Prerender },
   // Remaining public routes can be server-rendered.
   { path: '**', renderMode: RenderMode.Server },
 ];

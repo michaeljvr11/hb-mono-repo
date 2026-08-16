@@ -1,0 +1,211 @@
+<app-nav-bar />
+
+<main class="contact" aria-label="Contact H&amp;B">
+
+  <!-- ── Hero ──────────────────────────────────────────────────────────── -->
+  <section class="contact-hero marketing-hero" aria-labelledby="contact-hero-heading">
+    <picture class="contact-hero__picture marketing-hero__picture">
+      <source type="image/webp" [srcset]="heroImage.webpSrcset" [sizes]="heroSizes" />
+      <img
+        class="contact-hero__image marketing-hero__image"
+        [src]="heroImage.src"
+        [srcset]="heroImage.jpegSrcset"
+        [sizes]="heroSizes"
+        [width]="heroImage.width"
+        [height]="heroImage.height"
+        alt=""
+        aria-hidden="true"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+      />
+    </picture>
+    <div class="contact-hero__overlay marketing-hero__overlay" aria-hidden="true"></div>
+    <div class="contact-hero__content marketing-hero__content">
+      <h1 id="contact-hero-heading" class="contact-hero__title marketing-hero__title">Get in Touch</h1>
+      <p class="contact-hero__subtitle marketing-hero__subtitle">
+        Send us a message or chat on WhatsApp — we're here to help with quotes and import requests for
+        anything not listed on the marketplace.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Message form + WhatsApp ──────────────────────────────────────── -->
+  <section class="contact-section" aria-label="Send a message or WhatsApp us">
+    <div class="contact-section__inner">
+      <div class="contact-grid">
+
+        <div class="contact-form-column">
+          <h2 id="contact-form-heading" class="contact-form-column__title">Send us a Message</h2>
+          <p class="contact-form-column__intro">
+            Tell us what you're looking for and we'll get back to you within 1 business day.
+          </p>
+
+          <form
+            class="contact-form"
+            [formGroup]="contactForm"
+            (ngSubmit)="submit()"
+            aria-labelledby="contact-form-heading"
+            novalidate
+          >
+            <div class="contact-field">
+              <label for="contact-name">Name</label>
+              <div class="contact-input-wrap" [class.invalid]="nameControl.invalid && nameControl.touched">
+                <input
+                  id="contact-name"
+                  type="text"
+                  formControlName="name"
+                  autocomplete="name"
+                  [attr.maxlength]="maxLengths.name"
+                />
+              </div>
+              @if (nameControl.hasError('required') && nameControl.touched) {
+                <small>Name is required.</small>
+              } @else if (nameControl.hasError('maxlength') && nameControl.touched) {
+                <small>Name must be {{ maxLengths.name }} characters or fewer.</small>
+              }
+            </div>
+
+            <div class="contact-field">
+              <label for="contact-email">Email</label>
+              <div class="contact-input-wrap" [class.invalid]="emailControl.invalid && emailControl.touched">
+                <input
+                  id="contact-email"
+                  type="email"
+                  formControlName="email"
+                  autocomplete="email"
+                  [attr.maxlength]="maxLengths.email"
+                />
+              </div>
+              @if (emailControl.hasError('required') && emailControl.touched) {
+                <small>Email is required.</small>
+              } @else if (
+                (emailControl.hasError('email') || emailControl.hasError('pattern')) &&
+                emailControl.touched
+              ) {
+                <small>Please enter a valid email address.</small>
+              }
+            </div>
+
+            <div class="contact-field">
+              <label for="contact-phone">Contact Number <span class="contact-field__optional">(optional)</span></label>
+              <div class="contact-input-wrap">
+                <input
+                  id="contact-phone"
+                  type="tel"
+                  formControlName="phone"
+                  autocomplete="tel"
+                  [attr.maxlength]="maxLengths.phone"
+                />
+              </div>
+            </div>
+
+            <div class="contact-field">
+              <label for="contact-order-type">What are you looking for?</label>
+              <div
+                class="contact-input-wrap"
+                [class.invalid]="orderTypeControl.invalid && orderTypeControl.touched"
+              >
+                <select id="contact-order-type" formControlName="orderType">
+                  <option value="" disabled>Select an option</option>
+                  @for (option of orderTypeOptions; track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              </div>
+              @if (orderTypeControl.hasError('required') && orderTypeControl.touched) {
+                <small>Please select an option.</small>
+              }
+            </div>
+
+            <div class="contact-reference">
+              <label class="contact-checkbox">
+                <input
+                  type="checkbox"
+                  formControlName="hasReferenceNumber"
+                  (change)="onReferenceNumberToggle()"
+                />
+                <span>I have a reference number</span>
+              </label>
+
+              @if (showReferenceNumber()) {
+                <div class="contact-field">
+                  <label for="contact-reference-number">Reference Number</label>
+                  <div class="contact-input-wrap">
+                    <input
+                      id="contact-reference-number"
+                      type="text"
+                      formControlName="referenceNumber"
+                      [attr.maxlength]="maxLengths.referenceNumber"
+                    />
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="contact-field">
+              <label for="contact-message">Message</label>
+              <div class="contact-input-wrap" [class.invalid]="messageControl.invalid && messageControl.touched">
+                <textarea
+                  id="contact-message"
+                  rows="6"
+                  formControlName="message"
+                  [attr.maxlength]="maxLengths.message"
+                ></textarea>
+              </div>
+              <p class="contact-field__hint">
+                Please provide details about your request, and any product or shopping-cart links.
+              </p>
+              @if (messageControl.hasError('required') && messageControl.touched) {
+                <small>Please tell us what you're looking for.</small>
+              } @else if (messageControl.hasError('maxlength') && messageControl.touched) {
+                <small>Message must be {{ maxLengths.message }} characters or fewer.</small>
+              }
+            </div>
+
+            <button type="submit" class="contact-submit-btn" [disabled]="isSubmitting()">
+              {{ isSubmitting() ? 'Sending…' : 'Send Message' }}
+            </button>
+          </form>
+        </div>
+
+        <aside class="contact-quick" aria-labelledby="contact-whatsapp-heading">
+          <h2 id="contact-whatsapp-heading">Or Message Us on WhatsApp</h2>
+          <p class="contact-quick__intro">
+            Fastest way to get a quote — especially if you have product links ready.
+          </p>
+
+          <a
+            [href]="contactDetails.whatsappQuoteUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="contact-whatsapp-btn"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+            Chat on WhatsApp Now
+          </a>
+
+          <div class="contact-details">
+            <h3>Other Contact Options</h3>
+            <p>
+              <a [href]="contactDetails.phoneHref">
+                <span class="material-symbols-outlined" aria-hidden="true">call</span>
+                {{ contactDetails.phoneDisplay }}
+              </a>
+            </p>
+            <p>
+              <a [href]="contactDetails.emailHref">
+                <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+                {{ contactDetails.email }}
+              </a>
+            </p>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<app-footer />

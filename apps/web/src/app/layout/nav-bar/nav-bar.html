@@ -2,7 +2,7 @@
   <div class="nav-bar__inner">
     <!-- Brand -->
     <div class="nav-bar__brand-group">
-      <a class="nav-bar__brand" routerLink="/shop" aria-label="H&B Market home">
+      <a class="nav-bar__brand" routerLink="/shop" aria-label="H&B E-Commerce home">
         <img
           class="nav-bar__logo"
           [src]="brandLogo"
@@ -11,18 +11,36 @@
           alt=""
           aria-hidden="true"
         />
-        H&amp;B Market
+        H&amp;B E-Commerce
       </a>
     </div>
 
     <!-- Desktop nav links -->
     <nav class="nav-bar__links" aria-label="Primary navigation">
       <a
-        class="nav-bar__link nav-bar__link--active"
+        class="nav-bar__link"
         routerLink="/shop"
         routerLinkActive="nav-bar__link--active"
         ariaCurrentWhenActive="page"
       >Home</a>
+      <a
+        class="nav-bar__link"
+        routerLink="/about"
+        routerLinkActive="nav-bar__link--active"
+        ariaCurrentWhenActive="page"
+      >About</a>
+      <a
+        class="nav-bar__link"
+        routerLink="/services"
+        routerLinkActive="nav-bar__link--active"
+        ariaCurrentWhenActive="page"
+      >Services</a>
+      <a
+        class="nav-bar__link"
+        routerLink="/contact"
+        routerLinkActive="nav-bar__link--active"
+        ariaCurrentWhenActive="page"
+      >Contact</a>
     </nav>
 
     <!-- Sell on H&B entry -->

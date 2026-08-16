@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
+import { CreateContactInquiryRequest } from '@hb/shared';
 import { EmailContentBlock, renderEmail } from './email-template';
 
 /**
@@ -121,6 +122,32 @@ export class MailService {
       })),
       { type: 'paragraph', text: `Order total: ${formatMoney(total)} ${currency}` },
     ]);
+  }
+
+  /**
+   * Platform-ops notification for a contact-form submission (LSM-5). The
+   * inquiry is already persisted by the time this is called — a send
+   * failure here (swallowed by send(), never thrown) must never lose the
+   * lead, only delay ops seeing it in their inbox.
+   */
+  async sendContactInquiryNotification(
+    to: string[],
+    inquiry: CreateContactInquiryRequest & { id: string },
+  ): Promise<void> {
+    const blocks: EmailContentBlock[] = [
+      { type: 'heading', text: 'New contact inquiry' },
+      { type: 'paragraph', text: `From: ${inquiry.name} <${inquiry.email}>` },
+    ];
+    if (inquiry.phone) {
+      blocks.push({ type: 'paragraph', text: `Phone: ${inquiry.phone}` });
+    }
+    blocks.push({ type: 'paragraph', text: `Order type: ${inquiry.orderType}` });
+    if (inquiry.referenceNumber) {
+      blocks.push({ type: 'paragraph', text: `Reference number: ${inquiry.referenceNumber}` });
+    }
+    blocks.push({ type: 'paragraph', text: `Message: ${inquiry.message}` });
+
+    await this.send(to, `New contact inquiry — ${inquiry.name}`, blocks);
   }
 
   /**
