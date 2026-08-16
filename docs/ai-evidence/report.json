@@ -1,34 +1,34 @@
 {
-  "generatedAt": "2026-08-16T14:46:58.883Z",
+  "generatedAt": "2026-08-16T15:33:50.862Z",
   "git": {
-    "totalCommits": 223,
-    "aiCommits": 212,
+    "totalCommits": 228,
+    "aiCommits": 217,
     "aiPct": 95,
-    "appCommits": 155,
-    "ins": 89434,
-    "del": 9233,
-    "net": 80201,
-    "aiIns": 75920,
-    "aiDel": 9059,
-    "filesTouched": 719,
+    "appCommits": 160,
+    "ins": 91276,
+    "del": 9334,
+    "net": 81942,
+    "aiIns": 77762,
+    "aiDel": 9160,
+    "filesTouched": 735,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 95,
-        "ins": 44515,
-        "del": 2955
+        "commits": 98,
+        "ins": 45664,
+        "del": 2994
       },
       {
         "name": "API (NestJS)",
-        "commits": 81,
-        "ins": 24740,
-        "del": 1027
+        "commits": 83,
+        "ins": 25317,
+        "del": 1037
       },
       {
         "name": "Docs",
-        "commits": 68,
-        "ins": 15550,
-        "del": 5107
+        "commits": 69,
+        "ins": 15616,
+        "del": 5159
       },
       {
         "name": "AI Factory config",
@@ -38,8 +38,8 @@
       },
       {
         "name": "Shared contracts",
-        "commits": 31,
-        "ins": 1333,
+        "commits": 32,
+        "ins": 1383,
         "del": 16
       },
       {
@@ -56,8 +56,33 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-15",
+    "lastDate": "2026-08-16",
     "recent": [
+      {
+        "hash": "13a69c6",
+        "subject": "fix: address code review on the contact-inquiry batch",
+        "ai": true
+      },
+      {
+        "hash": "85485fc",
+        "subject": "feat(web): wire nav and footer to the marketing pages, unify the brand name",
+        "ai": true
+      },
+      {
+        "hash": "f1b08b8",
+        "subject": "feat(web): add the /contact page with a typed form and WhatsApp CTA",
+        "ai": true
+      },
+      {
+        "hash": "62fcd90",
+        "subject": "feat(api): add the public POST /inquiries contact-inquiry endpoint",
+        "ai": true
+      },
+      {
+        "hash": "3ef3c37",
+        "subject": "feat(shared): add the ContactInquiry contract and InquiryOrderType enum",
+        "ai": true
+      },
       {
         "hash": "a2e7242",
         "subject": "perf(web): optimize the LSM brand assets and serve heroes responsively",
@@ -92,31 +117,6 @@
         "hash": "9cb795f",
         "subject": "chore(evidence): recompile AI-authorship report for the TE-4/TE-5 batch",
         "ai": true
-      },
-      {
-        "hash": "f5d523f",
-        "subject": "fix(api): render order-email amounts to 2dp, guard unloaded customer relation",
-        "ai": true
-      },
-      {
-        "hash": "00a4e67",
-        "subject": "feat(api): order.paid listener also sends customer order confirmation",
-        "ai": true
-      },
-      {
-        "hash": "ac38234",
-        "subject": "feat(api): order.paid event fans out vendor + platform notification emails",
-        "ai": true
-      },
-      {
-        "hash": "f265501",
-        "subject": "chore(evidence): recompile AI-authorship report post PR #53",
-        "ai": true
-      },
-      {
-        "hash": "5ef3292",
-        "subject": "chore(evidence): recompile AI-authorship report for the TE-1/2/3 batch",
-        "ai": true
       }
     ]
   },
@@ -140,6 +140,11 @@
       "branch": "feat/AAjMPwV7-vendor-logo-banner-upload",
       "cardId": "AAjMPwV7",
       "slug": "vendor-logo-banner-upload"
+    },
+    {
+      "branch": "feat/Ah6EZCOW-contact-page-and-inquiries",
+      "cardId": "Ah6EZCOW",
+      "slug": "contact-page-and-inquiries"
     },
     {
       "branch": "feat/DD6Z0NUW-admin-vendor-approvals",
@@ -358,9 +363,9 @@
     }
   ],
   "tests": {
-    "total": 118,
-    "api": 51,
-    "web": 67
+    "total": 121,
+    "api": 52,
+    "web": 69
   },
   "design": {
     "files": 34,
@@ -389,16 +394,16 @@
     },
     "gatePass": 34,
     "gateFail": 2,
-    "edits": 599,
-    "editsUnfixable": 201,
+    "edits": 622,
+    "editsUnfixable": 206,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-15T19:05:36.419Z",
+    "lastTs": "2026-08-16T15:28:49.315Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 45,
+          "invocations": 54,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -407,7 +412,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 20,
+          "invocations": 21,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -416,7 +421,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 31,
+          "invocations": 33,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -434,7 +439,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 23,
+          "invocations": 24,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -470,7 +475,7 @@
         },
         {
           "agentType": "product-planner",
-          "invocations": 5,
+          "invocations": 6,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -479,7 +484,7 @@
         },
         {
           "agentType": "general-purpose",
-          "invocations": 1,
+          "invocations": 2,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -488,81 +493,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-08-15T09:25:41.701Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T09:25:54.805Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T09:32:48.737Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T09:34:18.918Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T09:57:08.395Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T10:11:37.157Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T10:16:37.066Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T10:23:31.634Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T10:30:50.018Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T10:55:09.725Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T11:19:59.223Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T18:27:11.891Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T18:28:23.344Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T18:34:20.745Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-15T18:39:57.739Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-15T18:44:31.261Z",
           "agentType": "frontend-engineer",
@@ -586,6 +516,81 @@
         {
           "ts": "2026-08-15T19:05:36.419Z",
           "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T14:53:51.628Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T14:54:07.695Z",
+          "agentType": "general-purpose",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T14:54:32.741Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T14:55:44.559Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T14:56:13.906Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T15:00:20.930Z",
+          "agentType": "product-planner",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T15:02:45.845Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T15:03:31.541Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T15:04:39.723Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T15:05:32.372Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T15:08:28.100Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T15:13:37.193Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T15:14:21.281Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T15:19:52.445Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-16T15:23:36.747Z",
+          "agentType": "code-reviewer",
           "totalTokens": 0
         }
       ]
@@ -994,19 +999,19 @@
     },
     {
       "name": "To Do",
-      "cards": 10
+      "cards": 12
     },
     {
       "name": "In Progress",
-      "cards": 0
-    },
-    {
-      "name": "In Review",
       "cards": 3
     },
     {
+      "name": "In Review",
+      "cards": 0
+    },
+    {
       "name": "Done",
-      "cards": 72
+      "cards": 75
     },
     {
       "name": "Fable Documentation",
