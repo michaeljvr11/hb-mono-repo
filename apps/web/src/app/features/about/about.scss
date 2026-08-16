@@ -1,0 +1,126 @@
+/* ── Page ──────────────────────────────────────────────────────────────── */
+
+.about {
+  background: var(--hb-background);
+  color: var(--hb-on-surface);
+}
+
+.about-section__inner {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 16px;
+  text-align: center;
+
+  @media (min-width: 768px) {
+    padding: 64px 40px;
+  }
+}
+
+/* `.marketing-section__title` (styles.scss) supplies everything else; this page's
+   heading just needs a taller gap under the underline bar than /services uses. */
+.about-section__title {
+  margin-bottom: 32px;
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────── */
+/* `.marketing-hero` + friends (styles.scss) supply the whole hero, artwork included
+   — the image is a real <picture> bound from the component, so this page owns no
+   hero styles of its own. */
+
+/* ── Our Story card ────────────────────────────────────────────────────── */
+
+.about-card {
+  padding: 40px;
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(28, 27, 27, 0.06);
+  text-align: left;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--hb-on-surface);
+
+  @media (max-width: 767px) {
+    padding: 24px;
+  }
+
+  p {
+    margin: 0 0 20px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.about-card__lead {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.about-card__callout {
+  padding: 16px 20px;
+  background: var(--hb-surface-container);
+  border-left: 4px solid var(--hb-primary);
+  border-radius: 0 8px 8px 0;
+  font-weight: 600;
+  color: var(--hb-on-surface);
+}
+
+/* ── Our Mission ───────────────────────────────────────────────────────── */
+
+.about-section--mission {
+  background: var(--hb-surface-container-low);
+}
+
+.about-quote {
+  margin: 0 0 24px;
+  padding: 32px;
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 32px;
+  color: var(--hb-primary);
+
+  @media (max-width: 767px) {
+    padding: 24px;
+    font-size: 18px;
+    line-height: 28px;
+  }
+}
+
+.about-mission-text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ── Closing CTA ───────────────────────────────────────────────────────── */
+
+.about-cta {
+  background: var(--hb-surface-container);
+}
+
+.about-cta h2 {
+  margin: 0 0 12px;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--hb-primary);
+}
+
+.about-cta__text {
+  margin: 0 auto 32px;
+  max-width: 560px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* `.marketing-cta__btn` (styles.scss) supplies the rest. */

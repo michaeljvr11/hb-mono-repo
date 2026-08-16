@@ -22,10 +22,15 @@ html {
 
 :root {
   /* HB design tokens — see docs/design/DESIGN.md (canonical) */
-  --hb-primary: #015300;
-  --hb-primary-container: #026e00;
+  /* LSM-1: primary/secondary/primary-container migrated to the hb-landing brand
+     palette (owner-confirmed 2026-08-13/15). --hb-primary-container is
+     hand-picked (#43a047), not Material-generated — at the old #026e00 it was
+     darker than the new #2e7d32 primary, inverting its "lighter primary /
+     hover accents" role. */
+  --hb-primary: #2e7d32;
+  --hb-primary-container: #43a047;
   --hb-on-primary: #ffffff;
-  --hb-secondary: #964900;
+  --hb-secondary: #f57c00;
   --hb-secondary-fixed: #ffdcc7;
   --hb-on-secondary-container: #703500;
   --hb-background: #fcf9f8;
@@ -39,6 +44,7 @@ html {
   --hb-outline-variant: #bfcab7;
   --hb-error: #ba1a1a;
   --hb-scrim: rgba(0, 0, 0, 0.35);
+  --hb-radius-pill: 9999px;
 }
 
 html,
@@ -120,7 +126,7 @@ body {
 
 .auth-screen .input-wrap:focus-within {
   border-color: var(--hb-primary);
-  box-shadow: 0 0 0 2px rgba(1, 83, 0, 0.1);
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
 }
 
 .auth-screen .input-wrap.invalid {
@@ -134,6 +140,7 @@ body {
   gap: 8px;
   width: 100%;
   border: 0;
+  border-radius: var(--hb-radius-pill);
   padding: 16px;
   background: var(--hb-primary);
   color: var(--hb-on-primary);
@@ -146,7 +153,7 @@ body {
 }
 
 .auth-screen .primary-action:hover:not(:disabled) {
-  background: #014500;
+  background: #276b2a;
 }
 
 .auth-screen .primary-action:active:not(:disabled) {
@@ -297,7 +304,7 @@ body {
 
 .auth-panel .primary-action {
   margin-top: 8px;
-  border-radius: 8px;
+  border-radius: var(--hb-radius-pill);
 }
 
 .auth-panel .status-ok {
@@ -363,7 +370,7 @@ body {
 }
 
 .hb-success-snackbar {
-  --mat-snack-bar-container-color: #015300;
+  --mat-snack-bar-container-color: #2e7d32;
   --mat-snack-bar-supporting-text-color: #ffffff;
   --mat-snack-bar-button-color: #98f982;
 }
@@ -404,4 +411,115 @@ body {
   --mat-datepicker-calendar-date-disabled-state-text-color: color-mix(in srgb, var(--hb-on-surface-variant) 40%, transparent);
   --mat-datepicker-calendar-period-button-text-color: var(--hb-on-surface);
   --mat-datepicker-calendar-navigation-button-icon-color: var(--hb-on-surface-variant);
+}
+
+/* Shared static-marketing-page primitives (LSM-2 /about + LSM-3 /services share these;
+   LSM-4 /contact is a planned third consumer). Each page still owns its own BEM block name
+   (`.about-hero`, `.services-hero`, ...) for its per-page deltas — currently just the
+   section-title's margin-bottom — and adds the matching `.marketing-*` class alongside it
+   in the template for the shared geometry/color rules below. The hero artwork itself is a
+   real <picture> bound from the component, not a background-image. */
+.marketing-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+  padding: 96px 16px;
+  overflow: hidden;
+  text-align: center;
+  color: var(--hb-on-primary);
+
+  @media (min-width: 768px) {
+    min-height: 480px;
+  }
+}
+
+/* Takes the <picture> out of the flex flow entirely; only the <img> inside it
+   participates in layout, and that is absolutely positioned. */
+.marketing-hero__picture {
+  display: contents;
+}
+
+/* The hero artwork. Absolutely positioned beneath `.marketing-hero__overlay`, which
+   follows it in DOM order and so paints on top. `object-fit` here does the job the
+   old `background-size: cover` / `background-position: center` pair used to. */
+.marketing-hero__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.marketing-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(28, 27, 27, 0.5), rgba(28, 27, 27, 0.55));
+  pointer-events: none;
+}
+
+.marketing-hero__content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+}
+
+.marketing-hero__title {
+  margin: 0 0 16px;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--hb-on-primary);
+
+  @media (max-width: 767px) {
+    font-size: 32px;
+  }
+}
+
+.marketing-hero__subtitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+}
+
+.marketing-section__title {
+  margin: 0 0 16px;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 40px;
+  letter-spacing: -0.01em;
+  color: var(--hb-primary);
+}
+
+.marketing-section__title::after {
+  content: '';
+  display: block;
+  width: 64px;
+  height: 4px;
+  margin: 16px auto 0;
+  background: var(--hb-secondary);
+  border-radius: var(--hb-radius-pill);
+}
+
+.marketing-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 48px;
+  border-radius: var(--hb-radius-pill);
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-decoration: none;
+  transition: filter 150ms ease;
+}
+
+.marketing-cta__btn:hover {
+  filter: brightness(1.1);
 }

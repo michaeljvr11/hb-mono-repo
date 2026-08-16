@@ -75,8 +75,11 @@
   font-weight: 600;
   text-decoration: none;
 
+  /* LSM-1 contrast fix: white on --hb-primary-container is 3.30:1 (fails
+     AA); flip text to --hb-on-surface on hover (~5.20:1) instead of the fill. */
   &:hover {
     background: var(--hb-primary-container);
+    color: var(--hb-on-surface);
   }
 }
 
@@ -161,7 +164,7 @@
 .cart__item-stock {
   font-size: 12px;
   font-weight: 500;
-  color: var(--hb-secondary);
+  color: var(--hb-on-secondary-container);
 }
 
 .cart__item-total {
@@ -292,7 +295,7 @@
   width: 100%;
   padding: 14px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--hb-radius-pill);
   background: var(--hb-primary);
   color: var(--hb-on-primary);
   font-family: inherit;
@@ -301,7 +304,10 @@
   cursor: pointer;
   transition: background 150ms ease;
 
+  /* LSM-1 contrast fix: white on --hb-primary-container is 3.30:1 (fails
+     AA); flip text to --hb-on-surface on hover (~5.20:1) instead of the fill. */
   &:hover {
     background: var(--hb-primary-container);
+    color: var(--hb-on-surface);
   }
 }

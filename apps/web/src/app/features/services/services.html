@@ -1,0 +1,99 @@
+<app-nav-bar />
+
+<main class="services" aria-label="Our Services">
+
+  <!-- ── Hero ──────────────────────────────────────────────────────────── -->
+  <section class="services-hero marketing-hero" aria-labelledby="services-hero-heading">
+    <picture class="services-hero__picture marketing-hero__picture">
+      <source type="image/webp" [srcset]="heroImage.webpSrcset" [sizes]="heroSizes" />
+      <img
+        class="services-hero__image marketing-hero__image"
+        [src]="heroImage.src"
+        [srcset]="heroImage.jpegSrcset"
+        [sizes]="heroSizes"
+        [width]="heroImage.width"
+        [height]="heroImage.height"
+        alt=""
+        aria-hidden="true"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+      />
+    </picture>
+    <div class="services-hero__overlay marketing-hero__overlay" aria-hidden="true"></div>
+    <div class="services-hero__content marketing-hero__content">
+      <h1 id="services-hero-heading" class="services-hero__title marketing-hero__title">Our Services</h1>
+      <p class="services-hero__subtitle marketing-hero__subtitle">
+        We make it easy to get almost anything from South Africa (and beyond) delivered reliably to Namibia.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Procurement Service ──────────────────────────────────────────── -->
+  <section class="services-section" aria-labelledby="import-service-heading">
+    <div class="services-section__inner">
+      <h2 id="import-service-heading" class="services-section__title marketing-section__title">Personal &amp; Business Import Service</h2>
+      <p class="services-section__subtitle">
+        Can't get it shipped directly? Our <strong>Procurement Service</strong> sources, buys, consolidates,
+        and delivers it for you — hassle-free.
+      </p>
+
+      <app-trust-banner [items]="valueItems" label="Why use the Procurement Service" />
+
+      <div class="services-process">
+        <h3 class="services-process__title">How It Works — Simple 4 Steps</h3>
+        <div class="services-steps">
+          <div class="services-step">
+            <div class="services-step__number">1</div>
+            <h4 class="services-step__title">Send Us Your List</h4>
+            <p class="services-step__text">Share links or product details via WhatsApp, email or form.</p>
+          </div>
+
+          <div class="services-step">
+            <div class="services-step__number">2</div>
+            <h4 class="services-step__title">We Quote &amp; Source</h4>
+            <p class="services-step__text">Get a full quote (item + shipping + estimated duties) within 24–48 hours.</p>
+          </div>
+
+          <div class="services-step">
+            <div class="services-step__number">3</div>
+            <h4 class="services-step__title">Pay &amp; We Ship</h4>
+            <p class="services-step__text">Pay securely — we buy, pack, clear customs, and ship to Namibia.</p>
+          </div>
+
+          <div class="services-step">
+            <div class="services-step__number">4</div>
+            <h4 class="services-step__title">Track &amp; Receive</h4>
+            <p class="services-step__text">Get updates and delivery to your door (Windhoek or nationwide).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="services-cta">
+        <a routerLink="/contact" class="services-cta__btn marketing-cta__btn">Request a Quote Now</a>
+        <p class="services-cta__text">Whether it's one item or a business bulk order — we're ready to help.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Marketplace cross-link ────────────────────────────────────────── -->
+  <section class="services-section services-section--marketplace" aria-labelledby="marketplace-heading">
+    <div class="services-section__inner">
+      <h2 id="marketplace-heading" class="services-section__title marketing-section__title">The H&amp;B Marketplace</h2>
+      <div class="services-marketplace-card">
+        <p class="services-marketplace-card__lead">
+          The <a routerLink="/shop">H&amp;B marketplace</a> lets independent vendors across South Africa and
+          Namibia sell their own products directly to you — every listing is vendor-owned stock, not H&amp;B's.
+        </p>
+        <p class="services-marketplace-card__callout">
+          The Procurement Service above is a standing, permanent service alongside the marketplace — not a
+          stand-in for it. For anything not listed on the <a routerLink="/shop">marketplace</a>, we source it
+          from South Africa (and beyond) and import it into Namibia on your behalf.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<app-footer />

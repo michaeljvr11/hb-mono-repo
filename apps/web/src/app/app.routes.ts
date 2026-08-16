@@ -132,6 +132,16 @@ export const routes: Routes = [
     ],
   },
 
+  // Marketing pages — public, static, no guard.
+  {
+    path: 'about',
+    loadComponent: () => import('./features/about/about').then(m => m.About)
+  },
+  {
+    path: 'services',
+    loadComponent: () => import('./features/services/services').then(m => m.Services)
+  },
+
   // Catch-all route
   {
     path: '**',

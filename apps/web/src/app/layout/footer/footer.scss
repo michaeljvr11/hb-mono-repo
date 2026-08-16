@@ -30,8 +30,24 @@
   gap: 8px;
 }
 
-.site-footer__brand {
+.site-footer__brand-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0 0 8px;
+}
+
+/* Intrinsic hb-logo.png is 96x96 (1:1). Explicit width/height reserve the
+   box before the image loads — no layout shift. */
+.site-footer__logo {
+  display: block;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+}
+
+.site-footer__brand {
+  margin: 0;
   font-size: 20px;
   font-weight: 500;
   line-height: 28px;
@@ -82,7 +98,7 @@
   transition: color 150ms ease;
 
   &:hover {
-    color: var(--hb-secondary);
+    color: var(--hb-on-secondary-container);
   }
 }
 

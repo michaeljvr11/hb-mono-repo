@@ -166,7 +166,7 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
-  color: var(--hb-secondary);
+  color: var(--hb-on-secondary-container);
 }
 
 .pdp__shipping-title {
@@ -387,7 +387,7 @@
   flex: 1;
   padding: 16px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--hb-radius-pill);
   background: var(--hb-primary);
   color: var(--hb-on-primary);
   font-size: 14px;

@@ -156,7 +156,7 @@
   color: var(--hb-on-surface-variant);
 
   &--error { color: var(--hb-error); }
-  &--warning { color: var(--hb-secondary); }
+  &--warning { color: var(--hb-on-secondary-container); }
   &--pending { display: flex; align-items: center; gap: 6px; color: var(--hb-primary); }
 }
 
@@ -442,7 +442,8 @@
   cursor: pointer;
   transition: background 150ms ease, opacity 150ms ease;
 
-  &:hover:not(:disabled) { background: var(--hb-primary-container); }
+  /* LSM-1 contrast fix: white on --hb-primary-container is 3.30:1 (fails AA). */
+  &:hover:not(:disabled) { background: var(--hb-primary-container); color: var(--hb-on-surface); }
   &:disabled { opacity: 0.6; cursor: progress; }
 }
 

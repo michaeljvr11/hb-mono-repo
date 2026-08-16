@@ -31,12 +31,12 @@ Tokens in this file are **canonical** — exported HTML is reference material, n
 ### Colors
 | Token | Value | Usage |
 |---|---|---|
-| `--hb-primary` | `#015300` | Primary actions, links, focus ring |
-| `--hb-primary-container` | `#026e00` | Lighter primary / hover accents |
+| `--hb-primary` | `#2e7d32` | Primary actions, links, focus ring |
+| `--hb-primary-container` | `#43a047` | Lighter primary / hover accents (hand-picked, not Material-generated — see LSM-1) |
 | `--hb-on-primary` | `#ffffff` | Text/icons on primary |
-| `--hb-secondary` | `#964900` | Accent (earth-tone), auxiliary icons |
+| `--hb-secondary` | `#f57c00` | Accent (earth-tone) fills, bars, badge/underline backgrounds — **fills only**, fails AA as a foreground colour (2.70:1 on light surfaces) |
 | `--hb-secondary-fixed` | `#ffdcc7` | Soft accent fill (badges, status pills) |
-| `--hb-on-secondary-container` | `#703500` | Text/icons on secondary-fixed |
+| `--hb-on-secondary-container` | `#703500` | Text/icons on secondary-fixed **and the required foreground for any `--hb-secondary`-toned text or icon on a light surface** (9.5:1 on white) |
 | `--hb-background` | `#fcf9f8` | Page background |
 | `--hb-surface` | `#fcf9f8` | App surface |
 | `--hb-surface-container-lowest` | `#ffffff` | Cards, inputs |
@@ -49,7 +49,7 @@ Tokens in this file are **canonical** — exported HTML is reference material, n
 | `--hb-error` | `#ba1a1a` | Validation / error text |
 | `--hb-scrim` | `rgba(0,0,0,0.35)` | Modal / drawer overlay scrim |
 
-Focus ring: border `#015300` + `box-shadow: 0 0 0 2px rgba(1,83,0,0.1)`.
+Focus ring: border `#2e7d32` + `box-shadow: 0 0 0 2px rgba(46,125,50,0.1)`.
 
 ### Typography
 | Token | Value |
@@ -71,7 +71,11 @@ Icons: **Material Symbols Outlined** (loaded in `apps/web/src/index.html`).
 ### Spacing & shape
 Base-8 scale: `stack-xs 4px`, `stack-sm 8px`, `stack-md 16px`, `stack-lg 24px`, `stack-xl 48px`;
 page margins `16px` (mobile) / `40px` (desktop); container max `1280px`.
-Radius: `4px` (small), `8px` / `lg` (buttons, inputs, cards), `12px` / `xl` (large cards, modals), `full`.
+Radius: `4px` (small), `8px` / `lg` (buttons, inputs, cards), `12px` / `xl` (large cards, modals),
+`full` — token `--hb-radius-pill: 9999px`, applied to fully-rounded shapes: pill/CTA buttons
+(auth primary actions, storefront/PDP/cart/checkout CTAs), circular badges (e.g. numbered step
+markers), and rounded underline/accent bars; not a global button override — rectangular buttons
+elsewhere keep the `8px` / `lg` radius.
 
 ## Screens
 All seven screens are pulled into `docs/design/<screen>/` and mirrored as `@dsCard` cards in
