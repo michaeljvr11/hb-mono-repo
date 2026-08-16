@@ -237,4 +237,68 @@ describe('MailService with RESEND_API_KEY configured', () => {
     expect(payload.html).toContain('185.00 NAD');
     expect(payload.html).toContain('370.00 NAD');
   });
+
+  // ── LSM-5: contact inquiry notification ─────────────────────────────────
+
+  it('sends a contact inquiry notification to every configured platform recipient', async () => {
+    await service.sendContactInquiryNotification(['ops1@hb.com', 'ops2@hb.com'], {
+      id: 'inquiry-1',
+      name: 'Casey Customer',
+      email: 'casey@example.com',
+      orderType: 'one_time_order',
+      message: 'Do you stock rooibos tea in bulk?',
+    });
+
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const payload = lastSendPayload();
+    expect(payload.to).toEqual(['ops1@hb.com', 'ops2@hb.com']);
+    expect(payload.html).toContain('Casey Customer');
+    expect(payload.html).toContain('casey@example.com');
+    expect(payload.html).toContain('one_time_order');
+    expect(payload.html).toContain('Do you stock rooibos tea in bulk?');
+  });
+
+  it('includes phone and referenceNumber in the notification only when supplied', async () => {
+    await service.sendContactInquiryNotification(['ops@hb.com'], {
+      id: 'inquiry-1',
+      name: 'Casey Customer',
+      email: 'casey@example.com',
+      phone: '+27821234567',
+      orderType: 'recurring_order',
+      referenceNumber: 'ORD-123',
+      message: 'Standing order query.',
+    });
+
+    const payload = lastSendPayload();
+    expect(payload.html).toContain('+27821234567');
+    expect(payload.html).toContain('ORD-123');
+  });
+
+  it('omits phone and referenceNumber lines from the notification when not supplied', async () => {
+    await service.sendContactInquiryNotification(['ops@hb.com'], {
+      id: 'inquiry-1',
+      name: 'Casey Customer',
+      email: 'casey@example.com',
+      orderType: 'other',
+      message: 'General question.',
+    });
+
+    const payload = lastSendPayload();
+    expect(payload.html).not.toContain('Phone:');
+    expect(payload.html).not.toContain('Reference number:');
+  });
+
+  it('does not throw out of sendContactInquiryNotification when the transport rejects', async () => {
+    sendMock.mockRejectedValueOnce(new Error('ECONNRESET'));
+
+    await expect(
+      service.sendContactInquiryNotification(['ops@hb.com'], {
+        id: 'inquiry-1',
+        name: 'Casey Customer',
+        email: 'casey@example.com',
+        orderType: 'other',
+        message: 'General question.',
+      }),
+    ).resolves.toBeUndefined();
+  });
 });

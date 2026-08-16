@@ -124,6 +124,40 @@ export class MailService {
   }
 
   /**
+   * Platform-ops notification for a contact-form submission (LSM-5). The
+   * inquiry is already persisted by the time this is called — a send
+   * failure here (swallowed by send(), never thrown) must never lose the
+   * lead, only delay ops seeing it in their inbox.
+   */
+  async sendContactInquiryNotification(
+    to: string[],
+    inquiry: {
+      id: string;
+      name: string;
+      email: string;
+      phone?: string;
+      orderType: string;
+      referenceNumber?: string;
+      message: string;
+    },
+  ): Promise<void> {
+    const blocks: EmailContentBlock[] = [
+      { type: 'heading', text: 'New contact inquiry' },
+      { type: 'paragraph', text: `From: ${inquiry.name} <${inquiry.email}>` },
+    ];
+    if (inquiry.phone) {
+      blocks.push({ type: 'paragraph', text: `Phone: ${inquiry.phone}` });
+    }
+    blocks.push({ type: 'paragraph', text: `Order type: ${inquiry.orderType}` });
+    if (inquiry.referenceNumber) {
+      blocks.push({ type: 'paragraph', text: `Reference number: ${inquiry.referenceNumber}` });
+    }
+    blocks.push({ type: 'paragraph', text: `Message: ${inquiry.message}` });
+
+    await this.send(to, `New contact inquiry — ${inquiry.name}`, blocks);
+  }
+
+  /**
    * The single transport seam. Rendering, client resolution and dispatch all
    * sit inside the try: this is the boundary that guarantees no email failure
    * escapes into a caller, and a renderer or config throw would otherwise

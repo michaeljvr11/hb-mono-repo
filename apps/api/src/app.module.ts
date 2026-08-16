@@ -27,6 +27,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { CommissionModule } from './commission/commission.module';
 import { EarningsModule } from './earnings/earnings.module';
 import { SettingsModule } from './settings/settings.module';
+import { InquiriesModule } from './inquiries/inquiries.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { SettingsModule } from './settings/settings.module';
     CommissionModule,
     EarningsModule,
     SettingsModule,
+    InquiriesModule,
   ],
   controllers: [AppController],
   providers: [
