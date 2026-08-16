@@ -89,10 +89,10 @@ describe('NavBar', () => {
     expect(component).toBeTruthy();
   });
 
-  it('renders the H&B Market brand', () => {
+  it('renders the H&B E-Commerce brand', () => {
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('H&B Market');
+    expect(el.textContent).toContain('H&B E-Commerce');
   });
 
   it('preserves the Sell on H&B entry to /vendor/apply', () => {
