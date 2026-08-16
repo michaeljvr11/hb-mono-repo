@@ -1,0 +1,266 @@
+/* ── Page ──────────────────────────────────────────────────────────────── */
+
+.contact {
+  background: var(--hb-background);
+  color: var(--hb-on-surface);
+}
+
+.contact-section__inner {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 16px;
+
+  @media (min-width: 768px) {
+    padding: 64px 40px;
+  }
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────── */
+/* `.marketing-hero` + friends (styles.scss) supply the whole hero, artwork included
+   — the image is a real <picture> bound from the component, so this page owns no
+   hero styles of its own. */
+
+/* ── Layout: form + WhatsApp sidebar ──────────────────────────────────────── */
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.contact-form-column__title {
+  position: relative;
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--hb-primary);
+
+  &::after {
+    content: '';
+    display: block;
+    width: 56px;
+    height: 4px;
+    margin-top: 10px;
+    background: var(--hb-secondary);
+    border-radius: var(--hb-radius-pill);
+  }
+}
+
+.contact-form-column__intro {
+  margin: 0 0 24px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ── Form ──────────────────────────────────────────────────────────────── */
+
+.contact-form {
+  display: grid;
+  gap: 20px;
+  padding: 32px;
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(28, 27, 27, 0.06);
+
+  @media (max-width: 600px) {
+    padding: 24px 20px;
+  }
+}
+
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contact-field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--hb-on-surface-variant);
+}
+
+.contact-field__optional {
+  font-weight: 400;
+  color: var(--hb-on-surface-variant);
+}
+
+.contact-field small {
+  color: var(--hb-error);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.contact-field__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--hb-on-surface-variant);
+}
+
+.contact-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  background: var(--hb-surface-container-lowest);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &:focus-within {
+    border-color: var(--hb-primary);
+    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+  }
+
+  &.invalid {
+    border-color: var(--hb-error);
+  }
+}
+
+.contact-input-wrap input,
+.contact-input-wrap select,
+.contact-input-wrap textarea {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--hb-on-surface);
+  font: inherit;
+  font-size: 16px;
+  padding: 12px 14px;
+}
+
+.contact-input-wrap textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.contact-reference {
+  display: grid;
+  gap: 12px;
+  padding: 12px 14px 4px;
+  background: var(--hb-surface-container-low);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+}
+
+.contact-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--hb-on-surface-variant);
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--hb-primary);
+  }
+}
+
+.contact-submit-btn {
+  justify-self: start;
+  padding: 14px 40px;
+  border: 0;
+  border-radius: var(--hb-radius-pill);
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 150ms ease, opacity 150ms ease;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* ── WhatsApp sidebar ──────────────────────────────────────────────────── */
+
+.contact-quick {
+  padding: 32px 28px;
+  height: fit-content;
+  background: var(--hb-surface-container-low);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--hb-primary);
+  }
+}
+
+.contact-quick__intro {
+  margin: 0 0 20px;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* WhatsApp brand green is used deliberately here (not an HB token) — the
+   button borrows WhatsApp's own recognizable color, same as hb-landing. */
+.contact-whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: #25d366;
+  color: #ffffff;
+  border-radius: var(--hb-radius-pill);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+  transition: filter 150ms ease;
+
+  &:hover {
+    filter: brightness(1.05);
+  }
+}
+
+.contact-details {
+  h3 {
+    margin: 28px 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--hb-on-surface);
+  }
+
+  p {
+    margin: 10px 0;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--hb-on-surface);
+    text-decoration: none;
+    font-size: 15px;
+
+    &:hover {
+      color: var(--hb-primary);
+    }
+  }
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--hb-primary);
+  }
+}
