@@ -79,7 +79,10 @@
               </div>
               @if (emailControl.hasError('required') && emailControl.touched) {
                 <small>Email is required.</small>
-              } @else if (emailControl.hasError('email') && emailControl.touched) {
+              } @else if (
+                (emailControl.hasError('email') || emailControl.hasError('pattern')) &&
+                emailControl.touched
+              ) {
                 <small>Please enter a valid email address.</small>
               }
             </div>

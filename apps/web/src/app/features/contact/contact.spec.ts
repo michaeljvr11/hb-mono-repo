@@ -133,6 +133,24 @@ describe('Contact', () => {
     expect(text).toContain('Please enter a valid email address.');
   });
 
+  // Angular's Validators.email accepts a bare host; class-validator's @IsEmail
+  // (require_tld by default) does not. Client and server must agree, or the
+  // form calls it valid and the server 400s it into the generic error toast.
+  it('rejects an email with no TLD, matching the API @IsEmail rule', () => {
+    fillValidForm();
+    component.emailControl.setValue('jane@localhost');
+    component.emailControl.markAsTouched();
+    fixture.detectChanges();
+
+    expect(component.emailControl.valid).toBe(false);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Please enter a valid email address.',
+    );
+
+    component.submit();
+    expect(contactService.create).not.toHaveBeenCalled();
+  });
+
   // The API caps every string field (CreateContactInquiryDto @MaxLength, mirrored
   // by the contact_inquiries column widths). If the client didn't cap them too,
   // the server's 400 would surface as the generic "something went wrong" toast

@@ -214,14 +214,19 @@
 }
 
 /* WhatsApp brand green is used deliberately here (not an HB token) — the
-   button borrows WhatsApp's own recognizable color, same as hb-landing. */
+   button borrows WhatsApp's own recognizable color, same as hb-landing.
+   The label is dark, NOT white: white on #25d366 is 1.98:1, nowhere near the
+   4.5:1 AA needs at this size. WhatsApp's own light green is a fill behind
+   dark text, not a text background. Dark on the same green is 8.6:1 and keeps
+   the recognizable colour. Same lesson as LSM-1's token swap — a brand hex
+   being "correct" says nothing about what may sit on top of it. */
 .contact-whatsapp-btn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   padding: 14px 28px;
   background: #25d366;
-  color: #ffffff;
+  color: var(--hb-on-surface);
   border-radius: var(--hb-radius-pill);
   text-decoration: none;
   font-size: 16px;

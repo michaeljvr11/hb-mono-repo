@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
 import { InquiryOrderType } from '@hb/shared';
 import { InquiriesService } from './inquiries.service';
 import { ContactInquiry } from './entities/contact-inquiry.entity';
@@ -181,5 +182,47 @@ describe('InquiriesService', () => {
     const errors = await validate(dto);
 
     expect(errors.some((e) => e.property === 'message')).toBe(true);
+  });
+
+  // The endpoint is @Public — the web form's `required` validators guard the
+  // browser, nothing guards a direct POST. An empty name/message is a junk row
+  // AND an email to ops, so emptiness is rejected here rather than trusted.
+  it.each([['name'], ['message']])(
+    'rejects an empty %s at the DTO layer',
+    async (property: string) => {
+      const dto = makeDto({ [property]: '' });
+
+      const errors = await validate(dto);
+
+      expect(errors.some((e) => e.property === property)).toBe(true);
+    },
+  );
+
+  it.each([['name'], ['message']])(
+    'rejects a whitespace-only %s once trimmed',
+    async (property: string) => {
+      // plainToInstance runs the @Transform trim that ValidationPipe applies in
+      // production (transform: true in main.ts) — without it "   " is a
+      // three-character string that satisfies every validator.
+      const dto = plainToInstance(CreateContactInquiryDto, {
+        ...makeDto(),
+        [property]: '   ',
+      });
+
+      const errors = await validate(dto);
+
+      expect(errors.some((e) => e.property === property)).toBe(true);
+    },
+  );
+
+  it('trims surrounding whitespace off submitted values before they are persisted', () => {
+    const dto = plainToInstance(CreateContactInquiryDto, {
+      ...makeDto(),
+      name: '  Casey Customer  ',
+      email: '  casey@example.com  ',
+    });
+
+    expect(dto.name).toBe('Casey Customer');
+    expect(dto.email).toBe('casey@example.com');
   });
 });

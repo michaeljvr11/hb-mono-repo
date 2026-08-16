@@ -83,7 +83,19 @@ export class Contact {
 
   readonly contactForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(Contact.MAX_LENGTHS.name)]],
-    email: ['', [Validators.required, Validators.email, Validators.maxLength(Contact.MAX_LENGTHS.email)]],
+    email: [
+      '',
+      [
+        Validators.required,
+        Validators.email,
+        // Angular's Validators.email accepts a bare host ("jane@localhost");
+        // class-validator's @IsEmail defaults to require_tld and rejects it.
+        // Without this the server 400s something the form called valid, and
+        // that surfaces as the generic failure toast.
+        Validators.pattern(/^[^@\s]+@[^@\s]+\.[^@\s]+$/),
+        Validators.maxLength(Contact.MAX_LENGTHS.email),
+      ],
+    ],
     phone: ['', [Validators.maxLength(Contact.MAX_LENGTHS.phone)]],
     orderType: ['' as InquiryOrderType | '', [Validators.required]],
     hasReferenceNumber: [false],

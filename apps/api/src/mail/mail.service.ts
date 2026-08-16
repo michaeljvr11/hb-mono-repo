@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
+import { CreateContactInquiryRequest } from '@hb/shared';
 import { EmailContentBlock, renderEmail } from './email-template';
 
 /**
@@ -131,15 +132,7 @@ export class MailService {
    */
   async sendContactInquiryNotification(
     to: string[],
-    inquiry: {
-      id: string;
-      name: string;
-      email: string;
-      phone?: string;
-      orderType: string;
-      referenceNumber?: string;
-      message: string;
-    },
+    inquiry: CreateContactInquiryRequest & { id: string },
   ): Promise<void> {
     const blocks: EmailContentBlock[] = [
       { type: 'heading', text: 'New contact inquiry' },
