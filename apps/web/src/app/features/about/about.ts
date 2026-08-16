@@ -3,7 +3,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
-import { cssImageUrl, SITE_IMAGES } from '../../shared/constants/image.constants';
+import { HERO_SIZES, SITE_IMAGES } from '../../shared/constants/image.constants';
 
 /** Establishes the Title/Meta pattern for static marketing pages — LSM-3 (/services) copies this. */
 const PAGE_TITLE = 'About H&B — Cross-Border Trade Between South Africa and Namibia';
@@ -20,8 +20,10 @@ export class About {
   private readonly titleService = inject(Title);
   private readonly meta = inject(Meta);
 
-  /** CSS custom-property value for the hero section's background image. */
-  readonly heroImage = cssImageUrl(SITE_IMAGES.aboutHero);
+  /** Hero artwork. A real `<img>` rather than a CSS background so the browser's
+   * preload scanner can start it from the prerendered HTML — it is the LCP element. */
+  readonly heroImage = SITE_IMAGES.aboutHero;
+  readonly heroSizes = HERO_SIZES;
 
   constructor() {
     this.titleService.setTitle(PAGE_TITLE);

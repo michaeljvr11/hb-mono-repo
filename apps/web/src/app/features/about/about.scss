@@ -24,12 +24,9 @@
 }
 
 /* ── Hero ──────────────────────────────────────────────────────────────── */
-/* `.marketing-hero` + friends (styles.scss) supply the shared geometry/color; this
-   page only owns its own background-image var. */
-
-.about-hero {
-  background-image: var(--about-hero-image);
-}
+/* `.marketing-hero` + friends (styles.scss) supply the whole hero, artwork included
+   — the image is a real <picture> bound from the component, so this page owns no
+   hero styles of its own. */
 
 /* ── Our Story card ────────────────────────────────────────────────────── */
 

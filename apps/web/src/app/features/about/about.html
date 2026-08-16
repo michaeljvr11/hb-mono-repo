@@ -3,7 +3,23 @@
 <main class="about" aria-label="About H&amp;B">
 
   <!-- ── Hero ──────────────────────────────────────────────────────────── -->
-  <section class="about-hero marketing-hero" [style.--about-hero-image]="heroImage" aria-labelledby="about-hero-heading">
+  <section class="about-hero marketing-hero" aria-labelledby="about-hero-heading">
+    <picture class="about-hero__picture marketing-hero__picture">
+      <source type="image/webp" [srcset]="heroImage.webpSrcset" [sizes]="heroSizes" />
+      <img
+        class="about-hero__image marketing-hero__image"
+        [src]="heroImage.src"
+        [srcset]="heroImage.jpegSrcset"
+        [sizes]="heroSizes"
+        [width]="heroImage.width"
+        [height]="heroImage.height"
+        alt=""
+        aria-hidden="true"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+      />
+    </picture>
     <div class="about-hero__overlay marketing-hero__overlay" aria-hidden="true"></div>
     <div class="about-hero__content marketing-hero__content">
       <h1 id="about-hero-heading" class="about-hero__title marketing-hero__title">About H&amp;B</h1>
