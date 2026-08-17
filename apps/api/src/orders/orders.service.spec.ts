@@ -13,6 +13,7 @@ import { ORDER_STATUS_TRANSITIONS, OrdersService } from './orders.service';
 import { OrderEvents } from '../common/events/domain-events';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
+import { OrderStatusOverride } from './entities/order-status-override.entity';
 import { Cart } from '../cart/entities/cart.entity';
 import { Product } from '../products/entities/product.entity';
 import { Address } from '../addresses/entities/address.entity';
@@ -103,6 +104,7 @@ describe('OrdersService', () => {
   let paymentsRepo: Record<string, jest.Mock>;
   let vendorsRepo: Record<string, jest.Mock>;
   let orderItemsRepo: Record<string, jest.Mock>;
+  let orderStatusOverridesRepo: Record<string, jest.Mock>;
   let paymentProvider: Record<string, jest.Mock>;
   let commissionRateService: Record<string, jest.Mock>;
   let eventEmitter: Record<string, jest.Mock>;
@@ -147,6 +149,13 @@ describe('OrdersService', () => {
     };
     vendorsRepo = { findOne: jest.fn() };
     orderItemsRepo = { find: jest.fn() };
+    orderStatusOverridesRepo = {
+      create: jest.fn((v: Partial<OrderStatusOverride>) => v as OrderStatusOverride),
+      save: jest.fn((v: OrderStatusOverride) =>
+        Promise.resolve({ ...v, id: 'override-1', createdAt: NOW }),
+      ),
+      find: jest.fn(),
+    };
     paymentProvider = {
       initiatePayment: jest.fn(() =>
         Promise.resolve({ provider: 'stub', providerRef: 'stub_ref_1' }),
@@ -179,6 +188,7 @@ describe('OrdersService', () => {
         { provide: getRepositoryToken(Payment), useValue: paymentsRepo },
         { provide: getRepositoryToken(Vendor), useValue: vendorsRepo },
         { provide: getRepositoryToken(OrderItem), useValue: orderItemsRepo },
+        { provide: getRepositoryToken(OrderStatusOverride), useValue: orderStatusOverridesRepo },
         { provide: PAYMENT_PROVIDER, useValue: paymentProvider },
         { provide: DataSource, useValue: dataSource },
         { provide: CommissionRateService, useValue: commissionRateService },
@@ -621,6 +631,202 @@ describe('OrdersService', () => {
       const calls = ordersRepo.save.mock.calls as Order[][];
       return calls[calls.length - 1][0];
     }
+  });
+
+  // ── Admin override (any-state, reason required, audit log) ────────────────
+
+  describe('overrideStatus — admin any-state override', () => {
+    const admin = makeUser({ id: 'admin-1', role: UserRole.ADMIN });
+
+    function stageOrder(overrides: Partial<Order> = {}) {
+      const order = makeOrder(overrides);
+      ordersRepo.findOne.mockResolvedValue(order);
+      return order;
+    }
+
+    it.each([
+      [OrderStatus.DELIVERED, OrderStatus.PENDING],
+      [OrderStatus.CANCELLED, OrderStatus.CONFIRMED],
+      [OrderStatus.PENDING, OrderStatus.SHIPPED],
+      [OrderStatus.SHIPPED, OrderStatus.HANDED_TO_HB],
+    ])(
+      'writes any-status-to-any-status %s → %s, bypassing ORDER_STATUS_TRANSITIONS',
+      async (from, to) => {
+        stageOrder({ status: from });
+
+        const dto = await service.overrideStatus(admin, 'order-1', {
+          status: to,
+          reason: 'Support ticket #123 — customer confirmed receipt',
+          sendNotifications: false,
+        });
+
+        expect(dto.status).toBe(to);
+        expect(ordersRepo.save).toHaveBeenCalledWith(expect.objectContaining({ status: to }));
+      },
+    );
+
+    it('404s an unknown order', async () => {
+      ordersRepo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.overrideStatus(admin, 'nope', {
+          status: OrderStatus.CONFIRMED,
+          reason: 'test',
+          sendNotifications: false,
+        }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('emits order.paid when sendNotifications is true and target is CONFIRMED', async () => {
+      stageOrder({ status: OrderStatus.PENDING });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.CONFIRMED,
+        reason: 'Manual payment reconciliation',
+        sendNotifications: true,
+      });
+
+      expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
+      expect(eventEmitter.emit).toHaveBeenCalledWith(OrderEvents.PAID, { orderId: 'order-1' });
+    });
+
+    it('does not emit order.paid when sendNotifications is false, even for CONFIRMED', async () => {
+      stageOrder({ status: OrderStatus.PENDING });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.CONFIRMED,
+        reason: 'Manual correction, no customer email wanted',
+        sendNotifications: false,
+      });
+
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('does not emit order.paid when sendNotifications is true but target is not CONFIRMED', async () => {
+      stageOrder({ status: OrderStatus.SHIPPED });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.DELIVERED,
+        reason: 'Marking delivered per courier confirmation',
+        sendNotifications: true,
+      });
+
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('writes an audit row unconditionally, with the correct shape', async () => {
+      stageOrder({ status: OrderStatus.SHIPPED });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.DELIVERED,
+        reason: 'Courier confirmed drop-off, system missed the webhook',
+        sendNotifications: true,
+      });
+
+      expect(orderStatusOverridesRepo.create).toHaveBeenCalledWith({
+        orderId: 'order-1',
+        adminUserId: 'admin-1',
+        fromStatus: OrderStatus.SHIPPED,
+        toStatus: OrderStatus.DELIVERED,
+        reason: 'Courier confirmed drop-off, system missed the webhook',
+        sendNotifications: true,
+      });
+      expect(orderStatusOverridesRepo.save).toHaveBeenCalledTimes(1);
+    });
+
+    it('writes the audit row even when sendNotifications is false', async () => {
+      stageOrder({ status: OrderStatus.PENDING });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.CANCELLED,
+        reason: 'Duplicate order, cancelling silently',
+        sendNotifications: false,
+      });
+
+      expect(orderStatusOverridesRepo.save).toHaveBeenCalledTimes(1);
+      expect(orderStatusOverridesRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ sendNotifications: false }),
+      );
+    });
+
+    it('stamps deliveredAt via the same race-safe conditional UPDATE when the target is DELIVERED', async () => {
+      stageOrder({ status: OrderStatus.SHIPPED, deliveredAt: undefined });
+      const before = Date.now();
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.DELIVERED,
+        reason: 'Manual delivery confirmation',
+        sendNotifications: false,
+      });
+
+      expect(ordersRepo.update).toHaveBeenCalledTimes(1);
+      const [where, patch] = ordersRepo.update.mock.calls[0] as [
+        { id: string; deliveredAt: unknown },
+        { deliveredAt: Date },
+      ];
+      expect(where).toEqual({ id: 'order-1', deliveredAt: IsNull() });
+      expect(patch.deliveredAt.getTime()).toBeGreaterThanOrEqual(before);
+    });
+
+    it('does not clear an existing deliveredAt when overriding out of delivered', async () => {
+      const existing = new Date('2026-01-01T00:00:00.000Z');
+      stageOrder({ status: OrderStatus.DELIVERED, deliveredAt: existing });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.PENDING,
+        reason: 'Reopening for a warranty claim',
+        sendNotifications: false,
+      });
+
+      const calls = ordersRepo.save.mock.calls as Order[][];
+      const saved = calls[calls.length - 1][0];
+      expect(saved.deliveredAt).toBe(existing);
+      expect(ordersRepo.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('findOverridesForOrder', () => {
+    it('maps override rows to the shared DTO shape, newest first', async () => {
+      orderStatusOverridesRepo.find.mockResolvedValue([
+        {
+          id: 'override-2',
+          orderId: 'order-1',
+          adminUserId: 'admin-1',
+          fromStatus: OrderStatus.SHIPPED,
+          toStatus: OrderStatus.DELIVERED,
+          reason: 'Manual delivery confirmation',
+          sendNotifications: false,
+          createdAt: NOW,
+        },
+      ]);
+
+      const result = await service.findOverridesForOrder('order-1');
+
+      expect(orderStatusOverridesRepo.find).toHaveBeenCalledWith({
+        where: { orderId: 'order-1' },
+        order: { createdAt: 'DESC' },
+      });
+      expect(result).toEqual([
+        {
+          id: 'override-2',
+          orderId: 'order-1',
+          adminUserId: 'admin-1',
+          fromStatus: OrderStatus.SHIPPED,
+          toStatus: OrderStatus.DELIVERED,
+          reason: 'Manual delivery confirmation',
+          sendNotifications: false,
+          createdAt: NOW.toISOString(),
+        },
+      ]);
+    });
+
+    it('returns an empty array when the order has no overrides', async () => {
+      orderStatusOverridesRepo.find.mockResolvedValue([]);
+
+      const result = await service.findOverridesForOrder('order-1');
+
+      expect(result).toEqual([]);
+    });
   });
 
   // ── Transition rights per role ─────────────────────────────────────────────

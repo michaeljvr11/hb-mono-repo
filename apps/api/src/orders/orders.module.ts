@@ -5,6 +5,7 @@ import { OrdersController } from './orders.controller';
 import { OrderNotificationsListener } from './order-notifications.listener';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
+import { OrderStatusOverride } from './entities/order-status-override.entity';
 import { Payment } from '../payments/entities/payment.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
 import { PaymentsModule } from '../payments/payments.module';
@@ -15,7 +16,7 @@ import { VendorsModule } from '../vendors/vendors.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, Payment, Vendor]),
+    TypeOrmModule.forFeature([Order, OrderItem, OrderStatusOverride, Payment, Vendor]),
     // Payment goes through the PAYMENT_PROVIDER port (stub today, deliberate).
     PaymentsModule,
     // CommissionModule is NOT @Global() (VE-1 decision) — explicitly imported

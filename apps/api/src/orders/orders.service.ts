@@ -17,12 +17,14 @@ import {
   OrderDto,
   OrderItemDto,
   OrderStatus,
+  OrderStatusOverrideAuditDto,
   PaymentStatus,
   UserRole,
   VendorOrderLineDto,
 } from '@hb/shared';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
+import { OrderStatusOverride } from './entities/order-status-override.entity';
 import { Cart } from '../cart/entities/cart.entity';
 import { CartItem } from '../cart/entities/cart-item.entity';
 import { Product } from '../products/entities/product.entity';
@@ -33,6 +35,7 @@ import { User } from '../users/entities/user.entity';
 import { PAYMENT_PROVIDER } from '../payments/payment-provider.port';
 import type { PaymentProviderPort } from '../payments/payment-provider.port';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { OrderStatusOverrideDto } from './dto/order-status-override.dto';
 import { CommissionRateService } from '../commission/commission-rate.service';
 import { OrderEvents } from '../common/events/domain-events';
 
@@ -75,6 +78,8 @@ export class OrdersService {
     private vendorsRepository: Repository<Vendor>,
     @InjectRepository(OrderItem)
     private orderItemsRepository: Repository<OrderItem>,
+    @InjectRepository(OrderStatusOverride)
+    private orderStatusOverridesRepository: Repository<OrderStatusOverride>,
     @Inject(PAYMENT_PROVIDER)
     private readonly paymentProvider: PaymentProviderPort,
     private readonly dataSource: DataSource,
@@ -315,6 +320,88 @@ export class OrdersService {
     }
 
     return this.toDto(saved);
+  }
+
+  /**
+   * Admin-only escape hatch (vault: "Order State Machine" § "Admin override",
+   * confirmed 2026-08-16). Deliberately bypasses `assertValidTransition` /
+   * `ORDER_STATUS_TRANSITIONS` entirely — any status to any status, including
+   * re-entering/leaving terminal states — so that matrix's "single validated
+   * gateway" guarantee stays intact for every other caller. Role enforcement
+   * is `@Roles(UserRole.ADMIN)` at the controller; this method trusts its
+   * caller is already an admin.
+   *
+   * `deliveredAt` is only ever stamped on entering `delivered` (same
+   * race-safe conditional UPDATE as `updateStatus`) — moving OUT of
+   * `delivered` deliberately leaves it untouched, since it's a historical
+   * payout-clock anchor, not a live status flag.
+   *
+   * The audit row is written unconditionally; the `order.paid` domain event
+   * fires only when `sendNotifications` is true AND the target is
+   * `CONFIRMED` — there is no dedicated domain event for other target
+   * statuses today (see `common/events/domain-events.ts`).
+   */
+  async overrideStatus(
+    admin: User,
+    orderId: string,
+    dto: OrderStatusOverrideDto,
+  ): Promise<OrderDto> {
+    const order = await this.ordersRepository.findOne({
+      where: { id: orderId },
+      relations: ['items', 'shippingAddress'],
+    });
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    const fromStatus = order.status;
+    order.status = dto.status;
+    const saved = await this.ordersRepository.save(order);
+
+    if (dto.status === OrderStatus.DELIVERED && order.deliveredAt == null) {
+      const stampedAt = new Date();
+      await this.ordersRepository.update(
+        { id: orderId, deliveredAt: IsNull() },
+        { deliveredAt: stampedAt },
+      );
+      saved.deliveredAt = stampedAt;
+    }
+
+    await this.orderStatusOverridesRepository.save(
+      this.orderStatusOverridesRepository.create({
+        orderId,
+        adminUserId: admin.id,
+        fromStatus,
+        toStatus: dto.status,
+        reason: dto.reason,
+        sendNotifications: dto.sendNotifications,
+      }),
+    );
+
+    if (dto.sendNotifications && dto.status === OrderStatus.CONFIRMED) {
+      this.eventEmitter.emit(OrderEvents.PAID, { orderId });
+    }
+
+    return this.toDto(saved);
+  }
+
+  /** Override history for one order, newest first — the admin audit view. */
+  async findOverridesForOrder(orderId: string): Promise<OrderStatusOverrideAuditDto[]> {
+    const overrides = await this.orderStatusOverridesRepository.find({
+      where: { orderId },
+      order: { createdAt: 'DESC' },
+    });
+
+    return overrides.map((o) => ({
+      id: o.id,
+      orderId: o.orderId,
+      adminUserId: o.adminUserId,
+      fromStatus: o.fromStatus,
+      toStatus: o.toStatus,
+      reason: o.reason,
+      sendNotifications: o.sendNotifications,
+      createdAt: o.createdAt.toISOString(),
+    }));
   }
 
   // ── Internals ──────────────────────────────────────────────────────────────
