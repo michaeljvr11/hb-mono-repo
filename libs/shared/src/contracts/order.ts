@@ -16,6 +16,33 @@ export interface UpdateOrderStatusRequest {
   status: OrderStatus;
 }
 
+/**
+ * Body for PATCH /orders/:id/status-override. Admin-only escape hatch that
+ * bypasses the normal state machine (ORDER_STATUS_TRANSITIONS) entirely —
+ * any status to any status, including re-entering/leaving terminal states.
+ * `sendNotifications` has no server-side default: the checkbox state is
+ * always sent explicitly (Order State Machine: "Notification-suppression
+ * question — resolved 2026-08-16").
+ */
+export interface OrderStatusOverrideRequest {
+  status: OrderStatus;
+  reason: string;
+  sendNotifications: boolean;
+}
+
+/** One row of override history for the admin order-detail audit view. */
+export interface OrderStatusOverrideAuditDto {
+  id: string;
+  orderId: string;
+  adminUserId: string;
+  adminEmail?: string;
+  fromStatus: OrderStatus;
+  toStatus: OrderStatus;
+  reason: string;
+  sendNotifications: boolean;
+  createdAt: string;
+}
+
 /** One row in the admin order-oversight list (summary, not full detail). */
 export interface AdminOrderListItemDto {
   id: string;
