@@ -151,11 +151,6 @@ describe('OrdersService', () => {
     vendorsRepo = { findOne: jest.fn() };
     orderItemsRepo = { find: jest.fn() };
     orderStatusOverridesRepo = {
-      create: jest.fn((v: Partial<OrderStatusOverride>) => v as OrderStatusOverride),
-      save: jest.fn((v: OrderStatusOverride) =>
-        Promise.resolve({ ...v, id: 'override-1', createdAt: NOW }),
-      ),
-      find: jest.fn(),
       createQueryBuilder: jest.fn(),
     };
     paymentProvider = {

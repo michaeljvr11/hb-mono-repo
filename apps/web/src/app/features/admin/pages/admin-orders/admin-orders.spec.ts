@@ -731,9 +731,9 @@ describe('AdminOrders — stale response race guard', () => {
     expect(component.auditHistory()).toEqual([]);
     expect(component.result().items.find(o => o.id === ORDER_1.id)?.status).toBe(OrderStatus.PENDING);
 
-    // The pending lock for A is only ever released by A's own (now-stale) completion,
-    // which intentionally no-ops rather than clearing state for the wrong order — so
-    // it remains held. This is the accepted trade-off called out in clearOverrideState().
-    expect(component.overridePendingId()).toBe(ORDER_1.id);
+    // The lock is still released by A's own (now-stale) completion — only the
+    // panel/audit refresh is skipped — so the Confirm control isn't left
+    // permanently disabled just because the admin navigated away mid-flight.
+    expect(component.overridePendingId()).toBeNull();
   });
 });

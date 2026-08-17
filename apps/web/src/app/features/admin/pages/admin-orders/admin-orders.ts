@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import {
   AdminOrderListDto,
@@ -209,12 +210,12 @@ export class AdminOrders implements OnInit {
 
     this.ordersService.overrideStatus(orderId, request).subscribe({
       next: (updated) => {
-        // Stale response guard: if the admin has since selected a different order,
-        // this response no longer corresponds to what's on screen — treat it as a
-        // no-op rather than clobbering the newly selected order's panel/audit state.
-        // (overridePendingId is intentionally released here, not in
-        // clearOverrideState(), so a genuinely in-flight request for another order
-        // isn't silently un-guarded by switching selection.)
+        // The lock is released unconditionally on completion — even for a stale
+        // response — so switching selection mid-flight never leaves the Confirm
+        // button permanently disabled. Only the panel/audit refresh below is
+        // skipped for a stale response, since that data no longer corresponds to
+        // what's on screen.
+        if (this.overridePendingId() === orderId) this.overridePendingId.set(null);
         if (this.selectedId() !== orderId) return;
 
         // Refresh the order's status + updatedAt in the local list (the detail panel
@@ -227,15 +228,18 @@ export class AdminOrders implements OnInit {
         }));
         this.showOverrideConfirm.set(false);
         this.overrideReason.set('');
-        this.overridePendingId.set(null);
         this.fetchAuditHistory(orderId);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        if (this.overridePendingId() === orderId) this.overridePendingId.set(null);
         if (this.selectedId() !== orderId) return; // stale — see comment above
 
-        this.overrideError.set('Status override failed. Please try again.');
+        this.overrideError.set(
+          err.status === 409
+            ? 'This order is already in that status — pick a different target status.'
+            : 'Status override failed. Please try again.',
+        );
         this.showOverrideConfirm.set(false);
-        this.overridePendingId.set(null);
       },
     });
   }
@@ -264,8 +268,10 @@ export class AdminOrders implements OnInit {
   }
 
   /** Resets override-form + audit state for a new selection. Deliberately does NOT
-   *  touch overridePendingId — an in-flight request's own completion (guarded by
-   *  selectedId) is the only thing that releases that lock; see confirmOverride(). */
+   *  touch overridePendingId — an in-flight request's own completion is the only
+   *  thing that releases that lock (unconditionally, even if stale); see
+   *  confirmOverride(). This keeps the double-submit guard tied to the request
+   *  it belongs to, rather than to whichever order happens to be selected. */
   private clearOverrideState(): void {
     this.overrideReason.set('');
     this.overrideSendNotifications.set(false);
@@ -296,8 +302,8 @@ export class AdminOrders implements OnInit {
     return order.customerName ?? order.customerEmail;
   }
 
-  /** Display the admin who made an override; falls back to their id — the API doesn't
-   *  join adminEmail yet, so it's undefined on every audit row today. */
+  /** Display the admin who made an override; falls back to their id if the join
+   *  couldn't resolve an email (e.g. the admin user was since deleted). */
   auditByDisplay(row: OrderStatusOverrideAuditDto): string {
     return row.adminEmail ?? row.adminUserId;
   }
