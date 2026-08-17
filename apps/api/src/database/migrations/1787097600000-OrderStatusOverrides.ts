@@ -13,6 +13,12 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * `order_status` enum type but carry no CHECK constraint against the
  * transition matrix — that matrix's guarantee is scoped to the normal
  * (vendor/customer/automatic) write path only.
+ *
+ * Unlike the generic, polymorphic `audit_logs` table, this table always
+ * references exactly one order and one admin user, so both are real FKs
+ * (`wishlist_items` precedent) — `ON DELETE RESTRICT` on both, since an
+ * audit trail must outlive the row it references, never silently vanish or
+ * cascade-delete alongside it.
  */
 export class OrderStatusOverrides1787097600000 implements MigrationInterface {
   name = 'OrderStatusOverrides1787097600000';
@@ -28,7 +34,11 @@ export class OrderStatusOverrides1787097600000 implements MigrationInterface {
         "reason" character varying(2000) NOT NULL,
         "sendNotifications" boolean NOT NULL,
         "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-        CONSTRAINT "PK_order_status_overrides" PRIMARY KEY ("id")
+        CONSTRAINT "PK_order_status_overrides" PRIMARY KEY ("id"),
+        CONSTRAINT "FK_order_status_overrides_order" FOREIGN KEY ("orderId")
+          REFERENCES "orders"("id") ON DELETE RESTRICT,
+        CONSTRAINT "FK_order_status_overrides_admin" FOREIGN KEY ("adminUserId")
+          REFERENCES "users"("id") ON DELETE RESTRICT
       )
     `);
 
