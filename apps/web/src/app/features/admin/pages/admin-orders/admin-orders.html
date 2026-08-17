@@ -190,6 +190,147 @@
               <dd>{{ order.updatedAt | date:'d MMM y, HH:mm' }}</dd>
             </div>
           </dl>
+
+          <!-- Status override -->
+          <div class="override-section">
+            <h3 class="detail-heading">Override status</h3>
+            <p class="detail-sub">
+              Admin escape hatch — sets any status directly and bypasses the normal
+              transition rules. Use with care.
+            </p>
+
+            @if (overrideError()) {
+              <div class="error-banner" role="alert">
+                <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                <span>{{ overrideError() }}</span>
+              </div>
+            }
+
+            <div class="override-form">
+              <label class="override-field">
+                <span class="override-label">New status</span>
+                <select
+                  class="override-select"
+                  [value]="overrideStatus()"
+                  (change)="onOverrideStatusChange($event)"
+                >
+                  @for (s of allStatuses; track s) {
+                    <option [value]="s">{{ humanizeStatus(s) }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="override-field">
+                <span class="override-label">Reason (required)</span>
+                <textarea
+                  class="override-textarea"
+                  rows="2"
+                  placeholder="Why is this override necessary?"
+                  [value]="overrideReason()"
+                  (input)="onReasonInput($event)"
+                ></textarea>
+                @if (overrideReasonError()) {
+                  <span class="override-field-error" role="alert">{{ overrideReasonError() }}</span>
+                }
+              </label>
+
+              <label class="override-checkbox-label">
+                <input
+                  type="checkbox"
+                  [checked]="overrideSendNotifications()"
+                  (change)="onSendNotificationsChange($event)"
+                />
+                Send notification emails for this change
+              </label>
+
+              @if (!showOverrideConfirm()) {
+                <div class="action-bar">
+                  <button
+                    class="action-btn"
+                    type="button"
+                    [disabled]="overridePendingId() === order.id"
+                    (click)="requestOverrideConfirm()"
+                  >Override status</button>
+                </div>
+              }
+
+              @if (showOverrideConfirm()) {
+                <div class="override-confirm" role="alertdialog" aria-label="Confirm status override">
+                  <p>
+                    Change status from
+                    <strong>{{ humanizeStatus(order.status) }}</strong> to
+                    <strong>{{ humanizeStatus(overrideStatus()) }}</strong>?
+                  </p>
+                  @if (overrideSendNotifications()) {
+                    <p class="override-confirm-warn">
+                      The customer <strong>will</strong> receive a notification email about this change.
+                    </p>
+                  } @else {
+                    <p>The customer will <strong>not</strong> be notified about this change.</p>
+                  }
+                  <div class="action-bar">
+                    <button
+                      class="action-btn action-btn--confirm"
+                      type="button"
+                      [disabled]="overridePendingId() === order.id"
+                      (click)="confirmOverride(order.id)"
+                    >
+                      @if (overridePendingId() === order.id) {
+                        <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+                      }
+                      Confirm override
+                    </button>
+                    <button
+                      class="action-btn action-btn--ghost"
+                      type="button"
+                      [disabled]="overridePendingId() === order.id"
+                      (click)="cancelOverrideConfirm()"
+                    >Cancel</button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Status override audit history -->
+          <div class="audit-section">
+            <h3 class="detail-heading">Status override history</h3>
+
+            @if (auditLoading()) {
+              <p class="detail-muted">Loading history…</p>
+            }
+
+            @if (auditError()) {
+              <div class="error-banner" role="alert">
+                <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                <span>{{ auditError() }}</span>
+              </div>
+            }
+
+            @if (!auditLoading() && !auditError() && auditHistory().length === 0) {
+              <p class="detail-muted">No overrides recorded for this order.</p>
+            }
+
+            @if (auditHistory().length > 0) {
+              <ul class="audit-list">
+                @for (row of auditHistory(); track row.id) {
+                  <li class="audit-item">
+                    <div class="audit-item-main">
+                      <span class="audit-transition">
+                        {{ humanizeStatus(row.fromStatus) }} → {{ humanizeStatus(row.toStatus) }}
+                      </span>
+                      <span class="audit-date">{{ row.createdAt | date:'d MMM y, HH:mm' }}</span>
+                    </div>
+                    <p class="audit-reason">{{ row.reason }}</p>
+                    <div class="audit-item-meta">
+                      <span>By {{ auditByDisplay(row) }}</span>
+                      <span>{{ row.sendNotifications ? 'Notified customer' : 'No notification sent' }}</span>
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
         </div>
       } @else {
         <div class="detail-empty">

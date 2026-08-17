@@ -1,7 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CreateOrderRequest, OrderDto, OrderStatus, VendorOrderLineDto } from '@hb/shared';
+import {
+  CreateOrderRequest,
+  OrderDto,
+  OrderStatus,
+  OrderStatusOverrideAuditDto,
+  OrderStatusOverrideRequest,
+  VendorOrderLineDto,
+} from '@hb/shared';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -36,5 +43,18 @@ export class OrdersService {
   /** Generic status transition, validated server-side against the Order State Machine. */
   updateStatus(id: string, status: OrderStatus): Observable<OrderDto> {
     return this.http.patch<OrderDto>(`${this.API_URL}/${id}/status`, { status });
+  }
+
+  /**
+   * Admin-only escape hatch — bypasses the normal state machine entirely (any
+   * status to any status). `sendNotifications` is always sent explicitly.
+   */
+  overrideStatus(id: string, request: OrderStatusOverrideRequest): Observable<OrderDto> {
+    return this.http.patch<OrderDto>(`${this.API_URL}/${id}/status-override`, request);
+  }
+
+  /** Admin-only audit history for status overrides on an order, newest first. */
+  getStatusOverrides(id: string): Observable<OrderStatusOverrideAuditDto[]> {
+    return this.http.get<OrderStatusOverrideAuditDto[]>(`${this.API_URL}/${id}/status-overrides`);
   }
 }

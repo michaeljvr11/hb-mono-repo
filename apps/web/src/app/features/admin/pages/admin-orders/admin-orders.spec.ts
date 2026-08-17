@@ -3,18 +3,21 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   AdminOrderListDto,
   AdminOrderListItemDto,
   CountryCode,
   CurrencyCode,
+  OrderDto,
   OrderStatus,
+  OrderStatusOverrideAuditDto,
 } from '@hb/shared';
 
 import { AdminOrders } from './admin-orders';
 import { AdminOrdersService } from '../../../../core/api/admin-orders.service';
+import { OrdersService } from '../../../../core/api/orders.service';
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
 
@@ -66,19 +69,68 @@ const EMPTY_RESULT: AdminOrderListDto = {
   pageCount: 1,
 };
 
-// ─── Service stub ────────────────────────────────────────────────────────────
+function makeOrderDto(overrides: Partial<OrderDto> = {}): OrderDto {
+  return {
+    id: ORDER_1.id,
+    status: OrderStatus.CONFIRMED,
+    currency: CurrencyCode.ZAR,
+    subtotal: 1200.00,
+    shippingTotal: 50.00,
+    total: 1250.00,
+    originCountry: CountryCode.SOUTH_AFRICA,
+    destinationCountry: CountryCode.NAMIBIA,
+    items: [],
+    createdAt: '2026-06-01T10:00:00.000Z',
+    updatedAt: '2026-06-02T10:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function makeAuditRow(overrides: Partial<OrderStatusOverrideAuditDto> = {}): OrderStatusOverrideAuditDto {
+  return {
+    id: 'audit-001',
+    orderId: ORDER_1.id,
+    adminUserId: 'admin-001',
+    adminEmail: undefined,
+    fromStatus: OrderStatus.PENDING,
+    toStatus: OrderStatus.CONFIRMED,
+    reason: 'Payment confirmed manually over the phone.',
+    sendNotifications: false,
+    createdAt: '2026-08-01T09:00:00.000Z',
+    ...overrides,
+  };
+}
+
+// ─── Service stubs ───────────────────────────────────────────────────────────
 
 interface AdminOrdersServiceStub {
   getDashboard: ReturnType<typeof vi.fn>;
   listOrders: ReturnType<typeof vi.fn>;
 }
 
+interface OrdersServiceStub {
+  overrideStatus: ReturnType<typeof vi.fn>;
+  getStatusOverrides: ReturnType<typeof vi.fn>;
+}
+
+function makeOrdersServiceStub(overrides: Partial<OrdersServiceStub> = {}): OrdersServiceStub {
+  return {
+    overrideStatus: vi.fn(() => of(makeOrderDto())),
+    getStatusOverrides: vi.fn(() => of([])),
+    ...overrides,
+  };
+}
+
 // ─── Helper ──────────────────────────────────────────────────────────────────
 
-async function createComponent(stub: AdminOrdersServiceStub): Promise<{
+async function createComponent(
+  stub: AdminOrdersServiceStub,
+  ordersStub: OrdersServiceStub = makeOrdersServiceStub(),
+): Promise<{
   component: AdminOrders;
   fixture: ComponentFixture<AdminOrders>;
   nativeEl: HTMLElement;
+  ordersStub: OrdersServiceStub;
 }> {
   await TestBed.configureTestingModule({
     imports: [AdminOrders],
@@ -88,6 +140,7 @@ async function createComponent(stub: AdminOrdersServiceStub): Promise<{
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: AdminOrdersService, useValue: stub },
+      { provide: OrdersService, useValue: ordersStub },
     ],
   }).compileComponents();
 
@@ -96,7 +149,7 @@ async function createComponent(stub: AdminOrdersServiceStub): Promise<{
   fixture.detectChanges();
   await fixture.whenStable();
 
-  return { component, fixture, nativeEl: fixture.nativeElement as HTMLElement };
+  return { component, fixture, nativeEl: fixture.nativeElement as HTMLElement, ordersStub };
 }
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -311,6 +364,10 @@ describe('AdminOrders component', () => {
     expect(component.humanizeStatus('shipped')).toBe('Shipped');
   });
 
+  it('humanizeStatus title-cases each underscore-separated word (e.g. handed_to_hb)', () => {
+    expect(component.humanizeStatus('handed_to_hb')).toBe('Handed To Hb');
+  });
+
   it('customerDisplay returns name when present', () => {
     expect(component.customerDisplay(ORDER_1)).toBe('Test Buyer');
   });
@@ -370,5 +427,313 @@ describe('AdminOrders — load error path', () => {
 
     expect(component.loading()).toBe(false);
     expect(component.error()).toBeTruthy();
+  });
+});
+
+// ─── Status override + audit history ──────────────────────────────────────────
+
+function statusSelectEvent(status: OrderStatus): Event {
+  return { target: { value: status } } as unknown as Event;
+}
+
+function reasonInputEvent(value: string): Event {
+  return { target: { value } } as unknown as Event;
+}
+
+function checkboxEvent(checked: boolean): Event {
+  return { target: { checked } } as unknown as Event;
+}
+
+describe('AdminOrders — status override & audit history', () => {
+  let component: AdminOrders;
+  let fixture: ComponentFixture<AdminOrders>;
+  let nativeEl: HTMLElement;
+  let adminOrdersStub: AdminOrdersServiceStub;
+  let ordersStub: OrdersServiceStub;
+
+  beforeEach(async () => {
+    adminOrdersStub = {
+      getDashboard: vi.fn(),
+      listOrders: vi.fn(() => of(makeResult())),
+    };
+    ordersStub = makeOrdersServiceStub({
+      getStatusOverrides: vi.fn(() => of([makeAuditRow()])),
+    });
+
+    ({ component, fixture, nativeEl } = await createComponent(adminOrdersStub, ordersStub));
+
+    component.selectOrder(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  it('fetches audit history when an order is selected', () => {
+    expect(ordersStub.getStatusOverrides).toHaveBeenCalledWith(ORDER_1.id);
+  });
+
+  it('renders audit rows with from/to/reason/notifications/who/when', () => {
+    const item = nativeEl.querySelector('.audit-item');
+    expect(item).not.toBeNull();
+    expect(item!.textContent).toContain('Pending');
+    expect(item!.textContent).toContain('Confirmed');
+    expect(item!.textContent).toContain('Payment confirmed manually over the phone.');
+    expect(item!.textContent).toContain('admin-001'); // falls back to id, adminEmail is undefined
+    expect(item!.textContent).toContain('No notification sent');
+  });
+
+  it('shows "Notified customer" when sendNotifications was true on the audit row', async () => {
+    ordersStub.getStatusOverrides.mockReturnValue(of([makeAuditRow({ sendNotifications: true })]));
+    component.selectOrder(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const item = nativeEl.querySelector('.audit-item');
+    expect(item!.textContent).toContain('Notified customer');
+  });
+
+  it('shows an empty-history message when there are no audit rows', async () => {
+    ordersStub.getStatusOverrides.mockReturnValue(of([]));
+    component.selectOrder(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(nativeEl.querySelector('.audit-item')).toBeNull();
+    expect(nativeEl.textContent).toContain('No overrides recorded for this order.');
+  });
+
+  it('surfaces an audit error banner when getStatusOverrides() fails', async () => {
+    ordersStub.getStatusOverrides.mockReturnValue(throwError(() => new Error('500')));
+    component.selectOrder(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.auditError()).toBeTruthy();
+  });
+
+  // ─── Client-side reason validation ──────────────────────────────────────
+
+  it('blocks the confirm step and sets an error when reason is empty', () => {
+    component.requestOverrideConfirm();
+
+    expect(component.overrideReasonError()).toBeTruthy();
+    expect(component.showOverrideConfirm()).toBe(false);
+    expect(ordersStub.overrideStatus).not.toHaveBeenCalled();
+  });
+
+  it('blocks the confirm step when reason is only whitespace', () => {
+    component.onReasonInput(reasonInputEvent('   '));
+    component.requestOverrideConfirm();
+
+    expect(component.overrideReasonError()).toBeTruthy();
+    expect(component.showOverrideConfirm()).toBe(false);
+  });
+
+  it('clears the reason error once a non-empty reason is typed', () => {
+    component.requestOverrideConfirm();
+    expect(component.overrideReasonError()).toBeTruthy();
+
+    component.onReasonInput(reasonInputEvent('Customer called support.'));
+    expect(component.overrideReasonError()).toBeNull();
+  });
+
+  // ─── Confirmation gating ─────────────────────────────────────────────────
+
+  it('does not call overrideStatus() until the confirm step is completed', () => {
+    component.onReasonInput(reasonInputEvent('Customer called support.'));
+    component.requestOverrideConfirm();
+
+    expect(component.showOverrideConfirm()).toBe(true);
+    expect(ordersStub.overrideStatus).not.toHaveBeenCalled();
+  });
+
+  it('cancelling the confirm step does not call overrideStatus()', () => {
+    component.onReasonInput(reasonInputEvent('Customer called support.'));
+    component.requestOverrideConfirm();
+    component.cancelOverrideConfirm();
+
+    expect(component.showOverrideConfirm()).toBe(false);
+    expect(ordersStub.overrideStatus).not.toHaveBeenCalled();
+  });
+
+  // ─── Submitting the override ─────────────────────────────────────────────
+
+  it('calls overrideStatus() with sendNotifications: false when the checkbox is left unchecked', () => {
+    component.onOverrideStatusChange(statusSelectEvent(OrderStatus.CANCELLED));
+    component.onReasonInput(reasonInputEvent('Customer requested cancellation by phone.'));
+    component.requestOverrideConfirm();
+    component.confirmOverride(ORDER_1.id);
+
+    expect(ordersStub.overrideStatus).toHaveBeenCalledWith(ORDER_1.id, {
+      status: OrderStatus.CANCELLED,
+      reason: 'Customer requested cancellation by phone.',
+      sendNotifications: false,
+    });
+  });
+
+  it('calls overrideStatus() with sendNotifications: true when the checkbox is checked', () => {
+    component.onOverrideStatusChange(statusSelectEvent(OrderStatus.SHIPPED));
+    component.onReasonInput(reasonInputEvent('Manual correction after courier confirmation.'));
+    component.onSendNotificationsChange(checkboxEvent(true));
+    component.requestOverrideConfirm();
+    component.confirmOverride(ORDER_1.id);
+
+    expect(ordersStub.overrideStatus).toHaveBeenCalledWith(ORDER_1.id, {
+      status: OrderStatus.SHIPPED,
+      reason: 'Manual correction after courier confirmation.',
+      sendNotifications: true,
+    });
+  });
+
+  it('on success: updates the order status + updatedAt in the list and refreshes audit history', async () => {
+    ordersStub.overrideStatus.mockReturnValue(
+      of(makeOrderDto({ status: OrderStatus.CANCELLED, updatedAt: '2026-08-17T12:00:00.000Z' })),
+    );
+    ordersStub.getStatusOverrides.mockClear();
+
+    component.onOverrideStatusChange(statusSelectEvent(OrderStatus.CANCELLED));
+    component.onReasonInput(reasonInputEvent('Customer requested cancellation by phone.'));
+    component.requestOverrideConfirm();
+    component.confirmOverride(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const patched = component.result().items.find(o => o.id === ORDER_1.id);
+    expect(patched?.status).toBe(OrderStatus.CANCELLED);
+    expect(patched?.updatedAt).toBe('2026-08-17T12:00:00.000Z');
+    expect(component.showOverrideConfirm()).toBe(false);
+    expect(component.overrideReason()).toBe('');
+    expect(ordersStub.getStatusOverrides).toHaveBeenCalledWith(ORDER_1.id);
+  });
+
+  it('on server error: surfaces overrideError and clears the pending guard', async () => {
+    ordersStub.overrideStatus.mockReturnValue(throwError(() => new Error('500')));
+
+    component.onReasonInput(reasonInputEvent('Customer requested cancellation by phone.'));
+    component.requestOverrideConfirm();
+    component.confirmOverride(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.overrideError()).toBeTruthy();
+    expect(component.overridePendingId()).toBeNull();
+  });
+
+  it('guards against double-submit while an override is in flight', () => {
+    const inFlight = new Subject<OrderDto>();
+    ordersStub.overrideStatus.mockReturnValue(inFlight.asObservable());
+
+    component.onReasonInput(reasonInputEvent('Customer requested cancellation by phone.'));
+    component.requestOverrideConfirm();
+
+    component.confirmOverride(ORDER_1.id); // starts the request
+    component.confirmOverride(ORDER_1.id); // should be ignored — one is already pending
+
+    expect(ordersStub.overrideStatus).toHaveBeenCalledTimes(1);
+
+    inFlight.next(makeOrderDto());
+    inFlight.complete();
+
+    expect(component.overridePendingId()).toBeNull();
+  });
+});
+
+// ─── Stale-response race guard ─────────────────────────────────────────────────
+//
+// Regression coverage for a review finding: switching the selected order mid-flight
+// must not let a slow response for the OLD order clobber the panel now showing the
+// NEW order (audit history, form state, or the pending-override lock).
+
+describe('AdminOrders — stale response race guard', () => {
+  it('a stale audit-history response for order A does not overwrite order B\'s audit list', async () => {
+    const auditForA = new Subject<OrderStatusOverrideAuditDto[]>();
+    const auditRowsForB = [makeAuditRow({ id: 'audit-b', orderId: ORDER_2.id, reason: 'B reason' })];
+
+    const adminOrdersStub: AdminOrdersServiceStub = {
+      getDashboard: vi.fn(),
+      listOrders: vi.fn(() => of(makeResult())),
+    };
+    const ordersStub = makeOrdersServiceStub({
+      getStatusOverrides: vi.fn((id: string) =>
+        id === ORDER_1.id ? auditForA.asObservable() : of(auditRowsForB),
+      ),
+    });
+
+    const { component, fixture } = await createComponent(adminOrdersStub, ordersStub);
+
+    // Select order A — its audit fetch is left hanging (auditForA hasn't emitted yet).
+    component.selectOrder(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.auditHistory()).toEqual([]);
+
+    // Navigate to order B before A's response arrives — B's own fetch resolves immediately.
+    component.selectOrder(ORDER_2.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.auditHistory()).toEqual(auditRowsForB);
+
+    // A's slow response finally arrives.
+    auditForA.next([makeAuditRow({ id: 'audit-a', orderId: ORDER_1.id })]);
+    auditForA.complete();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Must still show B's audit history — A's stale response was a no-op.
+    expect(component.selectedId()).toBe(ORDER_2.id);
+    expect(component.auditHistory()).toEqual(auditRowsForB);
+  });
+
+  it('a stale confirmOverride() success response for order A does not touch order B\'s panel state', async () => {
+    const overrideForA = new Subject<OrderDto>();
+
+    const adminOrdersStub: AdminOrdersServiceStub = {
+      getDashboard: vi.fn(),
+      listOrders: vi.fn(() => of(makeResult())),
+    };
+    const ordersStub = makeOrdersServiceStub({
+      overrideStatus: vi.fn(() => overrideForA.asObservable()),
+      getStatusOverrides: vi.fn(() => of([])),
+    });
+
+    const { component, fixture } = await createComponent(adminOrdersStub, ordersStub);
+
+    // Select order A and fire (but don't resolve) an override.
+    component.selectOrder(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    component.onReasonInput(reasonInputEvent('Customer requested cancellation by phone.'));
+    component.requestOverrideConfirm();
+    component.confirmOverride(ORDER_1.id);
+    expect(component.overridePendingId()).toBe(ORDER_1.id);
+
+    // Navigate away to order B before A's response arrives.
+    component.selectOrder(ORDER_2.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // B's panel starts from a clean slate (clearOverrideState() ran on selection).
+    expect(component.overrideReason()).toBe('');
+    expect(component.showOverrideConfirm()).toBe(false);
+    expect(component.auditHistory()).toEqual([]);
+
+    // A's response now arrives — must be a no-op against the panel now showing B.
+    overrideForA.next(makeOrderDto({ id: ORDER_1.id, status: OrderStatus.CANCELLED }));
+    overrideForA.complete();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // B's panel state is untouched by A's stale response, and A's list entry was
+    // NOT patched either (the whole handler no-ops once the selection has moved on).
+    expect(component.selectedId()).toBe(ORDER_2.id);
+    expect(component.overrideReason()).toBe('');
+    expect(component.showOverrideConfirm()).toBe(false);
+    expect(component.auditHistory()).toEqual([]);
+    expect(component.result().items.find(o => o.id === ORDER_1.id)?.status).toBe(OrderStatus.PENDING);
+
+    // The pending lock for A is only ever released by A's own (now-stale) completion,
+    // which intentionally no-ops rather than clearing state for the wrong order — so
+    // it remains held. This is the accepted trade-off called out in clearOverrideState().
+    expect(component.overridePendingId()).toBe(ORDER_1.id);
   });
 });

@@ -857,3 +857,5 @@
 {"ts":"2026-08-17T11:14:25.325Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":false,"tool":"Edit"}
 {"ts":"2026-08-17T11:14:32.596Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-08-17T11:15:02.414Z","type":"edit_lint","file":"apps/api/src/orders/orders.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-17T11:17:49.954Z","type":"agent_token_usage","agentType":"backend-engineer","agentId":"a5768756a74f861b4","sessionId":"19818d96-b88c-4681-8bc0-5bd030c2c27a","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-17T11:27:32.815Z","type":"agent_token_usage","agentType":"frontend-engineer","agentId":"a4493076c8349e9ba","sessionId":"19818d96-b88c-4681-8bc0-5bd030c2c27a","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
