@@ -3,14 +3,18 @@ import {
   BadRequestException,
   NotFoundException,
   ForbiddenException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Brackets, In, Repository } from 'typeorm';
+import { unlink } from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
 import {
   ListingType,
   PagedResponse,
   ProductDto,
+  ProductImageVariantSet,
   ProductQuery,
   ProductSort,
   UserRole,
@@ -22,6 +26,7 @@ import { ProductCreateDto } from './dto/product-create.dto';
 import { ProductUpdateDto } from './dto/product-update.dto';
 import { CreateProductImageDto } from './dto/create-product-image.dto';
 import { ProbedProductImageFile } from './upload/product-image-dimensions.pipe';
+import { PRODUCT_IMAGE_PRESETS } from './upload/product-image.presets';
 import { ProductToResponseDto } from '../common/utils/mappers.utils';
 import { FileUrlService } from './upload/file-url.service';
 import { User } from '../users/entities/user.entity';
@@ -29,6 +34,8 @@ import { Vendor } from '../vendors/entities/vendor.entity';
 import { Category } from '../categories/entities/category.entity';
 import { AuditAction, AuditService } from '../audit/audit.service';
 import { ProductEvents } from '../common/events/domain-events';
+import { ImageProcessorService } from '../common/image-processing/image-processor.service';
+import { ImageVariantWriterService } from '../common/image-processing/image-variant-writer.service';
 
 const DEFAULT_LIMIT = 24;
 const MAX_LIMIT = 100;
@@ -56,6 +63,8 @@ export class ProductsService {
     private fileUrlService: FileUrlService,
     private auditService: AuditService,
     private eventEmitter: EventEmitter2,
+    private imageProcessor: ImageProcessorService,
+    private imageVariantWriter: ImageVariantWriterService,
   ) {}
 
   async create(
@@ -102,6 +111,10 @@ export class ProductsService {
     files: ProbedProductImageFile[],
     currentUser: User,
   ): Promise<ProductDto> {
+    if (files.length > 8) {
+      throw new BadRequestException('Maximum 8 images allowed per product');
+    }
+
     let vendorId: string | undefined;
     let listingType: ListingType;
 
@@ -122,42 +135,23 @@ export class ProductsService {
       listingType = ListingType.VENDOR;
     }
 
+    // Process (resize/re-encode into thumbnail/card/full derivatives, write to disk)
+    // before any DB write. Failure story (locked for this slice): a processing failure
+    // partway through a multi-image upload must not leave a half-written product — since
+    // nothing about the product row exists yet at this point, a thrown error here leaves
+    // zero trace in the database. See `processProductImages` for the disk-side cleanup of
+    // derivatives already written for earlier files in the same failed request.
+    const imageDtos = files.length ? await this.processProductImages(files, createDto.name) : [];
+
     const product = await this.create({
       ...createDto,
       vendorId,
       listingType,
     });
 
-    if (!files?.length) {
-      const created = await this.findOne(product.id);
-      await this.auditService.log({
-        userId: currentUser.id,
-        action: AuditAction.PRODUCT_CREATED,
-        entityType: 'product',
-        entityId: product.id,
-      });
-      // Emitted last, once the product (and any relations) are fully
-      // persisted — the search indexer refetches by id on receipt.
-      this.eventEmitter.emit(ProductEvents.CREATED, { productId: product.id });
-      return created;
+    if (imageDtos.length) {
+      await this.addMultipleImages(product.id, imageDtos);
     }
-
-    if (files.length > 8) {
-      throw new BadRequestException('Maximum 8 images allowed per product');
-    }
-
-    const imageDtos: CreateProductImageDto[] = files.map((file, index) => ({
-      url: this.fileUrlService.getFileUrl(file.filename),
-      key: file.filename,
-      isPrimary: index === 0,
-      displayOrder: index,
-      altText: `${createDto.name} image ${index + 1}`,
-      width: file.dimensions.width,
-      height: file.dimensions.height,
-      sizeBytes: file.size,
-    }));
-
-    await this.addMultipleImages(product.id, imageDtos);
 
     const created = await this.findOne(product.id);
     await this.auditService.log({
@@ -166,10 +160,77 @@ export class ProductsService {
       entityType: 'product',
       entityId: product.id,
     });
-    // Emitted after images are attached so the indexed document has its
+    // Emitted after images are attached (when present) so the indexed document has its
     // primary image on the very first upsert.
     this.eventEmitter.emit(ProductEvents.CREATED, { productId: product.id });
     return created;
+  }
+
+  /**
+   * Resizes/re-encodes every uploaded file into its thumbnail/card/full WebP derivative
+   * set (`ImageProcessorService`) and writes them to `uploads/products`
+   * (`ImageVariantWriterService`) — locked decision: the raw original never touches disk
+   * and is never the served file. `key` is the uuid stem shared by every derivative of one
+   * upload (`<key>-thumbnail.webp`, `<key>-card.webp`, `<key>-full.webp`).
+   *
+   * If any file fails to process, this throws before returning — `createWithImages` never
+   * sees a partial result, so no product row is ever created for a failed upload. Any
+   * derivatives already written to disk for earlier files in the same request are
+   * best-effort cleaned up so a failed request doesn't orphan files.
+   */
+  private async processProductImages(
+    files: ProbedProductImageFile[],
+    productName: string,
+  ): Promise<CreateProductImageDto[]> {
+    const destDir = this.fileUrlService.getUploadDir();
+    const writtenPaths: string[] = [];
+
+    try {
+      const dtos: CreateProductImageDto[] = [];
+
+      for (const [index, file] of files.entries()) {
+        const keyStem = uuidv4();
+        const processed = await this.imageProcessor.process(file.buffer, PRODUCT_IMAGE_PRESETS);
+        const written = await this.imageVariantWriter.write(processed, destDir, keyStem);
+        writtenPaths.push(...written.map((w) => w.path));
+
+        const full = written.find((w) => w.preset === 'full');
+        if (!full) {
+          // Every PRODUCT_IMAGE_PRESETS entry always yields a derivative — this only trips
+          // if the preset set itself is ever misconfigured without a 'full' entry.
+          throw new UnprocessableEntityException(
+            'Image processing did not produce a "full" derivative.',
+          );
+        }
+
+        const variants: ProductImageVariantSet = {};
+        for (const variant of written) {
+          variants[variant.preset as keyof ProductImageVariantSet] = {
+            url: this.fileUrlService.getFileUrl(variant.filename),
+            width: variant.width,
+            height: variant.height,
+            sizeBytes: variant.sizeBytes,
+          };
+        }
+
+        dtos.push({
+          url: this.fileUrlService.getFileUrl(full.filename),
+          key: keyStem,
+          isPrimary: index === 0,
+          displayOrder: index,
+          altText: `${productName} image ${index + 1}`,
+          width: full.width,
+          height: full.height,
+          sizeBytes: full.sizeBytes,
+          variants,
+        });
+      }
+
+      return dtos;
+    } catch (err) {
+      await Promise.all(writtenPaths.map((path) => unlink(path).catch(() => undefined)));
+      throw err;
+    }
   }
 
   async addMultipleImages(

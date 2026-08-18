@@ -1,5 +1,4 @@
 import { Injectable, PipeTransform, UnprocessableEntityException } from '@nestjs/common';
-import { unlink } from 'fs/promises';
 import sharp from 'sharp';
 
 /** Locked decision (vault: "Product Image Optimization Pipeline", 2026-08-18). */
@@ -7,23 +6,27 @@ const MAX_DIMENSION_PX = 8000;
 
 /**
  * A product image file after `ProductImageDimensionsPipe` has probed it — carries the
- * intrinsic pixel dimensions read from disk so `ProductsService` doesn't need to re-open
- * the file. `sizeBytes` reuses Multer's own `file.size` (already accurate for disk-stored
- * files); only width/height require the sharp probe.
+ * intrinsic pixel dimensions read from its buffer so downstream code doesn't need to
+ * re-probe it. `sizeBytes` reuses Multer's own `file.size` (accurate under memoryStorage
+ * too); only width/height require the sharp probe.
  */
 export interface ProbedProductImageFile extends Express.Multer.File {
   dimensions: { width: number; height: number };
 }
 
 /**
- * Reads intrinsic pixel dimensions of every uploaded product image (metadata probe only —
- * PIO-1; resizing/derivatives land in PIO-2) and rejects the whole request with 422 if any
- * image exceeds 8000x8000.
+ * Reads intrinsic pixel dimensions of every uploaded product image and rejects the whole
+ * request with 422 if any image exceeds 8000x8000 or can't be read as an image at all
+ * (corrupt/truncated upload) — a decode failure here is a 422, never an unhandled 500.
  *
- * Runs after `productImageFilePipe` in the `@UploadedFiles()` chain, so by this point Multer
- * has already written every file in the request to disk (productImageMulterOptions is disk
- * storage). On rejection, every file of the request is unlinked — not just the offending
- * one — so a rejected multi-file upload never leaves orphaned files under uploads/products.
+ * PIO-2 switched `productImageMulterOptions` to `memoryStorage`, so this pipe now probes
+ * `file.buffer` directly instead of opening `file.path` from disk. Nothing is written to
+ * disk at this point in the request (the raw original never touches disk — locked
+ * decision), so unlike PIO-1 there is no per-file cleanup to do on rejection.
+ *
+ * This pipe only guards the fixed absurd-input ceiling; the actual resize/re-encode into
+ * the thumbnail/card/full derivative set happens later, in
+ * `ProductsService.createWithImages` via `ImageProcessorService`.
  */
 @Injectable()
 export class ProductImageDimensionsPipe implements PipeTransform<
@@ -38,7 +41,7 @@ export class ProductImageDimensionsPipe implements PipeTransform<
     const probes = await Promise.all(
       files.map(async (file) => {
         try {
-          const { width, height } = await sharp(file.path).metadata();
+          const { width, height } = await sharp(file.buffer).metadata();
           return { file, width, height };
         } catch {
           // Unreadable by sharp despite passing the mimetype/magic-number check
@@ -53,8 +56,6 @@ export class ProductImageDimensionsPipe implements PipeTransform<
     );
 
     if (offender) {
-      await Promise.all(files.map((file) => unlink(file.path).catch(() => undefined)));
-
       throw new UnprocessableEntityException(
         offender.width && offender.height
           ? `Image "${offender.file.originalname}" is ${offender.width}x${offender.height}px; ` +

@@ -7,9 +7,13 @@ import { ProductImage } from './entities/product-image.entity';
 import { FileUrlService } from './upload/file-url.service';
 import { Category } from '../categories/entities/category.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
+import { ImageProcessingModule } from '../common/image-processing/image-processing.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, ProductImage, Vendor, Category])],
+  imports: [
+    TypeOrmModule.forFeature([Product, ProductImage, Vendor, Category]),
+    ImageProcessingModule,
+  ],
   providers: [ProductsService, FileUrlService],
   controllers: [ProductsController],
 })

@@ -11,17 +11,34 @@ export interface ProductCategoryDto {
   slug?: string;
 }
 
+/** One resized/re-encoded derivative of an uploaded product image. Always WebP (locked decision — no JPEG fallback). */
+export interface ProductImageVariantDto {
+  url: string;
+  width: number;
+  height: number;
+  sizeBytes: number;
+}
+
+/** The fixed derivative set produced per uploaded image. Any key may be absent — e.g. a legacy row, or a preset skipped for some other reason. */
+export interface ProductImageVariantSet {
+  thumbnail?: ProductImageVariantDto;
+  card?: ProductImageVariantDto;
+  full?: ProductImageVariantDto;
+}
+
 export interface ProductImageDto {
   id: string;
   url: string;
   isPrimary: boolean;
   displayOrder: number;
   altText?: string;
-  /** Intrinsic pixel dimensions, probed from the file at upload time. Absent on legacy rows (no backfill). */
+  /** Intrinsic dimensions of `url` (the `full` derivative once processed). Absent on legacy rows (no backfill). */
   width?: number;
   height?: number;
-  /** Original upload size in bytes. Absent on legacy rows (no backfill). */
+  /** Byte size of `url`. Absent on legacy rows (no backfill). */
   sizeBytes?: number;
+  /** Responsive derivatives generated at upload time. Absent ⇒ render `url` alone (legacy row, pre-PIO-2). */
+  variants?: ProductImageVariantSet;
 }
 
 export interface ProductDto {

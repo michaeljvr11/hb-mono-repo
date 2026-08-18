@@ -36,6 +36,7 @@ export function ProductToResponseDto(product: Product): ProductDto {
           width: img.width ?? undefined,
           height: img.height ?? undefined,
           sizeBytes: img.sizeBytes ?? undefined,
+          variants: img.variants ?? undefined,
         }),
       ) ?? [],
 
