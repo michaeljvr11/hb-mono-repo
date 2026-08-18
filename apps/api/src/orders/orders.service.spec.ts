@@ -13,6 +13,7 @@ import { ORDER_STATUS_TRANSITIONS, OrdersService } from './orders.service';
 import { OrderEvents } from '../common/events/domain-events';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
+import { OrderStatusOverride } from './entities/order-status-override.entity';
 import { Cart } from '../cart/entities/cart.entity';
 import { Product } from '../products/entities/product.entity';
 import { Address } from '../addresses/entities/address.entity';
@@ -103,10 +104,12 @@ describe('OrdersService', () => {
   let paymentsRepo: Record<string, jest.Mock>;
   let vendorsRepo: Record<string, jest.Mock>;
   let orderItemsRepo: Record<string, jest.Mock>;
+  let orderStatusOverridesRepo: Record<string, jest.Mock>;
   let paymentProvider: Record<string, jest.Mock>;
   let commissionRateService: Record<string, jest.Mock>;
   let eventEmitter: Record<string, jest.Mock>;
   let manager: Record<string, jest.Mock>;
+  let dataSourceMock: Record<string, jest.Mock>;
 
   /** Per-entity dispatch for the transactional EntityManager mock. */
   let cartFixture: Cart | null;
@@ -147,6 +150,9 @@ describe('OrdersService', () => {
     };
     vendorsRepo = { findOne: jest.fn() };
     orderItemsRepo = { find: jest.fn() };
+    orderStatusOverridesRepo = {
+      createQueryBuilder: jest.fn(),
+    };
     paymentProvider = {
       initiatePayment: jest.fn(() =>
         Promise.resolve({ provider: 'stub', providerRef: 'stub_ref_1' }),
@@ -166,7 +172,7 @@ describe('OrdersService', () => {
     };
     eventEmitter = { emit: jest.fn() };
 
-    const dataSource = {
+    dataSourceMock = {
       transaction: jest.fn((cb: (m: EntityManager) => Promise<unknown>) =>
         cb(manager as unknown as EntityManager),
       ),
@@ -179,8 +185,9 @@ describe('OrdersService', () => {
         { provide: getRepositoryToken(Payment), useValue: paymentsRepo },
         { provide: getRepositoryToken(Vendor), useValue: vendorsRepo },
         { provide: getRepositoryToken(OrderItem), useValue: orderItemsRepo },
+        { provide: getRepositoryToken(OrderStatusOverride), useValue: orderStatusOverridesRepo },
         { provide: PAYMENT_PROVIDER, useValue: paymentProvider },
-        { provide: DataSource, useValue: dataSource },
+        { provide: DataSource, useValue: dataSourceMock },
         { provide: CommissionRateService, useValue: commissionRateService },
         { provide: EventEmitter2, useValue: eventEmitter },
       ],
@@ -621,6 +628,276 @@ describe('OrdersService', () => {
       const calls = ordersRepo.save.mock.calls as Order[][];
       return calls[calls.length - 1][0];
     }
+  });
+
+  // ── Admin override (any-state, reason required, audit log) ────────────────
+
+  describe('overrideStatus — admin any-state override', () => {
+    const admin = makeUser({ id: 'admin-1', role: UserRole.ADMIN });
+
+    function stageOrder(overrides: Partial<Order> = {}) {
+      const order = makeOrder(overrides);
+      ordersRepo.findOne.mockResolvedValue(order);
+      return order;
+    }
+
+    /** The order write goes through `manager.save(Order, ...)` inside the transaction. */
+    function lastManagerSavedOrder(): Order {
+      const orderCalls = (manager.save.mock.calls as [unknown, Order][]).filter(
+        ([entity]) => entity === Order,
+      );
+      return orderCalls[orderCalls.length - 1][1];
+    }
+
+    /** The audit row goes through `manager.save(OrderStatusOverride, ...)`. */
+    function lastManagerSavedOverride(): Partial<OrderStatusOverride> {
+      const overrideCalls = (
+        manager.save.mock.calls as [unknown, Partial<OrderStatusOverride>][]
+      ).filter(([entity]) => entity === OrderStatusOverride);
+      return overrideCalls[overrideCalls.length - 1][1];
+    }
+
+    it.each([
+      [OrderStatus.DELIVERED, OrderStatus.PENDING],
+      [OrderStatus.CANCELLED, OrderStatus.CONFIRMED],
+      [OrderStatus.PENDING, OrderStatus.SHIPPED],
+      [OrderStatus.SHIPPED, OrderStatus.HANDED_TO_HB],
+    ])(
+      'writes any-status-to-any-status %s → %s, bypassing ORDER_STATUS_TRANSITIONS',
+      async (from, to) => {
+        stageOrder({ status: from });
+
+        const dto = await service.overrideStatus(admin, 'order-1', {
+          status: to,
+          reason: 'Support ticket #123 — customer confirmed receipt',
+          sendNotifications: false,
+        });
+
+        expect(dto.status).toBe(to);
+        expect(lastManagerSavedOrder()).toEqual(expect.objectContaining({ status: to }));
+      },
+    );
+
+    it('404s an unknown order', async () => {
+      ordersRepo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.overrideStatus(admin, 'nope', {
+          status: OrderStatus.CONFIRMED,
+          reason: 'test',
+          sendNotifications: false,
+        }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('rejects a no-op override (status unchanged) with 409 — no write, no audit row, no event', async () => {
+      stageOrder({ status: OrderStatus.CONFIRMED });
+
+      await expect(
+        service.overrideStatus(admin, 'order-1', {
+          status: OrderStatus.CONFIRMED,
+          reason: 'Accidentally hit override without changing the status',
+          sendNotifications: true,
+        }),
+      ).rejects.toMatchObject({
+        constructor: ConflictException,
+        message: 'Order is already in this status',
+      });
+
+      expect(dataSourceMock.transaction).not.toHaveBeenCalled();
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('emits order.paid when sendNotifications is true and target is CONFIRMED', async () => {
+      stageOrder({ status: OrderStatus.PENDING });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.CONFIRMED,
+        reason: 'Manual payment reconciliation',
+        sendNotifications: true,
+      });
+
+      expect(eventEmitter.emit).toHaveBeenCalledTimes(1);
+      expect(eventEmitter.emit).toHaveBeenCalledWith(OrderEvents.PAID, { orderId: 'order-1' });
+    });
+
+    it('does not emit order.paid when sendNotifications is false, even for CONFIRMED', async () => {
+      stageOrder({ status: OrderStatus.PENDING });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.CONFIRMED,
+        reason: 'Manual correction, no customer email wanted',
+        sendNotifications: false,
+      });
+
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('does not emit order.paid when sendNotifications is true but target is not CONFIRMED', async () => {
+      stageOrder({ status: OrderStatus.SHIPPED });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.DELIVERED,
+        reason: 'Marking delivered per courier confirmation',
+        sendNotifications: true,
+      });
+
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('writes the status change and the audit row in the same transaction, with the correct shape', async () => {
+      stageOrder({ status: OrderStatus.SHIPPED });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.DELIVERED,
+        reason: 'Courier confirmed drop-off, system missed the webhook',
+        sendNotifications: true,
+      });
+
+      expect(dataSourceMock.transaction).toHaveBeenCalledTimes(1);
+      expect(lastManagerSavedOverride()).toEqual({
+        orderId: 'order-1',
+        adminUserId: 'admin-1',
+        fromStatus: OrderStatus.SHIPPED,
+        toStatus: OrderStatus.DELIVERED,
+        reason: 'Courier confirmed drop-off, system missed the webhook',
+        sendNotifications: true,
+      });
+    });
+
+    it('writes the audit row even when sendNotifications is false', async () => {
+      stageOrder({ status: OrderStatus.PENDING });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.CANCELLED,
+        reason: 'Duplicate order, cancelling silently',
+        sendNotifications: false,
+      });
+
+      expect(lastManagerSavedOverride()).toEqual(
+        expect.objectContaining({ sendNotifications: false }),
+      );
+    });
+
+    it('stamps deliveredAt via the same race-safe conditional UPDATE when the target is DELIVERED', async () => {
+      stageOrder({ status: OrderStatus.SHIPPED, deliveredAt: undefined });
+      const before = Date.now();
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.DELIVERED,
+        reason: 'Manual delivery confirmation',
+        sendNotifications: false,
+      });
+
+      expect(manager.update).toHaveBeenCalledTimes(1);
+      const [entity, where, patch] = manager.update.mock.calls[0] as [
+        unknown,
+        { id: string; deliveredAt: unknown },
+        { deliveredAt: Date },
+      ];
+      expect(entity).toBe(Order);
+      expect(where).toEqual({ id: 'order-1', deliveredAt: IsNull() });
+      expect(patch.deliveredAt.getTime()).toBeGreaterThanOrEqual(before);
+    });
+
+    it('does not clear an existing deliveredAt when overriding out of delivered', async () => {
+      const existing = new Date('2026-01-01T00:00:00.000Z');
+      stageOrder({ status: OrderStatus.DELIVERED, deliveredAt: existing });
+
+      await service.overrideStatus(admin, 'order-1', {
+        status: OrderStatus.PENDING,
+        reason: 'Reopening for a warranty claim',
+        sendNotifications: false,
+      });
+
+      expect(lastManagerSavedOrder().deliveredAt).toBe(existing);
+      expect(manager.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('findOverridesForOrder', () => {
+    function stageQueryBuilder(
+      entities: OrderStatusOverride[],
+      raw: { adminEmail: string | null }[],
+    ) {
+      const qb = {
+        leftJoin: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getRawAndEntities: jest.fn(() => Promise.resolve({ entities, raw })),
+      };
+      orderStatusOverridesRepo.createQueryBuilder.mockReturnValue(qb);
+      return qb;
+    }
+
+    it('404s when the order does not exist', async () => {
+      ordersRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.findOverridesForOrder('nope')).rejects.toBeInstanceOf(NotFoundException);
+      expect(orderStatusOverridesRepo.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('maps override rows to the shared DTO shape, newest first, joining the admin email', async () => {
+      ordersRepo.findOne.mockResolvedValue(makeOrder());
+      const override = {
+        id: 'override-2',
+        orderId: 'order-1',
+        adminUserId: 'admin-1',
+        fromStatus: OrderStatus.SHIPPED,
+        toStatus: OrderStatus.DELIVERED,
+        reason: 'Manual delivery confirmation',
+        sendNotifications: false,
+        createdAt: NOW,
+      } as OrderStatusOverride;
+      const qb = stageQueryBuilder([override], [{ adminEmail: 'admin@hb.com' }]);
+
+      const result = await service.findOverridesForOrder('order-1');
+
+      expect(qb.where).toHaveBeenCalledWith('override.orderId = :orderId', { orderId: 'order-1' });
+      expect(qb.orderBy).toHaveBeenCalledWith('override.createdAt', 'DESC');
+      expect(result).toEqual([
+        {
+          id: 'override-2',
+          orderId: 'order-1',
+          adminUserId: 'admin-1',
+          adminEmail: 'admin@hb.com',
+          fromStatus: OrderStatus.SHIPPED,
+          toStatus: OrderStatus.DELIVERED,
+          reason: 'Manual delivery confirmation',
+          sendNotifications: false,
+          createdAt: NOW.toISOString(),
+        },
+      ]);
+    });
+
+    it('leaves adminEmail undefined when the join finds no matching user', async () => {
+      ordersRepo.findOne.mockResolvedValue(makeOrder());
+      const override = {
+        id: 'override-3',
+        orderId: 'order-1',
+        adminUserId: 'admin-1',
+        fromStatus: OrderStatus.PENDING,
+        toStatus: OrderStatus.CANCELLED,
+        reason: 'test',
+        sendNotifications: false,
+        createdAt: NOW,
+      } as OrderStatusOverride;
+      stageQueryBuilder([override], [{ adminEmail: null }]);
+
+      const result = await service.findOverridesForOrder('order-1');
+
+      expect(result[0].adminEmail).toBeUndefined();
+    });
+
+    it('returns an empty array when the order has no overrides', async () => {
+      ordersRepo.findOne.mockResolvedValue(makeOrder());
+      stageQueryBuilder([], []);
+
+      const result = await service.findOverridesForOrder('order-1');
+
+      expect(result).toEqual([]);
+    });
   });
 
   // ── Transition rights per role ─────────────────────────────────────────────

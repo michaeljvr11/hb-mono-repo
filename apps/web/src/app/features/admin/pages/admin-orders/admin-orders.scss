@@ -44,6 +44,13 @@
   }
 }
 
+/* Error banner rendered inline within the override/audit sections of the detail panel
+   (as opposed to the page-level banner above, which needs the bottom margin instead). */
+.override-section .error-banner,
+.audit-section .error-banner {
+  margin: 16px 0 0;
+}
+
 /* ─── Filter tabs ─────────────────────────────────────────────── */
 .filter-tabs {
   display: flex;
@@ -471,6 +478,210 @@
   padding: 2px 6px;
   border-radius: 4px;
   word-break: break-all;
+}
+
+/* ─── Override / audit sections (headings reuse .detail-heading / .detail-sub) ── */
+.override-section,
+.audit-section {
+  margin-top: 24px;
+}
+
+/* ─── Status override form ────────────────────────────────────── */
+.override-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.override-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.override-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hb-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.override-select,
+.override-textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-on-surface);
+  font: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+  resize: vertical;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--hb-primary);
+    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+  }
+}
+
+.override-field-error {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--hb-error);
+}
+
+.override-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--hb-on-surface);
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--hb-primary);
+    cursor: pointer;
+  }
+}
+
+/* ─── Confirmation step ───────────────────────────────────────── */
+.override-confirm {
+  padding: 14px 16px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  background: var(--hb-surface-container);
+
+  p {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--hb-on-surface);
+
+    &:last-of-type {
+      margin-bottom: 0;
+    }
+  }
+
+  .action-bar {
+    margin-top: 12px;
+  }
+}
+
+.override-confirm-warn {
+  color: var(--hb-error);
+}
+
+/* ─── Action bar (shared by override + future actions) ───────── */
+.action-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-on-surface);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease, opacity 150ms ease, border-color 150ms ease;
+
+  &:hover:not(:disabled) {
+    background: var(--hb-surface-container-low);
+    border-color: var(--hb-outline);
+  }
+
+  &:disabled {
+    cursor: progress;
+    opacity: 0.6;
+  }
+
+  &--confirm {
+    background: var(--hb-primary);
+    color: var(--hb-on-primary);
+    border-color: var(--hb-primary);
+
+    &:hover:not(:disabled) {
+      background: var(--hb-primary-container);
+      color: var(--hb-on-surface);
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+  }
+}
+
+.btn-spinner {
+  font-size: 18px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─── Status override audit history ───────────────────────────── */
+.audit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.audit-item {
+  padding: 10px 12px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  background: var(--hb-surface-container-lowest);
+}
+
+.audit-item-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.audit-transition {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hb-on-surface);
+}
+
+.audit-date {
+  font-size: 11px;
+  color: var(--hb-on-surface-variant);
+  white-space: nowrap;
+}
+
+.audit-reason {
+  margin: 4px 0 6px;
+  font-size: 13px;
+  color: var(--hb-on-surface);
+  word-break: break-word;
+}
+
+.audit-item-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--hb-on-surface-variant);
 }
 
 /* ─── Detail empty state ──────────────────────────────────────── */

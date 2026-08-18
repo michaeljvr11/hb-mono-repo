@@ -1,9 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { UserRole } from '@hb/shared';
 import { OrdersService } from './orders.service';
 import { GetUser } from '../common/decorators/get-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
 import { User } from '../users/entities/user.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { OrderStatusOverrideDto } from './dto/order-status-override.dto';
 
 /**
  * Authenticated (global JwtAuthGuard, no @Public). Thin by design: ownership,
@@ -38,5 +41,23 @@ export class OrdersController {
   @Patch(':id/status')
   updateStatus(@GetUser() user: User, @Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
     return this.ordersService.updateStatus(user, id, dto.status);
+  }
+
+  // Admin-only escape hatch — bypasses the state machine entirely, see
+  // OrdersService.overrideStatus. Never exposed to vendor/customer.
+  @Patch(':id/status-override')
+  @Roles(UserRole.ADMIN)
+  overrideStatus(
+    @GetUser() user: User,
+    @Param('id') id: string,
+    @Body() dto: OrderStatusOverrideDto,
+  ) {
+    return this.ordersService.overrideStatus(user, id, dto);
+  }
+
+  @Get(':id/status-overrides')
+  @Roles(UserRole.ADMIN)
+  getStatusOverrides(@Param('id') id: string) {
+    return this.ordersService.findOverridesForOrder(id);
   }
 }

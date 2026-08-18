@@ -1,12 +1,16 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import {
   AdminOrderListDto,
   AdminOrderListItemDto,
   CurrencyCode,
   OrderStatus,
+  OrderStatusOverrideAuditDto,
+  OrderStatusOverrideRequest,
 } from '@hb/shared';
 import { AdminOrdersService } from '../../../../core/api/admin-orders.service';
+import { OrdersService } from '../../../../core/api/orders.service';
 
 // A dedicated order-detail route is a follow-up once the orders/checkout module is real.
 // For now, clicking a row selects it and shows details in a right-hand panel (split list/detail,
@@ -28,6 +32,7 @@ interface StatusTab {
 })
 export class AdminOrders implements OnInit {
   private readonly adminOrdersService = inject(AdminOrdersService);
+  private readonly ordersService = inject(OrdersService);
 
   readonly result = signal<AdminOrderListDto>({
     items: [],
@@ -50,6 +55,24 @@ export class AdminOrders implements OnInit {
 
   /** Currently selected order id (for the inline detail panel). */
   readonly selectedId = signal<string | null>(null);
+
+  /** Every status the admin override control can target — any status → any status. */
+  readonly allStatuses: OrderStatus[] = Object.values(OrderStatus);
+
+  /** Status-override form state (mirrors admin-vendors' pendingId/actionError pattern). */
+  readonly overrideStatus = signal<OrderStatus>(OrderStatus.PENDING);
+  readonly overrideReason = signal('');
+  readonly overrideSendNotifications = signal(false);
+  readonly overrideReasonError = signal<string | null>(null);
+  readonly showOverrideConfirm = signal(false);
+  readonly overrideError = signal<string | null>(null);
+  /** In-flight override — stores the order id being mutated (double-submit guard). */
+  readonly overridePendingId = signal<string | null>(null);
+
+  /** Status-override audit history for the selected order. */
+  readonly auditHistory = signal<OrderStatusOverrideAuditDto[]>([]);
+  readonly auditLoading = signal(false);
+  readonly auditError = signal<string | null>(null);
 
   readonly statusTabs: StatusTab[] = [
     { label: 'All',        value: 'all' },
@@ -103,6 +126,7 @@ export class AdminOrders implements OnInit {
     this.statusFilter.set(value);
     this.page.set(1);
     this.selectedId.set(null);
+    this.clearOverrideState();
     this.fetchOrders();
   }
 
@@ -111,17 +135,22 @@ export class AdminOrders implements OnInit {
     this.vendorIdFilter.set(value);
     this.page.set(1);
     this.selectedId.set(null);
+    this.clearOverrideState();
     this.fetchOrders();
   }
 
   selectOrder(id: string): void {
     this.selectedId.set(id);
+    this.clearOverrideState();
+    this.overrideStatus.set(this.selectedOrder()?.status ?? OrderStatus.PENDING);
+    this.fetchAuditHistory(id);
   }
 
   goToPrev(): void {
     if (this.isPrevDisabled()) return;
     this.page.update(p => p - 1);
     this.selectedId.set(null);
+    this.clearOverrideState();
     this.fetchOrders();
   }
 
@@ -129,12 +158,138 @@ export class AdminOrders implements OnInit {
     if (this.isNextDisabled()) return;
     this.page.update(p => p + 1);
     this.selectedId.set(null);
+    this.clearOverrideState();
     this.fetchOrders();
   }
 
-  /** Humanise an OrderStatus string (e.g. "pending" → "Pending"). */
+  // ─── Status override ────────────────────────────────────────────────────
+
+  onOverrideStatusChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value as OrderStatus;
+    this.overrideStatus.set(value);
+  }
+
+  onReasonInput(event: Event): void {
+    const value = (event.target as HTMLTextAreaElement).value;
+    this.overrideReason.set(value);
+    if (value.trim()) {
+      this.overrideReasonError.set(null);
+    }
+  }
+
+  onSendNotificationsChange(event: Event): void {
+    this.overrideSendNotifications.set((event.target as HTMLInputElement).checked);
+  }
+
+  /** Gate before the call fires — validates the reason, then shows the confirm step. */
+  requestOverrideConfirm(): void {
+    if (!this.overrideReason().trim()) {
+      this.overrideReasonError.set('A reason is required.');
+      return;
+    }
+    this.overrideReasonError.set(null);
+    this.overrideError.set(null);
+    this.showOverrideConfirm.set(true);
+  }
+
+  cancelOverrideConfirm(): void {
+    this.showOverrideConfirm.set(false);
+  }
+
+  confirmOverride(orderId: string): void {
+    if (this.overridePendingId() !== null) return; // guard against double-submit
+
+    const request: OrderStatusOverrideRequest = {
+      status: this.overrideStatus(),
+      reason: this.overrideReason().trim(),
+      sendNotifications: this.overrideSendNotifications(),
+    };
+
+    this.overridePendingId.set(orderId);
+    this.overrideError.set(null);
+
+    this.ordersService.overrideStatus(orderId, request).subscribe({
+      next: (updated) => {
+        // The lock is released unconditionally on completion — even for a stale
+        // response — so switching selection mid-flight never leaves the Confirm
+        // button permanently disabled. Only the panel/audit refresh below is
+        // skipped for a stale response, since that data no longer corresponds to
+        // what's on screen.
+        if (this.overridePendingId() === orderId) this.overridePendingId.set(null);
+        if (this.selectedId() !== orderId) return;
+
+        // Refresh the order's status + updatedAt in the local list (the detail panel
+        // reads from it).
+        this.result.update(r => ({
+          ...r,
+          items: r.items.map(o =>
+            o.id === orderId ? { ...o, status: updated.status, updatedAt: updated.updatedAt } : o,
+          ),
+        }));
+        this.showOverrideConfirm.set(false);
+        this.overrideReason.set('');
+        this.fetchAuditHistory(orderId);
+      },
+      error: (err: HttpErrorResponse) => {
+        if (this.overridePendingId() === orderId) this.overridePendingId.set(null);
+        if (this.selectedId() !== orderId) return; // stale — see comment above
+
+        this.overrideError.set(
+          err.status === 409
+            ? 'This order is already in that status — pick a different target status.'
+            : 'Status override failed. Please try again.',
+        );
+        this.showOverrideConfirm.set(false);
+      },
+    });
+  }
+
+  private fetchAuditHistory(orderId: string): void {
+    this.auditLoading.set(true);
+    this.auditError.set(null);
+
+    this.ordersService.getStatusOverrides(orderId).subscribe({
+      next: (rows) => {
+        // Stale response guard — see confirmOverride() for why this matters: a slow
+        // response for an order the admin has since navigated away from must not
+        // overwrite the audit history now shown for the newly selected order.
+        if (this.selectedId() !== orderId) return;
+
+        this.auditHistory.set(rows);
+        this.auditLoading.set(false);
+      },
+      error: () => {
+        if (this.selectedId() !== orderId) return;
+
+        this.auditError.set('Failed to load status override history.');
+        this.auditLoading.set(false);
+      },
+    });
+  }
+
+  /** Resets override-form + audit state for a new selection. Deliberately does NOT
+   *  touch overridePendingId — an in-flight request's own completion is the only
+   *  thing that releases that lock (unconditionally, even if stale); see
+   *  confirmOverride(). This keeps the double-submit guard tied to the request
+   *  it belongs to, rather than to whichever order happens to be selected. */
+  private clearOverrideState(): void {
+    this.overrideReason.set('');
+    this.overrideSendNotifications.set(false);
+    this.overrideReasonError.set(null);
+    this.showOverrideConfirm.set(false);
+    this.overrideError.set(null);
+    this.auditHistory.set([]);
+    this.auditLoading.set(false);
+    this.auditError.set(null);
+  }
+
+  /** Humanise an OrderStatus string (e.g. "pending" → "Pending",
+   *  "handed_to_hb" → "Handed To Hb"). */
   humanizeStatus(status: string): string {
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    return status
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   /** Short 8-char prefix of a UUID for display. */
@@ -145,6 +300,12 @@ export class AdminOrders implements OnInit {
   /** Display customer name with email fallback. */
   customerDisplay(order: AdminOrderListItemDto): string {
     return order.customerName ?? order.customerEmail;
+  }
+
+  /** Display the admin who made an override; falls back to their id if the join
+   *  couldn't resolve an email (e.g. the admin user was since deleted). */
+  auditByDisplay(row: OrderStatusOverrideAuditDto): string {
+    return row.adminEmail ?? row.adminUserId;
   }
 
   /** Known currency symbols. Unknown currencies fall back to the ISO code only —
