@@ -25,6 +25,13 @@ import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 import { FileUrlService } from '../products/upload/file-url.service';
+import { ImageProcessorService } from '../common/image-processing/image-processor.service';
+import {
+  ImageVariantWriterService,
+  WrittenImageVariant,
+} from '../common/image-processing/image-variant-writer.service';
+import { ProcessedImageVariant } from '../common/image-processing/image-processor.types';
+import { VENDOR_LOGO_PRESETS, VENDOR_BANNER_PRESETS } from './upload/vendor-image.presets';
 
 const mockVendor = (overrides: Partial<Vendor> = {}): Vendor =>
   ({
@@ -71,7 +78,9 @@ describe('VendorsService', () => {
   let usersService: { update: jest.Mock };
   let auditService: { log: jest.Mock; query: jest.Mock };
   let eventEmitter: { emit: jest.Mock };
-  let fileUrlService: { getFileUrl: jest.Mock };
+  let fileUrlService: { getFileUrl: jest.Mock; getUploadDir: jest.Mock };
+  let imageProcessor: { process: jest.Mock };
+  let imageVariantWriter: { write: jest.Mock };
 
   beforeEach(async () => {
     vendorRepo = {
@@ -92,7 +101,13 @@ describe('VendorsService', () => {
 
     eventEmitter = { emit: jest.fn() };
 
-    fileUrlService = { getFileUrl: jest.fn() };
+    fileUrlService = {
+      getFileUrl: jest.fn(),
+      getUploadDir: jest.fn().mockReturnValue('/uploads/vendors'),
+    };
+
+    imageProcessor = { process: jest.fn() };
+    imageVariantWriter = { write: jest.fn() };
 
     const module = await Test.createTestingModule({
       providers: [
@@ -104,6 +119,8 @@ describe('VendorsService', () => {
         { provide: AuditService, useValue: auditService },
         { provide: EventEmitter2, useValue: eventEmitter },
         { provide: FileUrlService, useValue: fileUrlService },
+        { provide: ImageProcessorService, useValue: imageProcessor },
+        { provide: ImageVariantWriterService, useValue: imageVariantWriter },
       ],
     }).compile();
 
@@ -611,10 +628,12 @@ describe('VendorsService', () => {
       expect(result).not.toHaveProperty('verificationDocumentUrl');
       expect(Object.keys(result).sort()).toEqual(
         [
+          'banner',
           'bannerUrl',
           'businessName',
           'countryCode',
           'id',
+          'logo',
           'logoUrl',
           'profileSections',
           'slogan',
@@ -820,10 +839,56 @@ describe('VendorsService', () => {
     });
   });
 
-  describe('updateLogo / updateBanner (owner-scoped branding upload)', () => {
-    const file = { filename: 'abc123.png' } as Express.Multer.File;
+  describe('updateLogo / updateBanner (owner-scoped branding upload, PIO-5)', () => {
+    const file = {
+      originalname: 'photo.png',
+      buffer: Buffer.from('bytes'),
+      size: 1024,
+    } as Express.Multer.File;
 
-    it('sets logoUrl from the uploaded file and returns the full self-view DTO shape', async () => {
+    const makeProcessed = (
+      preset: string,
+      overrides: Partial<ProcessedImageVariant> = {},
+    ): ProcessedImageVariant => ({
+      preset,
+      buffer: Buffer.from('webp-bytes'),
+      width: 100,
+      height: 100,
+      sizeBytes: 500,
+      format: 'webp',
+      ...overrides,
+    });
+
+    // Mirrors the real ImageVariantWriterService's naming/return shape without touching
+    // disk: `<keyStem>-<preset>.webp`, threaded through whatever keyStem the service
+    // actually generates (we never hardcode a uuid here) — same pattern as
+    // products.service.spec.ts.
+    const echoWriter = () =>
+      imageVariantWriter.write.mockImplementation(
+        (
+          variants: ProcessedImageVariant[],
+          destDir: string,
+          keyStem: string,
+        ): Promise<WrittenImageVariant[]> =>
+          Promise.resolve(
+            variants.map((v) => ({
+              preset: v.preset,
+              filename: `${keyStem}-${v.preset}.${v.format}`,
+              path: `${destDir}/${keyStem}-${v.preset}.${v.format}`,
+              width: v.width,
+              height: v.height,
+              sizeBytes: v.sizeBytes,
+            })),
+          ),
+      );
+
+    beforeEach(() => {
+      fileUrlService.getFileUrl.mockImplementation(
+        (filename: string, folder = 'products') => `/uploads/${folder}/${filename}`,
+      );
+    });
+
+    it('runs the logo through the image pipeline with the logo presets, sets logoUrl to the "full" derivative, and records dimensions/variants', async () => {
       vendorRepo.findOne.mockResolvedValue(
         mockVendor({
           id: 'v1',
@@ -834,60 +899,83 @@ describe('VendorsService', () => {
         }),
       );
       vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
-      fileUrlService.getFileUrl.mockReturnValue('/uploads/vendors/abc123.png');
+      imageProcessor.process.mockResolvedValue([
+        makeProcessed('full', { width: 512, height: 512, sizeBytes: 40000 }),
+        makeProcessed('thumbnail', { width: 144, height: 144, sizeBytes: 8000 }),
+      ]);
+      echoWriter();
 
       const result = await service.updateLogo('u1', file);
 
       expect(vendorRepo.findOne).toHaveBeenCalledWith({ where: { userId: 'u1' } });
-      expect(fileUrlService.getFileUrl).toHaveBeenCalledWith('abc123.png', 'vendors');
-      expect(vendorRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ logoUrl: '/uploads/vendors/abc123.png' }),
-      );
-      // The banner field must be left untouched by a logo upload.
-      expect(vendorRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ bannerUrl: 'https://cdn.hb.com/banners/existing.png' }),
-      );
+      expect(fileUrlService.getUploadDir).toHaveBeenCalledWith('vendors');
+      expect(imageProcessor.process).toHaveBeenCalledWith(file.buffer, VENDOR_LOGO_PRESETS);
+
+      const [savedVendor] = vendorRepo.save.mock.calls[0] as [Vendor];
+      expect(savedVendor.logoUrl).toMatch(/^\/uploads\/vendors\/.+-full\.webp$/);
+      expect(savedVendor.logoWidth).toBe(512);
+      expect(savedVendor.logoHeight).toBe(512);
+      expect(savedVendor.logoSizeBytes).toBe(40000);
+      expect(savedVendor.logoVariants).toMatchObject({
+        full: { width: 512, height: 512, sizeBytes: 40000 },
+        thumbnail: { width: 144, height: 144, sizeBytes: 8000 },
+      });
+      // The banner fields must be left untouched by a logo upload.
+      expect(savedVendor.bannerUrl).toBe('https://cdn.hb.com/banners/existing.png');
+      expect(savedVendor.bannerWidth).toBeUndefined();
+
       // Full self-view shape (matches GET /vendors/me), not just the touched field.
       expect(result).toMatchObject({
         id: 'v1',
-        logoUrl: '/uploads/vendors/abc123.png',
+        logoUrl: savedVendor.logoUrl,
+        logo: { width: 512, height: 512, sizeBytes: 40000 },
         bannerUrl: 'https://cdn.hb.com/banners/existing.png',
         website: 'https://roots-and-shoots.example',
         description: 'Handmade art from the Cape',
       });
+      // Legacy banner (no variant columns) resolves to no nested `banner` metadata.
+      expect(result.banner).toBeUndefined();
     });
 
-    it('sets bannerUrl from the uploaded file and leaves logoUrl untouched', async () => {
+    it('runs the banner through the image pipeline with the banner presets and leaves logo untouched', async () => {
       vendorRepo.findOne.mockResolvedValue(
-        mockVendor({
-          id: 'v1',
-          userId: 'u1',
-          logoUrl: 'https://cdn.hb.com/logos/existing.png',
-        }),
+        mockVendor({ id: 'v1', userId: 'u1', logoUrl: 'https://cdn.hb.com/logos/existing.png' }),
       );
       vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
-      fileUrlService.getFileUrl.mockReturnValue('/uploads/vendors/abc123.png');
+      imageProcessor.process.mockResolvedValue([
+        makeProcessed('full', { width: 1280, height: 549, sizeBytes: 90000 }),
+        makeProcessed('card', { width: 640, height: 274, sizeBytes: 30000 }),
+      ]);
+      echoWriter();
 
       const result = await service.updateBanner('u1', file);
 
-      expect(fileUrlService.getFileUrl).toHaveBeenCalledWith('abc123.png', 'vendors');
-      expect(vendorRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ bannerUrl: '/uploads/vendors/abc123.png' }),
-      );
-      // The logo field must be left untouched by a banner upload.
-      expect(vendorRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ logoUrl: 'https://cdn.hb.com/logos/existing.png' }),
-      );
-      expect(result.bannerUrl).toBe('/uploads/vendors/abc123.png');
+      expect(imageProcessor.process).toHaveBeenCalledWith(file.buffer, VENDOR_BANNER_PRESETS);
+
+      const [savedVendor] = vendorRepo.save.mock.calls[0] as [Vendor];
+      expect(savedVendor.bannerUrl).toMatch(/^\/uploads\/vendors\/.+-full\.webp$/);
+      expect(savedVendor.bannerWidth).toBe(1280);
+      expect(savedVendor.bannerVariants).toMatchObject({
+        full: { width: 1280, height: 549 },
+        card: { width: 640, height: 274 },
+      });
+      // The logo fields must be left untouched by a banner upload.
+      expect(savedVendor.logoUrl).toBe('https://cdn.hb.com/logos/existing.png');
+      expect(savedVendor.logoWidth).toBeUndefined();
+
+      expect(result.bannerUrl).toBe(savedVendor.bannerUrl);
+      expect(result.banner).toMatchObject({ width: 1280, height: 549, sizeBytes: 90000 });
       expect(result.logoUrl).toBe('https://cdn.hb.com/logos/existing.png');
+      expect(result.logo).toBeUndefined();
     });
 
-    it('throws NotFoundException when the acting user has no vendor profile', async () => {
+    it('throws NotFoundException when the acting user has no vendor profile, without touching the image pipeline', async () => {
       vendorRepo.findOne.mockResolvedValue(null);
 
       await expect(service.updateLogo('no-vendor-user', file)).rejects.toBeInstanceOf(
         NotFoundException,
       );
+      expect(imageProcessor.process).not.toHaveBeenCalled();
       expect(vendorRepo.save).not.toHaveBeenCalled();
     });
 
@@ -897,6 +985,7 @@ describe('VendorsService', () => {
       await expect(service.updateBanner('no-vendor-user', file)).rejects.toBeInstanceOf(
         NotFoundException,
       );
+      expect(imageProcessor.process).not.toHaveBeenCalled();
       expect(vendorRepo.save).not.toHaveBeenCalled();
     });
 
@@ -911,7 +1000,8 @@ describe('VendorsService', () => {
         Promise.resolve([vendorA, vendorB].find((v) => v.userId === where.userId) ?? null),
       );
       vendorRepo.save.mockImplementation((v: Vendor) => Promise.resolve(v));
-      fileUrlService.getFileUrl.mockReturnValue('/uploads/vendors/new-for-a.png');
+      imageProcessor.process.mockResolvedValue([makeProcessed('full'), makeProcessed('thumbnail')]);
+      echoWriter();
 
       const result = await service.updateLogo('user-a', file);
 

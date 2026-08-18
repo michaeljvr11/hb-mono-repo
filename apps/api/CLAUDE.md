@@ -30,7 +30,11 @@
 - Auth is settled: JWT access + rotating hashed refresh token in httpOnly cookie, global
   `JwtAuthGuard`/`RolesGuard` with `@Public`/`@Roles`. Don't redesign it.
 - `ValidationPipe` runs with `whitelist + transform` — rely on it, don't hand-strip fields.
-- Use `bcryptjs` (no native bcrypt). File uploads use disk storage; `uploads/` is served statically.
+- Use `bcryptjs` (no native bcrypt). Image uploads (product images, vendor logo/banner) use
+  `memoryStorage` — the raw upload never touches disk. It is resized/re-encoded into WebP
+  derivatives by `common/image-processing/` and only those are written under `uploads/`,
+  which is served statically. Filenames always come from the processor's fixed output
+  format, never from `originalname`.
 
 ## Testing
 - Jest, `*.spec.ts` next to source. Run: `npm run test` (from `apps/api`) or `npm run test:api` (root).

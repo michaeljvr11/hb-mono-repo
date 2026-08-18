@@ -1,8 +1,8 @@
-import { Injectable, PipeTransform, UnprocessableEntityException } from '@nestjs/common';
-import sharp from 'sharp';
-
-/** Locked decision (vault: "Product Image Optimization Pipeline", 2026-08-18). */
-const MAX_DIMENSION_PX = 8000;
+import { Injectable, PipeTransform } from '@nestjs/common';
+import {
+  probeImageDimensions,
+  ProbedDimensions,
+} from '../../common/image-processing/image-dimension-guard';
 
 /**
  * A product image file after `ProductImageDimensionsPipe` has probed it — carries the
@@ -14,10 +14,17 @@ export interface ProbedProductImageFile extends Express.Multer.File {
   dimensions: { width: number; height: number };
 }
 
+type Probe =
+  | { file: Express.Multer.File; dimensions: ProbedDimensions; error?: undefined }
+  | { file: Express.Multer.File; dimensions?: undefined; error: unknown };
+
 /**
  * Reads intrinsic pixel dimensions of every uploaded product image and rejects the whole
  * request with 422 if any image exceeds 8000x8000 or can't be read as an image at all
  * (corrupt/truncated upload) — a decode failure here is a 422, never an unhandled 500.
+ * The probe + ceiling itself lives in `probeImageDimensions`
+ * (`apps/api/src/common/image-processing/image-dimension-guard.ts`), shared with the
+ * vendor logo/banner path (PIO-5) so the guard exists once, not once per upload path.
  *
  * PIO-2 switched `productImageMulterOptions` to `memoryStorage`, so this pipe now probes
  * `file.buffer` directly instead of opening `file.path` from disk. Nothing is written to
@@ -38,35 +45,25 @@ export class ProductImageDimensionsPipe implements PipeTransform<
       return [];
     }
 
-    const probes = await Promise.all(
-      files.map(async (file) => {
+    const probes: Probe[] = await Promise.all(
+      files.map(async (file): Promise<Probe> => {
         try {
-          const { width, height } = await sharp(file.buffer).metadata();
-          return { file, width, height };
-        } catch {
-          // Unreadable by sharp despite passing the mimetype/magic-number check
-          // (e.g. corrupt or truncated upload) — treat as a rejection, not a 500.
-          return { file, width: undefined, height: undefined };
+          return { file, dimensions: await probeImageDimensions(file.buffer, file.originalname) };
+        } catch (error) {
+          return { file, error };
         }
       }),
     );
 
-    const offender = probes.find(
-      (p) => !p.width || !p.height || p.width > MAX_DIMENSION_PX || p.height > MAX_DIMENSION_PX,
-    );
-
+    // Deterministic by upload order, not by which probe's promise settles first.
+    const offender = probes.find((p) => p.error !== undefined);
     if (offender) {
-      throw new UnprocessableEntityException(
-        offender.width && offender.height
-          ? `Image "${offender.file.originalname}" is ${offender.width}x${offender.height}px; ` +
-              `maximum allowed is ${MAX_DIMENSION_PX}x${MAX_DIMENSION_PX}px.`
-          : `Image "${offender.file.originalname}" could not be read as an image.`,
-      );
+      throw offender.error;
     }
 
     return probes.map(
-      ({ file, width, height }): ProbedProductImageFile =>
-        Object.assign(file, { dimensions: { width: width, height: height } }),
+      ({ file, dimensions }): ProbedProductImageFile =>
+        Object.assign(file, { dimensions: dimensions }),
     );
   }
 }

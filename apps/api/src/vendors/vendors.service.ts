@@ -4,11 +4,20 @@ import {
   ForbiddenException,
   ConflictException,
   BadRequestException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { In, Repository } from 'typeorm';
-import { CurrencyCode, OrderStatus, VendorStatus, UserRole } from '@hb/shared';
+import { v4 as uuidv4 } from 'uuid';
+import {
+  CurrencyCode,
+  ImageVariantSet,
+  OrderStatus,
+  UploadedImageDto,
+  VendorStatus,
+  UserRole,
+} from '@hb/shared';
 import { Vendor } from './entities/vendor.entity';
 import { Product } from '../products/entities/product.entity';
 import { OrderItem } from '../orders/entities/order-item.entity';
@@ -24,6 +33,11 @@ import { UsersService } from '../users/users.service';
 import { AuditAction, AuditService } from '../audit/audit.service';
 import { VendorEvents } from '../common/events/domain-events';
 import { FileUrlService } from '../products/upload/file-url.service';
+import { ImageProcessorService } from '../common/image-processing/image-processor.service';
+import { ImageVariantWriterService } from '../common/image-processing/image-variant-writer.service';
+import { VENDOR_LOGO_PRESETS, VENDOR_BANNER_PRESETS } from './upload/vendor-image.presets';
+
+type BrandingAsset = 'logo' | 'banner';
 
 @Injectable()
 export class VendorsService {
@@ -38,7 +52,27 @@ export class VendorsService {
     private auditService: AuditService,
     private eventEmitter: EventEmitter2,
     private fileUrlService: FileUrlService,
+    private imageProcessor: ImageProcessorService,
+    private imageVariantWriter: ImageVariantWriterService,
   ) {}
+
+  // Builds the nested `UploadedImageDto` for `VendorDto.logo`/`banner` from a vendor's
+  // flat width/height/sizeBytes/variants columns. Only present once an asset has been
+  // processed through the image pipeline (PIO-5) — legacy vendors with only
+  // `logoUrl`/`bannerUrl` set (no dimensions probed) resolve to `undefined` here, and
+  // callers keep serving the bare URL, matching the products path's null-variants
+  // fallback.
+  private toUploadedImageDto(
+    width?: number,
+    height?: number,
+    sizeBytes?: number,
+    variants?: ImageVariantSet,
+  ): UploadedImageDto | undefined {
+    if (width == null || height == null || sizeBytes == null) {
+      return undefined;
+    }
+    return { width, height, sizeBytes, variants: variants ?? {} };
+  }
 
   private toResponseDto(vendor: Vendor): VendorResponseDto {
     return {
@@ -48,7 +82,19 @@ export class VendorsService {
       status: vendor.status,
       countryCode: vendor.countryCode,
       logoUrl: vendor.logoUrl,
+      logo: this.toUploadedImageDto(
+        vendor.logoWidth,
+        vendor.logoHeight,
+        vendor.logoSizeBytes,
+        vendor.logoVariants,
+      ),
       bannerUrl: vendor.bannerUrl,
+      banner: this.toUploadedImageDto(
+        vendor.bannerWidth,
+        vendor.bannerHeight,
+        vendor.bannerSizeBytes,
+        vendor.bannerVariants,
+      ),
       slogan: vendor.slogan,
       profileSections: vendor.profileSections,
     };
@@ -56,15 +102,7 @@ export class VendorsService {
 
   private toAdminResponseDto(vendor: Vendor): AdminVendorResponseDto {
     return {
-      id: vendor.id,
-      businessName: vendor.businessName,
-      tradingName: vendor.tradingName,
-      status: vendor.status,
-      countryCode: vendor.countryCode,
-      logoUrl: vendor.logoUrl,
-      bannerUrl: vendor.bannerUrl,
-      slogan: vendor.slogan,
-      profileSections: vendor.profileSections,
+      ...this.toResponseDto(vendor),
       registrationNumber: vendor.registrationNumber,
       website: vendor.website,
       description: vendor.description,
@@ -294,27 +332,71 @@ export class VendorsService {
   }
 
   // Shared owner-scoped branding-image update: looks the vendor up by the acting
-  // user's id (never a client-supplied vendor id — matches GET /vendors/me), sets
-  // the given field from the uploaded file, and returns the self-view DTO.
+  // user's id (never a client-supplied vendor id — matches GET /vendors/me), runs the
+  // upload through the same ImageProcessorService pipeline PIO-2 built for products
+  // (logo/banner preset sets — vendor-image.presets.ts), writes the derivatives to
+  // uploads/vendors, and persists the "full" derivative's URL as the canonical
+  // logoUrl/bannerUrl plus the flat dimensions/variants columns. The raw upload is
+  // never the file served — only WebP derivatives get written to disk.
   private async updateBrandingImage(
     userId: string,
-    field: 'logoUrl' | 'bannerUrl',
+    asset: BrandingAsset,
     file: Express.Multer.File,
   ): Promise<VendorSelfResponseDto> {
     const vendor = await this.vendorRepository.findOne({ where: { userId } });
     if (!vendor) throw new NotFoundException('Vendor profile not found');
 
-    vendor[field] = this.fileUrlService.getFileUrl(file.filename, 'vendors');
+    const presets = asset === 'logo' ? VENDOR_LOGO_PRESETS : VENDOR_BANNER_PRESETS;
+    const destDir = this.fileUrlService.getUploadDir('vendors');
+    const keyStem = uuidv4();
+
+    const processed = await this.imageProcessor.process(file.buffer, presets);
+    const written = await this.imageVariantWriter.write(processed, destDir, keyStem);
+
+    const full = written.find((w) => w.preset === 'full');
+    if (!full) {
+      // Every preset set above always includes a 'full' entry — this only trips if
+      // vendor-image.presets.ts is ever misconfigured without one.
+      throw new UnprocessableEntityException(
+        `Image processing did not produce a "full" derivative for the vendor ${asset}.`,
+      );
+    }
+
+    const variants: ImageVariantSet = {};
+    for (const variant of written) {
+      variants[variant.preset as keyof ImageVariantSet] = {
+        url: this.fileUrlService.getFileUrl(variant.filename, 'vendors'),
+        width: variant.width,
+        height: variant.height,
+        sizeBytes: variant.sizeBytes,
+      };
+    }
+
+    const url = this.fileUrlService.getFileUrl(full.filename, 'vendors');
+    if (asset === 'logo') {
+      vendor.logoUrl = url;
+      vendor.logoWidth = full.width;
+      vendor.logoHeight = full.height;
+      vendor.logoSizeBytes = full.sizeBytes;
+      vendor.logoVariants = variants;
+    } else {
+      vendor.bannerUrl = url;
+      vendor.bannerWidth = full.width;
+      vendor.bannerHeight = full.height;
+      vendor.bannerSizeBytes = full.sizeBytes;
+      vendor.bannerVariants = variants;
+    }
+
     const updated = await this.vendorRepository.save(vendor);
     return this.toSelfResponseDto(updated);
   }
 
   async updateLogo(userId: string, file: Express.Multer.File): Promise<VendorSelfResponseDto> {
-    return this.updateBrandingImage(userId, 'logoUrl', file);
+    return this.updateBrandingImage(userId, 'logo', file);
   }
 
   async updateBanner(userId: string, file: Express.Multer.File): Promise<VendorSelfResponseDto> {
-    return this.updateBrandingImage(userId, 'bannerUrl', file);
+    return this.updateBrandingImage(userId, 'banner', file);
   }
 
   async getDashboard(userId: string): Promise<VendorDashboardResponseDto> {

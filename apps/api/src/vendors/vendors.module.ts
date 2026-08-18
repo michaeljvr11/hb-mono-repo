@@ -11,12 +11,14 @@ import { AnalyticsEvent } from '../analytics/entities/analytics-event.entity';
 import { UsersModule } from '../users/users.module';
 import { FileUrlService } from '../products/upload/file-url.service';
 import { EarningsModule } from '../earnings/earnings.module';
+import { ImageProcessingModule } from '../common/image-processing/image-processing.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Vendor, Product, OrderItem, AnalyticsEvent]),
     UsersModule,
     EarningsModule,
+    ImageProcessingModule,
   ],
   controllers: [VendorsController],
   providers: [VendorsService, VendorAnalyticsService, FileUrlService, VendorEarningsReportService],

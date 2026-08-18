@@ -15,6 +15,8 @@ import { VendorsService } from '../vendors/vendors.service';
 import { AuditService } from '../audit/audit.service';
 import { UsersService } from '../users/users.service';
 import { FileUrlService } from '../products/upload/file-url.service';
+import { ImageProcessorService } from '../common/image-processing/image-processor.service';
+import { ImageVariantWriterService } from '../common/image-processing/image-variant-writer.service';
 import { Product } from '../products/entities/product.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
 import { Category } from '../categories/entities/category.entity';
@@ -171,6 +173,10 @@ describe('Search visibility (integration): query-time approved-vendor gate, live
         { provide: AuditService, useValue: { log: jest.fn().mockResolvedValue(undefined) } },
         { provide: UsersService, useValue: { update: jest.fn() } },
         { provide: FileUrlService, useValue: { getFileUrl: jest.fn() } },
+        // VendorsService's branding-image pipeline (PIO-5) — unused by this test's
+        // vendor-status wiring, but must resolve for VendorsService to construct.
+        { provide: ImageProcessorService, useValue: { process: jest.fn() } },
+        { provide: ImageVariantWriterService, useValue: { write: jest.fn() } },
       ],
     }).compile();
 
