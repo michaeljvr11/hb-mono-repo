@@ -58,6 +58,65 @@ describe('ProductCard', () => {
     expect(img.src).toBe('http://a.com/honey.jpg');
   });
 
+  it('renders a plain src with no srcset/width/height for a legacy image with no variants', async () => {
+    await setup();
+    const img = fixture.nativeElement.querySelector('.product-card__image') as HTMLImageElement;
+    expect(img.getAttribute('srcset')).toBeNull();
+    expect(img.hasAttribute('width')).toBe(false);
+    expect(img.hasAttribute('height')).toBe(false);
+  });
+
+  it('renders srcset, sizes, width and height from the variant set when present', async () => {
+    await setup({
+      ...baseProduct,
+      images: [
+        {
+          id: 'img1',
+          url: 'http://a.com/honey-full.webp',
+          isPrimary: true,
+          displayOrder: 0,
+          width: 2000,
+          height: 2000,
+          sizeBytes: 12345,
+          variants: {
+            thumbnail: { url: 'http://a.com/honey-thumb.webp', width: 300, height: 300, sizeBytes: 100 },
+            card: { url: 'http://a.com/honey-card.webp', width: 800, height: 800, sizeBytes: 500 },
+            full: { url: 'http://a.com/honey-full.webp', width: 2000, height: 2000, sizeBytes: 12345 },
+          },
+        },
+      ],
+    });
+    const img = fixture.nativeElement.querySelector('.product-card__image') as HTMLImageElement;
+    expect(img.src).toBe('http://a.com/honey-full.webp');
+    expect(img.getAttribute('srcset')).toBe(
+      'http://a.com/honey-thumb.webp 300w, http://a.com/honey-card.webp 800w, http://a.com/honey-full.webp 2000w',
+    );
+    expect(img.getAttribute('sizes')).toBe('(min-width: 768px) 280px, 260px');
+    expect(img.getAttribute('width')).toBe('2000');
+    expect(img.getAttribute('height')).toBe('2000');
+  });
+
+  it('uses the fixed 160px sizes string for the carousel variant', async () => {
+    await setup({
+      ...baseProduct,
+      images: [
+        {
+          id: 'img1',
+          url: 'http://a.com/honey-full.webp',
+          isPrimary: true,
+          displayOrder: 0,
+          variants: {
+            thumbnail: { url: 'http://a.com/honey-thumb.webp', width: 300, height: 300, sizeBytes: 100 },
+          },
+        },
+      ],
+    });
+    fixture.componentRef.setInput('variant', 'carousel');
+    fixture.detectChanges();
+    const img = fixture.nativeElement.querySelector('.product-card__image') as HTMLImageElement;
+    expect(img.getAttribute('sizes')).toBe('160px');
+  });
+
   it('renders a placeholder block when the product has no images', async () => {
     await setup({ ...baseProduct, images: [] });
     const el: HTMLElement = fixture.nativeElement;

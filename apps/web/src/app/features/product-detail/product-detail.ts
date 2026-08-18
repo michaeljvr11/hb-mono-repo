@@ -19,6 +19,7 @@ import { WishlistService } from '../../core/api/wishlist.service';
 import { ProductsService } from '../../core/api/products.service';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { formatPrice } from '../../shared/format-price';
+import { buildResponsiveImage } from '../../shared/responsive-image';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
 import { ProductCard } from '../../shared/components/product-card/product-card';
@@ -93,6 +94,17 @@ export class ProductDetail {
   });
 
   readonly hasMultipleImages = computed(() => this.images().length > 1);
+
+  /** `srcset`/`sizes`-ready attrs for the hero image, or `null` when the product has none. */
+  readonly activeImageAttrs = computed(() => {
+    const image = this.activeImage();
+    return image ? buildResponsiveImage(image) : null;
+  });
+
+  readonly activeImageAlt = computed(() => {
+    const image = this.activeImage();
+    return image?.altText ?? this.product()?.name ?? '';
+  });
 
   // ── Derived display data ─────────────────────────────────────────────────
   readonly priceLabel = computed(() => {

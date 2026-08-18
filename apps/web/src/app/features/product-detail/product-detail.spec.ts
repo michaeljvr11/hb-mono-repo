@@ -300,6 +300,55 @@ describe('ProductDetail', () => {
     expect(component.activeImageIndex()).toBe(0);
   });
 
+  it('renders the hero image with a plain src and no srcset when the image has no variants (legacy row)', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const img = el.querySelector('.pdp__hero-image') as HTMLImageElement;
+    expect(img).toBeTruthy();
+    expect(img.src).toBe('http://a.com/1.jpg');
+    expect(img.getAttribute('srcset')).toBeNull();
+    expect(img.hasAttribute('width')).toBe(false);
+    expect(img.hasAttribute('height')).toBe(false);
+  });
+
+  it('renders the hero image with srcset/sizes/width/height when variants are present, and never lazy-loads it', async () => {
+    const withVariants: ProductDto = {
+      ...HONEY,
+      images: [
+        {
+          id: 'img1',
+          url: 'http://a.com/full.webp',
+          isPrimary: true,
+          displayOrder: 0,
+          width: 2000,
+          height: 2000,
+          sizeBytes: 999,
+          variants: {
+            thumbnail: { url: 'http://a.com/thumb.webp', width: 300, height: 300, sizeBytes: 10 },
+            card: { url: 'http://a.com/card.webp', width: 800, height: 800, sizeBytes: 40 },
+            full: { url: 'http://a.com/full.webp', width: 2000, height: 2000, sizeBytes: 999 },
+          },
+        },
+      ],
+    };
+    productsStub.getById.mockReturnValue(of(withVariants));
+    paramMap$.next(convertToParamMap({ id: 'p1' }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const img = el.querySelector('.pdp__hero-image') as HTMLImageElement;
+    expect(img.src).toBe('http://a.com/full.webp');
+    expect(img.getAttribute('srcset')).toBe(
+      'http://a.com/thumb.webp 300w, http://a.com/card.webp 800w, http://a.com/full.webp 2000w',
+    );
+    expect(img.getAttribute('sizes')).toBe('(min-width: 1280px) 1280px, 100vw');
+    expect(img.getAttribute('width')).toBe('2000');
+    expect(img.getAttribute('height')).toBe('2000');
+    expect(img.hasAttribute('loading')).toBe(false);
+    expect(img.getAttribute('fetchpriority')).toBe('high');
+  });
+
   it('fetches related products by the first category, excluding self, capped at 4', () => {
     expect(productsStub.list).toHaveBeenCalledWith({ categoryId: 'cat-1' });
     expect(component.relatedProducts().length).toBe(1);

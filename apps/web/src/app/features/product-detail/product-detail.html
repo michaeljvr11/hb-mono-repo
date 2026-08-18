@@ -29,8 +29,17 @@
 
     <!-- â”€â”€ Hero image gallery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="pdp__hero">
-      @if (activeImage(); as img) {
-        <img class="pdp__hero-image" [src]="img.url" [alt]="img.altText ?? product.name" />
+      @if (activeImageAttrs(); as img) {
+        <img
+          class="pdp__hero-image"
+          [src]="img.src"
+          [attr.srcset]="img.srcset"
+          [attr.sizes]="img.srcset ? '(min-width: 1280px) 1280px, 100vw' : null"
+          [attr.width]="img.width"
+          [attr.height]="img.height"
+          [alt]="activeImageAlt()"
+          fetchpriority="high"
+        />
       } @else {
         <div class="pdp__hero-placeholder" aria-hidden="true">
           <span class="material-symbols-outlined">inventory_2</span>
