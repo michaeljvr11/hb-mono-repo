@@ -17,6 +17,11 @@ export interface ProductImageDto {
   isPrimary: boolean;
   displayOrder: number;
   altText?: string;
+  /** Intrinsic pixel dimensions, probed from the file at upload time. Absent on legacy rows (no backfill). */
+  width?: number;
+  height?: number;
+  /** Original upload size in bytes. Absent on legacy rows (no backfill). */
+  sizeBytes?: number;
 }
 
 export interface ProductDto {

@@ -29,6 +29,18 @@ export class ProductImage {
   @Column({ nullable: true })
   altText?: string;
 
+  // Intrinsic pixel dimensions + original upload size, probed via sharp at upload time
+  // (see product-image-dimensions.pipe.ts). Nullable — legacy rows predating this probe
+  // are never backfilled (locked decision, "Product Image Optimization Pipeline" spec).
+  @Column({ type: 'int', nullable: true })
+  width?: number;
+
+  @Column({ type: 'int', nullable: true })
+  height?: number;
+
+  @Column({ type: 'int', nullable: true })
+  sizeBytes?: number;
+
   @ManyToOne(() => Product, (product) => product.images, {
     onDelete: 'CASCADE',
   })

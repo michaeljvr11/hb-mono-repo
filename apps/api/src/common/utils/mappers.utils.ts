@@ -33,6 +33,9 @@ export function ProductToResponseDto(product: Product): ProductDto {
           isPrimary: img.isPrimary,
           displayOrder: img.displayOrder,
           altText: img.altText,
+          width: img.width ?? undefined,
+          height: img.height ?? undefined,
+          sizeBytes: img.sizeBytes ?? undefined,
         }),
       ) ?? [],
 

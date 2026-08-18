@@ -6,7 +6,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  ParseFilePipeBuilder,
   Patch,
   Post,
   Query,
@@ -20,6 +19,11 @@ import { ProductCreateDto } from './dto/product-create.dto';
 import { ProductUpdateDto } from './dto/product-update.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { productImageMulterOptions } from './upload/multer.config';
+import { productImageFilePipe } from './upload/product-image-file.pipe';
+import {
+  productImageDimensionsPipe,
+  ProbedProductImageFile,
+} from './upload/product-image-dimensions.pipe';
 import { Public } from '../common/decorators/public.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -34,20 +38,11 @@ export class ProductsController {
   @UseInterceptors(FilesInterceptor('images', 8, productImageMulterOptions))
   async create(
     @Body() createDto: ProductCreateDto,
-    @UploadedFiles(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: /(jpg|jpeg|png|webp)$/,
-        })
-        .addMaxSizeValidator({
-          maxSize: 5 * 1024 * 1024, // 5MB
-        })
-        .build({
-          fileIsRequired: false,
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        }),
-    )
-    files: Express.Multer.File[] = [],
+    // Chained pipes: mimetype/size first (productImageFilePipe), then the intrinsic
+    // pixel-dimension probe + 8000x8000 cap (productImageDimensionsPipe) — see
+    // apps/api/src/products/upload/*.pipe.ts for the rejection + disk-cleanup behaviour.
+    @UploadedFiles(productImageFilePipe, productImageDimensionsPipe)
+    files: ProbedProductImageFile[] = [],
     @GetUser() user: User,
   ) {
     return this.productsService.createWithImages(createDto, files, user);

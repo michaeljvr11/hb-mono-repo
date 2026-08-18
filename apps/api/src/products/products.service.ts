@@ -21,6 +21,7 @@ import { ProductImage } from './entities/product-image.entity';
 import { ProductCreateDto } from './dto/product-create.dto';
 import { ProductUpdateDto } from './dto/product-update.dto';
 import { CreateProductImageDto } from './dto/create-product-image.dto';
+import { ProbedProductImageFile } from './upload/product-image-dimensions.pipe';
 import { ProductToResponseDto } from '../common/utils/mappers.utils';
 import { FileUrlService } from './upload/file-url.service';
 import { User } from '../users/entities/user.entity';
@@ -98,7 +99,7 @@ export class ProductsService {
    */
   async createWithImages(
     createDto: ProductCreateDto,
-    files: Express.Multer.File[],
+    files: ProbedProductImageFile[],
     currentUser: User,
   ): Promise<ProductDto> {
     let vendorId: string | undefined;
@@ -151,6 +152,9 @@ export class ProductsService {
       isPrimary: index === 0,
       displayOrder: index,
       altText: `${createDto.name} image ${index + 1}`,
+      width: file.dimensions.width,
+      height: file.dimensions.height,
+      sizeBytes: file.size,
     }));
 
     await this.addMultipleImages(product.id, imageDtos);
