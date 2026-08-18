@@ -21,10 +21,12 @@
     </div>
   } @else if (vendor(); as vendor) {
     <!-- ── Vendor hero ─────────────────────────────────────────────────── -->
-    @if (vendor.bannerUrl) {
+    @if (bannerImage(); as banner) {
       <img
         class="vendor-profile__banner"
-        [src]="vendor.bannerUrl"
+        [src]="banner.src"
+        [attr.srcset]="banner.srcset"
+        [attr.sizes]="banner.srcset ? '(min-width: 1280px) 1280px, 100vw' : null"
         [alt]="vendor.businessName + ' banner'"
         loading="eager"
         fetchpriority="high"
@@ -32,10 +34,12 @@
     }
     <section class="vendor-profile__hero">
       <div class="vendor-profile__hero-heading">
-        @if (vendor.logoUrl) {
+        @if (logoImage(); as logo) {
           <img
             class="vendor-profile__logo"
-            [src]="vendor.logoUrl"
+            [src]="logo.src"
+            [attr.srcset]="logo.srcset"
+            [attr.sizes]="logo.srcset ? '(min-width: 768px) 72px, 64px' : null"
             [alt]="vendor.businessName + ' logo'"
             loading="lazy"
           />

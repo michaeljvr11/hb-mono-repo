@@ -108,6 +108,37 @@ const VENDOR_WITH_BRANDING: VendorDto = {
   slogan: 'Handmade, always.',
 };
 
+// PIO-5: a vendor processed through the image pipeline — `logoUrl`/`bannerUrl`
+// stay the canonical URL, `logo`/`banner` carry the (partial) derivative sets.
+const VENDOR_WITH_IMAGE_VARIANTS: VendorDto = {
+  id: 'v4',
+  businessName: 'Namib Weavers',
+  status: VendorStatus.APPROVED,
+  countryCode: CountryCode.NAMIBIA,
+  logoUrl: 'https://cdn.hb.test/logos/v4-full.webp',
+  logo: {
+    width: 512,
+    height: 512,
+    sizeBytes: 9000,
+    variants: {
+      thumbnail: { url: 'https://cdn.hb.test/logos/v4-thumb.webp', width: 144, height: 144, sizeBytes: 4000 },
+      full: { url: 'https://cdn.hb.test/logos/v4-full.webp', width: 512, height: 512, sizeBytes: 9000 },
+      // no `card` — the logo preset never generates one.
+    },
+  },
+  bannerUrl: 'https://cdn.hb.test/banners/v4-full.webp',
+  banner: {
+    width: 1280,
+    height: 549,
+    sizeBytes: 42000,
+    variants: {
+      card: { url: 'https://cdn.hb.test/banners/v4-card.webp', width: 640, height: 274, sizeBytes: 15000 },
+      full: { url: 'https://cdn.hb.test/banners/v4-full.webp', width: 1280, height: 549, sizeBytes: 42000 },
+      // no `thumbnail` — the banner preset never generates one.
+    },
+  },
+};
+
 const VENDOR_WITH_SECTIONS: VendorDto = {
   ...MOCK_VENDOR,
   profileSections: [
@@ -473,6 +504,55 @@ describe('PublicVendorProfile', () => {
       expect(el.querySelector('.vendor-profile__banner')).toBeNull();
       expect(el.querySelector('.vendor-profile__logo')).toBeNull();
       expect(el.querySelector('.vendor-profile__slogan')).toBeNull();
+    });
+
+    // ─── PIO-5: responsive logo/banner from the derivative set ────────────────
+
+    it('renders logo/banner srcset from the partial variant sets when the vendor has re-uploaded since PIO-5', async () => {
+      vendorsStub.getById.mockReturnValue(of(VENDOR_WITH_IMAGE_VARIANTS));
+      productsStub.list.mockReturnValue(of({ items: [], total: 0, page: 1, limit: 100 }));
+      paramMap$.next(convertToParamMap({ id: 'v4' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      const banner = el.querySelector<HTMLImageElement>('.vendor-profile__banner');
+      const logo = el.querySelector<HTMLImageElement>('.vendor-profile__logo');
+
+      expect(banner?.src).toBe(VENDOR_WITH_IMAGE_VARIANTS.bannerUrl);
+      expect(banner?.getAttribute('srcset')).toBe(
+        'https://cdn.hb.test/banners/v4-card.webp 640w, https://cdn.hb.test/banners/v4-full.webp 1280w',
+      );
+      expect(banner?.getAttribute('sizes')).toBe('(min-width: 1280px) 1280px, 100vw');
+
+      expect(logo?.src).toBe(VENDOR_WITH_IMAGE_VARIANTS.logoUrl);
+      expect(logo?.getAttribute('srcset')).toBe(
+        'https://cdn.hb.test/logos/v4-thumb.webp 144w, https://cdn.hb.test/logos/v4-full.webp 512w',
+      );
+      expect(logo?.getAttribute('sizes')).toBe('(min-width: 768px) 72px, 64px');
+    });
+
+    it('renders a plain single-src logo/banner (no srcset/sizes attrs) for a vendor who has not re-uploaded since PIO-5', async () => {
+      // VENDOR_WITH_BRANDING has bannerUrl/logoUrl but no banner/logo (the pre-PIO-5 shape).
+      vendorsStub.getById.mockReturnValue(of(VENDOR_WITH_BRANDING));
+      productsStub.list.mockReturnValue(of({ items: [], total: 0, page: 1, limit: 100 }));
+      paramMap$.next(convertToParamMap({ id: 'v3' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      const banner = el.querySelector<HTMLImageElement>('.vendor-profile__banner');
+      const logo = el.querySelector<HTMLImageElement>('.vendor-profile__logo');
+
+      expect(banner?.src).toBe(VENDOR_WITH_BRANDING.bannerUrl);
+      expect(banner?.hasAttribute('srcset')).toBe(false);
+      expect(banner?.hasAttribute('sizes')).toBe(false);
+
+      expect(logo?.src).toBe(VENDOR_WITH_BRANDING.logoUrl);
+      expect(logo?.hasAttribute('srcset')).toBe(false);
+      expect(logo?.hasAttribute('sizes')).toBe(false);
     });
 
     it('resolves a curated section in productIds order, not fetch order', async () => {

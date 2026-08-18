@@ -27,6 +27,7 @@ import { Footer } from '../../../layout/footer/footer';
 import { NavBar } from '../../../layout/nav-bar/nav-bar';
 import { ProductCard } from '../../../shared/components/product-card/product-card';
 import { RadialNav } from '../../../shared/components/radial-nav/radial-nav';
+import { ResponsiveImageAttrs, buildResponsiveImage } from '../../../shared/responsive-image';
 
 type VendorState = 'loading' | 'loaded' | 'not-found' | 'error';
 type ProductsState = 'loading' | 'loaded' | 'empty' | 'error';
@@ -94,6 +95,28 @@ export class PublicVendorProfile {
     const vendor = this.vendor();
     if (!vendor) return '';
     return vendor.countryCode === CountryCode.NAMIBIA ? 'Namibia' : 'South Africa';
+  });
+
+  /**
+   * `srcset`-ready attrs for the vendor's banner, or `null` when unset. Adapts
+   * `VendorDto`'s split shape (canonical URL on `bannerUrl`, derivative metadata
+   * nested under `banner`) into the flat `ResponsiveImageSource` shape
+   * `buildResponsiveImage` reads — same helper the PDP/product-card use, no
+   * vendor-specific variant. `banner` is absent for vendors who haven't
+   * re-uploaded since PIO-5 shipped; that's just an absent `variants` key,
+   * same as a legacy pre-PIO-2 product row, and renders `bannerUrl` alone.
+   */
+  readonly bannerImage = computed<ResponsiveImageAttrs | null>(() => {
+    const vendor = this.vendor();
+    if (!vendor?.bannerUrl) return null;
+    return buildResponsiveImage({ url: vendor.bannerUrl, ...vendor.banner });
+  });
+
+  /** Same adaptation as `bannerImage`, for the vendor's logo. */
+  readonly logoImage = computed<ResponsiveImageAttrs | null>(() => {
+    const vendor = this.vendor();
+    if (!vendor?.logoUrl) return null;
+    return buildResponsiveImage({ url: vendor.logoUrl, ...vendor.logo });
   });
 
   /** Distinct product categories across the vendor's loaded products, de-duped by id. */
