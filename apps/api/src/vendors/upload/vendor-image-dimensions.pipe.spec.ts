@@ -29,14 +29,14 @@ describe('VendorImageDimensionsPipe', () => {
     mockedSharp.mockReset();
   });
 
-  it('probes from file.buffer and attaches dimensions', async () => {
+  it('probes from file.buffer and returns the file unchanged', async () => {
     mockedSharp.mockReturnValue(stubMetadata(500, 500));
     const file = makeFile();
 
     const result = await pipe.transform(file);
 
     expect(mockedSharp).toHaveBeenCalledWith(file.buffer);
-    expect(result.dimensions).toEqual({ width: 500, height: 500 });
+    expect(result).toBe(file);
   });
 
   it('rejects an image over 8000x8000 with a 422 naming actual and allowed dimensions', async () => {

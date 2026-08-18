@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import type { ProductImageVariantSet } from '@hb/shared';
+import type { ImageVariantSet } from '@hb/shared';
 import { Product } from './product.entity';
 
 @Entity('product_images')
@@ -50,7 +50,7 @@ export class ProductImage {
   // — legacy rows (pre-PIO-2) and rows created before this migration keep it null; every
   // consumer falls back to `url` alone when absent.
   @Column({ type: 'jsonb', nullable: true })
-  variants?: ProductImageVariantSet;
+  variants?: ImageVariantSet;
 
   @ManyToOne(() => Product, (product) => product.images, {
     onDelete: 'CASCADE',

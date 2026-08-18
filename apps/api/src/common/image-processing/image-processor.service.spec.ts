@@ -115,6 +115,25 @@ describe('ImageProcessorService', () => {
     expect(variants.map((v) => v.width)).toEqual([2000, 800, 300]);
   });
 
+  it('preserves the alpha channel — vendor logos are uploaded with transparency', async () => {
+    // PIO-4 relies on WebP carrying alpha and sharp preserving it by default, so no
+    // PNG-passthrough branch exists. The quality ladder round-trips through a raw
+    // intermediate buffer, which only keeps alpha if the channel count is carried with it.
+    const input = await sharp({
+      create: { width: 600, height: 600, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+    })
+      .png()
+      .toBuffer();
+
+    const [variant] = await service.process(input, [
+      { name: 'full', maxDimension: 512, targetBytes: 80 * 1024 },
+    ]);
+
+    const decoded = await sharp(variant.buffer).metadata();
+    expect(decoded.hasAlpha).toBe(true);
+    expect(decoded.channels).toBe(4);
+  });
+
   it('strips embedded EXIF metadata from the output', async () => {
     const input = await makeImageWithExif();
     // Sanity: the fixture really does carry EXIF before it goes through the processor.

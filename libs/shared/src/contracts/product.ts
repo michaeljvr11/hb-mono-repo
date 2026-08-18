@@ -1,5 +1,5 @@
 import { CountryCode, CurrencyCode, ListingType } from '../enums';
-import { ImageVariantDto, ImageVariantSet } from './image';
+import { ImageVariantSet } from './image';
 
 export interface ProductVendorDto {
   id: string;
@@ -11,17 +11,6 @@ export interface ProductCategoryDto {
   name: string;
   slug?: string;
 }
-
-/** One resized/re-encoded derivative of an uploaded product image. Always WebP (locked
- * decision — no JPEG fallback). Alias of the shared `ImageVariantDto` (PIO-4, "Product
- * Image Optimization Pipeline") — kept as a named re-export so existing product-image
- * consumers keep their familiar name without a second definition. */
-export type ProductImageVariantDto = ImageVariantDto;
-
-/** The fixed derivative set produced per uploaded image. Any key may be absent — e.g. a
- * legacy row, or a preset skipped for some other reason. Alias of the shared
- * `ImageVariantSet`. */
-export type ProductImageVariantSet = ImageVariantSet;
 
 export interface ProductImageDto {
   id: string;
@@ -35,7 +24,7 @@ export interface ProductImageDto {
   /** Byte size of `url`. Absent on legacy rows (no backfill). */
   sizeBytes?: number;
   /** Responsive derivatives generated at upload time. Absent ⇒ render `url` alone (legacy row, pre-PIO-2). */
-  variants?: ProductImageVariantSet;
+  variants?: ImageVariantSet;
 }
 
 export interface ProductDto {

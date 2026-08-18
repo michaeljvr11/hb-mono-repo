@@ -1,10 +1,8 @@
 /**
  * Shared image-derivative contract (PIO-4 design output, vault: "Product Image
  * Optimization Pipeline", 2026-08-18). One definition reused by every uploaded-image
- * owner (product images today; vendor logo/banner from PIO-5) instead of a duplicate
- * per-owner shape — `ProductImageVariantDto`/`ProductImageVariantSet`
- * (`libs/shared/src/contracts/product.ts`) are aliases of the types below, not a
- * second definition.
+ * owner — product images (`ProductImageDto.variants`) and vendor logo/banner (PIO-5)
+ * both import these directly rather than redefining a per-owner shape.
  */
 
 /** One resized/re-encoded derivative of an uploaded image. Always WebP (locked decision — no JPEG fallback). */

@@ -2,6 +2,8 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { In } from 'typeorm';
+import { unlink } from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
 import {
   BadRequestException,
   ConflictException,
@@ -32,6 +34,12 @@ import {
 } from '../common/image-processing/image-variant-writer.service';
 import { ProcessedImageVariant } from '../common/image-processing/image-processor.types';
 import { VENDOR_LOGO_PRESETS, VENDOR_BANNER_PRESETS } from './upload/vendor-image.presets';
+
+jest.mock('fs/promises', () => ({ unlink: jest.fn() }));
+jest.mock('uuid', () => ({ v4: jest.fn() }));
+
+const mockedUnlink = unlink as jest.Mock;
+const mockedUuid = uuidv4 as jest.Mock;
 
 const mockVendor = (overrides: Partial<Vendor> = {}): Vendor =>
   ({
@@ -81,6 +89,7 @@ describe('VendorsService', () => {
   let fileUrlService: { getFileUrl: jest.Mock; getUploadDir: jest.Mock };
   let imageProcessor: { process: jest.Mock };
   let imageVariantWriter: { write: jest.Mock };
+  let uuidCounter: number;
 
   beforeEach(async () => {
     vendorRepo = {
@@ -108,6 +117,10 @@ describe('VendorsService', () => {
 
     imageProcessor = { process: jest.fn() };
     imageVariantWriter = { write: jest.fn() };
+
+    uuidCounter = 0;
+    mockedUuid.mockReset().mockImplementation(() => `key-${++uuidCounter}`);
+    mockedUnlink.mockReset().mockResolvedValue(undefined);
 
     const module = await Test.createTestingModule({
       providers: [
@@ -1012,6 +1025,24 @@ describe('VendorsService', () => {
       );
       expect(result.id).toBe('vA');
       expect(vendorB.logoUrl).toBe('old-b.png');
+    });
+
+    // BLOCKER 2 (code review): products.service.ts unlinks derivatives it wrote if a
+    // later step in the same request fails; this vendor path had no such cleanup at all —
+    // a failed `vendorRepository.save` orphaned the freshly written
+    // `<uuid>-full.webp`/`<uuid>-thumbnail.webp` and left `logoUrl` pointing at the old
+    // file. Give this path the same best-effort unlink compensation.
+    it('BLOCKER 2: unlinks the written derivatives when vendorRepository.save fails', async () => {
+      vendorRepo.findOne.mockResolvedValue(mockVendor({ id: 'v1', userId: 'u1' }));
+      vendorRepo.save.mockRejectedValue(new Error('db write failed'));
+      imageProcessor.process.mockResolvedValue([makeProcessed('full'), makeProcessed('thumbnail')]);
+      echoWriter();
+
+      await expect(service.updateLogo('u1', file)).rejects.toThrow('db write failed');
+
+      expect(mockedUnlink).toHaveBeenCalledTimes(2);
+      expect(mockedUnlink).toHaveBeenCalledWith('/uploads/vendors/key-1-full.webp');
+      expect(mockedUnlink).toHaveBeenCalledWith('/uploads/vendors/key-1-thumbnail.webp');
     });
   });
 });

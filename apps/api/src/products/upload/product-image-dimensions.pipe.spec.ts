@@ -36,14 +36,14 @@ describe('ProductImageDimensionsPipe', () => {
     expect(mockedSharp).not.toHaveBeenCalled();
   });
 
-  it('probes from file.buffer, not file.path (memoryStorage — PIO-2)', async () => {
+  it('probes from file.buffer, not file.path (memoryStorage — PIO-2), and returns the file(s) unchanged', async () => {
     mockedSharp.mockReturnValue(stubMetadata(1200, 800));
     const file = makeFile();
 
-    const [result] = await pipe.transform([file]);
+    const result = await pipe.transform([file]);
 
     expect(mockedSharp).toHaveBeenCalledWith(file.buffer);
-    expect(result.dimensions).toEqual({ width: 1200, height: 800 });
+    expect(result).toEqual([file]);
   });
 
   it('rejects an image over 8000x8000 with a 422 naming actual and allowed dimensions', async () => {

@@ -9,6 +9,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { In, Repository } from 'typeorm';
+import { unlink } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import {
   CurrencyCode,
@@ -352,43 +353,52 @@ export class VendorsService {
 
     const processed = await this.imageProcessor.process(file.buffer, presets);
     const written = await this.imageVariantWriter.write(processed, destDir, keyStem);
+    const writtenPaths = written.map((w) => w.path);
 
-    const full = written.find((w) => w.preset === 'full');
-    if (!full) {
-      // Every preset set above always includes a 'full' entry — this only trips if
-      // vendor-image.presets.ts is ever misconfigured without one.
-      throw new UnprocessableEntityException(
-        `Image processing did not produce a "full" derivative for the vendor ${asset}.`,
-      );
+    try {
+      const full = written.find((w) => w.preset === 'full');
+      if (!full) {
+        // Every preset set above always includes a 'full' entry — this only trips if
+        // vendor-image.presets.ts is ever misconfigured without one.
+        throw new UnprocessableEntityException(
+          `Image processing did not produce a "full" derivative for the vendor ${asset}.`,
+        );
+      }
+
+      const variants: ImageVariantSet = {};
+      for (const variant of written) {
+        variants[variant.preset as keyof ImageVariantSet] = {
+          url: this.fileUrlService.getFileUrl(variant.filename, 'vendors'),
+          width: variant.width,
+          height: variant.height,
+          sizeBytes: variant.sizeBytes,
+        };
+      }
+
+      const url = this.fileUrlService.getFileUrl(full.filename, 'vendors');
+      if (asset === 'logo') {
+        vendor.logoUrl = url;
+        vendor.logoWidth = full.width;
+        vendor.logoHeight = full.height;
+        vendor.logoSizeBytes = full.sizeBytes;
+        vendor.logoVariants = variants;
+      } else {
+        vendor.bannerUrl = url;
+        vendor.bannerWidth = full.width;
+        vendor.bannerHeight = full.height;
+        vendor.bannerSizeBytes = full.sizeBytes;
+        vendor.bannerVariants = variants;
+      }
+
+      const updated = await this.vendorRepository.save(vendor);
+      return this.toSelfResponseDto(updated);
+    } catch (err) {
+      // Best-effort cleanup, mirroring the products path (ProductsService.createWithImages):
+      // a failed branding-image update must not orphan the derivatives it just wrote, nor
+      // leave logoUrl/bannerUrl pointing at a file that was never actually persisted.
+      await Promise.all(writtenPaths.map((path) => unlink(path).catch(() => undefined)));
+      throw err;
     }
-
-    const variants: ImageVariantSet = {};
-    for (const variant of written) {
-      variants[variant.preset as keyof ImageVariantSet] = {
-        url: this.fileUrlService.getFileUrl(variant.filename, 'vendors'),
-        width: variant.width,
-        height: variant.height,
-        sizeBytes: variant.sizeBytes,
-      };
-    }
-
-    const url = this.fileUrlService.getFileUrl(full.filename, 'vendors');
-    if (asset === 'logo') {
-      vendor.logoUrl = url;
-      vendor.logoWidth = full.width;
-      vendor.logoHeight = full.height;
-      vendor.logoSizeBytes = full.sizeBytes;
-      vendor.logoVariants = variants;
-    } else {
-      vendor.bannerUrl = url;
-      vendor.bannerWidth = full.width;
-      vendor.bannerHeight = full.height;
-      vendor.bannerSizeBytes = full.sizeBytes;
-      vendor.bannerVariants = variants;
-    }
-
-    const updated = await this.vendorRepository.save(vendor);
-    return this.toSelfResponseDto(updated);
   }
 
   async updateLogo(userId: string, file: Express.Multer.File): Promise<VendorSelfResponseDto> {

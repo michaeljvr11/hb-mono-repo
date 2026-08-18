@@ -11,10 +11,10 @@ import { Brackets, In, Repository } from 'typeorm';
 import { unlink } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import {
+  ImageVariantSet,
   ListingType,
   PagedResponse,
   ProductDto,
-  ProductImageVariantSet,
   ProductQuery,
   ProductSort,
   UserRole,
@@ -25,7 +25,6 @@ import { ProductImage } from './entities/product-image.entity';
 import { ProductCreateDto } from './dto/product-create.dto';
 import { ProductUpdateDto } from './dto/product-update.dto';
 import { CreateProductImageDto } from './dto/create-product-image.dto';
-import { ProbedProductImageFile } from './upload/product-image-dimensions.pipe';
 import { PRODUCT_IMAGE_PRESETS } from './upload/product-image.presets';
 import { ProductToResponseDto } from '../common/utils/mappers.utils';
 import { FileUrlService } from './upload/file-url.service';
@@ -108,7 +107,7 @@ export class ProductsService {
    */
   async createWithImages(
     createDto: ProductCreateDto,
-    files: ProbedProductImageFile[],
+    files: Express.Multer.File[],
     currentUser: User,
   ): Promise<ProductDto> {
     if (files.length > 8) {
@@ -135,22 +134,36 @@ export class ProductsService {
       listingType = ListingType.VENDOR;
     }
 
-    // Process (resize/re-encode into thumbnail/card/full derivatives, write to disk)
-    // before any DB write. Failure story (locked for this slice): a processing failure
-    // partway through a multi-image upload must not leave a half-written product — since
-    // nothing about the product row exists yet at this point, a thrown error here leaves
-    // zero trace in the database. See `processProductImages` for the disk-side cleanup of
-    // derivatives already written for earlier files in the same failed request.
-    const imageDtos = files.length ? await this.processProductImages(files, createDto.name) : [];
+    // Compensation scope for this whole request: every derivative written to disk (across
+    // processing, however far it got) is tracked here so it can be best-effort unlinked if
+    // *anything* downstream fails — processing itself, product creation (e.g. an invalid
+    // categoryId), or attaching the image rows. Invariant this guarantees: a failed
+    // `POST /products` leaves no product row, no image rows, and no files on disk.
+    const writtenPaths: string[] = [];
+    let product: Product | undefined;
 
-    const product = await this.create({
-      ...createDto,
-      vendorId,
-      listingType,
-    });
+    try {
+      const imageDtos = files.length
+        ? await this.processProductImages(files, createDto.name, writtenPaths)
+        : [];
 
-    if (imageDtos.length) {
-      await this.addMultipleImages(product.id, imageDtos);
+      product = await this.create({
+        ...createDto,
+        vendorId,
+        listingType,
+      });
+
+      if (imageDtos.length) {
+        await this.addMultipleImages(product.id, imageDtos);
+      }
+    } catch (err) {
+      await Promise.all(writtenPaths.map((path) => unlink(path).catch(() => undefined)));
+      if (product) {
+        // Cascades to any image rows already inserted for this product
+        // (ProductImage.product has onDelete: 'CASCADE').
+        await this.productsRepository.delete(product.id).catch(() => undefined);
+      }
+      throw err;
     }
 
     const created = await this.findOne(product.id);
@@ -173,64 +186,58 @@ export class ProductsService {
    * and is never the served file. `key` is the uuid stem shared by every derivative of one
    * upload (`<key>-thumbnail.webp`, `<key>-card.webp`, `<key>-full.webp`).
    *
-   * If any file fails to process, this throws before returning — `createWithImages` never
-   * sees a partial result, so no product row is ever created for a failed upload. Any
-   * derivatives already written to disk for earlier files in the same request are
-   * best-effort cleaned up so a failed request doesn't orphan files.
+   * Every derivative path written is appended to the caller-supplied `writtenPaths`
+   * (mutated in place) as it's written, not just on success — `createWithImages` owns the
+   * single compensation block that unlinks them if processing, product creation, or image
+   * attachment fails anywhere in the same request.
    */
   private async processProductImages(
-    files: ProbedProductImageFile[],
+    files: Express.Multer.File[],
     productName: string,
+    writtenPaths: string[],
   ): Promise<CreateProductImageDto[]> {
     const destDir = this.fileUrlService.getUploadDir();
-    const writtenPaths: string[] = [];
+    const dtos: CreateProductImageDto[] = [];
 
-    try {
-      const dtos: CreateProductImageDto[] = [];
+    for (const [index, file] of files.entries()) {
+      const keyStem = uuidv4();
+      const processed = await this.imageProcessor.process(file.buffer, PRODUCT_IMAGE_PRESETS);
+      const written = await this.imageVariantWriter.write(processed, destDir, keyStem);
+      writtenPaths.push(...written.map((w) => w.path));
 
-      for (const [index, file] of files.entries()) {
-        const keyStem = uuidv4();
-        const processed = await this.imageProcessor.process(file.buffer, PRODUCT_IMAGE_PRESETS);
-        const written = await this.imageVariantWriter.write(processed, destDir, keyStem);
-        writtenPaths.push(...written.map((w) => w.path));
-
-        const full = written.find((w) => w.preset === 'full');
-        if (!full) {
-          // Every PRODUCT_IMAGE_PRESETS entry always yields a derivative — this only trips
-          // if the preset set itself is ever misconfigured without a 'full' entry.
-          throw new UnprocessableEntityException(
-            'Image processing did not produce a "full" derivative.',
-          );
-        }
-
-        const variants: ProductImageVariantSet = {};
-        for (const variant of written) {
-          variants[variant.preset as keyof ProductImageVariantSet] = {
-            url: this.fileUrlService.getFileUrl(variant.filename),
-            width: variant.width,
-            height: variant.height,
-            sizeBytes: variant.sizeBytes,
-          };
-        }
-
-        dtos.push({
-          url: this.fileUrlService.getFileUrl(full.filename),
-          key: keyStem,
-          isPrimary: index === 0,
-          displayOrder: index,
-          altText: `${productName} image ${index + 1}`,
-          width: full.width,
-          height: full.height,
-          sizeBytes: full.sizeBytes,
-          variants,
-        });
+      const full = written.find((w) => w.preset === 'full');
+      if (!full) {
+        // Every PRODUCT_IMAGE_PRESETS entry always yields a derivative — this only trips
+        // if the preset set itself is ever misconfigured without a 'full' entry.
+        throw new UnprocessableEntityException(
+          'Image processing did not produce a "full" derivative.',
+        );
       }
 
-      return dtos;
-    } catch (err) {
-      await Promise.all(writtenPaths.map((path) => unlink(path).catch(() => undefined)));
-      throw err;
+      const variants: ImageVariantSet = {};
+      for (const variant of written) {
+        variants[variant.preset as keyof ImageVariantSet] = {
+          url: this.fileUrlService.getFileUrl(variant.filename),
+          width: variant.width,
+          height: variant.height,
+          sizeBytes: variant.sizeBytes,
+        };
+      }
+
+      dtos.push({
+        url: this.fileUrlService.getFileUrl(full.filename),
+        key: keyStem,
+        isPrimary: index === 0,
+        displayOrder: index,
+        altText: `${productName} image ${index + 1}`,
+        width: full.width,
+        height: full.height,
+        sizeBytes: full.sizeBytes,
+        variants,
+      });
     }
+
+    return dtos;
   }
 
   async addMultipleImages(

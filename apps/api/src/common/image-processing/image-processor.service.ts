@@ -66,13 +66,32 @@ export class ImageProcessorService {
     let last: { data: Buffer; info: sharp.OutputInfo } | undefined;
 
     try {
+      // Decode + auto-orient + resize exactly once per preset, into a raw (uncompressed)
+      // intermediate buffer — the source is never re-decoded or re-resized per quality
+      // step below. Without this, a worst-case upload (e.g. one 8000x8000 source across
+      // 3 presets x 5 quality steps) re-decodes and re-resizes the full source up to 15
+      // times, synchronously, per image.
+      const resized = await sharp(input)
+        .rotate() // auto-orient from EXIF, then the orientation tag is discarded
+        .resize(preset.maxDimension, preset.maxDimension, {
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+
+      // Quality ladder re-encodes from the already-resized raw pixels — cheap relative to
+      // a full decode+resize, and identical output to encoding straight off a fresh
+      // sharp(input) pipeline since raw pixel data carries no metadata to strip and no
+      // further orientation/resize decisions to make.
       for (const quality of QUALITY_STEPS) {
-        last = await sharp(input)
-          .rotate() // auto-orient from EXIF, then the orientation tag is discarded
-          .resize(preset.maxDimension, preset.maxDimension, {
-            fit: 'inside',
-            withoutEnlargement: true,
-          })
+        last = await sharp(resized.data, {
+          raw: {
+            width: resized.info.width,
+            height: resized.info.height,
+            channels: resized.info.channels,
+          },
+        })
           .webp({ quality })
           .toBuffer({ resolveWithObject: true });
 

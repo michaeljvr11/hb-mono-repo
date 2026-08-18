@@ -20,10 +20,7 @@ import { ProductUpdateDto } from './dto/product-update.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { productImageMulterOptions } from './upload/multer.config';
 import { productImageFilePipe } from './upload/product-image-file.pipe';
-import {
-  productImageDimensionsPipe,
-  ProbedProductImageFile,
-} from './upload/product-image-dimensions.pipe';
+import { productImageDimensionsPipe } from './upload/product-image-dimensions.pipe';
 import { Public } from '../common/decorators/public.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -42,7 +39,7 @@ export class ProductsController {
     // pixel-dimension probe + 8000x8000 cap (productImageDimensionsPipe) — see
     // apps/api/src/products/upload/*.pipe.ts for the rejection + disk-cleanup behaviour.
     @UploadedFiles(productImageFilePipe, productImageDimensionsPipe)
-    files: ProbedProductImageFile[] = [],
+    files: Express.Multer.File[] = [],
     @GetUser() user: User,
   ) {
     return this.productsService.createWithImages(createDto, files, user);
