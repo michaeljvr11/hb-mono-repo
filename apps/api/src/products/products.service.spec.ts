@@ -1,9 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Brackets } from 'typeorm';
-import { CurrencyCode, CountryCode, ListingType, VendorStatus } from '@hb/shared';
+import { unlink } from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
+import { CurrencyCode, CountryCode, ListingType, UserRole, VendorStatus } from '@hb/shared';
 import { ProductsService } from './products.service';
 import { Product } from './entities/product.entity';
 import { ProductImage } from './entities/product-image.entity';
@@ -11,6 +13,16 @@ import { Vendor } from '../vendors/entities/vendor.entity';
 import { Category } from '../categories/entities/category.entity';
 import { FileUrlService } from './upload/file-url.service';
 import { AuditService } from '../audit/audit.service';
+import { User } from '../users/entities/user.entity';
+import { ImageProcessorService } from '../common/image-processing/image-processor.service';
+import { ImageVariantWriterService } from '../common/image-processing/image-variant-writer.service';
+import { ProcessedImageVariant } from '../common/image-processing/image-processor.types';
+
+jest.mock('fs/promises', () => ({ unlink: jest.fn() }));
+jest.mock('uuid', () => ({ v4: jest.fn() }));
+
+const mockedUnlink = unlink as jest.Mock;
+const mockedUuid = uuidv4 as jest.Mock;
 
 const NOW = new Date('2026-06-01T10:00:00.000Z');
 
@@ -456,6 +468,13 @@ function buildSqlPrecedenceFakeQueryBuilder(stored: Product[]): SqlPrecedenceQue
 describe('ProductsService', () => {
   let service: ProductsService;
   let productRepo: Record<string, jest.Mock>;
+  let imageRepo: Record<string, jest.Mock>;
+  let vendorRepo: Record<string, jest.Mock>;
+  let categoryRepo: Record<string, jest.Mock>;
+  let fileUrlService: { getFileUrl: jest.Mock; getUploadDir: jest.Mock };
+  let imageProcessor: { process: jest.Mock };
+  let imageVariantWriter: { write: jest.Mock };
+  let uuidCounter: number;
 
   beforeEach(async () => {
     productRepo = {
@@ -463,24 +482,44 @@ describe('ProductsService', () => {
       findOne: jest.fn(),
       save: jest.fn(),
       create: jest.fn(),
-      delete: jest.fn(),
+      delete: jest.fn().mockResolvedValue({ affected: 1 }),
       findBy: jest.fn(),
       createQueryBuilder: jest.fn(),
     };
+    imageRepo = {
+      create: jest.fn((dto: unknown) => dto),
+      save: jest.fn((entities: unknown) => Promise.resolve(entities)),
+    };
+    vendorRepo = { findOne: jest.fn() };
+    categoryRepo = { findBy: jest.fn() };
+    fileUrlService = {
+      getFileUrl: jest.fn(
+        (filename: string, folder = 'products') => `/uploads/${folder}/${filename}`,
+      ),
+      getUploadDir: jest.fn(() => '/uploads/products'),
+    };
+    imageProcessor = { process: jest.fn() };
+    imageVariantWriter = { write: jest.fn() };
+
+    uuidCounter = 0;
+    mockedUuid.mockReset().mockImplementation(() => `key-${++uuidCounter}`);
+    mockedUnlink.mockReset().mockResolvedValue(undefined);
 
     const module = await Test.createTestingModule({
       providers: [
         ProductsService,
         { provide: getRepositoryToken(Product), useValue: productRepo },
-        { provide: getRepositoryToken(ProductImage), useValue: {} },
-        { provide: getRepositoryToken(Vendor), useValue: {} },
-        { provide: getRepositoryToken(Category), useValue: {} },
-        { provide: FileUrlService, useValue: { getFileUrl: jest.fn() } },
+        { provide: getRepositoryToken(ProductImage), useValue: imageRepo },
+        { provide: getRepositoryToken(Vendor), useValue: vendorRepo },
+        { provide: getRepositoryToken(Category), useValue: categoryRepo },
+        { provide: FileUrlService, useValue: fileUrlService },
         {
           provide: AuditService,
           useValue: { log: jest.fn().mockResolvedValue(undefined) },
         },
         { provide: EventEmitter2, useValue: { emit: jest.fn() } },
+        { provide: ImageProcessorService, useValue: imageProcessor },
+        { provide: ImageVariantWriterService, useValue: imageVariantWriter },
       ],
     }).compile();
 
@@ -912,6 +951,259 @@ describe('ProductsService', () => {
       productRepo.findOne.mockResolvedValue(null);
 
       await expect(service.findOne('does-not-exist')).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  // ── createWithImages (PIO-2) ──────────────────────────────────────────────
+  describe('createWithImages', () => {
+    const vendorUser = { id: 'user-1', role: UserRole.VENDOR } as User;
+    const adminUser = { id: 'admin-1', role: UserRole.ADMIN } as User;
+    const createDto = { name: 'Widget', description: 'A widget', price: 10 } as Parameters<
+      typeof service.createWithImages
+    >[0];
+
+    const makeFile = (overrides: Partial<Express.Multer.File> = {}): Express.Multer.File =>
+      ({
+        fieldname: 'images',
+        originalname: 'photo.png',
+        mimetype: 'image/png',
+        buffer: Buffer.from('fake-upload-bytes'),
+        size: 1024,
+        ...overrides,
+      }) as Express.Multer.File;
+
+    const makeProcessed = (
+      preset: string,
+      overrides: Partial<ProcessedImageVariant> = {},
+    ): ProcessedImageVariant => ({
+      preset,
+      buffer: Buffer.from('webp-bytes'),
+      width: 100,
+      height: 100,
+      sizeBytes: 500,
+      format: 'webp',
+      ...overrides,
+    });
+
+    // Mirrors the real ImageVariantWriterService's naming/return shape without touching
+    // disk: `<keyStem>-<preset>.webp`, threaded through whatever keyStem the service
+    // actually generates for this upload (we never hardcode a uuid here).
+    const echoWriter = () =>
+      imageVariantWriter.write.mockImplementation(
+        (variants: ProcessedImageVariant[], destDir: string, keyStem: string) =>
+          Promise.resolve(
+            variants.map((v) => ({
+              preset: v.preset,
+              filename: `${keyStem}-${v.preset}.${v.format}`,
+              path: `${destDir}/${keyStem}-${v.preset}.${v.format}`,
+              width: v.width,
+              height: v.height,
+              sizeBytes: v.sizeBytes,
+            })),
+          ),
+      );
+
+    beforeEach(() => {
+      vendorRepo.findOne.mockResolvedValue({ id: 'vendor-1' });
+      productRepo.create.mockImplementation((data: Record<string, unknown>) => ({
+        id: 'new-product-id',
+        ...data,
+      }));
+      productRepo.save.mockImplementation((product: unknown) => Promise.resolve(product));
+      productRepo.findOne.mockResolvedValue(makeProduct({ id: 'new-product-id', images: [] }));
+    });
+
+    it('processes each file into thumbnail/card/full derivatives and persists the "full" derivative as the flat url/width/height/sizeBytes, plus the full variants map', async () => {
+      imageProcessor.process.mockResolvedValue([
+        makeProcessed('full', { width: 1200, height: 800, sizeBytes: 40000 }),
+        makeProcessed('card', { width: 800, height: 533, sizeBytes: 15000 }),
+        makeProcessed('thumbnail', { width: 300, height: 200, sizeBytes: 5000 }),
+      ]);
+      echoWriter();
+
+      await service.createWithImages(createDto, [makeFile()], vendorUser);
+
+      expect(imageRepo.save).toHaveBeenCalledTimes(1);
+      const [savedEntities] = imageRepo.save.mock.calls[0] as [Array<Record<string, unknown>>];
+      const [saved] = savedEntities;
+
+      expect(saved.url).toMatch(/^\/uploads\/products\/.+-full\.webp$/);
+      expect(saved.width).toBe(1200);
+      expect(saved.height).toBe(800);
+      expect(saved.sizeBytes).toBe(40000);
+      expect(saved.isPrimary).toBe(true);
+      expect(saved.displayOrder).toBe(0);
+      expect(saved.variants).toMatchObject({
+        full: { width: 1200, height: 800, sizeBytes: 40000 },
+        card: { width: 800, height: 533, sizeBytes: 15000 },
+        thumbnail: { width: 300, height: 200, sizeBytes: 5000 },
+      });
+      // `key` is the shared stem across every derivative of this upload — the same stem
+      // that appears in `url` and in every entry of `variants`.
+      const key = saved.key as string;
+      expect(key).toEqual(expect.any(String));
+      expect(saved.url).toContain(key);
+      const variants = saved.variants as Record<string, { url: string }>;
+      expect(variants.card.url).toContain(key);
+      expect(variants.thumbnail.url).toContain(key);
+    });
+
+    it('gives every derivative of one multi-image upload its own key stem, and assigns isPrimary/displayOrder by upload order', async () => {
+      imageProcessor.process.mockResolvedValue([
+        makeProcessed('full', { width: 500, height: 500 }),
+        makeProcessed('card', { width: 500, height: 500 }),
+        makeProcessed('thumbnail', { width: 300, height: 300 }),
+      ]);
+      echoWriter();
+
+      await service.createWithImages(
+        createDto,
+        [makeFile({ originalname: 'a.png' }), makeFile({ originalname: 'b.png' })],
+        vendorUser,
+      );
+
+      const [savedEntities] = imageRepo.save.mock.calls[0] as [Array<Record<string, unknown>>];
+      expect(savedEntities).toHaveLength(2);
+      expect(savedEntities[0].isPrimary).toBe(true);
+      expect(savedEntities[0].displayOrder).toBe(0);
+      expect(savedEntities[1].isPrimary).toBe(false);
+      expect(savedEntities[1].displayOrder).toBe(1);
+      expect(savedEntities[0].key).not.toBe(savedEntities[1].key);
+    });
+
+    it('admin uploads create a PLATFORM listing with no vendor lookup', async () => {
+      imageProcessor.process.mockResolvedValue([makeProcessed('full')]);
+      echoWriter();
+
+      await service.createWithImages(createDto, [makeFile()], adminUser);
+
+      expect(vendorRepo.findOne).not.toHaveBeenCalled();
+      expect(productRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ listingType: ListingType.PLATFORM, vendorId: undefined }),
+      );
+    });
+
+    it('AC5 regression: the stored extension always comes from the fixed WebP output, never from a malicious originalname', async () => {
+      imageProcessor.process.mockResolvedValue([makeProcessed('full')]);
+      echoWriter();
+
+      await service.createWithImages(
+        createDto,
+        [makeFile({ originalname: '../../evil.html', mimetype: 'image/png' })],
+        vendorUser,
+      );
+
+      const [savedEntities] = imageRepo.save.mock.calls[0] as [Array<Record<string, unknown>>];
+      const [saved] = savedEntities;
+      expect(saved.url).toMatch(/\.webp$/);
+      expect(saved.url).not.toMatch(/evil|html/i);
+    });
+
+    it('still enforces the 8-images-per-product cap, without invoking the processor', async () => {
+      const files = Array.from({ length: 9 }, () => makeFile());
+
+      await expect(service.createWithImages(createDto, files, vendorUser)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(imageProcessor.process).not.toHaveBeenCalled();
+      expect(productRepo.create).not.toHaveBeenCalled();
+    });
+
+    it('no files: behaves exactly as before — no processing, no image rows, product still created', async () => {
+      await service.createWithImages(createDto, [], vendorUser);
+
+      expect(imageProcessor.process).not.toHaveBeenCalled();
+      expect(imageVariantWriter.write).not.toHaveBeenCalled();
+      expect(imageRepo.save).not.toHaveBeenCalled();
+      expect(productRepo.create).toHaveBeenCalled();
+    });
+
+    // ── Atomicity / failure story ──────────────────────────────────────────
+    // Locked for this slice: a processing failure must not leave a half-written product.
+    // Processing runs entirely before the product row is created, so a thrown error here
+    // leaves zero trace in the database.
+    it('a processing failure on any file leaves no product row and no image rows behind', async () => {
+      imageProcessor.process.mockRejectedValue(new Error('sharp blew up'));
+
+      await expect(service.createWithImages(createDto, [makeFile()], vendorUser)).rejects.toThrow(
+        'sharp blew up',
+      );
+
+      expect(productRepo.create).not.toHaveBeenCalled();
+      expect(productRepo.save).not.toHaveBeenCalled();
+      expect(imageRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('a processing failure partway through a multi-file upload still leaves no product row, and unlinks the derivatives already written for earlier files', async () => {
+      imageProcessor.process
+        .mockResolvedValueOnce([makeProcessed('full')])
+        .mockRejectedValueOnce(new Error('second file corrupt'));
+      echoWriter();
+
+      await expect(
+        service.createWithImages(
+          createDto,
+          [makeFile({ originalname: 'a.png' }), makeFile({ originalname: 'b.png' })],
+          vendorUser,
+        ),
+      ).rejects.toThrow('second file corrupt');
+
+      expect(productRepo.create).not.toHaveBeenCalled();
+      expect(imageRepo.save).not.toHaveBeenCalled();
+      // The writer did run once (for the first, successfully-processed file) — but the
+      // real assertion is that its output actually got cleaned up, not merely that the
+      // writer ran (a deleted `catch(unlink)` block would still pass a "write was called
+      // once" assertion). uuid is mocked deterministically (see beforeEach), so the first
+      // file's key stem is always 'key-1'.
+      expect(imageVariantWriter.write).toHaveBeenCalledTimes(1);
+      expect(mockedUnlink).toHaveBeenCalledTimes(1);
+      expect(mockedUnlink).toHaveBeenCalledWith('/uploads/products/key-1-full.webp');
+    });
+
+    // BLOCKER 1 (code review): the try/catch(unlink) compensation used to wrap only
+    // image processing. A failure in `create()` (e.g. an invalid categoryId) after
+    // processing had already written derivatives to disk orphaned them forever — repeating
+    // the request grew disk unbounded. Now the same compensation covers product creation
+    // too.
+    it('BLOCKER 1: an invalid categoryId after successful image processing unlinks every derivative already written and creates no product row', async () => {
+      categoryRepo.findBy.mockResolvedValue([]); // none of the requested categoryIds exist
+      imageProcessor.process.mockResolvedValue([makeProcessed('full'), makeProcessed('thumbnail')]);
+      echoWriter();
+
+      await expect(
+        service.createWithImages(
+          { ...createDto, categoryIds: ['bad-category-id'] },
+          [makeFile()],
+          vendorUser,
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(productRepo.save).not.toHaveBeenCalled();
+      expect(imageRepo.save).not.toHaveBeenCalled();
+      expect(productRepo.delete).not.toHaveBeenCalled(); // no row was ever persisted to delete
+      expect(mockedUnlink).toHaveBeenCalledTimes(2);
+      expect(mockedUnlink).toHaveBeenCalledWith('/uploads/products/key-1-full.webp');
+      expect(mockedUnlink).toHaveBeenCalledWith('/uploads/products/key-1-thumbnail.webp');
+    });
+
+    // BLOCKER 1 (code review): the product row created in `create()` used to be committed
+    // even when `addMultipleImages` then threw — a half-written product (row, no images, no
+    // audit log, no ProductEvents.CREATED) despite the comment claiming that was impossible.
+    // Now a failure here deletes the just-created product row (cascades to any image rows
+    // already inserted) and unlinks the written derivatives, so the invariant holds: a
+    // failed POST /products leaves no product row, no image rows, and no files on disk.
+    it('BLOCKER 1: a failure while attaching images deletes the just-created product row and unlinks the written derivatives', async () => {
+      imageProcessor.process.mockResolvedValue([makeProcessed('full')]);
+      echoWriter();
+      imageRepo.save.mockRejectedValue(new Error('image insert exploded'));
+
+      await expect(service.createWithImages(createDto, [makeFile()], vendorUser)).rejects.toThrow(
+        'image insert exploded',
+      );
+
+      expect(productRepo.delete).toHaveBeenCalledWith('new-product-id');
+      expect(mockedUnlink).toHaveBeenCalledTimes(1);
+      expect(mockedUnlink).toHaveBeenCalledWith('/uploads/products/key-1-full.webp');
     });
   });
 });

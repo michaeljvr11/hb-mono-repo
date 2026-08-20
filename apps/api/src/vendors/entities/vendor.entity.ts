@@ -8,6 +8,7 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
+import type { ImageVariantSet } from '@hb/shared';
 import { CountryCode, VendorProfileSection, VendorStatus } from '@hb/shared';
 import { Product } from '../../products/entities/product.entity';
 import { User } from '../../users/entities/user.entity';
@@ -55,8 +56,38 @@ export class Vendor {
   @Column({ nullable: true })
   logoUrl?: string;
 
+  // Intrinsic dimensions/size + derivative set of `logoUrl` (the `full` derivative), once
+  // processed through the shared image pipeline (PIO-5, `ImageProcessorService`). Flat
+  // columns, not a nested jsonb blob — the nesting on `VendorDto.logo` is a DTO-shape
+  // decision only (vault: "Product Image Optimization Pipeline", PIO-4 design output).
+  // Nullable: legacy vendors with only `logoUrl` set are never backfilled.
+  @Column({ type: 'int', nullable: true })
+  logoWidth?: number;
+
+  @Column({ type: 'int', nullable: true })
+  logoHeight?: number;
+
+  @Column({ type: 'int', nullable: true })
+  logoSizeBytes?: number;
+
+  @Column({ type: 'jsonb', nullable: true })
+  logoVariants?: ImageVariantSet;
+
   @Column({ nullable: true })
   bannerUrl?: string;
+
+  // Same shape as the logo columns above, for `bannerUrl`.
+  @Column({ type: 'int', nullable: true })
+  bannerWidth?: number;
+
+  @Column({ type: 'int', nullable: true })
+  bannerHeight?: number;
+
+  @Column({ type: 'int', nullable: true })
+  bannerSizeBytes?: number;
+
+  @Column({ type: 'jsonb', nullable: true })
+  bannerVariants?: ImageVariantSet;
 
   @Column({ nullable: true })
   slogan?: string;

@@ -1,39 +1,29 @@
 import { BadRequestException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
-import { diskStorage } from 'multer';
-import { v4 as uuidv4 } from 'uuid';
-
-// Extension is derived from a fixed mimetype allow-list, never from the client-supplied
-// `originalname` — `uploads/` is served statically (main.ts), so trusting an attacker-
-// controlled originalname extension (e.g. `x.html` sent with an allowed image mimetype)
-// would let a stored file be served back as text/html from the API origin.
-const MIME_EXTENSIONS: Record<string, string> = {
-  'image/jpg': '.jpg',
-  'image/jpeg': '.jpg',
-  'image/png': '.png',
-  'image/webp': '.webp',
-};
+import { memoryStorage } from 'multer';
 
 /**
- * Disk-storage options for vendor logo/banner uploads.
- * Mirrors productImageMulterOptions (see apps/api/src/products/upload/multer.config.ts) —
- * only the destination folder and extension derivation differ. Must be passed to
- * FileInterceptor explicitly — without it Multer falls back to memory storage and
- * file.filename is undefined (broken image URLs).
+ * Memory-storage options for vendor logo/banner uploads (PIO-5, following the products
+ * path's PIO-2 precedent — vault: "Product Image Optimization Pipeline", "PIO-4 design
+ * output — 2026-08-18"). The raw original never touches disk: every accepted upload is
+ * resized/re-encoded into WebP derivatives (`ImageProcessorService` + the logo/banner
+ * preset sets in `vendor-image.presets.ts`) before `VendorsService` writes anything to
+ * `uploads/vendors`. The stored filename is always `<uuid>-<preset>.webp`, derived from
+ * the processor's fixed output format — never from `file.mimetype` or the client-supplied
+ * `originalname`. There is no `MIME_EXTENSIONS` map here anymore; output format is always
+ * WebP now, same as products.
+ *
+ * `fileFilter` here is a cheap first-pass check against the client-supplied `mimetype`
+ * only (defense in depth / fast-fail before buffering); it does not replace real
+ * validation. `vendorImageFilePipe` runs the actual magic-number check against
+ * `file.buffer`, which memoryStorage populates.
+ *
+ * Must be passed to `FileInterceptor` explicitly — the Multer default is disk storage.
  */
 export const vendorImageMulterOptions: MulterOptions = {
-  storage: diskStorage({
-    destination: './uploads/vendors',
-    filename: (req, file, cb) => {
-      const ext = MIME_EXTENSIONS[file.mimetype];
-      if (!ext) {
-        return cb(new BadRequestException('Only image files are allowed!'), '');
-      }
-      cb(null, `${uuidv4()}${ext}`);
-    },
-  }),
+  storage: memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 5 * 1024 * 1024, // 5MB — unchanged (locked decision, OQ5: "5MB stays")
   },
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { RouterLink } from '@angular/router';
 import { ProductDto } from '@hb/shared';
 import { formatPrice } from '../../format-price';
+import { buildResponsiveImage } from '../../responsive-image';
 
 export type ProductCardVariant = 'grid' | 'carousel';
 
@@ -26,18 +27,28 @@ export class ProductCard {
   readonly addToCart = output<ProductDto>();
   readonly wishlistToggle = output<ProductDto>();
 
-  readonly primaryImage = computed(() => {
+  /** The image to render for this card: primary if flagged, else the first. */
+  private readonly primaryImageEntry = computed(() => {
     const images = this.product().images;
     if (!images?.length) return null;
-    const primary = images.find((i) => i.isPrimary);
-    return primary?.url ?? images[0]?.url ?? null;
+    return images.find((i) => i.isPrimary) ?? images[0] ?? null;
+  });
+
+  /** `srcset`/`sizes`-ready attrs for the primary image, or `null` when the product has none. */
+  readonly primaryImage = computed(() => {
+    const image = this.primaryImageEntry();
+    return image ? buildResponsiveImage(image) : null;
   });
 
   readonly imageAlt = computed(() => {
     const product = this.product();
-    const primary = product.images?.find((i) => i.isPrimary) ?? product.images?.[0];
-    return primary?.altText ?? product.name;
+    return this.primaryImageEntry()?.altText ?? product.name;
   });
+
+  /** Rendered card width per variant (`product-card.scss`) — grid: 260px, 280px from 768px; carousel: fixed 160px. */
+  readonly imageSizes = computed(() =>
+    this.variant() === 'carousel' ? '160px' : '(min-width: 768px) 280px, 260px',
+  );
 
   readonly categoryLabel = computed(() => this.product().categories?.[0]?.name ?? null);
 

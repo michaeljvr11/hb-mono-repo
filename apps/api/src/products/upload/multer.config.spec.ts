@@ -1,45 +1,17 @@
 import { BadRequestException } from '@nestjs/common';
 import { productImageMulterOptions } from './multer.config';
 
-// The stored filename's extension must come from a fixed mimetype allow-list, never
-// from the client-supplied `originalname` — uploads/ is served statically, so trusting
-// an attacker-controlled originalname extension (e.g. sending `x.html` with an allowed
-// image mimetype) would let a stored file be served back as text/html from the API origin.
-describe('productImageMulterOptions storage filename', () => {
-  const runFilename = (mimetype: string, originalname: string) =>
-    new Promise<{ error: Error | null; filename: string }>((resolve) => {
-      const file = { mimetype, originalname } as Express.Multer.File;
-      // diskStorage() only exposes _handleFile/_removeFile; reach the private
-      // getFilename via the storage engine's internal option we configured.
-      const storage = productImageMulterOptions.storage as unknown as {
-        getFilename: (
-          req: unknown,
-          file: Express.Multer.File,
-          cb: (error: Error | null, filename: string) => void,
-        ) => void;
-      };
-      storage.getFilename({}, file, (error, filename) => resolve({ error, filename }));
-    });
-
-  it('derives the extension from mimetype, ignoring a mismatched originalname extension', async () => {
-    const { error, filename } = await runFilename('image/png', 'x.html');
-    expect(error).toBeNull();
-    expect(filename).toMatch(/\.png$/);
-  });
-
-  it.each([
-    ['image/jpg', '.jpg'],
-    ['image/jpeg', '.jpg'],
-    ['image/png', '.png'],
-    ['image/webp', '.webp'],
-  ])('maps %s to %s', async (mimetype, ext) => {
-    const { filename } = await runFilename(mimetype, 'whatever.bin');
-    expect(filename.endsWith(ext)).toBe(true);
-  });
-
-  it('rejects an unmapped mimetype at the filename stage too (defense in depth)', async () => {
-    const { error } = await runFilename('application/octet-stream', 'x');
-    expect(error).toBeInstanceOf(BadRequestException);
+// PIO-2 switched this path from diskStorage to memoryStorage (locked decision, "Product
+// Image Optimization Pipeline" spec, 2026-08-18) — the raw original is never written to
+// disk; `ProductsService` writes only the processed WebP derivatives, named
+// `<uuid>-<preset>.webp`, never from `file.mimetype` or `originalname`. See
+// `image-variant-writer.service.spec.ts` for the regression coverage on *that* naming
+// (the extension-injection lesson this multer config used to be responsible for).
+describe('productImageMulterOptions.storage', () => {
+  it('uses memoryStorage — the raw upload never touches disk', () => {
+    const storage = productImageMulterOptions.storage as { getFilename?: unknown };
+    // diskStorage exposes a getFilename hook that memoryStorage does not.
+    expect(storage.getFilename).toBeUndefined();
   });
 });
 

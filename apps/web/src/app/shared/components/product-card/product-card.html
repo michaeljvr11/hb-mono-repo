@@ -4,10 +4,14 @@
   [routerLink]="['/products', product().id]"
 >
   <div class="product-card__image-wrap">
-    @if (primaryImage(); as imgUrl) {
+    @if (primaryImage(); as img) {
       <img
         class="product-card__image"
-        [src]="imgUrl"
+        [src]="img.src"
+        [attr.srcset]="img.srcset"
+        [attr.sizes]="img.srcset ? imageSizes() : null"
+        [attr.width]="img.width"
+        [attr.height]="img.height"
         [alt]="imageAlt()"
         loading="lazy"
       />

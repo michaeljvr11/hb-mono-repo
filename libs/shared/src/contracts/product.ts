@@ -1,4 +1,5 @@
 import { CountryCode, CurrencyCode, ListingType } from '../enums';
+import { ImageVariantSet } from './image';
 
 export interface ProductVendorDto {
   id: string;
@@ -17,6 +18,13 @@ export interface ProductImageDto {
   isPrimary: boolean;
   displayOrder: number;
   altText?: string;
+  /** Intrinsic dimensions of `url` (the `full` derivative once processed). Absent on legacy rows (no backfill). */
+  width?: number;
+  height?: number;
+  /** Byte size of `url`. Absent on legacy rows (no backfill). */
+  sizeBytes?: number;
+  /** Responsive derivatives generated at upload time. Absent ⇒ render `url` alone (legacy row, pre-PIO-2). */
+  variants?: ImageVariantSet;
 }
 
 export interface ProductDto {

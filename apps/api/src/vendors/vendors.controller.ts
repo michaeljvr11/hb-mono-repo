@@ -23,6 +23,7 @@ import { VendorAnalyticsQueryDto } from './dto/vendor-analytics-query.dto';
 import { VendorEarningsQueryDto } from './dto/vendor-earnings-query.dto';
 import { vendorImageMulterOptions } from './upload/vendor-image.multer.config';
 import { vendorImageFilePipe } from './upload/vendor-image-file.pipe';
+import { vendorImageDimensionsPipe } from './upload/vendor-image-dimensions.pipe';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
@@ -99,7 +100,13 @@ export class VendorsController {
   @Post('me/logo')
   @Roles(UserRole.VENDOR)
   @UseInterceptors(FileInterceptor('file', vendorImageMulterOptions))
-  uploadLogo(@UploadedFile(vendorImageFilePipe) file: Express.Multer.File, @GetUser() user: User) {
+  uploadLogo(
+    // Chained pipes: mimetype/size first (vendorImageFilePipe), then the intrinsic
+    // pixel-dimension probe + 8000x8000 cap (vendorImageDimensionsPipe) — mirrors
+    // ProductsController.create (PIO-1/PIO-5).
+    @UploadedFile(vendorImageFilePipe, vendorImageDimensionsPipe) file: Express.Multer.File,
+    @GetUser() user: User,
+  ) {
     return this.vendorsService.updateLogo(user.id, file);
   }
 
@@ -107,7 +114,7 @@ export class VendorsController {
   @Roles(UserRole.VENDOR)
   @UseInterceptors(FileInterceptor('file', vendorImageMulterOptions))
   uploadBanner(
-    @UploadedFile(vendorImageFilePipe) file: Express.Multer.File,
+    @UploadedFile(vendorImageFilePipe, vendorImageDimensionsPipe) file: Express.Multer.File,
     @GetUser() user: User,
   ) {
     return this.vendorsService.updateBanner(user.id, file);

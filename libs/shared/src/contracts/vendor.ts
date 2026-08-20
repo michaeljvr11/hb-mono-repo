@@ -1,4 +1,5 @@
 import { CountryCode, CurrencyCode, OrderStatus, VendorSectionType, VendorStatus } from '../enums';
+import { UploadedImageDto } from './image';
 
 export interface VendorProfileSection {
   id: string;
@@ -14,8 +15,16 @@ export interface VendorDto {
   tradingName?: string;
   status: VendorStatus;
   countryCode: CountryCode;
+  /** Canonical URL of the `full` logo derivative — unchanged shape, always present when set. */
   logoUrl?: string;
+  /** Dimensions/size/derivative set for `logoUrl`, once processed through the image
+   * pipeline (PIO-5). Absent for legacy vendors with only `logoUrl` set. */
+  logo?: UploadedImageDto;
+  /** Canonical URL of the `full` banner derivative — unchanged shape, always present when set. */
   bannerUrl?: string;
+  /** Dimensions/size/derivative set for `bannerUrl`, once processed through the image
+   * pipeline (PIO-5). Absent for legacy vendors with only `bannerUrl` set. */
+  banner?: UploadedImageDto;
   slogan?: string;
   profileSections?: VendorProfileSection[];
 }
