@@ -1,46 +1,46 @@
 {
-  "generatedAt": "2026-08-17T12:39:08.538Z",
+  "generatedAt": "2026-08-18T20:47:04.340Z",
   "git": {
-    "totalCommits": 234,
-    "aiCommits": 223,
+    "totalCommits": 241,
+    "aiCommits": 230,
     "aiPct": 95,
-    "appCommits": 165,
-    "ins": 93196,
-    "del": 9551,
-    "net": 83645,
-    "aiIns": 79682,
-    "aiDel": 9377,
-    "filesTouched": 740,
+    "appCommits": 171,
+    "ins": 96283,
+    "del": 10273,
+    "net": 86010,
+    "aiIns": 82769,
+    "aiDel": 10099,
+    "filesTouched": 763,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 100,
-        "ins": 46587,
-        "del": 3019
+        "commits": 102,
+        "ins": 47056,
+        "del": 3043
       },
       {
         "name": "API (NestJS)",
-        "commits": 86,
-        "ins": 26074,
-        "del": 1098
+        "commits": 90,
+        "ins": 28463,
+        "del": 1636
       },
       {
         "name": "Docs",
-        "commits": 70,
-        "ins": 15753,
-        "del": 5290
+        "commits": 71,
+        "ins": 15894,
+        "del": 5418
       },
       {
         "name": "AI Factory config",
-        "commits": 78,
-        "ins": 2257,
+        "commits": 79,
+        "ins": 2261,
         "del": 104
       },
       {
         "name": "Shared contracts",
-        "commits": 33,
-        "ins": 1410,
-        "del": 16
+        "commits": 37,
+        "ins": 1494,
+        "del": 48
       },
       {
         "name": "Root & config",
@@ -56,8 +56,43 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-17",
+    "lastDate": "2026-08-18",
     "recent": [
+      {
+        "hash": "1103fa5",
+        "subject": "fix(api): close the cleanup gaps found in review on both upload paths",
+        "ai": true
+      },
+      {
+        "hash": "cbd2c2e",
+        "subject": "feat(web): render vendor logo and banner from the derivative set",
+        "ai": true
+      },
+      {
+        "hash": "e83e098",
+        "subject": "feat(api): put vendor logo and banner uploads through the shared pipeline",
+        "ai": true
+      },
+      {
+        "hash": "125daa5",
+        "subject": "feat(web): render product images responsively from the derivative set",
+        "ai": true
+      },
+      {
+        "hash": "e39c83a",
+        "subject": "feat(api): resize uploads into WebP derivatives before persistence",
+        "ai": true
+      },
+      {
+        "hash": "57d8397",
+        "subject": "feat(api): validate product image dimensions and record them on the contract",
+        "ai": true
+      },
+      {
+        "hash": "9d6b41c",
+        "subject": "chore(evidence): recompile AI-authorship report for the override batch",
+        "ai": true
+      },
       {
         "hash": "d2033a4",
         "subject": "fix(web): release override lock unconditionally on completion",
@@ -82,41 +117,6 @@
         "hash": "e342d3e",
         "subject": "feat(shared): add OrderStatusOverrideRequest and audit DTO contracts",
         "ai": true
-      },
-      {
-        "hash": "a4f7ade",
-        "subject": "chore(evidence): recompile AI-authorship report for the LSM-4/5/6 batch",
-        "ai": true
-      },
-      {
-        "hash": "13a69c6",
-        "subject": "fix: address code review on the contact-inquiry batch",
-        "ai": true
-      },
-      {
-        "hash": "85485fc",
-        "subject": "feat(web): wire nav and footer to the marketing pages, unify the brand name",
-        "ai": true
-      },
-      {
-        "hash": "f1b08b8",
-        "subject": "feat(web): add the /contact page with a typed form and WhatsApp CTA",
-        "ai": true
-      },
-      {
-        "hash": "62fcd90",
-        "subject": "feat(api): add the public POST /inquiries contact-inquiry endpoint",
-        "ai": true
-      },
-      {
-        "hash": "3ef3c37",
-        "subject": "feat(shared): add the ContactInquiry contract and InquiryOrderType enum",
-        "ai": true
-      },
-      {
-        "hash": "a2e7242",
-        "subject": "perf(web): optimize the LSM brand assets and serve heroes responsively",
-        "ai": true
       }
     ]
   },
@@ -140,6 +140,11 @@
       "branch": "feat/7oPc1cnk-admin-audit-log",
       "cardId": "7oPc1cnk",
       "slug": "admin-audit-log"
+    },
+    {
+      "branch": "feat/8AQq2C3E-product-image-optimization",
+      "cardId": "8AQq2C3E",
+      "slug": "product-image-optimization"
     },
     {
       "branch": "feat/AAjMPwV7-vendor-logo-banner-upload",
@@ -357,20 +362,15 @@
       "slug": "batch-command"
     },
     {
-      "branch": "feat/steering-analysis-poc",
-      "cardId": "steering",
-      "slug": "analysis-poc"
-    },
-    {
       "branch": "feat/xEOk5i0M-vendor-products",
       "cardId": "xEOk5i0M",
       "slug": "vendor-products"
     }
   ],
   "tests": {
-    "total": 123,
-    "api": 54,
-    "web": 69
+    "total": 131,
+    "api": 61,
+    "web": 70
   },
   "design": {
     "files": 34,
@@ -397,18 +397,18 @@
       "merge/rebase while on protected branch 'main'": 2,
       "bare push from protected branch 'main'": 1
     },
-    "gatePass": 34,
+    "gatePass": 35,
     "gateFail": 2,
-    "edits": 652,
-    "editsUnfixable": 219,
+    "edits": 758,
+    "editsUnfixable": 247,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-17T12:38:58.113Z",
+    "lastTs": "2026-08-18T20:44:30.522Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 57,
+          "invocations": 58,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -417,7 +417,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 23,
+          "invocations": 27,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -426,7 +426,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 35,
+          "invocations": 37,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -444,7 +444,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 26,
+          "invocations": 27,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -462,7 +462,7 @@
         },
         {
           "agentType": "docs-writer",
-          "invocations": 13,
+          "invocations": 14,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -498,51 +498,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-08-16T14:56:13.906Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-16T15:00:20.930Z",
-          "agentType": "product-planner",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-16T15:02:45.845Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-16T15:03:31.541Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-16T15:04:39.723Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-16T15:05:32.372Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-16T15:08:28.100Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-16T15:13:37.193Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-16T15:14:21.281Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-16T15:19:52.445Z",
           "agentType": "unknown",
@@ -597,6 +552,51 @@
           "ts": "2026-08-17T12:38:58.113Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-17T12:42:57.016Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-17T12:43:48.376Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-18T19:03:14.652Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-18T19:26:05.185Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-18T19:34:33.096Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-18T19:58:54.105Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-18T20:04:51.488Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-18T20:16:30.933Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-18T20:43:53.536Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
         }
       ]
     }
@@ -604,6 +604,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/5Ygendw9-admin-order-status-override",
+      "number": 58,
+      "state": "MERGED",
+      "title": "feat: admin order-status override (any-state, reason required, audit log)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/58"
+    },
     {
       "headRefName": "feat/Ah6EZCOW-contact-page-and-inquiries",
       "number": 57,
@@ -1011,15 +1018,15 @@
     },
     {
       "name": "To Do",
-      "cards": 28
+      "cards": 23
     },
     {
       "name": "In Progress",
-      "cards": 2
+      "cards": 5
     },
     {
       "name": "In Review",
-      "cards": 0
+      "cards": 2
     },
     {
       "name": "Done",
