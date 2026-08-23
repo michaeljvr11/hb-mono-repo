@@ -1,4 +1,4 @@
-import { isPlatformBrowser, Location } from '@angular/common';
+import { DatePipe, isPlatformBrowser, Location } from '@angular/common';
 import {
   Component,
   PLATFORM_ID,
@@ -7,16 +7,26 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
-import { AnalyticsEventType, ProductDto } from '@hb/shared';
+import {
+  AnalyticsEventType,
+  CreateReviewRequest,
+  ProductDto,
+  ProductReviewListDto,
+  ReviewEligibilityDto,
+  ReviewIneligibilityReason,
+} from '@hb/shared';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { sanitizeReturnUrl } from '../../core/auth/return-url';
 import { CartService } from '../../core/api/cart.service';
 import { WishlistService } from '../../core/api/wishlist.service';
 import { ProductsService } from '../../core/api/products.service';
+import { ReviewsService } from '../../core/api/reviews.service';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { formatPrice } from '../../shared/format-price';
 import { buildResponsiveImage } from '../../shared/responsive-image';
@@ -25,10 +35,29 @@ import { NavBar } from '../../layout/nav-bar/nav-bar';
 import { ProductCard } from '../../shared/components/product-card/product-card';
 import { RadialNav } from '../../shared/components/radial-nav/radial-nav';
 
+/** Distinct submit-error kinds so 409/403 never read as a generic failure. */
+type ReviewSubmitErrorKind = 'duplicate' | 'ineligible' | 'generic';
+
+interface ReviewSubmitError {
+  kind: ReviewSubmitErrorKind;
+  message: string;
+}
+
+interface ReviewApiErrorShape {
+  status?: number;
+  error?: { message?: string };
+}
+
 type LoadState = 'loading' | 'loaded' | 'not-found' | 'error';
+
+/** Loading/loaded/empty/error states for the reviews tab (fetched independently of the product). */
+type ReviewsState = 'loading' | 'loaded' | 'empty' | 'error';
 
 /** Number of related products shown in "You May Also Like". */
 const RELATED_LIMIT = 4;
+
+/** Server page size for the reviews tab — matches the API's default limit. */
+const REVIEWS_PAGE_SIZE = 10;
 
 /**
  * Product detail page (PDP). Fetches the product by the `:id` route param
@@ -38,7 +67,7 @@ const RELATED_LIMIT = 4;
  */
 @Component({
   selector: 'app-product-detail',
-  imports: [NavBar, Footer, ProductCard, RadialNav, RouterLink],
+  imports: [NavBar, Footer, ProductCard, RadialNav, RouterLink, DatePipe, ReactiveFormsModule],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
 })
@@ -50,10 +79,12 @@ export class ProductDetail {
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
   private readonly wishlistService = inject(WishlistService);
+  private readonly reviewsService = inject(ReviewsService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly gaService = inject(GoogleAnalyticsService);
   private readonly notificationService = inject(NotificationService);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly fb = inject(NonNullableFormBuilder);
 
   /** Real cart count for the radial-nav badge. */
   readonly cartCount = this.cartService.itemCount;
@@ -61,8 +92,10 @@ export class ProductDetail {
   // Hydration gate: server render and first client render must both show
   // empty hearts (no anonymous-vs-signed-in DOM mismatch) — see nav-bar.ts.
   // Gates every wishlist surface on this page: the sticky-bar heart, the
-  // related-products grid hearts, and the radial-nav badge.
-  private readonly hydrated = signal(false);
+  // related-products grid hearts, and the radial-nav badge. Also gates the
+  // write-a-review section (PR-4) — not private any more since the template
+  // now reads it directly there.
+  readonly hydrated = signal(false);
 
   /** True once hydrated and the product is on the signed-in user's wishlist. */
   readonly isWishlisted = (productId: string): boolean =>
@@ -82,6 +115,70 @@ export class ProductDetail {
   readonly state = signal<LoadState>('loading');
 
   readonly relatedProducts = signal<ProductDto[]>([]);
+
+  // ── Reviews tab ──────────────────────────────────────────────────────────
+  // Fetched eagerly alongside the product (not gated on it, and never behind
+  // hydration) so the first page is present in the SSR payload — reviews are
+  // SEO-relevant content and this slice has no auth-dependent rendering.
+  readonly reviewsState = signal<ReviewsState>('loading');
+  readonly reviewsPage = signal(1);
+  readonly reviewsList = signal<ProductReviewListDto | null>(null);
+
+  readonly reviewCount = computed(() => this.reviewsList()?.summary.reviewCount ?? 0);
+  readonly reviewAverage = computed(() => this.reviewsList()?.summary.averageRating ?? null);
+  readonly reviewTotalPages = computed(() => {
+    const total = this.reviewsList()?.total ?? 0;
+    return Math.max(1, Math.ceil(total / REVIEWS_PAGE_SIZE));
+  });
+
+  // ── Write a review (PR-4) ──────────────────────────────────────────────
+  // Auth-dependent, so it lives entirely behind the same `hydrated` gate as
+  // the wishlist state above: the eligibility endpoint 401s for anonymous
+  // callers, and it's never called until `hydrated()` is true AND
+  // `authService.isLoggedIn()` — see the constructor and the paramMap
+  // subscription below. Neither the SSR render nor the first client
+  // hydration pass renders any auth-dependent markup for this section.
+  readonly ReviewIneligibilityReason = ReviewIneligibilityReason;
+
+  readonly eligibility = signal<ReviewEligibilityDto | null>(null);
+  readonly isAuthenticated = computed(() => this.hydrated() && this.authService.isLoggedIn());
+
+  readonly submitting = signal(false);
+  readonly reviewSubmitError = signal<ReviewSubmitError | null>(null);
+  readonly reviewSubmitSuccess = signal(false);
+
+  readonly reviewForm = this.fb.group({
+    // Only ever set via setRating() from the 1-5 star buttons, so it's
+    // always an integer — min/max alone cover the DTO's 1-5 bound.
+    rating: this.fb.control(0, [Validators.min(1), Validators.max(5)]),
+    body: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(2000)]],
+  });
+
+  readonly ratingValue = toSignal(this.reviewForm.controls.rating.valueChanges, {
+    initialValue: this.reviewForm.controls.rating.value,
+  });
+  private readonly bodyValue = toSignal(this.reviewForm.controls.body.valueChanges, {
+    initialValue: this.reviewForm.controls.body.value,
+  });
+  readonly bodyLength = computed(() => this.bodyValue().length);
+
+  /**
+   * The reviewer's own review for the `already_reviewed` case, matched from
+   * the already-fetched review page by `existingReviewId`. There is no
+   * single-review GET endpoint in this epic, so if the review isn't on the
+   * currently loaded page, callers fall back to a plain message instead.
+   */
+  readonly existingReview = computed(() => {
+    const elig = this.eligibility();
+    if (
+      !elig ||
+      elig.reason !== ReviewIneligibilityReason.ALREADY_REVIEWED ||
+      !elig.existingReviewId
+    ) {
+      return null;
+    }
+    return this.reviewsList()?.items.find((r) => r.id === elig.existingReviewId) ?? null;
+  });
 
   // ── Image gallery ───────────────────────────────────────────────────────
   readonly activeImageIndex = signal(0);
@@ -132,6 +229,13 @@ export class ProductDetail {
       if (this.authService.isLoggedIn() && this.wishlistService.wishlist() === null) {
         this.wishlistService.load().subscribe({ error: () => undefined });
       }
+      // Same gate for review eligibility: never fire this for anonymous
+      // callers (it 401s), and only once hydration confirms the client and
+      // server both agree on the anonymous first render.
+      const id = this.productId();
+      if (id && this.authService.isLoggedIn()) {
+        this.fetchEligibility(id);
+      }
     });
 
     this.route.paramMap.subscribe((params) => {
@@ -141,6 +245,15 @@ export class ProductDetail {
         return;
       }
       this.loadProduct(id);
+      this.loadReviews(id, 1);
+      this.resetReviewForm();
+      // Covers navigation between products after the page has already
+      // hydrated (the afterNextRender primer above only ever fires once).
+      if (this.hydrated() && this.authService.isLoggedIn()) {
+        this.fetchEligibility(id);
+      } else {
+        this.eligibility.set(null);
+      }
     });
   }
 
@@ -179,6 +292,48 @@ export class ProductDetail {
       },
       error: () => this.relatedProducts.set([]),
     });
+  }
+
+  private loadReviews(productId: string, page: number): void {
+    this.reviewsState.set('loading');
+    this.reviewsService.getReviews(productId, { page, limit: REVIEWS_PAGE_SIZE }).subscribe({
+      next: (res) => {
+        this.reviewsList.set(res);
+        this.reviewsPage.set(page);
+        this.reviewsState.set(res.summary.reviewCount === 0 ? 'empty' : 'loaded');
+      },
+      error: () => {
+        this.reviewsState.set('error');
+      },
+    });
+  }
+
+  /** Server-driven pagination for the reviews tab — no-op outside the valid page range. */
+  goToReviewsPage(page: number): void {
+    const id = this.productId();
+    if (!id || page < 1 || page > this.reviewTotalPages()) return;
+    this.loadReviews(id, page);
+  }
+
+  /** Caller MUST already have confirmed `authService.isLoggedIn()` — this never guards it itself. */
+  private fetchEligibility(productId: string): void {
+    this.reviewsService.checkEligibility(productId).subscribe({
+      next: (res) => this.eligibility.set(res),
+      error: () => this.eligibility.set(null),
+    });
+  }
+
+  private resetReviewForm(): void {
+    this.reviewForm.reset({ rating: 0, body: '' });
+    this.submitting.set(false);
+    this.reviewSubmitError.set(null);
+    this.reviewSubmitSuccess.set(false);
+  }
+
+  /** Pure 5-star fill mask for a given rating (1–5), rounded to the nearest whole star. */
+  starsFilled(rating: number): boolean[] {
+    const filled = Math.round(rating);
+    return [0, 1, 2, 3, 4].map((i) => i < filled);
   }
 
   // ── Gallery controls ─────────────────────────────────────────────────────
@@ -298,5 +453,75 @@ export class ProductDetail {
         this.notificationService.error(err?.error?.message ?? 'Could not update your wishlist.');
       },
     });
+  }
+
+  // ── Write a review (PR-4) ────────────────────────────────────────────────
+
+  /** Star-rating widget click handler — only ever sets an integer 1-5. */
+  setRating(value: number): void {
+    this.reviewForm.controls.rating.setValue(value);
+    this.reviewForm.controls.rating.markAsTouched();
+  }
+
+  /** Anonymous CTA: routes through the same `sanitizeReturnUrl` path used to read `returnUrl` on login/register. */
+  signInToReview(): void {
+    const returnUrl = sanitizeReturnUrl(this.router.url) ?? this.router.url;
+    void this.router.navigate(['/login'], { queryParams: { returnUrl } });
+  }
+
+  submitReview(): void {
+    if (this.submitting()) return;
+    // Trimmed here so a whitespace-only body — which minlength alone would
+    // accept — is rejected the same way the API's trimming DTO rejects it.
+    const trimmedBody = this.reviewForm.controls.body.value.trim();
+    this.reviewForm.controls.body.setValue(trimmedBody);
+    if (this.reviewForm.invalid) {
+      this.reviewForm.markAllAsTouched();
+      return;
+    }
+    const productId = this.productId();
+    if (!productId) return;
+
+    this.submitting.set(true);
+    this.reviewSubmitError.set(null);
+    this.reviewSubmitSuccess.set(false);
+
+    const { rating } = this.reviewForm.getRawValue();
+    const request: CreateReviewRequest = { rating, body: trimmedBody };
+
+    this.reviewsService.submit(productId, request).subscribe({
+      next: () => {
+        this.submitting.set(false);
+        this.reviewSubmitSuccess.set(true);
+        this.reviewForm.reset({ rating: 0, body: '' });
+        // Never a local splice — refresh the current page straight from the server.
+        this.loadReviews(productId, this.reviewsPage());
+        // The reviewer is now `already_reviewed` — refresh eligibility to match.
+        this.fetchEligibility(productId);
+      },
+      error: (err: ReviewApiErrorShape) => {
+        this.submitting.set(false);
+        this.reviewSubmitError.set(this.mapReviewSubmitError(err));
+      },
+    });
+  }
+
+  private mapReviewSubmitError(err: ReviewApiErrorShape): ReviewSubmitError {
+    if (err?.status === 409) {
+      return {
+        kind: 'duplicate',
+        message: err?.error?.message ?? "You've already reviewed this product.",
+      };
+    }
+    if (err?.status === 403) {
+      return {
+        kind: 'ineligible',
+        message: err?.error?.message ?? 'You are not eligible to review this product.',
+      };
+    }
+    return {
+      kind: 'generic',
+      message: 'Could not submit your review right now. Please try again.',
+    };
   }
 }

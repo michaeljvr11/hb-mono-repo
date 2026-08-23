@@ -9,3 +9,4 @@ export * from './shipment-status';
 export * from './product-search-sort';
 export * from './analytics-event-type';
 export * from './inquiry-order-type';
+export * from './review-sort';

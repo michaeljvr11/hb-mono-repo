@@ -28,6 +28,7 @@ import { CommissionModule } from './commission/commission.module';
 import { EarningsModule } from './earnings/earnings.module';
 import { SettingsModule } from './settings/settings.module';
 import { InquiriesModule } from './inquiries/inquiries.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { InquiriesModule } from './inquiries/inquiries.module';
     EarningsModule,
     SettingsModule,
     InquiriesModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [

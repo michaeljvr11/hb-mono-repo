@@ -1,45 +1,45 @@
 {
-  "generatedAt": "2026-08-18T20:47:04.340Z",
+  "generatedAt": "2026-08-23T19:53:01.948Z",
   "git": {
-    "totalCommits": 241,
-    "aiCommits": 230,
-    "aiPct": 95,
-    "appCommits": 171,
-    "ins": 96283,
-    "del": 10273,
-    "net": 86010,
-    "aiIns": 82769,
-    "aiDel": 10099,
-    "filesTouched": 763,
+    "totalCommits": 248,
+    "aiCommits": 237,
+    "aiPct": 96,
+    "appCommits": 177,
+    "ins": 99324,
+    "del": 10528,
+    "net": 88796,
+    "aiIns": 85810,
+    "aiDel": 10354,
+    "filesTouched": 775,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 102,
-        "ins": 47056,
-        "del": 3043
+        "commits": 105,
+        "ins": 48597,
+        "del": 3066
       },
       {
         "name": "API (NestJS)",
-        "commits": 90,
-        "ins": 28463,
-        "del": 1636
+        "commits": 94,
+        "ins": 29627,
+        "del": 1727
       },
       {
         "name": "Docs",
-        "commits": 71,
-        "ins": 15894,
-        "del": 5418
+        "commits": 72,
+        "ins": 16042,
+        "del": 5559
       },
       {
         "name": "AI Factory config",
-        "commits": 79,
-        "ins": 2261,
+        "commits": 80,
+        "ins": 2374,
         "del": 104
       },
       {
         "name": "Shared contracts",
-        "commits": 37,
-        "ins": 1494,
+        "commits": 38,
+        "ins": 1569,
         "del": 48
       },
       {
@@ -56,8 +56,43 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-18",
+    "lastDate": "2026-08-23",
     "recent": [
+      {
+        "hash": "6e169bc",
+        "subject": "fix(reviews): unreachable success confirmation and untrimmed body",
+        "ai": true
+      },
+      {
+        "hash": "6d30984",
+        "subject": "feat(web): add eligibility-gated review submission form to PDP",
+        "ai": true
+      },
+      {
+        "hash": "5c9651b",
+        "subject": "feat(web): render PDP reviews tab with summary and pagination",
+        "ai": true
+      },
+      {
+        "hash": "42ef625",
+        "subject": "feat(api): gate review creation on verified-purchase eligibility",
+        "ai": true
+      },
+      {
+        "hash": "0b9746e",
+        "subject": "feat(api): add review contracts, product_reviews migration, public read API",
+        "ai": true
+      },
+      {
+        "hash": "77338d3",
+        "subject": "test(api): run Jest with ESM support so magic-number validation is real",
+        "ai": true
+      },
+      {
+        "hash": "4c6d130",
+        "subject": "chore(evidence): recompile AI-authorship report for the image-pipeline batch",
+        "ai": true
+      },
       {
         "hash": "1103fa5",
         "subject": "fix(api): close the cleanup gaps found in review on both upload paths",
@@ -82,41 +117,6 @@
         "hash": "e39c83a",
         "subject": "feat(api): resize uploads into WebP derivatives before persistence",
         "ai": true
-      },
-      {
-        "hash": "57d8397",
-        "subject": "feat(api): validate product image dimensions and record them on the contract",
-        "ai": true
-      },
-      {
-        "hash": "9d6b41c",
-        "subject": "chore(evidence): recompile AI-authorship report for the override batch",
-        "ai": true
-      },
-      {
-        "hash": "d2033a4",
-        "subject": "fix(web): release override lock unconditionally on completion",
-        "ai": true
-      },
-      {
-        "hash": "b1e3c3c",
-        "subject": "fix(api): address code review on admin order-status override",
-        "ai": true
-      },
-      {
-        "hash": "799439d",
-        "subject": "feat(web): add admin order-status override control + audit history",
-        "ai": true
-      },
-      {
-        "hash": "3f05ee2",
-        "subject": "feat(api): admin order-status override endpoint with audit log",
-        "ai": true
-      },
-      {
-        "hash": "e342d3e",
-        "subject": "feat(shared): add OrderStatusOverrideRequest and audit DTO contracts",
-        "ai": true
       }
     ]
   },
@@ -130,6 +130,11 @@
       "branch": "feat/1fqtc2JF-vendor-onboarding",
       "cardId": "1fqtc2JF",
       "slug": "vendor-onboarding"
+    },
+    {
+      "branch": "feat/4loUsIJ7-review-contracts-read-api",
+      "cardId": "4loUsIJ7",
+      "slug": "review-contracts-read-api"
     },
     {
       "branch": "feat/5Ygendw9-admin-order-status-override",
@@ -368,9 +373,9 @@
     }
   ],
   "tests": {
-    "total": 131,
-    "api": 61,
-    "web": 70
+    "total": 133,
+    "api": 62,
+    "web": 71
   },
   "design": {
     "files": 34,
@@ -399,16 +404,16 @@
     },
     "gatePass": 35,
     "gateFail": 2,
-    "edits": 758,
-    "editsUnfixable": 247,
+    "edits": 784,
+    "editsUnfixable": 257,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-18T20:44:30.522Z",
+    "lastTs": "2026-08-23T19:51:57.123Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 58,
+          "invocations": 64,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -417,7 +422,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 27,
+          "invocations": 29,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -426,7 +431,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 37,
+          "invocations": 39,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -444,7 +449,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 27,
+          "invocations": 28,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -471,7 +476,7 @@
         },
         {
           "agentType": "Explore",
-          "invocations": 1,
+          "invocations": 2,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -480,7 +485,7 @@
         },
         {
           "agentType": "product-planner",
-          "invocations": 6,
+          "invocations": 7,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -498,71 +503,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-08-16T15:19:52.445Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-16T15:23:36.747Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-17T11:17:49.954Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-17T11:27:32.815Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-17T11:30:12.428Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-17T12:10:23.608Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-17T12:11:43.380Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-17T12:19:23.388Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-17T12:19:32.972Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-17T12:23:16.766Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-17T12:38:58.113Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-17T12:42:57.016Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-17T12:43:48.376Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-18T19:03:14.652Z",
           "agentType": "backend-engineer",
@@ -597,6 +537,71 @@
           "ts": "2026-08-18T20:43:53.536Z",
           "agentType": "backend-engineer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-20T19:00:24.611Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-20T19:05:07.011Z",
+          "agentType": "product-planner",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-20T19:07:30.667Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T18:55:40.008Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:03:30.035Z",
+          "agentType": "Explore",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:16:45.482Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:18:33.067Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:25:14.769Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:25:25.840Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:26:06.338Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:26:55.353Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:39:10.671Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:48:52.756Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
         }
       ]
     }
@@ -604,6 +609,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/8AQq2C3E-product-image-optimization",
+      "number": 59,
+      "state": "MERGED",
+      "title": "feat: product & vendor image optimization pipeline (PIO-1..PIO-5)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/59"
+    },
     {
       "headRefName": "feat/5Ygendw9-admin-order-status-override",
       "number": 58,
@@ -1018,19 +1030,19 @@
     },
     {
       "name": "To Do",
-      "cards": 23
+      "cards": 25
     },
     {
       "name": "In Progress",
-      "cards": 5
+      "cards": 4
     },
     {
       "name": "In Review",
-      "cards": 2
+      "cards": 0
     },
     {
       "name": "Done",
-      "cards": 78
+      "cards": 85
     },
     {
       "name": "Fable Documentation",

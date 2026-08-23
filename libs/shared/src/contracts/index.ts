@@ -19,3 +19,4 @@ export * from './analytics';
 export * from './earnings';
 export * from './settings';
 export * from './inquiry';
+export * from './review';

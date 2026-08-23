@@ -4,8 +4,15 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject, of, throwError } from 'rxjs';
-import type { AuthUser, CartDto, UserDto } from '@hb/shared';
+import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
+import type {
+  AuthUser,
+  CartDto,
+  ProductReviewListDto,
+  ReviewDto,
+  ReviewEligibilityDto,
+  UserDto,
+} from '@hb/shared';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   AnalyticsEventType,
@@ -13,18 +20,94 @@ import {
   CurrencyCode,
   ListingType,
   ProductDto,
+  ReviewIneligibilityReason,
 } from '@hb/shared';
 
 import { ProductDetail } from './product-detail';
 import { ProductsService } from '../../core/api/products.service';
 import { CartService } from '../../core/api/cart.service';
 import { WishlistService } from '../../core/api/wishlist.service';
+import { ReviewsService } from '../../core/api/reviews.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../core/notifications/notification.service';
 
 const EMPTY_CART: CartDto = { id: 'cart-1', items: [], totals: [], itemCount: 0, updatedAt: '' };
+
+const REVIEWS_PAGE_1: ProductReviewListDto = {
+  items: [
+    {
+      id: 'r1',
+      productId: 'p1',
+      rating: 5,
+      body: 'Amazing honey.\nWill buy again.',
+      authorName: 'Michael J.',
+      isVerifiedPurchase: true,
+      createdAt: '2026-07-07T09:00:00.000Z',
+      updatedAt: '2026-07-07T09:00:00.000Z',
+    },
+    {
+      id: 'r2',
+      productId: 'p1',
+      rating: 4,
+      body: 'Contains a <b>bold</b> claim about taste.',
+      authorName: 'Anon B.',
+      isVerifiedPurchase: false,
+      createdAt: '2026-07-01T09:00:00.000Z',
+      updatedAt: '2026-07-01T09:00:00.000Z',
+    },
+  ],
+  total: 3,
+  page: 1,
+  limit: 10,
+  summary: { averageRating: 4.5, reviewCount: 3 },
+};
+
+const REVIEWS_EMPTY: ProductReviewListDto = {
+  items: [],
+  total: 0,
+  page: 1,
+  limit: 10,
+  summary: { averageRating: null, reviewCount: 0 },
+};
+
+const ELIGIBLE: ReviewEligibilityDto = { canReview: true, reason: null };
+
+const NOT_PURCHASED: ReviewEligibilityDto = {
+  canReview: false,
+  reason: ReviewIneligibilityReason.NOT_PURCHASED,
+};
+
+const OWN_LISTING: ReviewEligibilityDto = {
+  canReview: false,
+  reason: ReviewIneligibilityReason.OWN_LISTING,
+};
+
+/** Matches `r1` in REVIEWS_PAGE_1 — the "found on current page" case. */
+const ALREADY_REVIEWED_ON_PAGE: ReviewEligibilityDto = {
+  canReview: false,
+  reason: ReviewIneligibilityReason.ALREADY_REVIEWED,
+  existingReviewId: 'r1',
+};
+
+/** Not present in REVIEWS_PAGE_1 — the "on another page" fallback case. */
+const ALREADY_REVIEWED_OFF_PAGE: ReviewEligibilityDto = {
+  canReview: false,
+  reason: ReviewIneligibilityReason.ALREADY_REVIEWED,
+  existingReviewId: 'not-on-this-page',
+};
+
+const NEW_REVIEW: ReviewDto = {
+  id: 'r3',
+  productId: 'p1',
+  rating: 5,
+  body: 'Solid product overall, would buy again for sure.',
+  authorName: 'Buyer C.',
+  isVerifiedPurchase: true,
+  createdAt: '2026-08-01T00:00:00.000Z',
+  updatedAt: '2026-08-01T00:00:00.000Z',
+};
 
 /**
  * `notificationService` is a private field on ProductDetail — TS privacy is
@@ -116,6 +199,13 @@ interface WishlistStub {
   itemCount: ReturnType<typeof signal<number>>;
 }
 
+interface ReviewsStub {
+  getReviews: ReturnType<typeof vi.fn>;
+  checkEligibility: ReturnType<typeof vi.fn>;
+  submit: ReturnType<typeof vi.fn>;
+  reviews: ReturnType<typeof signal<ProductReviewListDto | null>>;
+}
+
 function makeStubs(): {
   productsStub: ProductsStub;
   authStub: AuthStub;
@@ -123,6 +213,7 @@ function makeStubs(): {
   analyticsStub: AnalyticsStub;
   gaStub: GaStub;
   wishlistStub: WishlistStub;
+  reviewsStub: ReviewsStub;
 } {
   return {
     productsStub: {
@@ -155,6 +246,12 @@ function makeStubs(): {
       wishlist: signal(null),
       itemCount: signal(0),
     },
+    reviewsStub: {
+      getReviews: vi.fn(() => of(REVIEWS_PAGE_1)),
+      checkEligibility: vi.fn(() => of(NOT_PURCHASED)),
+      submit: vi.fn(() => of(NEW_REVIEW)),
+      reviews: signal<ProductReviewListDto | null>(null),
+    },
   };
 }
 
@@ -165,6 +262,7 @@ async function setupTestBed(
   analyticsStub: AnalyticsStub,
   gaStub: GaStub,
   wishlistStub: WishlistStub,
+  reviewsStub: ReviewsStub,
   paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>,
 ): Promise<void> {
   return TestBed.configureTestingModule({
@@ -178,6 +276,7 @@ async function setupTestBed(
       { provide: AuthService, useValue: authStub },
       { provide: CartService, useValue: cartStub },
       { provide: WishlistService, useValue: wishlistStub },
+      { provide: ReviewsService, useValue: reviewsStub },
       { provide: AnalyticsService, useValue: analyticsStub },
       { provide: GoogleAnalyticsService, useValue: gaStub },
       {
@@ -186,6 +285,58 @@ async function setupTestBed(
       },
     ],
   }).compileComponents();
+}
+
+/**
+ * Builds a fresh fixture (own `hydrated` gate, own stubs) via
+ * `TestBed.resetTestingModule()` — the same pattern the "saved" wishlist
+ * fixture above uses — so auth/eligibility state can be set up before the
+ * component's first render, rather than fighting `ExpressionChangedAfter...`
+ * by mutating an already-rendered fixture's stubs.
+ */
+async function buildFixture(overrides: {
+  isLoggedIn?: boolean;
+  eligibility?: ReviewEligibilityDto;
+} = {}): Promise<{
+  fixture: ComponentFixture<ProductDetail>;
+  component: ProductDetail;
+  router: Router;
+  reviewsStub: ReviewsStub;
+  authStub: AuthStub;
+}> {
+  const stubs = makeStubs();
+  if (overrides.isLoggedIn !== undefined) {
+    stubs.authStub.isLoggedIn.mockReturnValue(overrides.isLoggedIn);
+  }
+  if (overrides.eligibility) {
+    stubs.reviewsStub.checkEligibility.mockReturnValue(of(overrides.eligibility));
+  }
+  const pm$ = new BehaviorSubject(convertToParamMap({ id: 'p1' }));
+
+  TestBed.resetTestingModule();
+  await setupTestBed(
+    stubs.productsStub,
+    stubs.authStub,
+    stubs.cartStub,
+    stubs.analyticsStub,
+    stubs.gaStub,
+    stubs.wishlistStub,
+    stubs.reviewsStub,
+    pm$,
+  );
+
+  const fx = TestBed.createComponent(ProductDetail);
+  fx.detectChanges();
+  await fx.whenStable();
+  fx.detectChanges();
+
+  return {
+    fixture: fx,
+    component: fx.componentInstance,
+    router: TestBed.inject(Router),
+    reviewsStub: stubs.reviewsStub,
+    authStub: stubs.authStub,
+  };
 }
 
 // ─── Main suite ───────────────────────────────────────────────────────────────
@@ -200,10 +351,12 @@ describe('ProductDetail', () => {
   let analyticsStub: AnalyticsStub;
   let gaStub: GaStub;
   let wishlistStub: WishlistStub;
+  let reviewsStub: ReviewsStub;
   let paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   beforeEach(async () => {
-    ({ productsStub, authStub, cartStub, analyticsStub, gaStub, wishlistStub } = makeStubs());
+    ({ productsStub, authStub, cartStub, analyticsStub, gaStub, wishlistStub, reviewsStub } =
+      makeStubs());
     paramMap$ = new BehaviorSubject(convertToParamMap({ id: 'p1' }));
 
     await setupTestBed(
@@ -213,6 +366,7 @@ describe('ProductDetail', () => {
       analyticsStub,
       gaStub,
       wishlistStub,
+      reviewsStub,
       paramMap$,
     );
 
@@ -539,6 +693,7 @@ describe('ProductDetail', () => {
       savedStubs.analyticsStub,
       savedStubs.gaStub,
       savedStubs.wishlistStub,
+      savedStubs.reviewsStub,
       savedParamMap$,
     );
     const savedFixture = TestBed.createComponent(ProductDetail);
@@ -588,5 +743,360 @@ describe('ProductDetail', () => {
       'View wishlist',
     );
     expect(navigateSpy).toHaveBeenCalledWith(['/wishlist']);
+  });
+
+  // ── Reviews tab ──────────────────────────────────────────────────────────
+
+  describe('reviews tab', () => {
+    it('fetches page 1 of reviews eagerly, independent of the product load, with the right params', () => {
+      expect(reviewsStub.getReviews).toHaveBeenCalledWith('p1', { page: 1, limit: 10 });
+    });
+
+    it('renders a hand-rolled tablist with a single "Reviews (N)" tab and correct a11y wiring', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      const tablist = el.querySelector('[role="tablist"]');
+      const tab = el.querySelector('[role="tab"]');
+      const panel = el.querySelector('[role="tabpanel"]');
+
+      expect(tablist).toBeTruthy();
+      expect(tab).toBeTruthy();
+      expect(tab?.textContent).toContain('Reviews (3)');
+      expect(tab?.getAttribute('aria-selected')).toBe('true');
+      expect(tab?.getAttribute('aria-controls')).toBe(panel?.id);
+      expect(panel?.getAttribute('aria-labelledby')).toBe(tab?.id);
+    });
+
+    it('renders the summary header with the one-decimal average and a "N reviews" count', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('.pdp__reviews-summary-score')?.textContent?.trim()).toBe('4.5');
+      expect(el.querySelector('.pdp__reviews-summary-count')?.textContent).toContain('3 reviews');
+      expect(el.querySelectorAll('.pdp__reviews-summary .pdp__reviews-star--filled').length).toBe(
+        5,
+      );
+    });
+
+    it('renders a friendly "No reviews yet" empty state and never renders "0.0 stars" when reviewCount is 0', async () => {
+      reviewsStub.getReviews.mockReturnValue(of(REVIEWS_EMPTY));
+      paramMap$.next(convertToParamMap({ id: 'p1' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('No reviews yet.');
+      expect(el.querySelector('.pdp__reviews-summary')).toBeNull();
+      expect(el.textContent).not.toContain('0.0');
+    });
+
+    it('shows the Verified Purchase badge only on verified reviews', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      const badges = el.querySelectorAll('.pdp__review-verified');
+      expect(badges.length).toBe(1);
+      expect(badges[0].textContent).toContain('Verified Purchase');
+    });
+
+    it('splits a review body on \\n into separate paragraph elements without using innerHTML (no markdown/HTML interpretation)', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      const firstReviewParagraphs = el.querySelectorAll('.pdp__review-body p');
+      expect(firstReviewParagraphs.length).toBe(3); // 2 for r1, 1 for r2
+      expect(firstReviewParagraphs[0].textContent).toBe('Amazing honey.');
+      expect(firstReviewParagraphs[1].textContent).toBe('Will buy again.');
+
+      // r2's body contains literal "<b>bold</b>" — it must render as escaped
+      // text, never as an actual <b> element (that would mean innerHTML/markdown
+      // interpretation was used instead of Angular's default text interpolation).
+      expect(firstReviewParagraphs[2].textContent).toContain('<b>bold</b>');
+      expect(firstReviewParagraphs[2].querySelector('b')).toBeNull();
+    });
+
+    it('paginates: clicking Next fetches the next page with the right params and advances the page status', async () => {
+      const el: HTMLElement = fixture.nativeElement;
+      // 3 total reviews at limit 10 -> 1 page, so no pagination controls yet.
+      expect(el.querySelector('.pdp__reviews-pagination')).toBeNull();
+
+      reviewsStub.getReviews.mockReturnValue(
+        of({ ...REVIEWS_PAGE_1, total: 25, page: 1 } satisfies ProductReviewListDto),
+      );
+      paramMap$.next(convertToParamMap({ id: 'p1' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const nextBtn = fixture.nativeElement.querySelectorAll(
+        '.pdp__reviews-page-btn',
+      )[1] as HTMLButtonElement;
+      expect(nextBtn.textContent).toContain('Next');
+
+      reviewsStub.getReviews.mockReturnValue(
+        of({ ...REVIEWS_PAGE_1, total: 25, page: 2 } satisfies ProductReviewListDto),
+      );
+      nextBtn.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(reviewsStub.getReviews).toHaveBeenCalledWith('p1', { page: 2, limit: 10 });
+      expect(component.reviewsPage()).toBe(2);
+      expect(fixture.nativeElement.querySelector('.pdp__reviews-page-status')?.textContent).toContain(
+        'Page 2 of 3',
+      );
+    });
+
+    it('shows a distinct loading state while the request is in flight', async () => {
+      const pending$ = new Subject<ProductReviewListDto>();
+      reviewsStub.getReviews.mockReturnValue(pending$);
+      paramMap$.next(convertToParamMap({ id: 'p1' }));
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Loading reviews');
+
+      pending$.next(REVIEWS_PAGE_1);
+      pending$.complete();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).not.toContain('Loading reviews');
+    });
+
+    it('shows a distinct error state on a failed fetch — never conflated with the empty state', async () => {
+      reviewsStub.getReviews.mockReturnValue(throwError(() => ({ status: 500 })));
+      paramMap$.next(convertToParamMap({ id: 'p1' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Could not load reviews right now');
+      expect(el.querySelector('[role="alert"]')).toBeTruthy();
+      expect(el.textContent).not.toContain('No reviews yet.');
+    });
+  });
+
+  // ── Write a review (PR-4) ────────────────────────────────────────────────
+
+  describe('write a review', () => {
+    it('never calls the eligibility endpoint for anonymous visitors, and shows a sign-in CTA that routes through sanitizeReturnUrl', async () => {
+      const { fixture: fx, router: r, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: false,
+      });
+
+      expect(rs.checkEligibility).not.toHaveBeenCalled();
+
+      const el: HTMLElement = fx.nativeElement;
+      const cta = el.querySelector('.pdp__review-signin-btn') as HTMLButtonElement;
+      expect(cta).toBeTruthy();
+      expect(el.querySelector('.pdp__review-form-card')).toBeNull();
+
+      const navigateSpy = vi.spyOn(r, 'navigate').mockResolvedValue(true);
+      cta.click();
+      fx.detectChanges();
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/login'], {
+        queryParams: { returnUrl: r.url },
+      });
+    });
+
+    it('the hydration gate starts closed for reviews too: isAuthenticated reads false immediately after construction, before any render', () => {
+      authStub.isLoggedIn.mockReturnValue(true);
+      const freshComponent = TestBed.createComponent(ProductDetail).componentInstance;
+
+      expect(freshComponent.isAuthenticated()).toBe(false);
+      expect(reviewsStub.checkEligibility).not.toHaveBeenCalled();
+    });
+
+    it('renders the write-review form only when the API says canReview: true', async () => {
+      const { fixture: fx, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ELIGIBLE,
+      });
+
+      expect(rs.checkEligibility).toHaveBeenCalledWith('p1');
+      const el: HTMLElement = fx.nativeElement;
+      expect(el.querySelector('.pdp__review-form-card')).toBeTruthy();
+      expect(el.querySelector('.pdp__review-signin-btn')).toBeNull();
+    });
+
+    it('renders the not_purchased message and no form when ineligible for that reason', async () => {
+      const { fixture: fx } = await buildFixture({ isLoggedIn: true, eligibility: NOT_PURCHASED });
+
+      const el: HTMLElement = fx.nativeElement;
+      expect(el.querySelector('.pdp__review-form-card')).toBeNull();
+      expect(el.textContent).toContain("Only customers who've received this product can review it");
+    });
+
+    it('renders the own_listing message and no form when ineligible for that reason', async () => {
+      const { fixture: fx } = await buildFixture({ isLoggedIn: true, eligibility: OWN_LISTING });
+
+      const el: HTMLElement = fx.nativeElement;
+      expect(el.querySelector('.pdp__review-form-card')).toBeNull();
+      expect(el.textContent).toContain("You can't review your own listing.");
+    });
+
+    it('renders the reviewer\'s existing review when already_reviewed and it is on the current page', async () => {
+      const { fixture: fx } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ALREADY_REVIEWED_ON_PAGE,
+      });
+
+      const el: HTMLElement = fx.nativeElement;
+      expect(el.querySelector('.pdp__review-form-card')).toBeNull();
+      const existing = el.querySelector('.pdp__review-existing');
+      expect(existing).toBeTruthy();
+      expect(existing?.textContent).toContain('Amazing honey.');
+    });
+
+    it('falls back to a plain "already reviewed" message when the existing review is not on the current page', async () => {
+      const { fixture: fx } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ALREADY_REVIEWED_OFF_PAGE,
+      });
+
+      const el: HTMLElement = fx.nativeElement;
+      expect(el.querySelector('.pdp__review-existing')).toBeNull();
+      expect(el.textContent).toContain("You've already reviewed this product.");
+    });
+
+    it('rejects rating 0 and 6 as invalid, and accepts 1 and 5', async () => {
+      const { component: c } = await buildFixture({ isLoggedIn: true, eligibility: ELIGIBLE });
+
+      c.setRating(0);
+      expect(c.reviewForm.controls.rating.invalid).toBe(true);
+      c.setRating(6);
+      expect(c.reviewForm.controls.rating.invalid).toBe(true);
+      c.setRating(1);
+      expect(c.reviewForm.controls.rating.valid).toBe(true);
+      c.setRating(5);
+      expect(c.reviewForm.controls.rating.valid).toBe(true);
+    });
+
+    it('rejects a 9-character body and a 2001-character body, and accepts the boundary lengths', async () => {
+      const { component: c } = await buildFixture({ isLoggedIn: true, eligibility: ELIGIBLE });
+
+      c.reviewForm.controls.body.setValue('a'.repeat(9));
+      expect(c.reviewForm.controls.body.invalid).toBe(true);
+      c.reviewForm.controls.body.setValue('a'.repeat(2001));
+      expect(c.reviewForm.controls.body.invalid).toBe(true);
+      c.reviewForm.controls.body.setValue('a'.repeat(10));
+      expect(c.reviewForm.controls.body.valid).toBe(true);
+      c.reviewForm.controls.body.setValue('a'.repeat(2000));
+      expect(c.reviewForm.controls.body.valid).toBe(true);
+    });
+
+    it('does not submit and marks the form touched when invalid', async () => {
+      const { component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ELIGIBLE,
+      });
+
+      c.submitReview();
+
+      expect(rs.submit).not.toHaveBeenCalled();
+      expect(c.reviewForm.controls.rating.touched).toBe(true);
+      expect(c.reviewForm.controls.body.touched).toBe(true);
+    });
+
+    it('on successful submit: posts the DTO, refreshes the list from the server (never a local splice), resets the form, and shows a confirmation', async () => {
+      const { fixture: fx, component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ELIGIBLE,
+      });
+      rs.submit.mockReturnValue(of(NEW_REVIEW));
+      rs.getReviews.mockClear();
+      // The post-submit refetch flips eligibility to already_reviewed — the
+      // confirmation must still render even though canReview is now false.
+      rs.checkEligibility.mockReturnValueOnce(of(ALREADY_REVIEWED_ON_PAGE));
+
+      c.setRating(5);
+      c.reviewForm.controls.body.setValue('Solid product overall, would buy again for sure.');
+      c.submitReview();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      expect(rs.submit).toHaveBeenCalledWith('p1', {
+        rating: 5,
+        body: 'Solid product overall, would buy again for sure.',
+      });
+      // Refetches the current page from the server rather than splicing the
+      // new review into the existing array client-side.
+      expect(rs.getReviews).toHaveBeenCalledWith('p1', { page: 1, limit: 10 });
+      expect(c.reviewForm.controls.rating.value).toBe(0);
+      expect(c.reviewForm.controls.body.value).toBe('');
+      expect(c.submitting()).toBe(false);
+      expect(c.eligibility()).toEqual(ALREADY_REVIEWED_ON_PAGE);
+
+      const el: HTMLElement = fx.nativeElement;
+      expect(el.textContent).toContain('Thanks — your review has been posted.');
+    });
+
+    it('surfaces a 409 (already reviewed) distinctly, not as a generic failure', async () => {
+      const { fixture: fx, component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ELIGIBLE,
+      });
+      rs.submit.mockReturnValue(
+        throwError(() => ({ status: 409, error: { message: "You've already reviewed this." } })),
+      );
+
+      c.setRating(4);
+      c.reviewForm.controls.body.setValue('A perfectly adequate review of this item.');
+      c.submitReview();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      expect(c.reviewSubmitError()).toEqual({
+        kind: 'duplicate',
+        message: "You've already reviewed this.",
+      });
+      expect(c.submitting()).toBe(false);
+      expect(fx.nativeElement.textContent).toContain("You've already reviewed this.");
+    });
+
+    it('surfaces a 403 (not eligible) distinctly, not as a generic failure', async () => {
+      const { fixture: fx, component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ELIGIBLE,
+      });
+      rs.submit.mockReturnValue(
+        throwError(() => ({ status: 403, error: { message: 'Not eligible to review this.' } })),
+      );
+
+      c.setRating(3);
+      c.reviewForm.controls.body.setValue('Another perfectly adequate review here.');
+      c.submitReview();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      expect(c.reviewSubmitError()).toEqual({
+        kind: 'ineligible',
+        message: 'Not eligible to review this.',
+      });
+      expect(c.submitting()).toBe(false);
+    });
+
+    it('blocks a double-submit while a request is already pending', async () => {
+      const pending$ = new Subject<ReviewDto>();
+      const { component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ELIGIBLE,
+      });
+      rs.submit.mockReturnValue(pending$);
+
+      c.setRating(5);
+      c.reviewForm.controls.body.setValue('A sufficiently long review body here.');
+      c.submitReview();
+      expect(c.submitting()).toBe(true);
+
+      c.submitReview();
+      expect(rs.submit).toHaveBeenCalledTimes(1);
+
+      pending$.next(NEW_REVIEW);
+      pending$.complete();
+      expect(c.submitting()).toBe(false);
+    });
   });
 });
