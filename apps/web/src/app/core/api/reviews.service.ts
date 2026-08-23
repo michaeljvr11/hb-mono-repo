@@ -7,6 +7,7 @@ import {
   ProductReviewQuery,
   ReviewDto,
   ReviewEligibilityDto,
+  UpdateReviewRequest,
 } from '@hb/shared';
 import { environment } from '../../../environments/environment';
 
@@ -24,6 +25,10 @@ import { environment } from '../../../environments/environment';
 export class ReviewsService {
   private readonly http = inject(HttpClient);
   private readonly API_URL = `${environment.apiBaseUrl}/products`;
+  // PATCH/DELETE /reviews/:id are flat, id-scoped routes (NOT nested under
+  // /products/:productId — ownership is resolved server-side by (review.id, userId),
+  // so productId plays no role here at all).
+  private readonly REVIEW_URL = `${environment.apiBaseUrl}/reviews`;
 
   /** Last review page received from the API (null until first load). */
   readonly reviews = signal<ProductReviewListDto | null>(null);
@@ -58,5 +63,19 @@ export class ReviewsService {
   /** `POST /products/:productId/reviews` — authenticated. 409 on duplicate, 403 if ineligible. */
   submit(productId: string, dto: CreateReviewRequest): Observable<ReviewDto> {
     return this.http.post<ReviewDto>(`${this.API_URL}/${productId}/reviews`, dto);
+  }
+
+  /**
+   * `PATCH /reviews/:id` — authenticated, flat route. 404 if the review isn't
+   * the caller's own (or no longer exists) — the API never distinguishes
+   * "not yours" from "unknown id" (existence-leak pattern used elsewhere).
+   */
+  update(reviewId: string, dto: UpdateReviewRequest): Observable<ReviewDto> {
+    return this.http.patch<ReviewDto>(`${this.REVIEW_URL}/${reviewId}`, dto);
+  }
+
+  /** `DELETE /reviews/:id` — authenticated, flat route. 204 no body. Same 404 semantics as `update`. */
+  delete(reviewId: string): Observable<void> {
+    return this.http.delete<void>(`${this.REVIEW_URL}/${reviewId}`);
   }
 }

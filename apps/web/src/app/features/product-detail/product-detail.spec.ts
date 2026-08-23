@@ -64,6 +64,18 @@ const REVIEWS_PAGE_1: ProductReviewListDto = {
   summary: { averageRating: 4.5, reviewCount: 3 },
 };
 
+/** Post-404 refetch state: `r1` (the caller's own review) is gone — mirrors what the
+ * server would actually return after a 404 on edit/delete, so the "review no longer
+ * available" tests exercise a refetch that agrees with the error rather than one that
+ * still shows `r1` present and `already_reviewed`. */
+const REVIEWS_PAGE_1_WITHOUT_R1: ProductReviewListDto = {
+  items: [REVIEWS_PAGE_1.items[1]],
+  total: 2,
+  page: 1,
+  limit: 10,
+  summary: { averageRating: 4, reviewCount: 2 },
+};
+
 const REVIEWS_EMPTY: ProductReviewListDto = {
   items: [],
   total: 0,
@@ -107,6 +119,18 @@ const NEW_REVIEW: ReviewDto = {
   isVerifiedPurchase: true,
   createdAt: '2026-08-01T00:00:00.000Z',
   updatedAt: '2026-08-01T00:00:00.000Z',
+};
+
+/** The edited version of `r1` (matches ALREADY_REVIEWED_ON_PAGE's existingReviewId). */
+const EDITED_REVIEW: ReviewDto = {
+  id: 'r1',
+  productId: 'p1',
+  rating: 3,
+  body: 'Updated opinion after using it for a month.',
+  authorName: 'Michael J.',
+  isVerifiedPurchase: true,
+  createdAt: '2026-07-07T09:00:00.000Z',
+  updatedAt: '2026-08-10T00:00:00.000Z',
 };
 
 /**
@@ -203,6 +227,8 @@ interface ReviewsStub {
   getReviews: ReturnType<typeof vi.fn>;
   checkEligibility: ReturnType<typeof vi.fn>;
   submit: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
   reviews: ReturnType<typeof signal<ProductReviewListDto | null>>;
 }
 
@@ -250,6 +276,8 @@ function makeStubs(): {
       getReviews: vi.fn(() => of(REVIEWS_PAGE_1)),
       checkEligibility: vi.fn(() => of(NOT_PURCHASED)),
       submit: vi.fn(() => of(NEW_REVIEW)),
+      update: vi.fn(() => of(EDITED_REVIEW)),
+      delete: vi.fn(() => of(undefined)),
       reviews: signal<ProductReviewListDto | null>(null),
     },
   };
@@ -1097,6 +1125,259 @@ describe('ProductDetail', () => {
       pending$.next(NEW_REVIEW);
       pending$.complete();
       expect(c.submitting()).toBe(false);
+    });
+  });
+
+  // ── Edit / delete own review (PR-6) ──────────────────────────────────────
+
+  describe('edit/delete own review', () => {
+    it('renders Edit and Delete controls only on the caller\'s own review, never on the general review list', async () => {
+      const { fixture: fx } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ALREADY_REVIEWED_ON_PAGE,
+      });
+
+      const el: HTMLElement = fx.nativeElement;
+      expect(el.querySelector('.pdp__review-existing-edit')).toBeTruthy();
+      expect(el.querySelector('.pdp__review-existing-delete')).toBeTruthy();
+
+      // The general `.pdp__review` list items (including r1, the author's own
+      // review when it happens to render there too) must never carry controls.
+      const listItems = el.querySelectorAll('.pdp__review');
+      expect(listItems.length).toBeGreaterThan(0);
+      listItems.forEach((item) => {
+        expect(item.querySelector('.pdp__review-existing-edit')).toBeNull();
+        expect(item.querySelector('.pdp__review-existing-delete')).toBeNull();
+      });
+    });
+
+    it('does not render edit/delete controls when eligible to write a fresh review', async () => {
+      const { fixture: fx } = await buildFixture({ isLoggedIn: true, eligibility: ELIGIBLE });
+
+      const el: HTMLElement = fx.nativeElement;
+      expect(el.querySelector('.pdp__review-existing-edit')).toBeNull();
+      expect(el.querySelector('.pdp__review-existing-delete')).toBeNull();
+    });
+
+    it('Edit pre-fills the shared form with the existing rating/body, saves via reviewsService.update, then reloads reviews + eligibility', async () => {
+      const { fixture: fx, component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ALREADY_REVIEWED_ON_PAGE,
+      });
+      rs.getReviews.mockClear();
+      rs.checkEligibility.mockClear();
+      rs.update.mockReturnValue(of(EDITED_REVIEW));
+
+      const el: HTMLElement = fx.nativeElement;
+      (el.querySelector('.pdp__review-existing-edit') as HTMLButtonElement).click();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      // Pre-filled from r1 (rating 5, "Amazing honey.\nWill buy again.").
+      expect(c.reviewForm.controls.rating.value).toBe(5);
+      expect(c.reviewForm.controls.body.value).toBe('Amazing honey.\nWill buy again.');
+      expect(fx.nativeElement.querySelector('.pdp__review-form-title')?.textContent).toContain(
+        'Edit Your Review',
+      );
+
+      c.setRating(3);
+      c.reviewForm.controls.body.setValue('Updated opinion after using it for a month.');
+      c.saveReviewEdit();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      expect(rs.update).toHaveBeenCalledWith('r1', {
+        rating: 3,
+        body: 'Updated opinion after using it for a month.',
+      });
+      // Never a local splice — refetch from the server, same as submitReview().
+      expect(rs.getReviews).toHaveBeenCalledWith('p1', { page: 1, limit: 10 });
+      expect(rs.checkEligibility).toHaveBeenCalledWith('p1');
+      expect(c.isEditingReview()).toBe(false);
+      expect(c.savingEdit()).toBe(false);
+    });
+
+    it('Cancel on the edit form discards changes and returns to the read-only view without saving', async () => {
+      const { fixture: fx, component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ALREADY_REVIEWED_ON_PAGE,
+      });
+
+      c.startEditReview();
+      fx.detectChanges();
+      c.reviewForm.controls.body.setValue('Some half-typed edit that should never be saved.');
+
+      c.cancelEditReview();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      expect(rs.update).not.toHaveBeenCalled();
+      expect(c.isEditingReview()).toBe(false);
+      const el: HTMLElement = fx.nativeElement;
+      expect(el.querySelector('.pdp__review-existing')).toBeTruthy();
+      expect(el.textContent).toContain('Amazing honey.');
+    });
+
+    it('Delete requires a confirm step before the DELETE call fires; confirming calls reviewsService.delete, then reloads reviews + eligibility', async () => {
+      const { fixture: fx, component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ALREADY_REVIEWED_ON_PAGE,
+      });
+      rs.getReviews.mockClear();
+      rs.checkEligibility.mockClear();
+      // Post-delete: the caller is now free to write a fresh review.
+      rs.checkEligibility.mockReturnValue(of(ELIGIBLE));
+
+      const el: HTMLElement = fx.nativeElement;
+      (el.querySelector('.pdp__review-existing-delete') as HTMLButtonElement).click();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      // Clicking Delete alone must not fire the API — only the confirm step's
+      // own button does. This repo has no window.confirm(); the confirm UI
+      // is inline.
+      expect(rs.delete).not.toHaveBeenCalled();
+      expect(fx.nativeElement.querySelector('.pdp__review-delete-confirm')).toBeTruthy();
+      expect(fx.nativeElement.textContent).toContain('Are you sure you want to delete your review?');
+
+      const confirmBtn = fx.nativeElement.querySelector(
+        '.pdp__review-existing-delete--confirm',
+      ) as HTMLButtonElement;
+      confirmBtn.click();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      expect(rs.delete).toHaveBeenCalledWith('r1');
+      // Never a local splice — refetch from the server, mirroring submitReview().
+      expect(rs.getReviews).toHaveBeenCalledWith('p1', { page: 1, limit: 10 });
+      expect(rs.checkEligibility).toHaveBeenCalledWith('p1');
+      expect(c.deleting()).toBe(false);
+      expect(c.isConfirmingDelete()).toBe(false);
+    });
+
+    it('Cancel on the delete confirm step returns to the read-only view without calling delete', async () => {
+      const { fixture: fx, component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ALREADY_REVIEWED_ON_PAGE,
+      });
+
+      c.confirmDeleteReview();
+      fx.detectChanges();
+      c.cancelDeleteReview();
+      fx.detectChanges();
+
+      expect(rs.delete).not.toHaveBeenCalled();
+      expect(fx.nativeElement.querySelector('.pdp__review-delete-confirm')).toBeNull();
+    });
+
+    it('surfaces a 404 on edit distinctly (review no longer available) and refreshes the list/eligibility rather than a generic failure', async () => {
+      const { fixture: fx, component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ALREADY_REVIEWED_ON_PAGE,
+      });
+      rs.getReviews.mockClear();
+      rs.checkEligibility.mockClear();
+      rs.update.mockReturnValue(throwError(() => ({ status: 404 })));
+      // The refetch triggered by the 404 must agree with the error: the review
+      // is actually gone, so the server now reports it absent and the caller
+      // eligible again — not the stale `already_reviewed` state from setup.
+      rs.getReviews.mockReturnValueOnce(of(REVIEWS_PAGE_1_WITHOUT_R1));
+      rs.checkEligibility.mockReturnValueOnce(of(ELIGIBLE));
+
+      c.startEditReview();
+      c.reviewForm.controls.body.setValue('An edit that will fail with a 404.');
+      c.saveReviewEdit();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      expect(c.reviewMutationError()).toEqual({
+        kind: 'not-found',
+        message: 'This review is no longer available.',
+      });
+      expect(fx.nativeElement.textContent).toContain('This review is no longer available.');
+      expect(rs.getReviews).toHaveBeenCalledWith('p1', { page: 1, limit: 10 });
+      expect(rs.checkEligibility).toHaveBeenCalledWith('p1');
+      expect(c.isEditingReview()).toBe(false);
+    });
+
+    it('surfaces a 404 on delete distinctly (review no longer available) and refreshes the list/eligibility rather than a generic failure', async () => {
+      const { fixture: fx, component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ALREADY_REVIEWED_ON_PAGE,
+      });
+      rs.getReviews.mockClear();
+      rs.checkEligibility.mockClear();
+      rs.delete.mockReturnValue(throwError(() => ({ status: 404 })));
+      // Same reasoning as the edit-404 test: the refetch must reflect the
+      // review actually being gone, not the stale `already_reviewed` setup state.
+      rs.getReviews.mockReturnValueOnce(of(REVIEWS_PAGE_1_WITHOUT_R1));
+      rs.checkEligibility.mockReturnValueOnce(of(ELIGIBLE));
+
+      c.confirmDeleteReview();
+      c.deleteReview();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      expect(c.reviewMutationError()).toEqual({
+        kind: 'not-found',
+        message: 'This review is no longer available.',
+      });
+      expect(fx.nativeElement.textContent).toContain('This review is no longer available.');
+      expect(rs.getReviews).toHaveBeenCalledWith('p1', { page: 1, limit: 10 });
+      expect(rs.checkEligibility).toHaveBeenCalledWith('p1');
+    });
+
+    it('surfaces a generic message for a non-404 edit failure, distinct from the not-found case', async () => {
+      const { fixture: fx, component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ALREADY_REVIEWED_ON_PAGE,
+      });
+      rs.update.mockReturnValue(throwError(() => ({ status: 500 })));
+
+      c.startEditReview();
+      c.reviewForm.controls.body.setValue('An edit that will fail with a 500.');
+      c.saveReviewEdit();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      expect(c.reviewMutationError()).toEqual({
+        kind: 'generic',
+        message: 'Could not save your changes right now. Please try again.',
+      });
+    });
+
+    it('never renders an "(edited)" marker or similar after a successful edit (v1 explicitly has none)', async () => {
+      const { fixture: fx, component: c, reviewsStub: rs } = await buildFixture({
+        isLoggedIn: true,
+        eligibility: ALREADY_REVIEWED_ON_PAGE,
+      });
+      rs.update.mockReturnValue(of(EDITED_REVIEW));
+      rs.getReviews.mockReturnValue(
+        of({
+          ...REVIEWS_PAGE_1,
+          items: [EDITED_REVIEW, REVIEWS_PAGE_1.items[1]],
+        } satisfies ProductReviewListDto),
+      );
+
+      c.startEditReview();
+      c.reviewForm.controls.body.setValue('Updated opinion after using it for a month.');
+      c.saveReviewEdit();
+      fx.detectChanges();
+      await fx.whenStable();
+      fx.detectChanges();
+
+      const el: HTMLElement = fx.nativeElement;
+      expect(el.textContent).not.toContain('(edited)');
+      expect(el.textContent).not.toContain('Edited');
+      expect(el.querySelector('[data-edited]')).toBeNull();
     });
   });
 });
