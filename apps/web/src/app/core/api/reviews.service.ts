@@ -1,7 +1,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { ProductReviewListDto, ProductReviewQuery } from '@hb/shared';
+import {
+  CreateReviewRequest,
+  ProductReviewListDto,
+  ProductReviewQuery,
+  ReviewDto,
+  ReviewEligibilityDto,
+} from '@hb/shared';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -37,5 +43,20 @@ export class ReviewsService {
     return this.http
       .get<ProductReviewListDto>(`${this.API_URL}/${productId}/reviews`, { params })
       .pipe(tap((res) => this.reviews.set(res)));
+  }
+
+  /**
+   * `GET /products/:productId/reviews/eligibility` — authenticated; the API
+   * global-guards this to a 401 for anonymous callers, so callers here MUST
+   * gate on `AuthService.isLoggedIn()` before invoking this at all (never
+   * call it just to see a 401).
+   */
+  checkEligibility(productId: string): Observable<ReviewEligibilityDto> {
+    return this.http.get<ReviewEligibilityDto>(`${this.API_URL}/${productId}/reviews/eligibility`);
+  }
+
+  /** `POST /products/:productId/reviews` — authenticated. 409 on duplicate, 403 if ineligible. */
+  submit(productId: string, dto: CreateReviewRequest): Observable<ReviewDto> {
+    return this.http.post<ReviewDto>(`${this.API_URL}/${productId}/reviews`, dto);
   }
 }

@@ -226,7 +226,134 @@
             </div>
           }
 
-          <!-- Write-a-review entry point lands here in a later slice (PR-4). -->
+        }
+
+        <!-- ── Write a review (PR-4) — auth-dependent, hydration-gated ── -->
+        @if (hydrated()) {
+          @if (isAuthenticated()) {
+            @if (eligibility(); as elig) {
+              @if (elig.canReview) {
+                <div class="pdp__review-form-card">
+                  <h3 class="pdp__review-form-title">Write a Review</h3>
+
+                  @if (reviewSubmitSuccess()) {
+                    <div class="pdp__review-confirmation" role="status">
+                      <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                      Thanks — your review has been posted.
+                    </div>
+                  }
+
+                  @if (reviewSubmitError(); as submitError) {
+                    <div class="pdp__review-form-error" role="alert">
+                      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                      {{ submitError.message }}
+                    </div>
+                  }
+
+                  <form class="pdp__review-form" [formGroup]="reviewForm" (ngSubmit)="submitReview()">
+                    <div class="pdp__review-form-field">
+                      <span class="pdp__review-form-label" id="review-rating-label">Your Rating</span>
+                      <div
+                        class="pdp__review-rating-input"
+                        role="radiogroup"
+                        aria-labelledby="review-rating-label"
+                      >
+                        @for (star of [1, 2, 3, 4, 5]; track star) {
+                          <button
+                            type="button"
+                            class="pdp__review-rating-star"
+                            [class.pdp__review-rating-star--filled]="star <= ratingValue()"
+                            role="radio"
+                            [attr.aria-checked]="star === ratingValue()"
+                            [attr.aria-label]="star + ' star' + (star > 1 ? 's' : '')"
+                            (click)="setRating(star)"
+                          >
+                            <span class="material-symbols-outlined" aria-hidden="true">star</span>
+                          </button>
+                        }
+                      </div>
+                      @if (reviewForm.controls.rating.touched && reviewForm.controls.rating.invalid) {
+                        <span class="pdp__review-form-field-error">Please select a rating from 1 to 5.</span>
+                      }
+                    </div>
+
+                    <div class="pdp__review-form-field">
+                      <label class="pdp__review-form-label" for="review-body">Your Review</label>
+                      <textarea
+                        id="review-body"
+                        class="pdp__review-form-textarea"
+                        rows="4"
+                        formControlName="body"
+                        maxlength="2000"
+                        placeholder="Share your experience with this product…"
+                      ></textarea>
+                      <div class="pdp__review-form-footer">
+                        @if (reviewForm.controls.body.touched && reviewForm.controls.body.invalid) {
+                          <span class="pdp__review-form-field-error">
+                            @if (reviewForm.controls.body.hasError('required')) {
+                              Please write a review.
+                            } @else if (reviewForm.controls.body.hasError('minlength')) {
+                              Reviews need at least 10 characters.
+                            } @else if (reviewForm.controls.body.hasError('maxlength')) {
+                              Reviews can't exceed 2000 characters.
+                            }
+                          </span>
+                        } @else {
+                          <span></span>
+                        }
+                        <span class="pdp__review-form-counter">{{ bodyLength() }} / 2000</span>
+                      </div>
+                    </div>
+
+                    <button type="submit" class="pdp__review-form-submit" [disabled]="submitting()">
+                      @if (submitting()) {
+                        <span class="material-symbols-outlined pdp__review-form-spinner" aria-hidden="true">progress_activity</span>
+                        Submitting…
+                      } @else {
+                        Submit Review
+                      }
+                    </button>
+                  </form>
+                </div>
+              } @else if (elig.reason === ReviewIneligibilityReason.NOT_PURCHASED) {
+                <p class="pdp__review-ineligible">Only customers who've received this product can review it</p>
+              } @else if (elig.reason === ReviewIneligibilityReason.ALREADY_REVIEWED) {
+                @if (existingReview(); as review) {
+                  <div class="pdp__review-existing">
+                    <p class="pdp__review-existing-label">Your Review</p>
+                    <div class="pdp__reviews-stars" [attr.aria-label]="review.rating + ' out of 5 stars'">
+                      @for (filled of starsFilled(review.rating); track $index) {
+                        <span
+                          class="material-symbols-outlined pdp__reviews-star"
+                          [class.pdp__reviews-star--filled]="filled"
+                          aria-hidden="true"
+                          >star</span
+                        >
+                      }
+                    </div>
+                    <div class="pdp__review-body">
+                      @for (paragraph of review.body.split('\n'); track $index) {
+                        @if (paragraph.trim()) {
+                          <p>{{ paragraph }}</p>
+                        }
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  <p class="pdp__review-ineligible">You've already reviewed this product.</p>
+                }
+              } @else if (elig.reason === ReviewIneligibilityReason.OWN_LISTING) {
+                <p class="pdp__review-ineligible">You can't review your own listing.</p>
+              }
+            }
+          } @else {
+            <div class="pdp__review-signin">
+              <p>Sign in to share your experience with this product.</p>
+              <button type="button" class="pdp__review-signin-btn" (click)="signInToReview()">
+                Sign In to Write a Review
+              </button>
+            </div>
+          }
         }
       </div>
     </section>
