@@ -18,6 +18,7 @@ import {
   ProductReviewListDto,
   ReviewEligibilityDto,
   ReviewIneligibilityReason,
+  UpdateReviewRequest,
 } from '@hb/shared';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
@@ -40,6 +41,19 @@ type ReviewSubmitErrorKind = 'duplicate' | 'ineligible' | 'generic';
 
 interface ReviewSubmitError {
   kind: ReviewSubmitErrorKind;
+  message: string;
+}
+
+/**
+ * PR-6: edit/delete errors for the caller's own review. `not-found` covers
+ * both "someone else's review" (shouldn't be reachable via these buttons,
+ * since they only render for `existingReviewId` — but the API is the real
+ * enforcement point) and "already deleted" (e.g. a stale second tab).
+ */
+type ReviewMutationErrorKind = 'not-found' | 'generic';
+
+interface ReviewMutationError {
+  kind: ReviewMutationErrorKind;
   message: string;
 }
 
@@ -179,6 +193,17 @@ export class ProductDetail {
     }
     return this.reviewsList()?.items.find((r) => r.id === elig.existingReviewId) ?? null;
   });
+
+  // ── Edit / delete own review (PR-6) ─────────────────────────────────────
+  // Reuses `reviewForm`/`setRating()` from the write-a-review flow above —
+  // pre-filled on `startEditReview()`. Kept entirely separate from the
+  // create-flow's `submitting`/`reviewSubmitError` state so the two forms
+  // (never shown at once, but logically distinct) can't interfere.
+  readonly isEditingReview = signal(false);
+  readonly savingEdit = signal(false);
+  readonly isConfirmingDelete = signal(false);
+  readonly deleting = signal(false);
+  readonly reviewMutationError = signal<ReviewMutationError | null>(null);
 
   // ── Image gallery ───────────────────────────────────────────────────────
   readonly activeImageIndex = signal(0);
@@ -328,6 +353,13 @@ export class ProductDetail {
     this.submitting.set(false);
     this.reviewSubmitError.set(null);
     this.reviewSubmitSuccess.set(false);
+    // Navigating between products must not leak edit/delete UI state from
+    // the previous product's review into this one.
+    this.isEditingReview.set(false);
+    this.savingEdit.set(false);
+    this.isConfirmingDelete.set(false);
+    this.deleting.set(false);
+    this.reviewMutationError.set(null);
   }
 
   /** Pure 5-star fill mask for a given rating (1–5), rounded to the nearest whole star. */
@@ -523,5 +555,126 @@ export class ProductDetail {
       kind: 'generic',
       message: 'Could not submit your review right now. Please try again.',
     };
+  }
+
+  // ── Edit / delete own review (PR-6) ──────────────────────────────────────
+
+  /** Pre-fills the shared `reviewForm` with the caller's own review and shows the edit form. */
+  startEditReview(): void {
+    const review = this.existingReview();
+    if (!review) return;
+    this.reviewForm.reset({ rating: review.rating, body: review.body });
+    this.isConfirmingDelete.set(false);
+    this.reviewMutationError.set(null);
+    this.reviewSubmitSuccess.set(false);
+    this.isEditingReview.set(true);
+  }
+
+  /** Discards any in-progress edits and returns to the read-only view — never saves. */
+  cancelEditReview(): void {
+    this.isEditingReview.set(false);
+    this.reviewMutationError.set(null);
+    this.reviewForm.reset({ rating: 0, body: '' });
+  }
+
+  saveReviewEdit(): void {
+    if (this.savingEdit()) return;
+    // Trimmed here so a whitespace-only body — which minlength alone would
+    // accept — is rejected the same way the API's trimming DTO rejects it.
+    const trimmedBody = this.reviewForm.controls.body.value.trim();
+    this.reviewForm.controls.body.setValue(trimmedBody);
+    if (this.reviewForm.invalid) {
+      this.reviewForm.markAllAsTouched();
+      return;
+    }
+    const productId = this.productId();
+    const review = this.existingReview();
+    if (!productId || !review) return;
+
+    this.savingEdit.set(true);
+    this.reviewMutationError.set(null);
+
+    const { rating } = this.reviewForm.getRawValue();
+    const request: UpdateReviewRequest = { rating, body: trimmedBody };
+
+    this.reviewsService.update(review.id, request).subscribe({
+      next: () => {
+        this.savingEdit.set(false);
+        this.isEditingReview.set(false);
+        // Never a local splice — refresh straight from the server, same as submitReview().
+        this.loadReviews(productId, this.reviewsPage());
+        this.fetchEligibility(productId);
+      },
+      error: (err: ReviewApiErrorShape) => {
+        this.savingEdit.set(false);
+        this.handleReviewMutationError(err, 'update');
+      },
+    });
+  }
+
+  /** Shows the lightweight inline "Are you sure?" confirm step — no `window.confirm()`, no modal. */
+  confirmDeleteReview(): void {
+    this.isConfirmingDelete.set(true);
+    this.reviewMutationError.set(null);
+  }
+
+  cancelDeleteReview(): void {
+    this.isConfirmingDelete.set(false);
+  }
+
+  deleteReview(): void {
+    if (this.deleting()) return;
+    const productId = this.productId();
+    const review = this.existingReview();
+    if (!productId || !review) return;
+
+    this.deleting.set(true);
+    this.reviewMutationError.set(null);
+
+    this.reviewsService.delete(review.id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.isConfirmingDelete.set(false);
+        // The server is the source of truth for the post-delete state (canReview
+        // flips back to true) — never assume it locally, always re-fetch both.
+        // Clamp the page so deleting the only review on the last page doesn't
+        // refetch an now-out-of-range page.
+        const remaining = Math.max(0, (this.reviewsList()?.total ?? 1) - 1);
+        const newTotalPages = Math.max(1, Math.ceil(remaining / REVIEWS_PAGE_SIZE));
+        this.loadReviews(productId, Math.min(this.reviewsPage(), newTotalPages));
+        this.fetchEligibility(productId);
+      },
+      error: (err: ReviewApiErrorShape) => {
+        this.deleting.set(false);
+        this.handleReviewMutationError(err, 'delete');
+      },
+    });
+  }
+
+  private handleReviewMutationError(err: ReviewApiErrorShape, action: 'update' | 'delete'): void {
+    if (err?.status === 404) {
+      this.reviewMutationError.set({
+        kind: 'not-found',
+        message: 'This review is no longer available.',
+      });
+      this.isEditingReview.set(false);
+      this.isConfirmingDelete.set(false);
+      // A 404 here means the review was already deleted elsewhere (e.g. a stale
+      // second tab) — resync both the list and eligibility from the server
+      // rather than leaving stale local state around.
+      const productId = this.productId();
+      if (productId) {
+        this.loadReviews(productId, this.reviewsPage());
+        this.fetchEligibility(productId);
+      }
+      return;
+    }
+    this.reviewMutationError.set({
+      kind: 'generic',
+      message:
+        action === 'update'
+          ? 'Could not save your changes right now. Please try again.'
+          : 'Could not delete your review right now. Please try again.',
+    });
   }
 }

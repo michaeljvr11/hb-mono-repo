@@ -634,11 +634,129 @@
 }
 
 .pdp__review-existing-label {
-  margin: 0 0 8px;
+  margin: 0;
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   color: var(--hb-on-surface-variant);
+}
+
+/* ── Edit / delete own review (PR-6) ──────────────────────────────────── */
+
+.pdp__review-existing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.pdp__review-existing-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pdp__review-existing-edit,
+.pdp__review-existing-cancel {
+  padding: 6px 14px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: var(--hb-radius-pill);
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-on-surface);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--hb-surface-container-low);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.pdp__review-existing-delete {
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, var(--hb-error) 45%, var(--hb-outline-variant));
+  border-radius: var(--hb-radius-pill);
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-error);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--hb-error) 8%, var(--hb-surface-container-lowest));
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* The confirmed "Yes, Delete" action reads as a filled destructive button,
+     matching the filled/outlined pairing already used by pdp__review-form-submit
+     vs pdp__review-form-cancel below. */
+  &--confirm {
+    border: none;
+    background: var(--hb-error);
+    color: var(--hb-on-primary);
+
+    &:hover {
+      filter: brightness(1.05);
+      background: var(--hb-error);
+    }
+  }
+}
+
+.pdp__review-delete-confirm {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--hb-error) 30%, var(--hb-outline-variant));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--hb-error) 6%, var(--hb-surface-container-lowest));
+
+  p {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--hb-on-surface);
+  }
+}
+
+.pdp__review-delete-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pdp__review-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pdp__review-form-cancel {
+  padding: 12px 24px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: var(--hb-radius-pill);
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-on-surface);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--hb-surface-container-low);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 .pdp__review-signin {

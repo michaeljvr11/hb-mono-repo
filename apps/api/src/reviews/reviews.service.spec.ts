@@ -1,6 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { QueryFailedError } from 'typeorm';
@@ -12,6 +17,7 @@ import { User } from '../users/entities/user.entity';
 import { OrderItem } from '../orders/entities/order-item.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
 
 /** Builds a TypeORM QueryFailedError carrying a Postgres SQLSTATE, as pg-driver errors do. */
 function pgError(code: string): QueryFailedError {
@@ -114,6 +120,7 @@ describe('ReviewsService', () => {
     findOne: jest.Mock;
     create: jest.Mock;
     save: jest.Mock;
+    remove: jest.Mock;
   };
   let productRepo: { findOne: jest.Mock };
   let orderItemRepo: { createQueryBuilder: jest.Mock };
@@ -132,6 +139,7 @@ describe('ReviewsService', () => {
       findOne: jest.fn(),
       create: jest.fn((data) => ({ ...data }) as Review),
       save: jest.fn(),
+      remove: jest.fn(),
     };
     productRepo = { findOne: jest.fn() };
     orderItemRepo = { createQueryBuilder: jest.fn() };
@@ -507,6 +515,156 @@ describe('ReviewsService', () => {
       });
     });
   });
+
+  // ── PR-5: update ─────────────────────────────────────────────────────────
+
+  describe('update', () => {
+    const patch = { rating: 4, body: 'Updated my mind, still good though.' };
+
+    it('rejects an empty payload with a 400 (neither rating nor body present)', async () => {
+      await expect(service.update(makeUser(), 'rev-1', {})).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(reviewRepo.findOne).not.toHaveBeenCalled();
+      expect(reviewRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('404s on an unknown id', async () => {
+      reviewRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.update(makeUser(), 'nope', patch)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it("404s (never 403) editing another user's review", async () => {
+      // Scoped by (id, userId) — a row owned by someone else reads as missing.
+      reviewRepo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.update(makeUser({ id: 'user-2' }), 'rev-1', patch),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(reviewRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'rev-1', userId: 'user-2' },
+      });
+    });
+
+    it('the owner can edit rating and body', async () => {
+      const existing = makeReview();
+      reviewRepo.findOne.mockResolvedValue(existing);
+      reviewRepo.save.mockImplementation((review: Review) => ({
+        ...review,
+        updatedAt: new Date('2026-08-10T00:00:00.000Z'),
+      }));
+
+      const result = await service.update(makeUser(), 'rev-1', patch);
+
+      expect(result.rating).toBe(patch.rating);
+      expect(result.body).toBe(patch.body);
+    });
+
+    it('allows a partial patch (rating only, body untouched)', async () => {
+      const existing = makeReview({ body: 'Original body text here.' });
+      reviewRepo.findOne.mockResolvedValue(existing);
+      reviewRepo.save.mockImplementation((review: Review) => review);
+
+      const result = await service.update(makeUser(), 'rev-1', { rating: 2 });
+
+      expect(result.rating).toBe(2);
+      expect(result.body).toBe('Original body text here.');
+    });
+
+    it('never mutates productId, userId, or isVerifiedPurchase even given a raw payload with those keys', async () => {
+      const existing = makeReview({
+        productId: 'prod-1',
+        userId: 'user-1',
+        isVerifiedPurchase: true,
+      });
+      reviewRepo.findOne.mockResolvedValue(existing);
+      reviewRepo.save.mockImplementation((review: Review) => review);
+
+      // Not expressible via UpdateReviewDto's shape, but assert the service
+      // itself ignores extra keys rather than blindly spreading dto onto
+      // the entity.
+      const rawPayload = {
+        rating: 3,
+        body: 'Trying to smuggle other fields in.',
+        productId: 'prod-2',
+        userId: 'user-9',
+        isVerifiedPurchase: false,
+      } as unknown as UpdateReviewDto;
+
+      const saved = await service.update(makeUser(), 'rev-1', rawPayload);
+
+      expect(saved.productId).toBe('prod-1');
+      expect(reviewRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          productId: 'prod-1',
+          userId: 'user-1',
+          isVerifiedPurchase: true,
+        }),
+      );
+    });
+  });
+
+  // ── PR-5: remove ─────────────────────────────────────────────────────────
+
+  describe('remove', () => {
+    it('404s on an unknown id', async () => {
+      reviewRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.remove(makeUser(), 'nope')).rejects.toBeInstanceOf(NotFoundException);
+      expect(reviewRepo.remove).not.toHaveBeenCalled();
+    });
+
+    it("404s (never 403) deleting another user's review", async () => {
+      reviewRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.remove(makeUser({ id: 'user-2' }), 'rev-1')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(reviewRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'rev-1', userId: 'user-2' },
+      });
+    });
+
+    it('the owner can delete their review', async () => {
+      const existing = makeReview();
+      reviewRepo.findOne.mockResolvedValue(existing);
+
+      await service.remove(makeUser(), 'rev-1');
+
+      expect(reviewRepo.remove).toHaveBeenCalledWith(existing);
+    });
+  });
+
+  // ── PR-5: summary recomputes after edit/delete ──────────────────────────
+
+  describe('summary after mutation', () => {
+    it('recomputes averageRating after an edit that changes the rating', async () => {
+      reviewRepo.findOne.mockResolvedValue(makeReview({ rating: 5 }));
+      reviewRepo.save.mockImplementation((review: Review) => review);
+
+      await service.update(makeUser(), 'rev-1', { rating: 1 });
+
+      // Post-edit read is a fresh live aggregate — simulate the new average.
+      stub({ average: '1', count: '1' }, [makeReview({ rating: 1 })]);
+      const dto = await service.findAllForProduct('prod-1');
+
+      expect(dto.summary).toEqual({ averageRating: 1, reviewCount: 1 });
+    });
+
+    it('deleting the last review for a product brings averageRating back to null, not 0', async () => {
+      reviewRepo.findOne.mockResolvedValue(makeReview());
+
+      await service.remove(makeUser(), 'rev-1');
+
+      stub({ average: null, count: '0' }, []);
+      const dto = await service.findAllForProduct('prod-1');
+
+      expect(dto.summary).toEqual({ averageRating: null, reviewCount: 0 });
+    });
+  });
 });
 
 /** Same "everything but delivered" matrix as checkEligibility's, reused for create's gate. */
@@ -556,5 +714,58 @@ describe('CreateReviewDto validation', () => {
     const instance = plainToInstance(CreateReviewDto, { rating: 5, body: '   1234567890   ' });
     expect(instance.body).toBe('1234567890');
     expect(await validate(instance)).toHaveLength(0);
+  });
+});
+
+// ── PR-5: UpdateReviewDto validation ────────────────────────────────────────
+
+describe('UpdateReviewDto validation', () => {
+  async function errorsFor(payload: Record<string, unknown>) {
+    const instance = plainToInstance(UpdateReviewDto, payload);
+    return validate(instance);
+  }
+
+  it('accepts a valid rating-only payload', async () => {
+    expect(await errorsFor({ rating: 4 })).toHaveLength(0);
+  });
+
+  it('accepts a valid body-only payload', async () => {
+    expect(await errorsFor({ body: 'Updated review body text.' })).toHaveLength(0);
+  });
+
+  it('accepts a valid payload with both fields', async () => {
+    expect(await errorsFor({ rating: 3, body: 'Updated review body text.' })).toHaveLength(0);
+  });
+
+  it.each([0, 6, 3.5])('rejects an out-of-bounds/non-integer rating: %s', async (rating) => {
+    const errors = await errorsFor({ rating });
+    expect(errors.some((e) => e.property === 'rating')).toBe(true);
+  });
+
+  it('rejects a body shorter than 10 characters', async () => {
+    const errors = await errorsFor({ body: 'too short' });
+    expect(errors.some((e) => e.property === 'body')).toBe(true);
+  });
+
+  it('rejects a body longer than 2000 characters', async () => {
+    const errors = await errorsFor({ body: 'a'.repeat(2001) });
+    expect(errors.some((e) => e.property === 'body')).toBe(true);
+  });
+
+  it('rejects a whitespace-only body', async () => {
+    const errors = await errorsFor({ body: '                    ' });
+    expect(errors.some((e) => e.property === 'body')).toBe(true);
+  });
+
+  it('trims surrounding whitespace before enforcing the length bound', async () => {
+    const instance = plainToInstance(UpdateReviewDto, { body: '   1234567890   ' });
+    expect(instance.body).toBe('1234567890');
+    expect(await validate(instance)).toHaveLength(0);
+  });
+
+  it('DTO-level validation alone does not reject an empty {} payload — the service enforces that', async () => {
+    // class-validator's @IsOptional() on both fields means {} passes shape
+    // validation; ReviewsService.update is what throws the 400 for "neither present".
+    expect(await errorsFor({})).toHaveLength(0);
   });
 });

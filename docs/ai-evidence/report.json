@@ -1,34 +1,34 @@
 {
-  "generatedAt": "2026-08-23T19:53:01.948Z",
+  "generatedAt": "2026-08-23T20:42:31.858Z",
   "git": {
-    "totalCommits": 248,
-    "aiCommits": 237,
+    "totalCommits": 252,
+    "aiCommits": 241,
     "aiPct": 96,
-    "appCommits": 177,
-    "ins": 99324,
-    "del": 10528,
-    "net": 88796,
-    "aiIns": 85810,
-    "aiDel": 10354,
-    "filesTouched": 775,
+    "appCommits": 180,
+    "ins": 100546,
+    "del": 10692,
+    "net": 89854,
+    "aiIns": 87032,
+    "aiDel": 10518,
+    "filesTouched": 777,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 105,
-        "ins": 48597,
-        "del": 3066
+        "commits": 106,
+        "ins": 49318,
+        "del": 3084
       },
       {
         "name": "API (NestJS)",
-        "commits": 94,
-        "ins": 29627,
-        "del": 1727
+        "commits": 96,
+        "ins": 29971,
+        "del": 1734
       },
       {
         "name": "Docs",
-        "commits": 72,
-        "ins": 16042,
-        "del": 5559
+        "commits": 73,
+        "ins": 16193,
+        "del": 5697
       },
       {
         "name": "AI Factory config",
@@ -38,9 +38,9 @@
       },
       {
         "name": "Shared contracts",
-        "commits": 38,
-        "ins": 1569,
-        "del": 48
+        "commits": 39,
+        "ins": 1575,
+        "del": 49
       },
       {
         "name": "Root & config",
@@ -58,6 +58,26 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-08-23",
     "recent": [
+      {
+        "hash": "0b4dbac",
+        "subject": "feat(web): add edit/delete controls for own review on PDP",
+        "ai": true
+      },
+      {
+        "hash": "ab01535",
+        "subject": "fix(api): reject malformed review id with 404 instead of 500",
+        "ai": true
+      },
+      {
+        "hash": "ada3f7d",
+        "subject": "feat(api): add author-only edit/delete for reviews",
+        "ai": true
+      },
+      {
+        "hash": "f1d33bb",
+        "subject": "chore(evidence): recompile AI-authorship report for the review batch",
+        "ai": true
+      },
       {
         "hash": "6e169bc",
         "subject": "fix(reviews): unreachable success confirmation and untrimmed body",
@@ -97,26 +117,6 @@
         "hash": "1103fa5",
         "subject": "fix(api): close the cleanup gaps found in review on both upload paths",
         "ai": true
-      },
-      {
-        "hash": "cbd2c2e",
-        "subject": "feat(web): render vendor logo and banner from the derivative set",
-        "ai": true
-      },
-      {
-        "hash": "e83e098",
-        "subject": "feat(api): put vendor logo and banner uploads through the shared pipeline",
-        "ai": true
-      },
-      {
-        "hash": "125daa5",
-        "subject": "feat(web): render product images responsively from the derivative set",
-        "ai": true
-      },
-      {
-        "hash": "e39c83a",
-        "subject": "feat(api): resize uploads into WebP derivatives before persistence",
-        "ai": true
       }
     ]
   },
@@ -130,6 +130,11 @@
       "branch": "feat/1fqtc2JF-vendor-onboarding",
       "cardId": "1fqtc2JF",
       "slug": "vendor-onboarding"
+    },
+    {
+      "branch": "feat/23PYFGW7-edit-delete-own-review",
+      "cardId": "23PYFGW7",
+      "slug": "edit-delete-own-review"
     },
     {
       "branch": "feat/4loUsIJ7-review-contracts-read-api",
@@ -402,18 +407,18 @@
       "merge/rebase while on protected branch 'main'": 2,
       "bare push from protected branch 'main'": 1
     },
-    "gatePass": 35,
+    "gatePass": 36,
     "gateFail": 2,
-    "edits": 784,
-    "editsUnfixable": 257,
+    "edits": 797,
+    "editsUnfixable": 263,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-23T19:51:57.123Z",
+    "lastTs": "2026-08-23T20:38:41.141Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 64,
+          "invocations": 66,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -422,7 +427,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 29,
+          "invocations": 30,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -431,7 +436,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 39,
+          "invocations": 40,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -449,7 +454,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 28,
+          "invocations": 29,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -467,7 +472,7 @@
         },
         {
           "agentType": "docs-writer",
-          "invocations": 14,
+          "invocations": 15,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -503,36 +508,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-08-18T19:03:14.652Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-18T19:26:05.185Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-18T19:34:33.096Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-18T19:58:54.105Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-18T20:04:51.488Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-18T20:16:30.933Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-18T20:43:53.536Z",
           "agentType": "backend-engineer",
@@ -602,6 +577,36 @@
           "ts": "2026-08-23T19:48:52.756Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:53:49.260Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:56:29.488Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T19:58:38.588Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T20:16:42.225Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T20:28:19.388Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-23T20:37:38.778Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
         }
       ]
     }
@@ -609,6 +614,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/4loUsIJ7-review-contracts-read-api",
+      "number": 60,
+      "state": "MERGED",
+      "title": "Product Reviews & Ratings: contracts, eligibility gate, PDP tab, submission form",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/60"
+    },
     {
       "headRefName": "feat/8AQq2C3E-product-image-optimization",
       "number": 59,
@@ -1030,11 +1042,11 @@
     },
     {
       "name": "To Do",
-      "cards": 25
+      "cards": 23
     },
     {
       "name": "In Progress",
-      "cards": 4
+      "cards": 2
     },
     {
       "name": "In Review",
@@ -1042,7 +1054,7 @@
     },
     {
       "name": "Done",
-      "cards": 85
+      "cards": 89
     },
     {
       "name": "Fable Documentation",

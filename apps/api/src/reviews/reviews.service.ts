@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -15,6 +16,7 @@ import {
   ReviewEligibilityDto,
   ReviewIneligibilityReason,
   ReviewSort,
+  UpdateReviewRequest,
 } from '@hb/shared';
 import { Review } from './entities/review.entity';
 import { Product } from '../products/entities/product.entity';
@@ -175,6 +177,55 @@ export class ReviewsService {
 
     saved.user = user;
     return this.toDto(saved);
+  }
+
+  /**
+   * PATCH /reviews/:id (author-only). `dto` never contains `productId`,
+   * `userId`, or `isVerifiedPurchase` — `UpdateReviewDto` doesn't expose
+   * those fields — and this method assigns `rating`/`body` individually
+   * rather than spreading `dto` onto the entity, so those columns can never
+   * be mutated even from a hand-built payload. `updatedAt` moves via
+   * `@UpdateDateColumn` on `.save()`; `createdAt` is untouched.
+   */
+  async update(user: User, id: string, dto: UpdateReviewRequest): Promise<ReviewDto> {
+    if (dto.rating === undefined && dto.body === undefined) {
+      throw new BadRequestException('At least one of rating or body must be provided');
+    }
+
+    const review = await this.findOwnedReview(user.id, id);
+
+    if (dto.rating !== undefined) {
+      review.rating = dto.rating;
+    }
+    if (dto.body !== undefined) {
+      review.body = dto.body;
+    }
+
+    const saved = await this.reviewRepository.save(review);
+    saved.user = user;
+    return this.toDto(saved);
+  }
+
+  /** DELETE /reviews/:id (author-only). Summary recomputes for free on the
+   * next GET /products/:productId/reviews — it's a live aggregate. */
+  async remove(user: User, id: string): Promise<void> {
+    const review = await this.findOwnedReview(user.id, id);
+    await this.reviewRepository.remove(review);
+  }
+
+  /**
+   * Resolve a review strictly through the caller's own userId — mirrors
+   * `OrdersService.findOneForUser` / `AddressesService`'s doc-commented
+   * pattern / `wishlist.service.ts`'s `findOwnedItem`. A review belonging to
+   * another user is indistinguishable from a missing one: plain 404, never
+   * 403. No admin override in v1 — even an admin gets 404 here.
+   */
+  private async findOwnedReview(userId: string, id: string): Promise<Review> {
+    const review = await this.reviewRepository.findOne({ where: { id, userId } });
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+    return review;
   }
 
   private async getProductOrThrow(productId: string): Promise<Product> {

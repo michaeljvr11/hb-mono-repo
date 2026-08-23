@@ -237,6 +237,18 @@
                 Thanks — your review has been posted.
               </div>
             }
+            <!-- Sibling of the eligibility branches below, not nested inside them: a
+                 mutation error (e.g. 404 on a stale edit/delete) is always followed by
+                 an eligibility+list refetch, which can flip which eligibility branch
+                 renders or drop the review from the list entirely. Nesting this message
+                 inside `elig`/`existingReview` would unmount it the instant that refetch
+                 resolves — the same class of bug PR-4 fixed for the success message. -->
+            @if (reviewMutationError(); as mutationError) {
+              <div class="pdp__review-form-error" role="alert">
+                <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                {{ mutationError.message }}
+              </div>
+            }
             @if (eligibility(); as elig) {
               @if (elig.canReview) {
                 <div class="pdp__review-form-card">
@@ -318,26 +330,146 @@
                 <p class="pdp__review-ineligible">Only customers who've received this product can review it</p>
               } @else if (elig.reason === ReviewIneligibilityReason.ALREADY_REVIEWED) {
                 @if (existingReview(); as review) {
-                  <div class="pdp__review-existing">
-                    <p class="pdp__review-existing-label">Your Review</p>
-                    <div class="pdp__reviews-stars" [attr.aria-label]="review.rating + ' out of 5 stars'">
-                      @for (filled of starsFilled(review.rating); track $index) {
-                        <span
-                          class="material-symbols-outlined pdp__reviews-star"
-                          [class.pdp__reviews-star--filled]="filled"
-                          aria-hidden="true"
-                          >star</span
-                        >
-                      }
+                  @if (isEditingReview()) {
+                    <div class="pdp__review-form-card">
+                      <h3 class="pdp__review-form-title">Edit Your Review</h3>
+
+                      <form class="pdp__review-form" [formGroup]="reviewForm" (ngSubmit)="saveReviewEdit()">
+                        <div class="pdp__review-form-field">
+                          <span class="pdp__review-form-label" id="review-rating-label">Your Rating</span>
+                          <div
+                            class="pdp__review-rating-input"
+                            role="radiogroup"
+                            aria-labelledby="review-rating-label"
+                          >
+                            @for (star of [1, 2, 3, 4, 5]; track star) {
+                              <button
+                                type="button"
+                                class="pdp__review-rating-star"
+                                [class.pdp__review-rating-star--filled]="star <= ratingValue()"
+                                role="radio"
+                                [attr.aria-checked]="star === ratingValue()"
+                                [attr.aria-label]="star + ' star' + (star > 1 ? 's' : '')"
+                                (click)="setRating(star)"
+                              >
+                                <span class="material-symbols-outlined" aria-hidden="true">star</span>
+                              </button>
+                            }
+                          </div>
+                          @if (reviewForm.controls.rating.touched && reviewForm.controls.rating.invalid) {
+                            <span class="pdp__review-form-field-error">Please select a rating from 1 to 5.</span>
+                          }
+                        </div>
+
+                        <div class="pdp__review-form-field">
+                          <label class="pdp__review-form-label" for="review-body">Your Review</label>
+                          <textarea
+                            id="review-body"
+                            class="pdp__review-form-textarea"
+                            rows="4"
+                            formControlName="body"
+                            maxlength="2000"
+                            placeholder="Share your experience with this product…"
+                          ></textarea>
+                          <div class="pdp__review-form-footer">
+                            @if (reviewForm.controls.body.touched && reviewForm.controls.body.invalid) {
+                              <span class="pdp__review-form-field-error">
+                                @if (reviewForm.controls.body.hasError('required')) {
+                                  Please write a review.
+                                } @else if (reviewForm.controls.body.hasError('minlength')) {
+                                  Reviews need at least 10 characters.
+                                } @else if (reviewForm.controls.body.hasError('maxlength')) {
+                                  Reviews can't exceed 2000 characters.
+                                }
+                              </span>
+                            } @else {
+                              <span></span>
+                            }
+                            <span class="pdp__review-form-counter">{{ bodyLength() }} / 2000</span>
+                          </div>
+                        </div>
+
+                        <div class="pdp__review-edit-actions">
+                          <button type="submit" class="pdp__review-form-submit" [disabled]="savingEdit()">
+                            @if (savingEdit()) {
+                              <span class="material-symbols-outlined pdp__review-form-spinner" aria-hidden="true">progress_activity</span>
+                              Saving…
+                            } @else {
+                              Save Changes
+                            }
+                          </button>
+                          <button
+                            type="button"
+                            class="pdp__review-form-cancel"
+                            [disabled]="savingEdit()"
+                            (click)="cancelEditReview()"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
                     </div>
-                    <div class="pdp__review-body">
-                      @for (paragraph of review.body.split('\n'); track $index) {
-                        @if (paragraph.trim()) {
-                          <p>{{ paragraph }}</p>
+                  } @else {
+                    <div class="pdp__review-existing">
+                      <div class="pdp__review-existing-header">
+                        <p class="pdp__review-existing-label">Your Review</p>
+                        <div class="pdp__review-existing-actions">
+                          <button type="button" class="pdp__review-existing-edit" (click)="startEditReview()">
+                            Edit
+                          </button>
+                          <button type="button" class="pdp__review-existing-delete" (click)="confirmDeleteReview()">
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+
+                      @if (isConfirmingDelete()) {
+                        <div class="pdp__review-delete-confirm" role="alertdialog" aria-label="Confirm delete review">
+                          <p>Are you sure you want to delete your review? This can't be undone.</p>
+                          <div class="pdp__review-delete-confirm-actions">
+                            <button
+                              type="button"
+                              class="pdp__review-existing-delete pdp__review-existing-delete--confirm"
+                              [disabled]="deleting()"
+                              (click)="deleteReview()"
+                            >
+                              @if (deleting()) {
+                                Deleting…
+                              } @else {
+                                Yes, Delete
+                              }
+                            </button>
+                            <button
+                              type="button"
+                              class="pdp__review-existing-cancel"
+                              [disabled]="deleting()"
+                              (click)="cancelDeleteReview()"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      }
+
+                      <div class="pdp__reviews-stars" [attr.aria-label]="review.rating + ' out of 5 stars'">
+                        @for (filled of starsFilled(review.rating); track $index) {
+                          <span
+                            class="material-symbols-outlined pdp__reviews-star"
+                            [class.pdp__reviews-star--filled]="filled"
+                            aria-hidden="true"
+                            >star</span
+                          >
                         }
-                      }
+                      </div>
+                      <div class="pdp__review-body">
+                        @for (paragraph of review.body.split('\n'); track $index) {
+                          @if (paragraph.trim()) {
+                            <p>{{ paragraph }}</p>
+                          }
+                        }
+                      </div>
                     </div>
-                  </div>
+                  }
                 } @else {
                   <p class="pdp__review-ineligible">You've already reviewed this product.</p>
                 }
