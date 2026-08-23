@@ -10,6 +10,7 @@ import { UsersController } from '../../users/users.controller';
 import { OrdersController } from '../../orders/orders.controller';
 import { AnalyticsController } from '../../analytics/analytics.controller';
 import { CommissionController } from '../../commission/commission.controller';
+import { ReviewsController } from '../../reviews/reviews.controller';
 
 /**
  * Guardrail: authentication is on by default (global JwtAuthGuard), and a route only
@@ -31,6 +32,7 @@ const CONTROLLERS = [
   OrdersController,
   AnalyticsController,
   CommissionController,
+  ReviewsController,
 ];
 
 const EXPECTED_PUBLIC = [
@@ -49,6 +51,7 @@ const EXPECTED_PUBLIC = [
   'CategoriesController.findOne',
   'ProductsController.getAllProducts',
   'ProductsController.getProductById',
+  'ReviewsController.getReviews',
   'VendorsController.findDirectory',
   'VendorsController.findOne',
 ].sort();
