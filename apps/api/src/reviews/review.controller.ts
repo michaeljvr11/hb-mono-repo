@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+} from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { GetUser } from '../common/decorators/get-user.decorator';
@@ -21,13 +30,17 @@ export class ReviewController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateReviewDto, @GetUser() user: User) {
+  update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() dto: UpdateReviewDto,
+    @GetUser() user: User,
+  ) {
     return this.reviewsService.update(user, id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string, @GetUser() user: User) {
+  remove(@Param('id', new ParseUUIDPipe()) id: string, @GetUser() user: User) {
     return this.reviewsService.remove(user, id);
   }
 }
