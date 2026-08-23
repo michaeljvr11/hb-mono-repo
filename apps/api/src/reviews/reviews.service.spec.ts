@@ -1,11 +1,25 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException } from '@nestjs/common';
-import { ReviewSort } from '@hb/shared';
+import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { validate } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
+import { QueryFailedError } from 'typeorm';
+import { OrderStatus, ReviewIneligibilityReason, ReviewSort } from '@hb/shared';
 import { ReviewsService } from './reviews.service';
 import { Review } from './entities/review.entity';
 import { Product } from '../products/entities/product.entity';
 import { User } from '../users/entities/user.entity';
+import { OrderItem } from '../orders/entities/order-item.entity';
+import { Vendor } from '../vendors/entities/vendor.entity';
+import { CreateReviewDto } from './dto/create-review.dto';
+
+/** Builds a TypeORM QueryFailedError carrying a Postgres SQLSTATE, as pg-driver errors do. */
+function pgError(code: string): QueryFailedError {
+  return new QueryFailedError('INSERT ...', [], {
+    code,
+    toString: () => `error: duplicate key value violates unique constraint`,
+  } as never);
+}
 
 const NOW = new Date('2026-08-01T12:00:00.000Z');
 
@@ -36,6 +50,25 @@ function makeReview(overrides: Partial<Review> = {}): Review {
     updatedAt: NOW,
     ...overrides,
   } as Review;
+}
+
+function makeVendor(overrides: Partial<Vendor> = {}): Vendor {
+  return { id: 'vendor-1', userId: 'vendor-user-1', ...overrides } as Vendor;
+}
+
+/** Fake for the EXISTS-join query builder (innerJoin/where/andWhere/getExists). */
+function makeExistsQb(exists: boolean) {
+  const qb = {
+    innerJoin: jest.fn(),
+    where: jest.fn(),
+    andWhere: jest.fn(),
+    getExists: jest.fn(),
+  };
+  qb.innerJoin.mockReturnValue(qb);
+  qb.where.mockReturnValue(qb);
+  qb.andWhere.mockReturnValue(qb);
+  qb.getExists.mockResolvedValue(exists);
+  return qb;
 }
 
 /** Fake for the aggregate query builder (select/addSelect/where/getRawOne). */
@@ -76,8 +109,15 @@ function makeListQb(reviews: Review[]) {
 
 describe('ReviewsService', () => {
   let service: ReviewsService;
-  let reviewRepo: { createQueryBuilder: jest.Mock };
+  let reviewRepo: {
+    createQueryBuilder: jest.Mock;
+    findOne: jest.Mock;
+    create: jest.Mock;
+    save: jest.Mock;
+  };
   let productRepo: { findOne: jest.Mock };
+  let orderItemRepo: { createQueryBuilder: jest.Mock };
+  let vendorRepo: { findOne: jest.Mock };
 
   /** Wires the two createQueryBuilder() calls findAllForProduct makes, in order: aggregate then list. */
   function stub(raw: { average: string | null; count: string }, reviews: Review[]) {
@@ -87,19 +127,30 @@ describe('ReviewsService', () => {
   }
 
   beforeEach(async () => {
-    reviewRepo = { createQueryBuilder: jest.fn() };
+    reviewRepo = {
+      createQueryBuilder: jest.fn(),
+      findOne: jest.fn(),
+      create: jest.fn((data) => ({ ...data }) as Review),
+      save: jest.fn(),
+    };
     productRepo = { findOne: jest.fn() };
+    orderItemRepo = { createQueryBuilder: jest.fn() };
+    vendorRepo = { findOne: jest.fn() };
 
     const module = await Test.createTestingModule({
       providers: [
         ReviewsService,
         { provide: getRepositoryToken(Review), useValue: reviewRepo },
         { provide: getRepositoryToken(Product), useValue: productRepo },
+        { provide: getRepositoryToken(OrderItem), useValue: orderItemRepo },
+        { provide: getRepositoryToken(Vendor), useValue: vendorRepo },
       ],
     }).compile();
 
     service = module.get(ReviewsService);
     productRepo.findOne.mockResolvedValue(makeProduct());
+    reviewRepo.findOne.mockResolvedValue(null);
+    vendorRepo.findOne.mockResolvedValue(null);
   });
 
   // ── Existence check ──────────────────────────────────────────────────────
@@ -258,5 +309,241 @@ describe('ReviewsService', () => {
         'updatedAt',
       ].sort(),
     );
+  });
+
+  // ── PR-2: checkEligibility ───────────────────────────────────────────────
+
+  describe('checkEligibility', () => {
+    it('404s on an unknown productId', async () => {
+      productRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.checkEligibility(makeUser(), 'nope')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('is eligible when a delivered order for the caller contains the product', async () => {
+      orderItemRepo.createQueryBuilder.mockReturnValue(makeExistsQb(true));
+
+      const result = await service.checkEligibility(makeUser(), 'prod-1');
+
+      expect(result).toEqual({ canReview: true, reason: null });
+    });
+
+    const NON_DELIVERED_STATUSES = Object.values(OrderStatus).filter(
+      (status) => status !== OrderStatus.DELIVERED,
+    );
+
+    // Parametrised over the FULL OrderStatus matrix (everything but DELIVERED) —
+    // asserted against the enum itself so a newly added status can't silently
+    // become qualifying without a test failing here.
+    it.each(NON_DELIVERED_STATUSES)(
+      'is ineligible (not_purchased) when the only order is status=%s',
+      async (status) => {
+        // The gate's SQL only ever asks for OrderStatus.DELIVERED — a real DB
+        // would return no rows for any other status, which is what getExists:false models.
+        const qb = makeExistsQb(false);
+        orderItemRepo.createQueryBuilder.mockReturnValue(qb);
+
+        const result = await service.checkEligibility(makeUser(), 'prod-1');
+
+        expect(qb.andWhere).toHaveBeenCalledWith('order.status = :status', {
+          status: OrderStatus.DELIVERED,
+        });
+        expect(qb.andWhere).not.toHaveBeenCalledWith('order.status = :status', { status });
+        expect(result).toEqual({
+          canReview: false,
+          reason: ReviewIneligibilityReason.NOT_PURCHASED,
+        });
+      },
+    );
+
+    it("does not qualify from another user's delivered order for the same product", async () => {
+      const qb = makeExistsQb(false); // caller's own userId has no delivered order
+      orderItemRepo.createQueryBuilder.mockReturnValue(qb);
+
+      const result = await service.checkEligibility(makeUser({ id: 'user-2' }), 'prod-1');
+
+      expect(qb.andWhere).toHaveBeenCalledWith('order.userId = :userId', { userId: 'user-2' });
+      expect(result).toEqual({ canReview: false, reason: ReviewIneligibilityReason.NOT_PURCHASED });
+    });
+
+    it('does not qualify from a delivered order that does not contain the product', async () => {
+      const qb = makeExistsQb(false);
+      orderItemRepo.createQueryBuilder.mockReturnValue(qb);
+
+      const result = await service.checkEligibility(makeUser(), 'prod-2');
+
+      expect(qb.where).toHaveBeenCalledWith('orderItem.productId = :productId', {
+        productId: 'prod-2',
+      });
+      expect(result).toEqual({ canReview: false, reason: ReviewIneligibilityReason.NOT_PURCHASED });
+    });
+
+    it('is ineligible (already_reviewed) with the existing review id when a review already exists', async () => {
+      reviewRepo.findOne.mockResolvedValue(makeReview({ id: 'rev-99' }));
+
+      const result = await service.checkEligibility(makeUser(), 'prod-1');
+
+      expect(result).toEqual({
+        canReview: false,
+        reason: ReviewIneligibilityReason.ALREADY_REVIEWED,
+        existingReviewId: 'rev-99',
+      });
+      expect(orderItemRepo.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('is ineligible (own_listing) when the caller is the vendor for the product', async () => {
+      productRepo.findOne.mockResolvedValue(makeProduct({ vendorId: 'vendor-1' }));
+      vendorRepo.findOne.mockResolvedValue(makeVendor({ id: 'vendor-1', userId: 'user-1' }));
+
+      const result = await service.checkEligibility(makeUser({ id: 'user-1' }), 'prod-1');
+
+      expect(result).toEqual({ canReview: false, reason: ReviewIneligibilityReason.OWN_LISTING });
+      // Own-listing is checked first — never reaches the duplicate/order lookups.
+      expect(reviewRepo.findOne).not.toHaveBeenCalled();
+      expect(orderItemRepo.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('is not own_listing for a platform (vendorless) product even for a vendor caller', async () => {
+      productRepo.findOne.mockResolvedValue(makeProduct({ vendorId: undefined }));
+      orderItemRepo.createQueryBuilder.mockReturnValue(makeExistsQb(true));
+
+      const result = await service.checkEligibility(makeUser({ id: 'user-1' }), 'prod-1');
+
+      expect(vendorRepo.findOne).not.toHaveBeenCalled();
+      expect(result.canReview).toBe(true);
+    });
+  });
+
+  // ── PR-2: create ─────────────────────────────────────────────────────────
+
+  describe('create', () => {
+    const validDto = { rating: 5, body: 'Really great product, would buy again.' };
+
+    it('404s on an unknown productId', async () => {
+      productRepo.findOne.mockResolvedValue(null);
+
+      await expect(service.create(makeUser(), 'nope', validDto)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('403s when the caller is the vendor for the product, even with a delivered order', async () => {
+      productRepo.findOne.mockResolvedValue(makeProduct({ vendorId: 'vendor-1' }));
+      vendorRepo.findOne.mockResolvedValue(makeVendor({ id: 'vendor-1', userId: 'user-1' }));
+      orderItemRepo.createQueryBuilder.mockReturnValue(makeExistsQb(true));
+
+      await expect(
+        service.create(makeUser({ id: 'user-1' }), 'prod-1', validDto),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      expect(reviewRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('409s (pre-check) on a duplicate review without touching the existing row', async () => {
+      reviewRepo.findOne.mockResolvedValue(makeReview());
+
+      await expect(service.create(makeUser(), 'prod-1', validDto)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(reviewRepo.save).not.toHaveBeenCalled();
+    });
+
+    it.each(NON_DELIVERED_STATUSES_FOR_CREATE())(
+      '403s when the caller has no delivered order (status=%s)',
+      async () => {
+        orderItemRepo.createQueryBuilder.mockReturnValue(makeExistsQb(false));
+
+        await expect(service.create(makeUser(), 'prod-1', validDto)).rejects.toBeInstanceOf(
+          ForbiddenException,
+        );
+        expect(reviewRepo.save).not.toHaveBeenCalled();
+      },
+    );
+
+    it('surfaces a concurrent-insert unique violation (23505) as the same 409', async () => {
+      orderItemRepo.createQueryBuilder.mockReturnValue(makeExistsQb(true));
+      reviewRepo.save.mockRejectedValue(pgError('23505'));
+
+      await expect(service.create(makeUser(), 'prod-1', validDto)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+    });
+
+    it('rethrows a non-unique-violation save error', async () => {
+      orderItemRepo.createQueryBuilder.mockReturnValue(makeExistsQb(true));
+      const dbError = new Error('connection lost');
+      reviewRepo.save.mockRejectedValue(dbError);
+
+      await expect(service.create(makeUser(), 'prod-1', validDto)).rejects.toBe(dbError);
+    });
+
+    it('persists isVerifiedPurchase as true and returns the created review as a DTO', async () => {
+      orderItemRepo.createQueryBuilder.mockReturnValue(makeExistsQb(true));
+      reviewRepo.save.mockImplementation((review: Review) => ({
+        ...review,
+        id: 'rev-new',
+        createdAt: NOW,
+        updatedAt: NOW,
+      }));
+
+      const result = await service.create(makeUser(), 'prod-1', validDto);
+
+      expect(reviewRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          productId: 'prod-1',
+          userId: 'user-1',
+          rating: validDto.rating,
+          body: validDto.body,
+          isVerifiedPurchase: true,
+        }),
+      );
+      expect(result).toMatchObject({
+        id: 'rev-new',
+        productId: 'prod-1',
+        rating: validDto.rating,
+        body: validDto.body,
+        isVerifiedPurchase: true,
+      });
+    });
+  });
+});
+
+/** Same "everything but delivered" matrix as checkEligibility's, reused for create's gate. */
+function NON_DELIVERED_STATUSES_FOR_CREATE(): OrderStatus[] {
+  return Object.values(OrderStatus).filter((status) => status !== OrderStatus.DELIVERED);
+}
+
+// ── PR-2: CreateReviewDto validation ────────────────────────────────────────
+
+describe('CreateReviewDto validation', () => {
+  async function errorsFor(payload: Record<string, unknown>) {
+    const instance = plainToInstance(CreateReviewDto, payload);
+    return validate(instance);
+  }
+
+  it('accepts a valid payload', async () => {
+    const errors = await errorsFor({ rating: 5, body: '1234567890' });
+    expect(errors).toHaveLength(0);
+  });
+
+  it.each([0, 6, 3.5])('rejects an out-of-bounds/non-integer rating: %s', async (rating) => {
+    const errors = await errorsFor({ rating, body: '1234567890' });
+    expect(errors.some((e) => e.property === 'rating')).toBe(true);
+  });
+
+  it('rejects a body shorter than 10 characters', async () => {
+    const errors = await errorsFor({ rating: 5, body: 'too short' });
+    expect(errors.some((e) => e.property === 'body')).toBe(true);
+  });
+
+  it('rejects a body longer than 2000 characters', async () => {
+    const errors = await errorsFor({ rating: 5, body: 'a'.repeat(2001) });
+    expect(errors.some((e) => e.property === 'body')).toBe(true);
+  });
+
+  it('rejects a rating-only submission (missing body)', async () => {
+    const errors = await errorsFor({ rating: 5 });
+    expect(errors.some((e) => e.property === 'body')).toBe(true);
   });
 });
