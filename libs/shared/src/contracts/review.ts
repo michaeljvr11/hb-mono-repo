@@ -45,7 +45,12 @@ export interface CreateReviewRequest {
   body: string;
 }
 
-/** PR-2: PATCH /products/:productId/reviews/:reviewId body. */
+/**
+ * PR-5: PATCH /reviews/:id body — flat, id-scoped route (NOT nested under
+ * /products/:productId/reviews — ownership is resolved by (review.id, userId)
+ * in the service layer, productId plays no role in the route). At least one
+ * of `rating`/`body` must be present; an empty `{}` is rejected.
+ */
 export type UpdateReviewRequest = Partial<CreateReviewRequest>;
 
 /** PR-2: GET /products/:productId/reviews/eligibility response (authenticated). */
