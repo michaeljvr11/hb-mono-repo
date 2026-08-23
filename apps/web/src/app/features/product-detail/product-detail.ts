@@ -1,4 +1,4 @@
-import { isPlatformBrowser, Location } from '@angular/common';
+import { DatePipe, isPlatformBrowser, Location } from '@angular/common';
 import {
   Component,
   PLATFORM_ID,
@@ -10,13 +10,14 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
-import { AnalyticsEventType, ProductDto } from '@hb/shared';
+import { AnalyticsEventType, ProductDto, ProductReviewListDto } from '@hb/shared';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
 import { WishlistService } from '../../core/api/wishlist.service';
 import { ProductsService } from '../../core/api/products.service';
+import { ReviewsService } from '../../core/api/reviews.service';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { formatPrice } from '../../shared/format-price';
 import { buildResponsiveImage } from '../../shared/responsive-image';
@@ -27,8 +28,14 @@ import { RadialNav } from '../../shared/components/radial-nav/radial-nav';
 
 type LoadState = 'loading' | 'loaded' | 'not-found' | 'error';
 
+/** Loading/loaded/empty/error states for the reviews tab (fetched independently of the product). */
+type ReviewsState = 'loading' | 'loaded' | 'empty' | 'error';
+
 /** Number of related products shown in "You May Also Like". */
 const RELATED_LIMIT = 4;
+
+/** Server page size for the reviews tab — matches the API's default limit. */
+const REVIEWS_PAGE_SIZE = 10;
 
 /**
  * Product detail page (PDP). Fetches the product by the `:id` route param
@@ -38,7 +45,7 @@ const RELATED_LIMIT = 4;
  */
 @Component({
   selector: 'app-product-detail',
-  imports: [NavBar, Footer, ProductCard, RadialNav, RouterLink],
+  imports: [NavBar, Footer, ProductCard, RadialNav, RouterLink, DatePipe],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
 })
@@ -50,6 +57,7 @@ export class ProductDetail {
   private readonly authService = inject(AuthService);
   private readonly cartService = inject(CartService);
   private readonly wishlistService = inject(WishlistService);
+  private readonly reviewsService = inject(ReviewsService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly gaService = inject(GoogleAnalyticsService);
   private readonly notificationService = inject(NotificationService);
@@ -82,6 +90,21 @@ export class ProductDetail {
   readonly state = signal<LoadState>('loading');
 
   readonly relatedProducts = signal<ProductDto[]>([]);
+
+  // ── Reviews tab ──────────────────────────────────────────────────────────
+  // Fetched eagerly alongside the product (not gated on it, and never behind
+  // hydration) so the first page is present in the SSR payload — reviews are
+  // SEO-relevant content and this slice has no auth-dependent rendering.
+  readonly reviewsState = signal<ReviewsState>('loading');
+  readonly reviewsPage = signal(1);
+  readonly reviewsList = signal<ProductReviewListDto | null>(null);
+
+  readonly reviewCount = computed(() => this.reviewsList()?.summary.reviewCount ?? 0);
+  readonly reviewAverage = computed(() => this.reviewsList()?.summary.averageRating ?? null);
+  readonly reviewTotalPages = computed(() => {
+    const total = this.reviewsList()?.total ?? 0;
+    return Math.max(1, Math.ceil(total / REVIEWS_PAGE_SIZE));
+  });
 
   // ── Image gallery ───────────────────────────────────────────────────────
   readonly activeImageIndex = signal(0);
@@ -141,6 +164,7 @@ export class ProductDetail {
         return;
       }
       this.loadProduct(id);
+      this.loadReviews(id, 1);
     });
   }
 
@@ -179,6 +203,33 @@ export class ProductDetail {
       },
       error: () => this.relatedProducts.set([]),
     });
+  }
+
+  private loadReviews(productId: string, page: number): void {
+    this.reviewsState.set('loading');
+    this.reviewsService.getReviews(productId, { page, limit: REVIEWS_PAGE_SIZE }).subscribe({
+      next: (res) => {
+        this.reviewsList.set(res);
+        this.reviewsPage.set(page);
+        this.reviewsState.set(res.summary.reviewCount === 0 ? 'empty' : 'loaded');
+      },
+      error: () => {
+        this.reviewsState.set('error');
+      },
+    });
+  }
+
+  /** Server-driven pagination for the reviews tab — no-op outside the valid page range. */
+  goToReviewsPage(page: number): void {
+    const id = this.productId();
+    if (!id || page < 1 || page > this.reviewTotalPages()) return;
+    this.loadReviews(id, page);
+  }
+
+  /** Pure 5-star fill mask for a given rating (1–5), rounded to the nearest whole star. */
+  starsFilled(rating: number): boolean[] {
+    const filled = Math.round(rating);
+    return [0, 1, 2, 3, 4].map((i) => i < filled);
   }
 
   // ── Gallery controls ─────────────────────────────────────────────────────
