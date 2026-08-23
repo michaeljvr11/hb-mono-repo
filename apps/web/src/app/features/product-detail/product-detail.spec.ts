@@ -1004,6 +1004,9 @@ describe('ProductDetail', () => {
       });
       rs.submit.mockReturnValue(of(NEW_REVIEW));
       rs.getReviews.mockClear();
+      // The post-submit refetch flips eligibility to already_reviewed — the
+      // confirmation must still render even though canReview is now false.
+      rs.checkEligibility.mockReturnValueOnce(of(ALREADY_REVIEWED_ON_PAGE));
 
       c.setRating(5);
       c.reviewForm.controls.body.setValue('Solid product overall, would buy again for sure.');
@@ -1022,6 +1025,7 @@ describe('ProductDetail', () => {
       expect(c.reviewForm.controls.rating.value).toBe(0);
       expect(c.reviewForm.controls.body.value).toBe('');
       expect(c.submitting()).toBe(false);
+      expect(c.eligibility()).toEqual(ALREADY_REVIEWED_ON_PAGE);
 
       const el: HTMLElement = fx.nativeElement;
       expect(el.textContent).toContain('Thanks — your review has been posted.');

@@ -471,6 +471,10 @@ export class ProductDetail {
 
   submitReview(): void {
     if (this.submitting()) return;
+    // Trimmed here so a whitespace-only body — which minlength alone would
+    // accept — is rejected the same way the API's trimming DTO rejects it.
+    const trimmedBody = this.reviewForm.controls.body.value.trim();
+    this.reviewForm.controls.body.setValue(trimmedBody);
     if (this.reviewForm.invalid) {
       this.reviewForm.markAllAsTouched();
       return;
@@ -482,8 +486,8 @@ export class ProductDetail {
     this.reviewSubmitError.set(null);
     this.reviewSubmitSuccess.set(false);
 
-    const { rating, body } = this.reviewForm.getRawValue();
-    const request: CreateReviewRequest = { rating, body };
+    const { rating } = this.reviewForm.getRawValue();
+    const request: CreateReviewRequest = { rating, body: trimmedBody };
 
     this.reviewsService.submit(productId, request).subscribe({
       next: () => {

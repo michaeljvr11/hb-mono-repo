@@ -546,4 +546,15 @@ describe('CreateReviewDto validation', () => {
     const errors = await errorsFor({ rating: 5 });
     expect(errors.some((e) => e.property === 'body')).toBe(true);
   });
+
+  it('rejects a whitespace-only body', async () => {
+    const errors = await errorsFor({ rating: 5, body: '                    ' });
+    expect(errors.some((e) => e.property === 'body')).toBe(true);
+  });
+
+  it('trims surrounding whitespace before enforcing the length bound', async () => {
+    const instance = plainToInstance(CreateReviewDto, { rating: 5, body: '   1234567890   ' });
+    expect(instance.body).toBe('1234567890');
+    expect(await validate(instance)).toHaveLength(0);
+  });
 });

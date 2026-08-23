@@ -231,17 +231,16 @@
         <!-- ── Write a review (PR-4) — auth-dependent, hydration-gated ── -->
         @if (hydrated()) {
           @if (isAuthenticated()) {
+            @if (reviewSubmitSuccess()) {
+              <div class="pdp__review-confirmation" role="status">
+                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                Thanks — your review has been posted.
+              </div>
+            }
             @if (eligibility(); as elig) {
               @if (elig.canReview) {
                 <div class="pdp__review-form-card">
                   <h3 class="pdp__review-form-title">Write a Review</h3>
-
-                  @if (reviewSubmitSuccess()) {
-                    <div class="pdp__review-confirmation" role="status">
-                      <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
-                      Thanks — your review has been posted.
-                    </div>
-                  }
 
                   @if (reviewSubmitError(); as submitError) {
                     <div class="pdp__review-form-error" role="alert">
