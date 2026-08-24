@@ -11,11 +11,15 @@ import {
   CurrencyCode,
   ListingType,
   ProductDto,
+  ProductShippingFeeOverrideDto,
+  ShippingFeeHistoryDto,
 } from '@hb/shared';
 
 import { AdminCatalog } from './admin-catalog';
 import { ProductsService } from '../../../../core/api/products.service';
 import { CategoriesService } from '../../../../core/api/categories.service';
+import { ShippingFeeService } from '../../../../core/api/shipping-fee.service';
+import { ProductShippingFeeOverrideService } from '../../../../core/api/product-shipping-fee-override.service';
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
 
@@ -565,5 +569,320 @@ describe('AdminCatalog — categories load error', () => {
 
     expect(failComponent.categoriesLoading()).toBe(false);
     expect(failComponent.categoriesError()).toBeTruthy();
+  });
+});
+
+// ─── Vendor Products / shipping-fee overrides (SF-6) ──────────────────────────
+
+const ROUTE_CURRENCY_COMBOS: Array<{
+  originCountry: CountryCode;
+  destinationCountry: CountryCode;
+  currency: CurrencyCode;
+}> = [
+  { originCountry: CountryCode.SOUTH_AFRICA, destinationCountry: CountryCode.SOUTH_AFRICA, currency: CurrencyCode.ZAR },
+  { originCountry: CountryCode.SOUTH_AFRICA, destinationCountry: CountryCode.SOUTH_AFRICA, currency: CurrencyCode.NAD },
+  { originCountry: CountryCode.SOUTH_AFRICA, destinationCountry: CountryCode.NAMIBIA, currency: CurrencyCode.ZAR },
+  { originCountry: CountryCode.SOUTH_AFRICA, destinationCountry: CountryCode.NAMIBIA, currency: CurrencyCode.NAD },
+  { originCountry: CountryCode.NAMIBIA, destinationCountry: CountryCode.NAMIBIA, currency: CurrencyCode.ZAR },
+  { originCountry: CountryCode.NAMIBIA, destinationCountry: CountryCode.NAMIBIA, currency: CurrencyCode.NAD },
+  { originCountry: CountryCode.NAMIBIA, destinationCountry: CountryCode.SOUTH_AFRICA, currency: CurrencyCode.ZAR },
+  { originCountry: CountryCode.NAMIBIA, destinationCountry: CountryCode.SOUTH_AFRICA, currency: CurrencyCode.NAD },
+];
+
+const DEFAULT_FEE_HISTORY: ShippingFeeHistoryDto = {
+  items: [
+    {
+      effectiveFrom: '2026-01-01T00:00:00.000Z',
+      inForce: true,
+      fees: ROUTE_CURRENCY_COMBOS.map((combo, i) => ({
+        id: `fee-${i}`,
+        amount: 75.0,
+        currency: combo.currency,
+        originCountry: combo.originCountry,
+        destinationCountry: combo.destinationCountry,
+        effectiveFrom: '2026-01-01T00:00:00.000Z',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      })),
+    },
+  ],
+};
+
+const VENDOR_PRODUCT_2: ProductDto = {
+  id: 'prod2',
+  name: 'Vendor Gadget',
+  description: 'A third-party product',
+  price: 149.0,
+  currency: CurrencyCode.ZAR,
+  stockQuantity: 20,
+  originCountry: CountryCode.NAMIBIA,
+  listingType: ListingType.VENDOR,
+  images: [],
+  vendor: { id: 'v1', businessName: 'Acme Corp' },
+  categories: [],
+  createdAt: '2026-06-02T10:00:00.000Z',
+  updatedAt: '2026-06-02T10:00:00.000Z',
+};
+
+const PLATFORM_PRODUCT_2: ProductDto = {
+  id: 'prod1',
+  name: 'Platform Widget',
+  description: 'A first-party product',
+  price: 299.99,
+  currency: CurrencyCode.ZAR,
+  stockQuantity: 50,
+  originCountry: CountryCode.SOUTH_AFRICA,
+  listingType: ListingType.PLATFORM,
+  images: [],
+  categories: [],
+  createdAt: '2026-06-01T10:00:00.000Z',
+  updatedAt: '2026-06-01T10:00:00.000Z',
+};
+
+interface ShippingFeeServiceStub {
+  list: ReturnType<typeof vi.fn>;
+  create: ReturnType<typeof vi.fn>;
+  current: ReturnType<typeof vi.fn>;
+}
+
+interface OverrideServiceStub {
+  list: ReturnType<typeof vi.fn>;
+  set: ReturnType<typeof vi.fn>;
+  clear: ReturnType<typeof vi.fn>;
+}
+
+describe('AdminCatalog — Vendor Products tab (SF-6)', () => {
+  let component: AdminCatalog;
+  let fixture: ComponentFixture<AdminCatalog>;
+  let productsStub: ProductsServiceStub;
+  let categoriesStub: CategoriesServiceStub;
+  let shippingFeeStub: ShippingFeeServiceStub;
+  let overrideStub: OverrideServiceStub;
+
+  beforeEach(async () => {
+    productsStub = {
+      list: vi.fn(() =>
+        of({ items: [PLATFORM_PRODUCT_2, VENDOR_PRODUCT_2], total: 2, page: 1, limit: 100 }),
+      ),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    };
+    categoriesStub = {
+      list: vi.fn(() => of([])),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    };
+    shippingFeeStub = {
+      list: vi.fn(() => of(DEFAULT_FEE_HISTORY)),
+      create: vi.fn(),
+      current: vi.fn(),
+    };
+    overrideStub = {
+      list: vi.fn(() => of([] as ProductShippingFeeOverrideDto[])),
+      set: vi.fn(),
+      clear: vi.fn(),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [AdminCatalog],
+      providers: [
+        provideNoopAnimations(),
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: ProductsService, useValue: productsStub },
+        { provide: CategoriesService, useValue: categoriesStub },
+        { provide: ShippingFeeService, useValue: shippingFeeStub },
+        { provide: ProductShippingFeeOverrideService, useValue: overrideStub },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(AdminCatalog);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  function cellA() {
+    // ZA → ZA · ZAR
+    return component.shippingCells.find(
+      c =>
+        c.originCountry === CountryCode.SOUTH_AFRICA &&
+        c.destinationCountry === CountryCode.SOUTH_AFRICA &&
+        c.currency === CurrencyCode.ZAR,
+    )!;
+  }
+
+  function cellB() {
+    // ZA → NA · ZAR — deliberately a different (route, currency) than cellA
+    return component.shippingCells.find(
+      c =>
+        c.originCountry === CountryCode.SOUTH_AFRICA &&
+        c.destinationCountry === CountryCode.NAMIBIA &&
+        c.currency === CurrencyCode.ZAR,
+    )!;
+  }
+
+  it('loads and lists only vendor products when the tab is opened', async () => {
+    component.switchView('vendor-products');
+    await fixture.whenStable();
+
+    expect(component.vendorProducts().length).toBe(1);
+    expect(component.vendorProducts()[0].id).toBe('prod2');
+    expect(shippingFeeStub.list).toHaveBeenCalledTimes(1);
+    expect(overrideStub.list).toHaveBeenCalledWith('prod2');
+  });
+
+  it('shows the global default for a cell with no override', async () => {
+    component.switchView('vendor-products');
+    await fixture.whenStable();
+
+    expect(component.feeLabel('prod2', cellA())).toBe('Default (ZAR 75.00)');
+    expect(component.cellHasOverride('prod2', cellA())).toBe(false);
+  });
+
+  it('set override updates the row from the server response, not a client-side guess', async () => {
+    const responseDto: ProductShippingFeeOverrideDto = {
+      id: 'ov1',
+      productId: 'prod2',
+      originCountry: cellA().originCountry,
+      destinationCountry: cellA().destinationCountry,
+      currency: cellA().currency,
+      amount: 42.5,
+      updatedAt: '2026-08-24T00:00:00.000Z',
+    };
+    overrideStub.set.mockReturnValue(of(responseDto));
+
+    component.switchView('vendor-products');
+    await fixture.whenStable();
+
+    component.toggleShippingPanel('prod2');
+    component.shippingForm.get(component.cellKey(cellA()))!.setValue('99.99'); // deliberately different from response
+    component.setCellOverride('prod2', cellA());
+    await fixture.whenStable();
+
+    expect(overrideStub.set).toHaveBeenCalledWith('prod2', {
+      originCountry: cellA().originCountry,
+      destinationCountry: cellA().destinationCountry,
+      currency: cellA().currency,
+      amount: 99.99,
+    });
+    // Displayed value reflects the response amount (42.50), not the submitted 99.99.
+    expect(component.feeLabel('prod2', cellA())).toBe('Override (ZAR 42.50)');
+    expect(component.cellPending()).toBeNull();
+  });
+
+  it('clear override reverts the row to Default by re-reading from the server', async () => {
+    const existingOverride: ProductShippingFeeOverrideDto = {
+      id: 'ov1',
+      productId: 'prod2',
+      originCountry: cellA().originCountry,
+      destinationCountry: cellA().destinationCountry,
+      currency: cellA().currency,
+      amount: 42.5,
+      updatedAt: '2026-08-24T00:00:00.000Z',
+    };
+    overrideStub.list.mockReturnValueOnce(of([existingOverride])); // initial tab load
+    overrideStub.clear.mockReturnValue(of(undefined));
+
+    component.switchView('vendor-products');
+    await fixture.whenStable();
+
+    expect(component.cellHasOverride('prod2', cellA())).toBe(true);
+
+    // After clearing, a re-fetch confirms no override remains — never assumed to be zero.
+    overrideStub.list.mockReturnValueOnce(of([]));
+
+    component.toggleShippingPanel('prod2');
+    component.clearCellOverride('prod2', cellA());
+    await fixture.whenStable();
+
+    expect(overrideStub.clear).toHaveBeenCalledWith('prod2', {
+      originCountry: cellA().originCountry,
+      destinationCountry: cellA().destinationCountry,
+      currency: cellA().currency,
+    });
+    expect(component.cellHasOverride('prod2', cellA())).toBe(false);
+    expect(component.feeLabel('prod2', cellA())).toBe('Default (ZAR 75.00)');
+    expect(component.cellPending()).toBeNull();
+  });
+
+  it('rejects a malformed amount without calling the server', async () => {
+    component.switchView('vendor-products');
+    await fixture.whenStable();
+
+    component.toggleShippingPanel('prod2');
+    component.shippingForm.get(component.cellKey(cellA()))!.setValue('12.999'); // 3 decimal places — invalid
+    component.setCellOverride('prod2', cellA());
+    await fixture.whenStable();
+
+    expect(overrideStub.set).not.toHaveBeenCalled();
+    expect(component.shippingForm.get(component.cellKey(cellA()))!.touched).toBe(true);
+  });
+
+  it('surfaces a server error inline without corrupting the row state', async () => {
+    overrideStub.set.mockReturnValue(
+      throwError(() => ({ error: { message: 'Amount exceeds the allowed maximum' } })),
+    );
+
+    component.switchView('vendor-products');
+    await fixture.whenStable();
+
+    component.toggleShippingPanel('prod2');
+    component.shippingForm.get(component.cellKey(cellA()))!.setValue('50.00');
+    component.setCellOverride('prod2', cellA());
+    await fixture.whenStable();
+
+    expect(component.cellError()).toBe('Amount exceeds the allowed maximum');
+    expect(component.cellPending()).toBeNull();
+    expect(component.cellHasOverride('prod2', cellA())).toBe(false);
+  });
+
+  it('guards against double-submit while a set is pending', async () => {
+    overrideStub.set.mockReturnValue(of({
+      id: 'ov1',
+      productId: 'prod2',
+      originCountry: cellA().originCountry,
+      destinationCountry: cellA().destinationCountry,
+      currency: cellA().currency,
+      amount: 50,
+      updatedAt: '2026-08-24T00:00:00.000Z',
+    } as ProductShippingFeeOverrideDto));
+
+    component.switchView('vendor-products');
+    await fixture.whenStable();
+
+    component.toggleShippingPanel('prod2');
+    component.shippingForm.get(component.cellKey(cellA()))!.setValue('50.00');
+    component.cellPending.set(component.cellKey(cellB())); // simulate another cell mid-flight
+    component.setCellOverride('prod2', cellA());
+
+    expect(overrideStub.set).not.toHaveBeenCalled();
+  });
+
+  it('an override on one route/currency does not leak into another cell', async () => {
+    const responseDto: ProductShippingFeeOverrideDto = {
+      id: 'ov1',
+      productId: 'prod2',
+      originCountry: cellA().originCountry,
+      destinationCountry: cellA().destinationCountry,
+      currency: cellA().currency,
+      amount: 42.5,
+      updatedAt: '2026-08-24T00:00:00.000Z',
+    };
+    overrideStub.set.mockReturnValue(of(responseDto));
+
+    component.switchView('vendor-products');
+    await fixture.whenStable();
+
+    component.toggleShippingPanel('prod2');
+    component.shippingForm.get(component.cellKey(cellA()))!.setValue('42.50');
+    component.setCellOverride('prod2', cellA());
+    await fixture.whenStable();
+
+    expect(component.cellHasOverride('prod2', cellA())).toBe(true);
+    expect(component.cellHasOverride('prod2', cellB())).toBe(false);
+    expect(component.feeLabel('prod2', cellB())).toBe('Default (ZAR 75.00)');
   });
 });

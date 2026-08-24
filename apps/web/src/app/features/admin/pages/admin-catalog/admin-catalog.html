@@ -2,7 +2,7 @@
   <!-- Page header -->
   <header class="page-header">
     <h1 class="page-title">Catalog</h1>
-    <p class="page-sub">Manage platform product listings and product categories.</p>
+    <p class="page-sub">Manage platform product listings, product categories, and vendor shipping-fee overrides.</p>
   </header>
 
   <!-- Section tabs -->
@@ -28,6 +28,17 @@
     >
       <span class="material-symbols-outlined tab-icon" aria-hidden="true">category</span>
       Categories
+    </button>
+    <button
+      class="tab-btn"
+      role="tab"
+      [class.tab-btn--active]="activeView() === 'vendor-products'"
+      [attr.aria-selected]="activeView() === 'vendor-products'"
+      type="button"
+      (click)="switchView('vendor-products')"
+    >
+      <span class="material-symbols-outlined tab-icon" aria-hidden="true">storefront</span>
+      Vendor Products
     </button>
   </div>
 
@@ -304,6 +315,167 @@
         </form>
       </aside>
     }
+  }
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       VENDOR PRODUCTS SECTION (SF-6) — read-only for product content;
+       the shipping-fee override is the only editable control.
+       ════════════════════════════════════════════════════════════════════ -->
+  @if (activeView() === 'vendor-products') {
+    <div class="section-content">
+      <div class="section-bar">
+        <h2 class="section-title">Vendor Listings</h2>
+      </div>
+      <p class="section-note">
+        Read-only — vendors own their own name, price, stock, images and categories.
+        The shipping-fee override is the only control here.
+      </p>
+
+      <!-- Error -->
+      @if (vendorShippingError()) {
+        <div class="error-banner" role="alert">
+          <span class="material-symbols-outlined" aria-hidden="true">error</span>
+          <span>{{ vendorShippingError() }}</span>
+        </div>
+      }
+
+      <!-- Loading -->
+      @if (vendorShippingLoading()) {
+        <div class="state-placeholder" role="status" aria-live="polite">
+          <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+          <p>Loading vendor products…</p>
+        </div>
+      }
+
+      @if (!vendorShippingLoading()) {
+        @if (vendorProducts().length === 0) {
+          <div class="list-empty">
+            <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+            <p>No vendor products yet.</p>
+          </div>
+        } @else {
+          <div class="table-wrap">
+            <table class="data-table" aria-label="Vendor product listings">
+              <thead>
+                <tr>
+                  <th scope="col">Product</th>
+                  <th scope="col">Vendor</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Shipping Fees</th>
+                  <th scope="col"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of vendorProducts(); track product.id) {
+                  <tr>
+                    <td class="td-product">
+                      @if (primaryImageUrl(product); as url) {
+                        <img
+                          class="product-thumb"
+                          [src]="url"
+                          [alt]="product.name"
+                          width="40"
+                          height="40"
+                          loading="lazy"
+                        />
+                      } @else {
+                        <span class="product-thumb product-thumb--placeholder" aria-hidden="true">
+                          <span class="material-symbols-outlined">image</span>
+                        </span>
+                      }
+                      <span class="product-name">{{ product.name }}</span>
+                    </td>
+                    <td>{{ product.vendor?.businessName ?? '—' }}</td>
+                    <td class="td-price">
+                      {{ product.currency }} {{ product.price | number:'1.2-2' }}
+                    </td>
+                    <td class="td-shipping">
+                      <div class="shipping-chip-grid">
+                        @for (cell of shippingCells; track cellKey(cell)) {
+                          <span
+                            class="shipping-chip"
+                            [class.shipping-chip--override]="cellHasOverride(product.id, cell)"
+                            [title]="routeLabel(cell) + ' · ' + cell.currency"
+                          >
+                            {{ routeLabel(cell) }} {{ cell.currency }}: {{ feeLabel(product.id, cell) }}
+                          </span>
+                        }
+                      </div>
+                    </td>
+                    <td class="td-actions">
+                      <button
+                        class="row-btn"
+                        type="button"
+                        (click)="toggleShippingPanel(product.id)"
+                        [attr.aria-expanded]="expandedVendorProductId() === product.id"
+                        [attr.aria-label]="'Manage shipping fees for ' + product.name"
+                      >
+                        <span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>
+                        Manage
+                      </button>
+                    </td>
+                  </tr>
+                  @if (expandedVendorProductId() === product.id) {
+                    <tr class="shipping-panel-row">
+                      <td colspan="5">
+                        <div class="shipping-panel" [formGroup]="shippingForm">
+                          @if (cellError()) {
+                            <div class="error-banner error-banner--inline" role="alert">
+                              <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                              <span>{{ cellError() }}</span>
+                            </div>
+                          }
+                          <div class="shipping-grid">
+                            @for (cell of shippingCells; track cellKey(cell)) {
+                              <div class="shipping-cell">
+                                <span class="shipping-cell-label">{{ routeLabel(cell) }} · {{ cell.currency }}</span>
+                                <span
+                                  class="shipping-cell-current"
+                                  [class.shipping-cell-current--override]="cellHasOverride(product.id, cell)"
+                                >
+                                  {{ feeLabel(product.id, cell) }}
+                                </span>
+                                <div class="shipping-cell-controls">
+                                  <input
+                                    class="field-input shipping-cell-input"
+                                    type="text"
+                                    inputmode="decimal"
+                                    [attr.aria-label]="'Override amount for ' + routeLabel(cell) + ' ' + cell.currency"
+                                    [formControlName]="cellKey(cell)"
+                                    placeholder="Amount"
+                                  />
+                                  <button
+                                    class="row-btn"
+                                    type="button"
+                                    [disabled]="cellPending() === cellKey(cell) || shippingForm.get(cellKey(cell))?.invalid || !shippingForm.get(cellKey(cell))?.value"
+                                    (click)="setCellOverride(product.id, cell)"
+                                  >Set</button>
+                                  @if (cellHasOverride(product.id, cell)) {
+                                    <button
+                                      class="row-btn row-btn--danger"
+                                      type="button"
+                                      [disabled]="cellPending() === cellKey(cell)"
+                                      (click)="clearCellOverride(product.id, cell)"
+                                    >Clear</button>
+                                  }
+                                </div>
+                                @if (shippingForm.get(cellKey(cell))?.invalid && shippingForm.get(cellKey(cell))?.touched) {
+                                  <span class="shipping-cell-error">Enter a valid amount, e.g. 75 or 75.50</span>
+                                }
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </div>
   }
 
   <!-- ══════════════════════════════════════════════════════════════════════

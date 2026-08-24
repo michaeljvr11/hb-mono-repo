@@ -2,20 +2,46 @@ import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { catchError, forkJoin, of } from 'rxjs';
+import { map as rxMap } from 'rxjs/operators';
 import {
   CategoryDto,
   CountryCode,
   CurrencyCode,
   ListingType,
   ProductDto,
+  ProductShippingFeeOverrideDto,
+  ProductShippingFeeOverrideRoute,
+  ShippingFeeDto,
 } from '@hb/shared';
 import { ProductsService } from '../../../../core/api/products.service';
 import { CategoriesService } from '../../../../core/api/categories.service';
+import { ShippingFeeService } from '../../../../core/api/shipping-fee.service';
+import { ProductShippingFeeOverrideService } from '../../../../core/api/product-shipping-fee-override.service';
 
-type CatalogView = 'products' | 'categories';
+type CatalogView = 'products' | 'categories' | 'vendor-products';
 
 /** Server-side max page size — used to avoid truncating the admin catalog list. */
 const PRODUCT_LIST_MAX = 100;
+
+/** Amount format enforced client-side too — money is never float-arithmetic'd, only pattern-checked. */
+const AMOUNT_PATTERN = /^\d+(\.\d{1,2})?$/;
+
+/** The 4 routes x 2 currencies = 8 (route, currency) combinations a per-product override can target. */
+const SHIPPING_FEE_CELLS: ProductShippingFeeOverrideRoute[] = (
+  [
+    [CountryCode.SOUTH_AFRICA, CountryCode.SOUTH_AFRICA],
+    [CountryCode.SOUTH_AFRICA, CountryCode.NAMIBIA],
+    [CountryCode.NAMIBIA, CountryCode.NAMIBIA],
+    [CountryCode.NAMIBIA, CountryCode.SOUTH_AFRICA],
+  ] as const
+).flatMap(([originCountry, destinationCountry]) =>
+  ([CurrencyCode.ZAR, CurrencyCode.NAD] as const).map(currency => ({
+    originCountry,
+    destinationCountry,
+    currency,
+  }))
+);
 
 @Component({
   selector: 'app-admin-catalog',
@@ -27,6 +53,8 @@ const PRODUCT_LIST_MAX = 100;
 export class AdminCatalog implements OnInit {
   private readonly productsService = inject(ProductsService);
   private readonly categoriesService = inject(CategoriesService);
+  private readonly shippingFeeService = inject(ShippingFeeService);
+  private readonly overrideService = inject(ProductShippingFeeOverrideService);
   private readonly fb = inject(FormBuilder);
 
   // ─── Section tabs ───────────────────────────────────────────────────────────
@@ -41,6 +69,38 @@ export class AdminCatalog implements OnInit {
   readonly platformProducts = computed(() =>
     this.allProducts().filter(p => p.listingType === ListingType.PLATFORM)
   );
+
+  // ─── Vendor Products (SF-6) ───────────────────────────────────────────────
+  /**
+   * Vendor-listed products, sourced from the same `allProducts` load already
+   * used by the Products tab (client-side `computed()` filter, matching the
+   * existing `platformProducts` pattern) — zero extra list requests.
+   * Relies on the admin catalog's PRODUCT_LIST_MAX=100 cap, same as
+   * platformProducts; if the vendor catalog outgrows one page, add
+   * `listingType` to ProductQuery and filter server-side instead.
+   */
+  readonly vendorProducts = computed(() =>
+    this.allProducts().filter(p => p.listingType === ListingType.VENDOR)
+  );
+
+  readonly shippingCells = SHIPPING_FEE_CELLS;
+
+  readonly vendorShippingLoading = signal(false);
+  readonly vendorShippingError = signal<string | null>(null);
+  private vendorShippingLoaded = false;
+
+  /** The in-force global default set (SF-1), 8 (route, currency) rows once configured. */
+  readonly defaultShippingFees = signal<ShippingFeeDto[]>([]);
+  /** Per-product sparse override list, sourced lazily via GET per product row (see report). */
+  readonly overridesByProduct = signal<Map<string, ProductShippingFeeOverrideDto[]>>(new Map());
+
+  readonly expandedVendorProductId = signal<string | null>(null);
+  /** Cell key of the in-flight set/clear, if any — guards double-submit across the whole panel. */
+  readonly cellPending = signal<string | null>(null);
+  readonly cellError = signal<string | null>(null);
+
+  /** Rebuilt each time a row's shipping panel is opened. */
+  shippingForm: FormGroup = this.fb.group({});
 
   // ─── Categories state ────────────────────────────────────────────────────────
   readonly categories = signal<CategoryDto[]>([]);
@@ -100,6 +160,208 @@ export class AdminCatalog implements OnInit {
   // ─── Section switching ────────────────────────────────────────────────────
   switchView(view: CatalogView): void {
     this.activeView.set(view);
+    if (view === 'vendor-products') {
+      this.loadVendorShippingData();
+    }
+  }
+
+  // ─── Vendor Products / shipping-fee overrides (SF-6) ───────────────────────
+
+  /** Loads the global default set + each vendor product's overrides once, on first visit to the tab. */
+  private loadVendorShippingData(): void {
+    if (this.vendorShippingLoaded) return;
+    this.vendorShippingLoaded = true;
+    this.vendorShippingLoading.set(true);
+    this.vendorShippingError.set(null);
+
+    this.shippingFeeService.list().subscribe({
+      next: (history) => {
+        const inForce = history.items.find(s => s.inForce);
+        this.defaultShippingFees.set(inForce?.fees ?? []);
+      },
+      error: () => {
+        this.vendorShippingError.set('Failed to load default shipping fees.');
+      },
+    });
+
+    const productIds = this.vendorProducts().map(p => p.id);
+    if (productIds.length === 0) {
+      this.vendorShippingLoading.set(false);
+      return;
+    }
+
+    forkJoin(
+      productIds.map(id =>
+        this.overrideService.list(id).pipe(
+          rxMap(overrides => [id, overrides] as const),
+          catchError(() => of([id, [] as ProductShippingFeeOverrideDto[]] as const)),
+        )
+      )
+    ).subscribe({
+      next: (pairs) => {
+        const overridesMap = new Map<string, ProductShippingFeeOverrideDto[]>();
+        for (const [id, overrides] of pairs) overridesMap.set(id, overrides);
+        this.overridesByProduct.set(overridesMap);
+        this.vendorShippingLoading.set(false);
+      },
+      error: () => {
+        this.vendorShippingError.set('Failed to load shipping fee overrides.');
+        this.vendorShippingLoading.set(false);
+      },
+    });
+  }
+
+  cellKey(route: ProductShippingFeeOverrideRoute): string {
+    return `${route.originCountry}_${route.destinationCountry}_${route.currency}`;
+  }
+
+  routeLabel(route: ProductShippingFeeOverrideRoute): string {
+    return `${route.originCountry} → ${route.destinationCountry}`;
+  }
+
+  /** The override for this exact (product, route, currency), if one exists — never matched by route or currency alone. */
+  private findOverride(
+    productId: string,
+    route: ProductShippingFeeOverrideRoute
+  ): ProductShippingFeeOverrideDto | undefined {
+    return this.overridesByProduct().get(productId)?.find(
+      o =>
+        o.originCountry === route.originCountry &&
+        o.destinationCountry === route.destinationCountry &&
+        o.currency === route.currency
+    );
+  }
+
+  private findDefault(route: ProductShippingFeeOverrideRoute): ShippingFeeDto | undefined {
+    return this.defaultShippingFees().find(
+      f =>
+        f.originCountry === route.originCountry &&
+        f.destinationCountry === route.destinationCountry &&
+        f.currency === route.currency
+    );
+  }
+
+  cellHasOverride(productId: string, route: ProductShippingFeeOverrideRoute): boolean {
+    return !!this.findOverride(productId, route);
+  }
+
+  /** Effective-fee label for this exact cell — visually distinct override vs. default, per the acceptance criteria. */
+  feeLabel(productId: string, route: ProductShippingFeeOverrideRoute): string {
+    const override = this.findOverride(productId, route);
+    if (override) {
+      return `Override (${override.currency} ${override.amount.toFixed(2)})`;
+    }
+    const def = this.findDefault(route);
+    if (def) {
+      return `Default (${def.currency} ${def.amount.toFixed(2)})`;
+    }
+    return 'Not configured';
+  }
+
+  toggleShippingPanel(productId: string): void {
+    if (this.expandedVendorProductId() === productId) {
+      this.expandedVendorProductId.set(null);
+      return;
+    }
+    this.expandedVendorProductId.set(productId);
+    this.cellError.set(null);
+    this.shippingForm = this.buildShippingForm(productId);
+  }
+
+  private buildShippingForm(productId: string): FormGroup {
+    const group: Record<string, unknown[]> = {};
+    for (const cell of this.shippingCells) {
+      const existing = this.findOverride(productId, cell);
+      group[this.cellKey(cell)] = [
+        existing ? existing.amount.toFixed(2) : '',
+        [Validators.pattern(AMOUNT_PATTERN)],
+      ];
+    }
+    return this.fb.group(group);
+  }
+
+  private upsertOverride(productId: string, dto: ProductShippingFeeOverrideDto): void {
+    this.overridesByProduct.update(current => {
+      const next = new Map(current);
+      const existing = next.get(productId) ?? [];
+      const filtered = existing.filter(
+        o =>
+          !(
+            o.originCountry === dto.originCountry &&
+            o.destinationCountry === dto.destinationCountry &&
+            o.currency === dto.currency
+          )
+      );
+      next.set(productId, [...filtered, dto]);
+      return next;
+    });
+  }
+
+  setCellOverride(productId: string, route: ProductShippingFeeOverrideRoute): void {
+    const key = this.cellKey(route);
+    if (this.cellPending()) return;
+
+    const control = this.shippingForm.get(key);
+    const raw = String(control?.value ?? '').trim();
+    if (!AMOUNT_PATTERN.test(raw)) {
+      control?.markAsTouched();
+      return;
+    }
+
+    this.cellPending.set(key);
+    this.cellError.set(null);
+    this.overrideService
+      .set(productId, {
+        originCountry: route.originCountry,
+        destinationCountry: route.destinationCountry,
+        currency: route.currency,
+        amount: Number(raw),
+      })
+      .subscribe({
+        next: (dto) => {
+          // Optimistic-safe: the row updates from the server response, not a client-side guess.
+          this.upsertOverride(productId, dto);
+          this.shippingForm.get(key)?.setValue(dto.amount.toFixed(2));
+          this.cellPending.set(null);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.cellError.set(err.error?.message ?? 'Failed to set shipping fee override. Please try again.');
+          this.cellPending.set(null);
+        },
+      });
+  }
+
+  clearCellOverride(productId: string, route: ProductShippingFeeOverrideRoute): void {
+    const key = this.cellKey(route);
+    if (this.cellPending()) return;
+
+    this.cellPending.set(key);
+    this.cellError.set(null);
+    this.overrideService.clear(productId, route).subscribe({
+      next: () => {
+        // Re-read rather than assume: the cell must fall back to whatever the global default
+        // actually resolves to, sourced from the server — never assumed to be zero.
+        this.overrideService.list(productId).subscribe({
+          next: (overrides) => {
+            this.overridesByProduct.update(current => {
+              const next = new Map(current);
+              next.set(productId, overrides);
+              return next;
+            });
+            this.shippingForm.get(key)?.setValue('');
+            this.cellPending.set(null);
+          },
+          error: () => {
+            this.cellError.set('Cleared, but failed to refresh the fee — please reopen this row.');
+            this.cellPending.set(null);
+          },
+        });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.cellError.set(err.error?.message ?? 'Failed to clear shipping fee override. Please try again.');
+        this.cellPending.set(null);
+      },
+    });
   }
 
   // ─── Products CRUD ─────────────────────────────────────────────────────────
