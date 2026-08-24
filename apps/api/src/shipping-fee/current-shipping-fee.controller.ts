@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { CurrentShippingFeeDto } from '@hb/shared';
-import { ShippingFeeService } from './shipping-fee.service';
+import { ShippingFeeResolverService } from './shipping-fee-resolver.service';
 import { CartOriginResolverService } from './cart-origin-resolver.service';
 import { GetCurrentShippingFeeQueryDto } from './dto/get-current-shipping-fee-query.dto';
 import { GetUser } from '../common/decorators/get-user.decorator';
@@ -16,21 +16,28 @@ import { User } from '../users/entities/user.entity';
  * this controller is registered (with no public routes) in
  * `common/guards/public-routes.guardrail.spec.ts`.
  *
- * Reflects only the global default (`ShippingFeeService.getFeeAt`) — a
- * per-product override (SF-5) is cart-line-specific and only resolved at
- * order-creation time, never guessed here.
+ * Resolves the SAME MAX(override, default) fee `OrdersService.create` would
+ * charge for the caller's cart (FAIL 1 fix, code review) via the shared
+ * `ShippingFeeResolverService.resolveShippingCents` — a per-product override
+ * (SF-5) is no longer ignored here, so a cart containing an overridden
+ * product previews the fee that will actually be charged, not just the
+ * global default.
  *
  * `originCountry` is optional (SF-4): the checkout UI has no order to read a
  * route off of, and re-deriving `OrdersService.create`'s origin rule in
  * Angular would drift from the fee actually charged. So when the caller
  * omits it, it's derived from the caller's own cart via
- * `CartOriginResolverService` — the exact rule `OrdersService.create` uses.
- * An explicitly-supplied `originCountry` is still honoured verbatim.
+ * `CartOriginResolverService`. That same cart load also yields the cart's
+ * product ids — needed for the override lookup regardless of whether
+ * `originCountry` was supplied — so there is only ever one cart query per
+ * request. An explicitly-supplied `originCountry` is still honoured
+ * verbatim (it overrides only the route resolution, not which products the
+ * override lookup runs against).
  */
 @Controller('shipping-fee')
 export class CurrentShippingFeeController {
   constructor(
-    private readonly shippingFeeService: ShippingFeeService,
+    private readonly shippingFeeResolver: ShippingFeeResolverService,
     private readonly cartOriginResolver: CartOriginResolverService,
   ) {}
 
@@ -39,20 +46,22 @@ export class CurrentShippingFeeController {
     @Query() query: GetCurrentShippingFeeQueryDto,
     @GetUser() user: User,
   ): Promise<CurrentShippingFeeDto> {
-    const originCountry =
-      query.originCountry ?? (await this.cartOriginResolver.resolveForUser(user.id));
+    const cart = await this.cartOriginResolver.resolveCartForUser(user.id);
+    const originCountry = query.originCountry ?? cart.originCountry;
 
-    const fee = await this.shippingFeeService.getFeeAt(
-      new Date(),
+    const amountCents = await this.shippingFeeResolver.resolveShippingCents(
+      cart.productIds,
       originCountry,
       query.destinationCountry,
       query.currency,
+      new Date(),
     );
+
     return {
-      amount: fee.amount,
-      currency: fee.currency,
-      originCountry: fee.originCountry,
-      destinationCountry: fee.destinationCountry,
+      amount: amountCents / 100,
+      currency: query.currency,
+      originCountry,
+      destinationCountry: query.destinationCountry,
     };
   }
 }

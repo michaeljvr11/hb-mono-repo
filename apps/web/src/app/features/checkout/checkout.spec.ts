@@ -357,23 +357,42 @@ describe('Checkout', () => {
     expect(cartStub.reset).toHaveBeenCalled();
   });
 
-  it('shows the same shippingTotal on the order confirmation as the previewed fee — never a value the API did not return', async () => {
+  it('renders the API shippingTotal on the confirmation even when it differs from the previewed fee', async () => {
     await setup(); // previewed fee = SHIPPING_FEE.amount (50)
     fillForm(component);
 
-    const previewedFeeAmount = component.shippingFee()?.amount;
-    expect(previewedFeeAmount).toBe(50);
+    expect(component.shippingFee()?.amount).toBe(50);
 
-    const chargedOrder: OrderDto = { ...PLACED_ORDER, shippingTotal: 50, total: 420 };
+    // Parity between the previewed and charged fee is enforced server-side:
+    // GET /shipping-fee/current resolves over the caller's cart with the same
+    // MAX(override ?? default) rule OrdersService.create charges, and an API
+    // parity spec asserts the two agree. This spec covers the client's half of
+    // the contract instead — if the API ever does return a different figure,
+    // the confirmation must show the number actually charged, never echo the
+    // stale preview back at the customer.
+    const chargedOrder: OrderDto = { ...PLACED_ORDER, shippingTotal: 400, total: 770 };
     ordersStub.create.mockReturnValue(of(chargedOrder));
 
     component.submit();
     fixture.detectChanges();
 
-    // The confirmation reflects the API's OrderDto.shippingTotal, which here
-    // matches what was previewed pre-order — the two must never drift.
-    expect(previewedFeeAmount).toBe(chargedOrder.shippingTotal);
-    expect(fixture.nativeElement.textContent).toMatch(/R\s?50[.,]00.*shipping/i);
+    expect(fixture.nativeElement.textContent).toMatch(/R\s?400[.,]00/);
+    expect(fixture.nativeElement.textContent).not.toMatch(/R\s?50[.,]00.*shipping/i);
+  });
+
+  it('blocks placing an order while the shipping fee is unknown', async () => {
+    await setup(
+      CART,
+      vi.fn(() => throwError(() => new Error('fee unavailable'))),
+    );
+    fillForm(component);
+
+    expect(component.shippingFeeState()).toBe('error');
+
+    component.submit();
+
+    // No order may be placed against a total the customer was never shown.
+    expect(ordersStub.create).not.toHaveBeenCalled();
   });
 
   it('fires SHIPPING_SUBMITTED, PAYMENT_ATTEMPTED and ORDER_COMPLETED (with the order total + currency) on a successful submit', async () => {

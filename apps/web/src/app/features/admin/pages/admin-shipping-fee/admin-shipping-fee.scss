@@ -354,3 +354,9 @@
     opacity: 0.45;
   }
 }
+
+// A (route, currency) with no configured row is not free shipping — it is a
+// gap. Render it as an em dash, never as 0.00.
+.admin-shipping-fee__missing {
+  color: var(--hb-on-surface-variant);
+}

@@ -181,6 +181,13 @@ export class Checkout implements OnInit {
     if (this.state() === 'submitting' || this.hasMixedCurrencies()) {
       return;
     }
+    // Never place an order while the fee is unknown. In 'loading' and 'error'
+    // the summary shows no Total at all, but the server still charges the real
+    // resolved fee — letting the button through here would take payment for a
+    // number the customer was never shown.
+    if (this.shippingFeeState() !== 'ready') {
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.checkoutError.set({

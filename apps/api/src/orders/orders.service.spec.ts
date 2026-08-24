@@ -23,8 +23,7 @@ import { User } from '../users/entities/user.entity';
 import { PAYMENT_PROVIDER } from '../payments/payment-provider.port';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CommissionRateService } from '../commission/commission-rate.service';
-import { ShippingFeeService } from '../shipping-fee/shipping-fee.service';
-import { ProductShippingFeeOverrideService } from '../shipping-fee/product-shipping-fee-override.service';
+import { ShippingFeeResolverService } from '../shipping-fee/shipping-fee-resolver.service';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -120,8 +119,7 @@ describe('OrdersService', () => {
   let orderStatusOverridesRepo: Record<string, jest.Mock>;
   let paymentProvider: Record<string, jest.Mock>;
   let commissionRateService: Record<string, jest.Mock>;
-  let shippingFeeService: Record<string, jest.Mock>;
-  let productShippingFeeOverrideService: Record<string, jest.Mock>;
+  let shippingFeeResolverService: Record<string, jest.Mock>;
   let eventEmitter: Record<string, jest.Mock>;
   let manager: Record<string, jest.Mock>;
   let dataSourceMock: Record<string, jest.Mock>;
@@ -185,11 +183,14 @@ describe('OrdersService', () => {
         }),
       ),
     };
-    shippingFeeService = {
-      getFeeAt: jest.fn(() => Promise.resolve({ ...DEFAULT_SHIPPING_FEE })),
-    };
-    productShippingFeeOverrideService = {
-      findOverrideAmounts: jest.fn(() => Promise.resolve(new Map())),
+    // Default: DEFAULT_SHIPPING_FEE.amount (250) in integer cents — the
+    // money logic itself (MAX-across-lines, override-or-default) now lives
+    // in ShippingFeeResolverService and is unit-tested there directly (see
+    // shipping-fee-resolver.service.spec.ts); this suite only verifies
+    // OrdersService calls it with the right route/currency/productIds/instant
+    // and correctly turns the returned cents into shippingTotal/total.
+    shippingFeeResolverService = {
+      resolveShippingCents: jest.fn(() => Promise.resolve(DEFAULT_SHIPPING_FEE.amount * 100)),
     };
     eventEmitter = { emit: jest.fn() };
 
@@ -210,8 +211,7 @@ describe('OrdersService', () => {
         { provide: PAYMENT_PROVIDER, useValue: paymentProvider },
         { provide: DataSource, useValue: dataSourceMock },
         { provide: CommissionRateService, useValue: commissionRateService },
-        { provide: ShippingFeeService, useValue: shippingFeeService },
-        { provide: ProductShippingFeeOverrideService, useValue: productShippingFeeOverrideService },
+        { provide: ShippingFeeResolverService, useValue: shippingFeeResolverService },
         { provide: EventEmitter2, useValue: eventEmitter },
       ],
     }).compile();
@@ -409,35 +409,45 @@ describe('OrdersService', () => {
   // ── Order creation: shipping fee (SF-3) ────────────────────────────────────
 
   describe('create — shipping fee resolution (SF-3)', () => {
-    it('resolves the fee for the order route (ZA→NA), not another route', async () => {
+    // The MAX(override, default)-across-lines money logic itself now lives
+    // in ShippingFeeResolverService and is unit-tested there (see
+    // shipping-fee-resolver.service.spec.ts) and cross-checked against the
+    // checkout preview in shipping-fee-preview-parity.spec.ts. This block
+    // verifies OrdersService's side of the contract only: it calls the
+    // resolver with the right route/currency/productIds/instant, and it
+    // turns the returned cents into shippingTotal/total correctly.
+
+    it('resolves via the shared resolver for the order route (ZA→NA), not another route', async () => {
       stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct({ originCountry: 'ZA' })]);
 
       await service.create(makeUser(), SHIPPING_DTO);
 
-      expect(shippingFeeService.getFeeAt).toHaveBeenCalledWith(
-        expect.any(Date),
+      expect(shippingFeeResolverService.resolveShippingCents).toHaveBeenCalledWith(
+        ['prod-1'],
         'ZA',
         'NA',
         CurrencyCode.ZAR,
+        expect.any(Date),
       );
     });
 
-    it('resolves the fee for the order route (NA→NA), not the ZA→NA route', async () => {
+    it('resolves via the shared resolver for the order route (NA→NA), not the ZA→NA route', async () => {
       stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct({ originCountry: 'NA' })]);
 
       await service.create(makeUser(), {
         shippingAddress: { ...SHIPPING_DTO.shippingAddress, countryCode: 'NA' },
       });
 
-      expect(shippingFeeService.getFeeAt).toHaveBeenCalledWith(
-        expect.any(Date),
+      expect(shippingFeeResolverService.resolveShippingCents).toHaveBeenCalledWith(
+        ['prod-1'],
         'NA',
         'NA',
         CurrencyCode.ZAR,
+        expect.any(Date),
       );
     });
 
-    it("resolves the fee for the order's own currency (NAD), not the ZAR pegged equivalent", async () => {
+    it("resolves via the shared resolver for the order's own currency (NAD), not the ZAR pegged equivalent", async () => {
       stageCart(
         [{ productId: 'prod-1', quantity: 1 }],
         [makeProduct({ currency: CurrencyCode.NAD })],
@@ -445,11 +455,12 @@ describe('OrdersService', () => {
 
       await service.create(makeUser(), SHIPPING_DTO);
 
-      expect(shippingFeeService.getFeeAt).toHaveBeenCalledWith(
-        expect.any(Date),
+      expect(shippingFeeResolverService.resolveShippingCents).toHaveBeenCalledWith(
+        ['prod-1'],
         'ZA',
         'NA',
         CurrencyCode.NAD,
+        expect.any(Date),
       );
     });
 
@@ -459,12 +470,18 @@ describe('OrdersService', () => {
       await service.create(makeUser(), SHIPPING_DTO);
 
       const rateAtCalls = commissionRateService.getRateAt.mock.calls as [Date][];
-      const feeAtCalls = shippingFeeService.getFeeAt.mock.calls as [Date][];
-      expect(feeAtCalls[0][0]).toBe(rateAtCalls[0][0]);
+      const resolveCalls = shippingFeeResolverService.resolveShippingCents.mock.calls as [
+        string[],
+        string,
+        string,
+        CurrencyCode,
+        Date,
+      ][];
+      expect(resolveCalls[0][4]).toBe(rateAtCalls[0][0]);
     });
 
-    it("writes shippingTotal 0 (today's exact prior behaviour) when the resolved fee is configured as 0", async () => {
-      shippingFeeService.getFeeAt.mockResolvedValue({ ...DEFAULT_SHIPPING_FEE, amount: 0 });
+    it("writes shippingTotal 0 (today's exact prior behaviour) when the resolver returns 0 cents", async () => {
+      shippingFeeResolverService.resolveShippingCents.mockResolvedValue(0);
       stageCart(
         [{ productId: 'prod-1', quantity: 2 }],
         [makeProduct({ price: '185.00' as never })],
@@ -478,8 +495,10 @@ describe('OrdersService', () => {
       );
     });
 
-    it('fails order creation (never charges 0) when getFeeAt throws — no order, no payment', async () => {
-      shippingFeeService.getFeeAt.mockRejectedValue(new Error('No shipping fee configured'));
+    it('fails order creation (never charges 0) when the resolver throws — no order, no payment', async () => {
+      shippingFeeResolverService.resolveShippingCents.mockRejectedValue(
+        new Error('No shipping fee configured'),
+      );
       stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct()]);
 
       await expect(service.create(makeUser(), SHIPPING_DTO)).rejects.toThrow(
@@ -490,98 +509,39 @@ describe('OrdersService', () => {
       expect(paymentProvider.initiatePayment).not.toHaveBeenCalled();
     });
 
-    it('single-item, no-override order resolves with exactly one getFeeAt call and no override overhead beyond a lookup', async () => {
-      stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct()]);
+    it('resolves the shipping fee exactly once per order, over every product id in the cart', async () => {
+      stageCart(
+        [
+          { productId: 'prod-1', quantity: 1 },
+          { productId: 'prod-2', quantity: 1 },
+        ],
+        [makeProduct({ id: 'prod-1' }), makeProduct({ id: 'prod-2' })],
+      );
 
       await service.create(makeUser(), SHIPPING_DTO);
 
-      expect(shippingFeeService.getFeeAt).toHaveBeenCalledTimes(1);
-      expect(productShippingFeeOverrideService.findOverrideAmounts).toHaveBeenCalledTimes(1);
-      expect(productShippingFeeOverrideService.findOverrideAmounts).toHaveBeenCalledWith(
-        ['prod-1'],
+      expect(shippingFeeResolverService.resolveShippingCents).toHaveBeenCalledTimes(1);
+      expect(shippingFeeResolverService.resolveShippingCents).toHaveBeenCalledWith(
+        ['prod-1', 'prod-2'],
         'ZA',
         'NA',
         CurrencyCode.ZAR,
+        expect.any(Date),
       );
     });
 
-    it('mixed cart: an override HIGHER than the default wins the MAX', async () => {
-      productShippingFeeOverrideService.findOverrideAmounts.mockResolvedValue(
-        new Map([['prod-2', 400]]),
-      );
+    it('writes shippingTotal/total from the resolved cents (integer-cents → currency conversion)', async () => {
+      shippingFeeResolverService.resolveShippingCents.mockResolvedValue(40000); // R400.00
       stageCart(
-        [
-          { productId: 'prod-1', quantity: 1 }, // no override → falls back to the 250 default
-          { productId: 'prod-2', quantity: 1 }, // overridden to 400
-        ],
-        [makeProduct({ id: 'prod-1' }), makeProduct({ id: 'prod-2' })],
+        [{ productId: 'prod-1', quantity: 1 }],
+        [makeProduct({ price: '185.00' as never })],
       );
 
       await service.create(makeUser(), SHIPPING_DTO);
 
       expect(manager.save).toHaveBeenCalledWith(
         Order,
-        expect.objectContaining({ shippingTotal: 400 }),
-      );
-    });
-
-    it('mixed cart: an override LOWER than the default still loses the MAX to the default', async () => {
-      productShippingFeeOverrideService.findOverrideAmounts.mockResolvedValue(
-        new Map([['prod-2', 50]]),
-      );
-      stageCart(
-        [
-          { productId: 'prod-1', quantity: 1 }, // no override → falls back to the 250 default
-          { productId: 'prod-2', quantity: 1 }, // overridden to 50, lower than default
-        ],
-        [makeProduct({ id: 'prod-1' }), makeProduct({ id: 'prod-2' })],
-      );
-
-      await service.create(makeUser(), SHIPPING_DTO);
-
-      expect(manager.save).toHaveBeenCalledWith(
-        Order,
-        expect.objectContaining({ shippingTotal: 250 }),
-      );
-    });
-
-    it('cart with only overridden items takes the max across the overrides', async () => {
-      productShippingFeeOverrideService.findOverrideAmounts.mockResolvedValue(
-        new Map([
-          ['prod-1', 300],
-          ['prod-2', 500],
-        ]),
-      );
-      stageCart(
-        [
-          { productId: 'prod-1', quantity: 1 },
-          { productId: 'prod-2', quantity: 1 },
-        ],
-        [makeProduct({ id: 'prod-1' }), makeProduct({ id: 'prod-2' })],
-      );
-
-      await service.create(makeUser(), SHIPPING_DTO);
-
-      expect(manager.save).toHaveBeenCalledWith(
-        Order,
-        expect.objectContaining({ shippingTotal: 500 }),
-      );
-    });
-
-    it('cart with only default items (no overrides anywhere) uses the default for every line', async () => {
-      stageCart(
-        [
-          { productId: 'prod-1', quantity: 1 },
-          { productId: 'prod-2', quantity: 1 },
-        ],
-        [makeProduct({ id: 'prod-1' }), makeProduct({ id: 'prod-2' })],
-      );
-
-      await service.create(makeUser(), SHIPPING_DTO);
-
-      expect(manager.save).toHaveBeenCalledWith(
-        Order,
-        expect.objectContaining({ shippingTotal: 250 }),
+        expect.objectContaining({ shippingTotal: 400, total: 585 }), // 185 + 400
       );
     });
   });

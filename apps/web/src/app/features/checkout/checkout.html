@@ -276,7 +276,7 @@
             <button
               type="button"
               class="checkout__submit"
-              [disabled]="state() === 'submitting' || hasMixedCurrencies()"
+              [disabled]="state() === 'submitting' || hasMixedCurrencies() || shippingFeeState() !== 'ready'"
               (click)="submit()"
             >
               @if (state() === 'submitting') {

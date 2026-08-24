@@ -43,7 +43,12 @@
               <tr>
                 <th scope="row">{{ route.label }}</th>
                 @for (currency of currencies; track currency) {
-                  <td>{{ feeFor(set, route, currency)?.amount ?? 0 | number:'1.2-2' }}</td>
+                  <td>@let fee = feeFor(set, route, currency);
+                      @if (fee) {
+                        {{ fee.amount | number:'1.2-2' }}
+                      } @else {
+                        <span class="admin-shipping-fee__missing" title="No fee configured for this route and currency">&mdash;</span>
+                      }</td>
                 }
               </tr>
             }
@@ -187,7 +192,12 @@
                   <tr>
                     <th scope="row">{{ route.label }}</th>
                     @for (currency of currencies; track currency) {
-                      <td>{{ feeFor(set, route, currency)?.amount ?? 0 | number:'1.2-2' }}</td>
+                      <td>@let fee = feeFor(set, route, currency);
+                      @if (fee) {
+                        {{ fee.amount | number:'1.2-2' }}
+                      } @else {
+                        <span class="admin-shipping-fee__missing" title="No fee configured for this route and currency">&mdash;</span>
+                      }</td>
                     }
                   </tr>
                 }

@@ -8,20 +8,29 @@ import { CurrentShippingFeeController } from './current-shipping-fee.controller'
 import { ProductShippingFeeOverrideService } from './product-shipping-fee-override.service';
 import { ProductShippingFeeOverrideController } from './product-shipping-fee-override.controller';
 import { CartOriginResolverService } from './cart-origin-resolver.service';
+import { ShippingFeeResolverService } from './shipping-fee-resolver.service';
 import { Product } from '../products/entities/product.entity';
 import { Cart } from '../cart/entities/cart.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ShippingFee, ProductShippingFeeOverride, Product, Cart])],
-  providers: [ShippingFeeService, ProductShippingFeeOverrideService, CartOriginResolverService],
+  providers: [
+    ShippingFeeService,
+    ProductShippingFeeOverrideService,
+    CartOriginResolverService,
+    ShippingFeeResolverService,
+  ],
   controllers: [
     ShippingFeeController,
     CurrentShippingFeeController,
     ProductShippingFeeOverrideController,
   ],
   // Exported so SF-3's OrdersModule can import this module and call
-  // ShippingFeeService.getFeeAt / ProductShippingFeeOverrideService.findOverrideAmounts
-  // directly (not @Global()).
-  exports: [ShippingFeeService, ProductShippingFeeOverrideService],
+  // ShippingFeeResolverService.resolveShippingCents directly (not @Global()).
+  // ShippingFeeService/ProductShippingFeeOverrideService stay exported too —
+  // ShippingFeeResolverService is the shared money-math wrapper around them,
+  // not a replacement for their own direct consumers (e.g. the admin
+  // shipping-fee/override controllers in this module).
+  exports: [ShippingFeeService, ProductShippingFeeOverrideService, ShippingFeeResolverService],
 })
 export class ShippingFeeModule {}

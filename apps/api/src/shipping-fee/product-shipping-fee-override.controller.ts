@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Put, Query } from '@nestjs/common';
 import { UserRole } from '@hb/shared';
 import { Roles } from '../common/decorators/roles.decorator';
 import { GetUser } from '../common/decorators/get-user.decorator';
@@ -13,13 +13,13 @@ export class ProductShippingFeeOverrideController {
   constructor(private readonly overrideService: ProductShippingFeeOverrideService) {}
 
   @Get()
-  list(@Param('productId') productId: string) {
+  list(@Param('productId', new ParseUUIDPipe()) productId: string) {
     return this.overrideService.listForProduct(productId);
   }
 
   @Put()
   set(
-    @Param('productId') productId: string,
+    @Param('productId', new ParseUUIDPipe()) productId: string,
     @Body() dto: SetProductShippingFeeOverrideDto,
     @GetUser() requestingUser: User,
   ) {
@@ -28,7 +28,7 @@ export class ProductShippingFeeOverrideController {
 
   @Delete()
   clear(
-    @Param('productId') productId: string,
+    @Param('productId', new ParseUUIDPipe()) productId: string,
     @Query() dto: ClearProductShippingFeeOverrideDto,
     @GetUser() requestingUser: User,
   ) {

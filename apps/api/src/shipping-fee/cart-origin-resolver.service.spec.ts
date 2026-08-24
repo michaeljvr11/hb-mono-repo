@@ -22,17 +22,20 @@ describe('CartOriginResolverService', () => {
     service = module.get(CartOriginResolverService);
   });
 
-  it('resolves the single distinct origin across a single-origin cart', async () => {
+  it('resolves the single distinct origin and every product id across a single-origin cart', async () => {
     cartRepo.findOne.mockResolvedValue({
       id: 'cart-1',
       userId: 'user-1',
       items: [
-        { product: { originCountry: CountryCode.NAMIBIA } },
-        { product: { originCountry: CountryCode.NAMIBIA } },
+        { productId: 'prod-1', product: { originCountry: CountryCode.NAMIBIA } },
+        { productId: 'prod-2', product: { originCountry: CountryCode.NAMIBIA } },
       ],
     });
 
-    await expect(service.resolveForUser('user-1')).resolves.toBe(CountryCode.NAMIBIA);
+    await expect(service.resolveCartForUser('user-1')).resolves.toEqual({
+      originCountry: CountryCode.NAMIBIA,
+      productIds: ['prod-1', 'prod-2'],
+    });
     expect(cartRepo.findOne).toHaveBeenCalledWith({
       where: { userId: 'user-1' },
       relations: ['items', 'items.product'],
@@ -44,23 +47,39 @@ describe('CartOriginResolverService', () => {
       id: 'cart-1',
       userId: 'user-1',
       items: [
-        { product: { originCountry: CountryCode.SOUTH_AFRICA } },
-        { product: { originCountry: CountryCode.NAMIBIA } },
+        { productId: 'prod-1', product: { originCountry: CountryCode.SOUTH_AFRICA } },
+        { productId: 'prod-2', product: { originCountry: CountryCode.NAMIBIA } },
       ],
     });
 
-    await expect(service.resolveForUser('user-1')).resolves.toBe(CountryCode.SOUTH_AFRICA);
+    const result = await service.resolveCartForUser('user-1');
+    expect(result.originCountry).toBe(CountryCode.SOUTH_AFRICA);
+    expect(result.productIds).toEqual(['prod-1', 'prod-2']);
+  });
+
+  it('drops cart lines whose product row is gone from both origin resolution and productIds (FAIL 3)', async () => {
+    cartRepo.findOne.mockResolvedValue({
+      id: 'cart-1',
+      userId: 'user-1',
+      items: [
+        { productId: 'prod-1', product: { originCountry: CountryCode.NAMIBIA } },
+        { productId: 'prod-deleted', product: null },
+      ],
+    });
+
+    const result = await service.resolveCartForUser('user-1');
+    expect(result).toEqual({ originCountry: CountryCode.NAMIBIA, productIds: ['prod-1'] });
   });
 
   it('rejects with a 400 when the cart has no items', async () => {
     cartRepo.findOne.mockResolvedValue({ id: 'cart-1', userId: 'user-1', items: [] });
 
-    await expect(service.resolveForUser('user-1')).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.resolveCartForUser('user-1')).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('rejects with a 400 when the user has no cart at all', async () => {
     cartRepo.findOne.mockResolvedValue(null);
 
-    await expect(service.resolveForUser('user-1')).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.resolveCartForUser('user-1')).rejects.toBeInstanceOf(BadRequestException);
   });
 });
