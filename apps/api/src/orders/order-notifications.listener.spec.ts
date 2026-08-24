@@ -252,6 +252,37 @@ describe('OrderNotificationsListener', () => {
     expect(mailService.sendVendorOrderNotification).toHaveBeenCalledTimes(1);
   });
 
+  it('order total passed to every notification includes the shipping fee (SF-3), not just the subtotal', async () => {
+    // subtotal 370 + shippingTotal 250 (resolved fee) = 620 — the listener
+    // forwards order.total verbatim, so this proves the fee reaches every
+    // recipient's email without the listener needing any shipping-specific logic.
+    const order = makeOrder({
+      items: [makeOrderItem()],
+      subtotal: 370,
+      shippingTotal: 250,
+      total: '620.00' as never,
+    });
+    orderRepo.findOne.mockResolvedValue(order);
+
+    await listener.handleOrderPaid({ orderId: order.id });
+
+    expect(mailService.sendPlatformOrderNotification).toHaveBeenCalledWith(
+      expect.any(Array),
+      order.id,
+      expect.any(Array),
+      620,
+      CurrencyCode.ZAR,
+    );
+    expect(mailService.sendCustomerOrderConfirmation).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      order.id,
+      expect.any(Array),
+      620,
+      CurrencyCode.ZAR,
+    );
+  });
+
   it('skips the customer email when no user relation is loaded (warns, does not throw)', async () => {
     const order = makeOrder({ items: [makeOrderItem()], user: undefined });
     orderRepo.findOne.mockResolvedValue(order);

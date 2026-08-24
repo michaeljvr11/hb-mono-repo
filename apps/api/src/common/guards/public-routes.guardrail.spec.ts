@@ -12,6 +12,7 @@ import { AnalyticsController } from '../../analytics/analytics.controller';
 import { CommissionController } from '../../commission/commission.controller';
 import { ReviewsController } from '../../reviews/reviews.controller';
 import { ShippingFeeController } from '../../shipping-fee/shipping-fee.controller';
+import { CurrentShippingFeeController } from '../../shipping-fee/current-shipping-fee.controller';
 import { ProductShippingFeeOverrideController } from '../../shipping-fee/product-shipping-fee-override.controller';
 
 /**
@@ -36,6 +37,7 @@ const CONTROLLERS = [
   CommissionController,
   ReviewsController,
   ShippingFeeController,
+  CurrentShippingFeeController,
   ProductShippingFeeOverrideController,
 ];
 

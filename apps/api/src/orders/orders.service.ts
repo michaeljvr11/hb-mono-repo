@@ -37,6 +37,8 @@ import type { PaymentProviderPort } from '../payments/payment-provider.port';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderStatusOverrideDto } from './dto/order-status-override.dto';
 import { CommissionRateService } from '../commission/commission-rate.service';
+import { ShippingFeeService } from '../shipping-fee/shipping-fee.service';
+import { ProductShippingFeeOverrideService } from '../shipping-fee/product-shipping-fee-override.service';
 import { OrderEvents } from '../common/events/domain-events';
 
 /**
@@ -84,6 +86,8 @@ export class OrdersService {
     private readonly paymentProvider: PaymentProviderPort,
     private readonly dataSource: DataSource,
     private readonly commissionRateService: CommissionRateService,
+    private readonly shippingFeeService: ShippingFeeService,
+    private readonly productShippingFeeOverrideService: ProductShippingFeeOverrideService,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -237,14 +241,49 @@ export class OrdersService {
       }
       const [currency] = currencies;
 
+      // The route this order is placed on — constant across every line
+      // (one origin, one destination per order). Computed once and reused
+      // both for fee resolution below and for the order row itself, so the
+      // route a fee is resolved against is exactly the route that gets
+      // written (SF-3).
+      const originCountry =
+        originCountries.size === 1 ? [...originCountries][0] : CountryCode.SOUTH_AFRICA;
+      const destinationCountry = dto.shippingAddress.countryCode;
+
       const shippingAddress = await manager.save(Address, {
         ...dto.shippingAddress,
         userId: user.id,
       });
 
-      // Cross-border delivery fee structure is an open business decision
-      // (HB Domain Model TBD) — until priced, shipping is explicitly 0.00.
-      const shippingCents = 0;
+      // Shipping fee (SF-3): each line resolves to the product's
+      // (route, currency) override if one is set (SF-5), else the global
+      // default (SF-1) — resolved against the same `orderCreatedAt` instant
+      // as the commission snapshot above, so a mid-checkout fee change can
+      // never split an order. shippingTotal is the MAX across every line's
+      // resolved fee, not a sum — the highest applicable fee for the cart
+      // wins. `getFeeAt` throws rather than returning 0, so a missing fee
+      // config fails order creation instead of silently charging nothing.
+      const productIds = lines.map((line) => line.productId).filter((id): id is string => !!id);
+      const overrideAmounts = await this.productShippingFeeOverrideService.findOverrideAmounts(
+        productIds,
+        originCountry,
+        destinationCountry,
+        currency,
+      );
+      const defaultFee = await this.shippingFeeService.getFeeAt(
+        orderCreatedAt,
+        originCountry,
+        destinationCountry,
+        currency,
+      );
+      const defaultFeeCents = Math.round(defaultFee.amount * 100);
+      let shippingCents = 0;
+      for (const productId of productIds) {
+        const overrideAmount = overrideAmounts.get(productId);
+        const lineFeeCents =
+          overrideAmount !== undefined ? Math.round(overrideAmount * 100) : defaultFeeCents;
+        if (lineFeeCents > shippingCents) shippingCents = lineFeeCents;
+      }
 
       const saved = await manager.save(Order, {
         userId: user.id,
@@ -253,9 +292,8 @@ export class OrdersService {
         subtotal: subtotalCents / 100,
         shippingTotal: shippingCents / 100,
         total: (subtotalCents + shippingCents) / 100,
-        originCountry:
-          originCountries.size === 1 ? [...originCountries][0] : CountryCode.SOUTH_AFRICA,
-        destinationCountry: dto.shippingAddress.countryCode,
+        originCountry,
+        destinationCountry,
         shippingAddressId: shippingAddress.id,
         items: lines,
       });

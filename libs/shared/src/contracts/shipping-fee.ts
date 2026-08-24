@@ -83,6 +83,20 @@ export interface CurrentShippingFeeDto {
 }
 
 /**
+ * Query for GET /shipping-fee/current. The checkout UI (SF-4) does not yet
+ * have an order to read a route off of, so it states the (route, currency)
+ * explicitly — this mirrors exactly what `OrdersService.create` resolves
+ * against, so the preview a shopper sees before paying matches the fee
+ * actually charged (absent a per-product override, which this global-default
+ * preview does not reflect — see `CurrentShippingFeeDto`'s doc comment).
+ */
+export interface GetCurrentShippingFeeQuery {
+  originCountry: CountryCode;
+  destinationCountry: CountryCode;
+  currency: CurrencyCode;
+}
+
+/**
  * Identifies one (route, currency) combination for a per-product shipping fee
  * override. A route is an origin→destination `CountryCode` pair, same as the
  * global default (SF-1) — 4 routes x 2 currencies = 8 possible combinations
