@@ -19,6 +19,8 @@ export const AuditAction = {
   COMMISSION_RATE_CREATED: 'commission_rate.created',
   PLATFORM_SETTINGS_UPDATED: 'platform_settings.updated',
   SHIPPING_FEE_CREATED: 'shipping_fee.created',
+  PRODUCT_SHIPPING_FEE_OVERRIDE_SET: 'product_shipping_fee_override.set',
+  PRODUCT_SHIPPING_FEE_OVERRIDE_CLEARED: 'product_shipping_fee_override.cleared',
 } as const;
 
 function toDto(log: AuditLog): AuditLogDto {

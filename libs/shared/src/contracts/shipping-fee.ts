@@ -81,3 +81,46 @@ export interface CurrentShippingFeeDto {
   originCountry: CountryCode;
   destinationCountry: CountryCode;
 }
+
+/**
+ * Identifies one (route, currency) combination for a per-product shipping fee
+ * override. A route is an origin→destination `CountryCode` pair, same as the
+ * global default (SF-1) — 4 routes x 2 currencies = 8 possible combinations
+ * per product, but unlike the global default **an override does not need to
+ * cover all 8**: an admin may set only the combinations where pre-positioned
+ * stock makes shipping cheaper (e.g. NA→NA), leaving every other combination
+ * to fall back to the global default (`ShippingFeeService.getFeeAt`).
+ */
+export interface ProductShippingFeeOverrideRoute {
+  originCountry: CountryCode;
+  destinationCountry: CountryCode;
+  currency: CurrencyCode;
+}
+
+/**
+ * Per-product shipping fee override (SF-5). Unlike `ShippingFeeDto`, this is
+ * **mutable, not effective-dated** — there is no history, the current row IS
+ * the value (mirrors `products.price`). This is deliberate: the amount
+ * actually charged is frozen onto `orders.shippingTotal` at order-creation
+ * time (SF-3), so historical order integrity never depends on this table
+ * being append-only.
+ */
+export interface ProductShippingFeeOverrideDto extends ProductShippingFeeOverrideRoute {
+  id: string;
+  productId: string;
+  /** The flat fee, in `currency`, overriding the global default for this exact (product, route, currency). */
+  amount: number;
+  /** ISO-8601 UTC timestamp of when this override was last set. */
+  updatedAt: string;
+  /** The admin user who last set this override, if known. */
+  updatedByUserId?: string;
+}
+
+/**
+ * Request body for PUT /admin/products/:productId/shipping-fee-overrides.
+ * Upsert semantics: a second call for the same (product, route, currency)
+ * replaces the amount in place — no history is kept.
+ */
+export interface SetProductShippingFeeOverrideRequest extends ProductShippingFeeOverrideRoute {
+  amount: number;
+}
