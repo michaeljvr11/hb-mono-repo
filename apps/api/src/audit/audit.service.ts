@@ -18,6 +18,7 @@ export const AuditAction = {
   ADMIN_BOOTSTRAPPED: 'admin.bootstrapped',
   COMMISSION_RATE_CREATED: 'commission_rate.created',
   PLATFORM_SETTINGS_UPDATED: 'platform_settings.updated',
+  SHIPPING_FEE_CREATED: 'shipping_fee.created',
 } as const;
 
 function toDto(log: AuditLog): AuditLogDto {
