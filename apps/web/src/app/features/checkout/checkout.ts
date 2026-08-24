@@ -38,6 +38,13 @@ interface ApiErrorShape {
   error?: { message?: string | string[] };
 }
 
+/** Prose country names for the shipping banner. The summary line item keeps the
+ *  short codes (`shippingLabel`); the banner reads as a sentence. */
+const COUNTRY_NAMES: Record<CountryCode, string> = {
+  [CountryCode.SOUTH_AFRICA]: 'South Africa',
+  [CountryCode.NAMIBIA]: 'Namibia',
+};
+
 /**
  * Checkout (design: docs/design/checkout/). Order summary amounts are display
  * of API-computed values only; the real totals are recomputed server-side on
@@ -115,6 +122,51 @@ export class Checkout implements OnInit {
     return fee.originCountry === fee.destinationCountry
       ? `Shipping (${fee.originCountry} domestic)`
       : `Shipping (${fee.originCountry} to ${fee.destinationCountry})`;
+  });
+
+  /** Whether the resolved route actually crosses a border. `null` while no route
+   *  is resolved (loading / error / mixed-currency cart) — the banner then
+   *  asserts neither, rather than defaulting to "cross-border". */
+  readonly isCrossBorder = computed(() => {
+    const fee = this.shippingFee();
+    if (!fee) return null;
+    return fee.originCountry !== fee.destinationCountry;
+  });
+
+  /** Banner heading, keyed on the same resolved route the fee is charged on —
+   *  never on the address form's country selection. */
+  readonly shippingBannerTitle = computed(() => {
+    const crossBorder = this.isCrossBorder();
+    if (crossBorder === null) return 'Shipping';
+    return crossBorder ? 'Cross-Border Shipping' : 'Domestic Shipping';
+  });
+
+  /** Banner body copy. The 3–5 day transit estimate is a cross-border claim and
+   *  stays on the cross-border branch only — there is no sourced domestic SLA,
+   *  and inventing one would just be the next route-lie. */
+  readonly shippingBannerNote = computed(() => {
+    const fee = this.shippingFee();
+    if (!fee) {
+      return 'Trans-Frontier Express: secured logistics across South Africa and Namibia.';
+    }
+    const origin = COUNTRY_NAMES[fee.originCountry];
+    if (fee.originCountry === fee.destinationCountry) {
+      return `Trans-Frontier Express: secured logistics within ${origin}.`;
+    }
+    return `Trans-Frontier Express: secured logistics from ${origin} to ${COUNTRY_NAMES[fee.destinationCountry]}. 3–5 days arrival.`;
+  });
+
+  /** Confirmation-panel logistics line, built from the placed order's own route
+   *  so it reads as honestly as the banner: a domestic order is described as
+   *  domestic, not as a "ZA to ZA" transfer between two countries. */
+  readonly orderLogisticsNote = computed(() => {
+    const order = this.placedOrder();
+    if (!order) return null;
+    const origin = COUNTRY_NAMES[order.originCountry];
+    if (order.originCountry === order.destinationCountry) {
+      return `Trans-Frontier Express: secured logistics within ${origin}.`;
+    }
+    return `Trans-Frontier Express: secured logistics from ${origin} to ${COUNTRY_NAMES[order.destinationCountry]}.`;
   });
 
   constructor() {

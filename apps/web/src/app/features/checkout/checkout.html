@@ -27,9 +27,7 @@
             <strong>{{ format(order.total, order.currency) }}</strong>
             (includes <strong>{{ format(order.shippingTotal, order.currency) }}</strong> shipping).
           </p>
-          <p class="checkout__success-sub">
-            Trans-Frontier Express: secured logistics from {{ order.originCountry }} to {{ order.destinationCountry }}.
-          </p>
+          <p class="checkout__success-sub">{{ orderLogisticsNote() }}</p>
         }
         <a class="checkout__success-cta" routerLink="/shop">Continue shopping</a>
       </section>
@@ -37,19 +35,22 @@
     @default {
       <h1 class="checkout__title">Secure Checkout</h1>
 
-      <!-- Cross-border logistics summary (per design) -->
+      <!-- Logistics summary (per design). Copy is built from the route resolved
+           on the fee DTO, never from the address form — the banner can never
+           assert a route different from the one being charged. -->
       <section class="checkout__border-card">
         <div class="checkout__border-head">
           <span class="material-symbols-outlined checkout__border-icon" aria-hidden="true">local_shipping</span>
-          <h2 class="checkout__border-title">Cross-Border Shipping</h2>
-          <span class="checkout__border-badge">
-            <span class="material-symbols-outlined" aria-hidden="true">verified</span>
-            CUSTOMS PREPAID
-          </span>
+          <h2 class="checkout__border-title">{{ shippingBannerTitle() }}</h2>
+          @if (isCrossBorder()) {
+            <!-- Customs is a cross-border concern only — no badge on a domestic route. -->
+            <span class="checkout__border-badge">
+              <span class="material-symbols-outlined" aria-hidden="true">verified</span>
+              CUSTOMS PREPAID
+            </span>
+          }
         </div>
-        <p class="checkout__border-note">
-          Trans-Frontier Express: Secured Logistics from South Africa to Namibia. 3–5 days arrival.
-        </p>
+        <p class="checkout__border-note">{{ shippingBannerNote() }}</p>
       </section>
 
       <!-- Inline, specific error surfaces -->

@@ -77,6 +77,15 @@ const SHIPPING_FEE: CurrentShippingFeeDto = {
   destinationCountry: CountryCode.NAMIBIA,
 };
 
+/** A legitimately domestic route — `orders.originCountry` is derived from the
+ *  cart's products, so ZA→ZA and NA→NA orders are representable. */
+const DOMESTIC_FEE: CurrentShippingFeeDto = {
+  amount: 30,
+  currency: CurrencyCode.ZAR,
+  originCountry: CountryCode.SOUTH_AFRICA,
+  destinationCountry: CountryCode.SOUTH_AFRICA,
+};
+
 // ─── Stubs ───────────────────────────────────────────────────────────────────
 
 interface CartStub {
@@ -273,6 +282,70 @@ describe('Checkout', () => {
     expect(component.grandTotal()).toBe(370 + 50);
   });
 
+  // ── Route-honest shipping banner ────────────────────────────────────────────
+
+  it('names the cross-border route in the banner, with the customs badge, when the route crosses a border', async () => {
+    await setup();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(component.isCrossBorder()).toBe(true);
+    expect(el.textContent).toContain('Cross-Border Shipping');
+    expect(el.textContent).toContain('secured logistics from South Africa to Namibia');
+    expect(el.querySelector('.checkout__border-badge')).toBeTruthy();
+  });
+
+  it('calls a domestic route domestic and drops the customs badge, following the charged route not the address form', async () => {
+    await setup(CART, vi.fn(() => of(DOMESTIC_FEE)));
+
+    // The form still says Namibia — the banner must follow the ZA→ZA route the
+    // fee was actually resolved on, never the address selection.
+    expect(component.form.controls.countryCode.value).toBe(CountryCode.NAMIBIA);
+    expect(component.isCrossBorder()).toBe(false);
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Domestic Shipping');
+    expect(el.textContent).toContain('secured logistics within South Africa');
+    expect(el.textContent).not.toContain('Cross-Border Shipping');
+    expect(el.textContent).not.toContain('South Africa to Namibia');
+    expect(el.textContent).not.toContain('CUSTOMS PREPAID');
+    expect(el.querySelector('.checkout__border-badge')).toBeNull();
+  });
+
+  it('flips the banner from cross-border to domestic when the resolved route changes', async () => {
+    await setup();
+    expect(fixture.nativeElement.textContent).toContain('Cross-Border Shipping');
+
+    shippingFeeStub.current.mockReturnValue(of(DOMESTIC_FEE));
+    component.form.controls.countryCode.setValue(CountryCode.SOUTH_AFRICA);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Domestic Shipping');
+    expect(el.textContent).not.toContain('Cross-Border Shipping');
+    expect(el.textContent).not.toContain('CUSTOMS PREPAID');
+  });
+
+  it('asserts no route in the banner while no route is resolved', async () => {
+    await setup(CART, vi.fn(() => throwError(() => ({ status: 500 }))));
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(component.isCrossBorder()).toBeNull();
+    expect(el.textContent).toContain('secured logistics across South Africa and Namibia');
+    expect(el.textContent).not.toContain('Cross-Border Shipping');
+    expect(el.textContent).not.toContain('Domestic Shipping');
+    expect(el.textContent).not.toContain('CUSTOMS PREPAID');
+  });
+
+  it('asserts no route in the banner for a mixed-currency cart, which never resolves a fee', async () => {
+    await setup(MIXED_CART);
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(component.isCrossBorder()).toBeNull();
+    expect(el.textContent).not.toContain('Cross-Border Shipping');
+    expect(el.textContent).not.toContain('CUSTOMS PREPAID');
+  });
+
   it('fires CHECKOUT_STARTED once the cart loads with items', async () => {
     await setup();
 
@@ -393,6 +466,38 @@ describe('Checkout', () => {
 
     // No order may be placed against a total the customer was never shown.
     expect(ordersStub.create).not.toHaveBeenCalled();
+  });
+
+  it('describes the confirmed order by its own route, in prose rather than raw codes', async () => {
+    await setup();
+    fillForm(component);
+
+    component.submit();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('secured logistics from South Africa to Namibia');
+    expect(el.textContent).not.toContain('from ZA to NA');
+  });
+
+  it('describes a domestic order as domestic on the confirmation, never as a ZA-to-ZA transfer', async () => {
+    await setup();
+    fillForm(component);
+    ordersStub.create.mockReturnValue(
+      of({
+        ...PLACED_ORDER,
+        originCountry: CountryCode.SOUTH_AFRICA,
+        destinationCountry: CountryCode.SOUTH_AFRICA,
+      } satisfies OrderDto),
+    );
+
+    component.submit();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('secured logistics within South Africa');
+    expect(el.textContent).not.toContain('from ZA to ZA');
+    expect(el.textContent).not.toContain('South Africa to South Africa');
   });
 
   it('fires SHIPPING_SUBMITTED, PAYMENT_ATTEMPTED and ORDER_COMPLETED (with the order total + currency) on a successful submit', async () => {
