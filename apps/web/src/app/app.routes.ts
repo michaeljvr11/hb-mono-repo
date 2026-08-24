@@ -113,6 +113,7 @@ export const routes: Routes = [
       { path: 'orders',    loadComponent: () => import('./features/admin/pages/admin-orders/admin-orders').then(m => m.AdminOrders) },
       { path: 'search-synonyms', loadComponent: () => import('./features/admin/pages/admin-search-synonyms/admin-search-synonyms').then(m => m.AdminSearchSynonyms) },
       { path: 'commission-rates', loadComponent: () => import('./features/admin/pages/admin-commission/admin-commission').then(m => m.AdminCommission) },
+      { path: 'shipping-fee', loadComponent: () => import('./features/admin/pages/admin-shipping-fee/admin-shipping-fee').then(m => m.AdminShippingFee) },
       { path: 'earnings', loadComponent: () => import('./features/admin/pages/admin-earnings/admin-earnings').then(m => m.AdminEarnings) },
       { path: 'logs',      loadComponent: () => import('./features/admin/pages/admin-logs/admin-logs').then(m => m.AdminLogs) },
       { path: 'settings',  loadComponent: () => import('./features/admin/pages/admin-settings/admin-settings').then(m => m.AdminSettings) },

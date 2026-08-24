@@ -1,0 +1,201 @@
+<section class="shipping-fee-page">
+  <!-- Page header -->
+  <header class="page-header">
+    <h1 class="page-title">Shipping Fee</h1>
+    <p class="page-sub">View the shipping fee history and schedule a new fee set.</p>
+  </header>
+
+  <!-- Loading state -->
+  @if (loading()) {
+    <div class="state-placeholder" role="status" aria-live="polite">
+      <span class="material-symbols-outlined state-icon" aria-hidden="true">hourglass_empty</span>
+      <p>Loading shipping fees…</p>
+    </div>
+  }
+
+  <!-- Load error state -->
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <span class="material-symbols-outlined" aria-hidden="true">error</span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+    <!-- Current fees headline -->
+    <div class="detail-card headline-card">
+      @if (currentSet(); as set) {
+        <span class="headline-label">Current fees</span>
+        <span class="headline-meta">
+          In force since {{ set.effectiveFrom | date:'d MMM y, HH:mm':'UTC' }} UTC
+        </span>
+        <table class="fee-grid">
+          <thead>
+            <tr>
+              <th scope="col">Route</th>
+              @for (currency of currencies; track currency) {
+                <th scope="col">{{ currency }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (route of routes; track route.label) {
+              <tr>
+                <th scope="row">{{ route.label }}</th>
+                @for (currency of currencies; track currency) {
+                  <td>{{ feeFor(set, route, currency)?.amount ?? 0 | number:'1.2-2' }}</td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div class="list-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>
+          <p>No shipping fee has been set yet.</p>
+        </div>
+      }
+    </div>
+
+    <!-- Schedule new fee set form -->
+    <div class="detail-card form-card">
+      <h2 class="section-title">Schedule new fee set</h2>
+      <p class="helper-text">
+        A fee set covers every route and currency combination — all 8 amounts are submitted
+        together and take effect only for orders placed from the effective date onward.
+      </p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="fee-form">
+        <div class="form-row">
+          <div class="row-label">
+            <span>Amounts</span>
+            @if (currentSet()) {
+              <button
+                type="button"
+                class="link-btn"
+                (click)="copyCurrentValues()"
+                [disabled]="pending()"
+              >
+                Copy current values
+              </button>
+            }
+          </div>
+
+          <table class="fee-grid fee-grid--editable" [formGroup]="form.controls.cells">
+            <thead>
+              <tr>
+                <th scope="col">Route</th>
+                @for (currency of currencies; track currency) {
+                  <th scope="col">{{ currency }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (route of routes; track route.label) {
+                <tr>
+                  <th scope="row">{{ route.label }}</th>
+                  @for (currency of currencies; track currency) {
+                    <td>
+                      <input
+                        type="text"
+                        inputmode="decimal"
+                        [attr.aria-label]="route.label + ' ' + currency"
+                        placeholder="0.00"
+                        [formControlName]="route.originCountry + '_' + route.destinationCountry + '_' + currency"
+                        [disabled]="pending()"
+                      />
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="form-row">
+          <label for="effectiveFrom">Effective from (optional)</label>
+          <input
+            id="effectiveFrom"
+            type="datetime-local"
+            formControlName="effectiveFrom"
+            [disabled]="pending()"
+          />
+        </div>
+
+        <div class="form-row">
+          <label for="note">Note (optional)</label>
+          <input
+            id="note"
+            type="text"
+            maxlength="500"
+            placeholder="Reason for the change"
+            formControlName="note"
+            [disabled]="pending()"
+          />
+        </div>
+
+        @if (submitError()) {
+          <div class="error-banner error-banner--inline" role="alert">
+            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+            <span>{{ submitError() }}</span>
+          </div>
+        }
+
+        <div class="action-bar">
+          <button class="action-btn action-btn--activate" type="submit" [disabled]="pending()">
+            @if (pending()) {
+              <span class="material-symbols-outlined btn-spinner" aria-hidden="true">progress_activity</span>
+            }
+            Schedule fee set
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- History table -->
+    <div class="detail-card history-card">
+      <h2 class="section-title">History</h2>
+
+      @if (sets().length === 0) {
+        <div class="list-empty">
+          <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
+          <p>No shipping fee history yet.</p>
+        </div>
+      } @else {
+        @for (set of sets(); track set.effectiveFrom) {
+          <div class="history-set" [class.history-set--current]="set.inForce">
+            <div class="history-set-header">
+              <span>{{ set.effectiveFrom | date:'d MMM y, HH:mm':'UTC' }} UTC</span>
+              @if (set.inForce) {
+                <span class="verified-badge">In force</span>
+              }
+              @if (set.fees[0]?.note; as note) {
+                <span class="history-note">{{ note }}</span>
+              }
+            </div>
+            <table class="fee-grid">
+              <thead>
+                <tr>
+                  <th scope="col">Route</th>
+                  @for (currency of currencies; track currency) {
+                    <th scope="col">{{ currency }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (route of routes; track route.label) {
+                  <tr>
+                    <th scope="row">{{ route.label }}</th>
+                    @for (currency of currencies; track currency) {
+                      <td>{{ feeFor(set, route, currency)?.amount ?? 0 | number:'1.2-2' }}</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </div>
+  }
+</section>
