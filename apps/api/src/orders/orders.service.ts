@@ -39,6 +39,7 @@ import { OrderStatusOverrideDto } from './dto/order-status-override.dto';
 import { CommissionRateService } from '../commission/commission-rate.service';
 import { ShippingFeeService } from '../shipping-fee/shipping-fee.service';
 import { ProductShippingFeeOverrideService } from '../shipping-fee/product-shipping-fee-override.service';
+import { resolveCartOriginCountry } from '../shipping-fee/cart-origin.util';
 import { OrderEvents } from '../common/events/domain-events';
 
 /**
@@ -245,9 +246,10 @@ export class OrdersService {
       // (one origin, one destination per order). Computed once and reused
       // both for fee resolution below and for the order row itself, so the
       // route a fee is resolved against is exactly the route that gets
-      // written (SF-3).
-      const originCountry =
-        originCountries.size === 1 ? [...originCountries][0] : CountryCode.SOUTH_AFRICA;
+      // written (SF-3). `resolveCartOriginCountry` also backs SF-4's
+      // checkout preview endpoint, so the two can never resolve different
+      // origins for the same cart.
+      const originCountry = resolveCartOriginCountry(originCountries);
       const destinationCountry = dto.shippingAddress.countryCode;
 
       const shippingAddress = await manager.save(Address, {

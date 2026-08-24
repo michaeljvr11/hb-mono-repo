@@ -7,11 +7,13 @@ import { ShippingFeeController } from './shipping-fee.controller';
 import { CurrentShippingFeeController } from './current-shipping-fee.controller';
 import { ProductShippingFeeOverrideService } from './product-shipping-fee-override.service';
 import { ProductShippingFeeOverrideController } from './product-shipping-fee-override.controller';
+import { CartOriginResolverService } from './cart-origin-resolver.service';
 import { Product } from '../products/entities/product.entity';
+import { Cart } from '../cart/entities/cart.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ShippingFee, ProductShippingFeeOverride, Product])],
-  providers: [ShippingFeeService, ProductShippingFeeOverrideService],
+  imports: [TypeOrmModule.forFeature([ShippingFee, ProductShippingFeeOverride, Product, Cart])],
+  providers: [ShippingFeeService, ProductShippingFeeOverrideService, CartOriginResolverService],
   controllers: [
     ShippingFeeController,
     CurrentShippingFeeController,

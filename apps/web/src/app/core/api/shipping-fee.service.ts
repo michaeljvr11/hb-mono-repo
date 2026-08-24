@@ -31,10 +31,14 @@ export class ShippingFeeService {
   }
 
   current(query: GetCurrentShippingFeeQuery): Observable<CurrentShippingFeeDto> {
-    const params = new HttpParams()
-      .set('originCountry', query.originCountry)
+    // originCountry is optional (SF-4): when omitted, the server derives it
+    // from the caller's own cart — see the shared interface's doc comment.
+    let params = new HttpParams()
       .set('destinationCountry', query.destinationCountry)
       .set('currency', query.currency);
+    if (query.originCountry) {
+      params = params.set('originCountry', query.originCountry);
+    }
     return this.http.get<CurrentShippingFeeDto>(`${this.base}/shipping-fee/current`, { params });
   }
 }

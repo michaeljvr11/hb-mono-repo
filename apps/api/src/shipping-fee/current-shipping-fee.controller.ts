@@ -1,7 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { CurrentShippingFeeDto } from '@hb/shared';
 import { ShippingFeeService } from './shipping-fee.service';
+import { CartOriginResolverService } from './cart-origin-resolver.service';
 import { GetCurrentShippingFeeQueryDto } from './dto/get-current-shipping-fee-query.dto';
+import { GetUser } from '../common/decorators/get-user.decorator';
+import { User } from '../users/entities/user.entity';
 
 /**
  * GET /shipping-fee/current — checkout preview (SF-3). Distinct from
@@ -16,16 +19,32 @@ import { GetCurrentShippingFeeQueryDto } from './dto/get-current-shipping-fee-qu
  * Reflects only the global default (`ShippingFeeService.getFeeAt`) — a
  * per-product override (SF-5) is cart-line-specific and only resolved at
  * order-creation time, never guessed here.
+ *
+ * `originCountry` is optional (SF-4): the checkout UI has no order to read a
+ * route off of, and re-deriving `OrdersService.create`'s origin rule in
+ * Angular would drift from the fee actually charged. So when the caller
+ * omits it, it's derived from the caller's own cart via
+ * `CartOriginResolverService` — the exact rule `OrdersService.create` uses.
+ * An explicitly-supplied `originCountry` is still honoured verbatim.
  */
 @Controller('shipping-fee')
 export class CurrentShippingFeeController {
-  constructor(private readonly shippingFeeService: ShippingFeeService) {}
+  constructor(
+    private readonly shippingFeeService: ShippingFeeService,
+    private readonly cartOriginResolver: CartOriginResolverService,
+  ) {}
 
   @Get('current')
-  async current(@Query() query: GetCurrentShippingFeeQueryDto): Promise<CurrentShippingFeeDto> {
+  async current(
+    @Query() query: GetCurrentShippingFeeQueryDto,
+    @GetUser() user: User,
+  ): Promise<CurrentShippingFeeDto> {
+    const originCountry =
+      query.originCountry ?? (await this.cartOriginResolver.resolveForUser(user.id));
+
     const fee = await this.shippingFeeService.getFeeAt(
       new Date(),
-      query.originCountry,
+      originCountry,
       query.destinationCountry,
       query.currency,
     );

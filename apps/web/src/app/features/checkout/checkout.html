@@ -24,10 +24,11 @@
           <p class="checkout__success-text">
             Order <strong>#{{ order.id.slice(0, 8) }}</strong> is
             <strong>{{ order.status }}</strong> — total
-            <strong>{{ format(order.total, order.currency) }}</strong>.
+            <strong>{{ format(order.total, order.currency) }}</strong>
+            (includes <strong>{{ format(order.shippingTotal, order.currency) }}</strong> shipping).
           </p>
           <p class="checkout__success-sub">
-            Trans-Frontier Express: secured logistics from ZA to {{ order.destinationCountry }}.
+            Trans-Frontier Express: secured logistics from {{ order.originCountry }} to {{ order.destinationCountry }}.
           </p>
         }
         <a class="checkout__success-cta" routerLink="/shop">Continue shopping</a>
@@ -230,14 +231,42 @@
               </div>
             }
             @if (!hasMixedCurrencies() && totals().length === 1) {
-              <div class="checkout__summary-row">
-                <span>Shipping (ZA to NA)</span>
-                <span>{{ format(0, totals()[0].currency) }}</span>
-              </div>
-              <div class="checkout__summary-row checkout__summary-row--total">
-                <span>Total</span>
-                <span>{{ format(totals()[0].subtotal, totals()[0].currency) }}</span>
-              </div>
+              @switch (shippingFeeState()) {
+                @case ('loading') {
+                  <div class="checkout__summary-row checkout__summary-row--shipping">
+                    <span>Shipping</span>
+                    <span class="checkout__summary-pending">Calculating…</span>
+                  </div>
+                }
+                @case ('ready') {
+                  @if (shippingFee(); as fee) {
+                    <div class="checkout__summary-row checkout__summary-row--shipping">
+                      <span>{{ shippingLabel() }}</span>
+                      <span>{{ format(fee.amount, fee.currency) }}</span>
+                    </div>
+                  }
+                  @if (grandTotal(); as total) {
+                    <div class="checkout__summary-row checkout__summary-row--total">
+                      <span>Total</span>
+                      <span>{{ format(total, totals()[0].currency) }}</span>
+                    </div>
+                  }
+                }
+                @case ('error') {
+                  <div class="checkout__summary-row checkout__summary-row--shipping checkout__summary-row--error">
+                    <span>Shipping</span>
+                    <span class="checkout__summary-error">
+                      Unavailable
+                      <button type="button" class="checkout__summary-retry" (click)="retryShippingFee()">
+                        Retry
+                      </button>
+                    </span>
+                  </div>
+                }
+                @default {
+                  <!-- idle: no cart destination resolved yet -->
+                }
+              }
             }
             <div class="checkout__parity">
               <span class="material-symbols-outlined" aria-hidden="true">currency_exchange</span>

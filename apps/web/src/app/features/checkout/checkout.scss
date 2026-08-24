@@ -420,6 +420,34 @@
   }
 }
 
+.checkout__summary-pending {
+  font-style: italic;
+  color: var(--hb-on-surface-variant);
+}
+
+.checkout__summary-row--error {
+  color: var(--hb-error);
+}
+
+.checkout__summary-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--hb-error);
+}
+
+.checkout__summary-retry {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--hb-primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .checkout__parity {
   display: flex;
   align-items: center;

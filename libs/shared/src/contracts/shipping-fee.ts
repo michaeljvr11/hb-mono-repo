@@ -83,15 +83,19 @@ export interface CurrentShippingFeeDto {
 }
 
 /**
- * Query for GET /shipping-fee/current. The checkout UI (SF-4) does not yet
- * have an order to read a route off of, so it states the (route, currency)
- * explicitly — this mirrors exactly what `OrdersService.create` resolves
- * against, so the preview a shopper sees before paying matches the fee
- * actually charged (absent a per-product override, which this global-default
- * preview does not reflect — see `CurrentShippingFeeDto`'s doc comment).
+ * Query for GET /shipping-fee/current. The checkout UI (SF-4) states the
+ * destination + currency explicitly. `originCountry` is optional: the cart
+ * (not the client) is the source of truth for which route an order will
+ * actually be placed on, so when it is omitted the server derives it from
+ * the caller's own cart using exactly the rule `OrdersService.create` uses
+ * (see `resolveCartOriginCountry`) — this guarantees the previewed fee can
+ * never drift from the fee actually charged. Supplying `originCountry`
+ * explicitly is still honoured (e.g. admin tooling probing a specific
+ * route with no cart in play) — the server never overrides a caller-stated
+ * origin.
  */
 export interface GetCurrentShippingFeeQuery {
-  originCountry: CountryCode;
+  originCountry?: CountryCode;
   destinationCountry: CountryCode;
   currency: CurrencyCode;
 }

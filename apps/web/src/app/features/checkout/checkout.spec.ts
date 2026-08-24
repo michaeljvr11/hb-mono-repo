@@ -12,6 +12,7 @@ import {
   CartDto,
   CountryCode,
   CurrencyCode,
+  CurrentShippingFeeDto,
   OrderDto,
   OrderStatus,
 } from '@hb/shared';
@@ -22,6 +23,7 @@ import { authGuard } from '../../core/auth/auth-guard';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
 import { OrdersService } from '../../core/api/orders.service';
+import { ShippingFeeService } from '../../core/api/shipping-fee.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 
@@ -68,6 +70,13 @@ const PLACED_ORDER: OrderDto = {
   updatedAt: '2026-07-07T09:00:00.000Z',
 };
 
+const SHIPPING_FEE: CurrentShippingFeeDto = {
+  amount: 50,
+  currency: CurrencyCode.ZAR,
+  originCountry: CountryCode.SOUTH_AFRICA,
+  destinationCountry: CountryCode.NAMIBIA,
+};
+
 // ─── Stubs ───────────────────────────────────────────────────────────────────
 
 interface CartStub {
@@ -110,6 +119,7 @@ describe('Checkout', () => {
   let component: Checkout;
   let cartStub: CartStub;
   let ordersStub: { create: ReturnType<typeof vi.fn> };
+  let shippingFeeStub: { current: ReturnType<typeof vi.fn> };
   let authStub: {
     isLoggedIn: ReturnType<typeof vi.fn>;
     currentUser$: BehaviorSubject<AuthUser | null>;
@@ -121,9 +131,13 @@ describe('Checkout', () => {
     purchase: ReturnType<typeof vi.fn>;
   };
 
-  async function setup(cart: CartDto = CART): Promise<void> {
+  async function setup(
+    cart: CartDto = CART,
+    currentFee: ReturnType<typeof vi.fn> = vi.fn(() => of(SHIPPING_FEE)),
+  ): Promise<void> {
     cartStub = makeCartStub(cart);
     ordersStub = { create: vi.fn(() => of(PLACED_ORDER)) };
+    shippingFeeStub = { current: currentFee };
     authStub = {
       isLoggedIn: vi.fn(() => true),
       currentUser$: new BehaviorSubject<AuthUser | null>(null),
@@ -141,6 +155,7 @@ describe('Checkout', () => {
         provideRouter([]),
         { provide: CartService, useValue: cartStub },
         { provide: OrdersService, useValue: ordersStub },
+        { provide: ShippingFeeService, useValue: shippingFeeStub },
         { provide: AuthService, useValue: authStub },
         { provide: AnalyticsService, useValue: analyticsStub },
         { provide: GoogleAnalyticsService, useValue: gaStub },
@@ -150,6 +165,7 @@ describe('Checkout', () => {
     fixture = TestBed.createComponent(Checkout);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await fixture.whenStable();
   }
 
   // ── Guard wiring ───────────────────────────────────────────────────────────
@@ -182,6 +198,79 @@ describe('Checkout', () => {
     await setup({ ...CART, items: [], totals: [], itemCount: 0 });
 
     expect(fixture.nativeElement.textContent).toContain('Nothing to check out');
+  });
+
+  // ── Shipping fee preview (SF-4) ─────────────────────────────────────────────
+
+  it('fetches the live shipping fee (destination + currency only) and renders it as its own line item', async () => {
+    await setup();
+
+    expect(shippingFeeStub.current).toHaveBeenCalledWith({
+      destinationCountry: CountryCode.NAMIBIA,
+      currency: CurrencyCode.ZAR,
+    });
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Shipping (ZA to NA)');
+    expect(el.textContent).toMatch(/R\s?50[.,]00/); // the fee itself, distinct from the subtotal
+  });
+
+  it('binds Total to subtotal + shipping fee, not subtotal alone', async () => {
+    await setup();
+
+    expect(component.grandTotal()).toBe(370 + 50);
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toMatch(/R\s?420[.,]00/);
+  });
+
+  it('does not fetch or render a shipping fee for a mixed-currency cart', async () => {
+    await setup(MIXED_CART);
+
+    expect(shippingFeeStub.current).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).not.toContain('Shipping (');
+  });
+
+  it('refetches the fee when the shipping destination changes, and never shows a stale destination\'s fee', async () => {
+    await setup();
+    shippingFeeStub.current.mockClear();
+    shippingFeeStub.current.mockReturnValue(
+      of({
+        amount: 90,
+        currency: CurrencyCode.ZAR,
+        originCountry: CountryCode.SOUTH_AFRICA,
+        destinationCountry: CountryCode.SOUTH_AFRICA,
+      } satisfies CurrentShippingFeeDto),
+    );
+
+    component.form.controls.countryCode.setValue(CountryCode.SOUTH_AFRICA);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(shippingFeeStub.current).toHaveBeenCalledWith({
+      destinationCountry: CountryCode.SOUTH_AFRICA,
+      currency: CurrencyCode.ZAR,
+    });
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Shipping (ZA domestic)');
+    expect(el.textContent).not.toContain('Shipping (ZA to NA)');
+  });
+
+  it('degrades explicitly on a fee-fetch failure — no silent R0.00 total, with a retry affordance', async () => {
+    await setup(CART, vi.fn(() => throwError(() => ({ status: 500 }))));
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(component.grandTotal()).toBeNull();
+    expect(el.textContent).not.toMatch(/R\s?0[.,]00/);
+    expect(el.textContent).toContain('Unavailable');
+    const retry = el.querySelector('.checkout__summary-retry') as HTMLButtonElement;
+    expect(retry).toBeTruthy();
+
+    shippingFeeStub.current.mockReturnValue(of(SHIPPING_FEE));
+    retry.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.grandTotal()).toBe(370 + 50);
   });
 
   it('fires CHECKOUT_STARTED once the cart loads with items', async () => {
@@ -266,6 +355,25 @@ describe('Checkout', () => {
     expect(el.textContent).toMatch(/R\s?370[.,]00/);
     // Local cart state dropped so the nav badge resets.
     expect(cartStub.reset).toHaveBeenCalled();
+  });
+
+  it('shows the same shippingTotal on the order confirmation as the previewed fee — never a value the API did not return', async () => {
+    await setup(); // previewed fee = SHIPPING_FEE.amount (50)
+    fillForm(component);
+
+    const previewedFeeAmount = component.shippingFee()?.amount;
+    expect(previewedFeeAmount).toBe(50);
+
+    const chargedOrder: OrderDto = { ...PLACED_ORDER, shippingTotal: 50, total: 420 };
+    ordersStub.create.mockReturnValue(of(chargedOrder));
+
+    component.submit();
+    fixture.detectChanges();
+
+    // The confirmation reflects the API's OrderDto.shippingTotal, which here
+    // matches what was previewed pre-order — the two must never drift.
+    expect(previewedFeeAmount).toBe(chargedOrder.shippingTotal);
+    expect(fixture.nativeElement.textContent).toMatch(/R\s?50[.,]00.*shipping/i);
   });
 
   it('fires SHIPPING_SUBMITTED, PAYMENT_ATTEMPTED and ORDER_COMPLETED (with the order total + currency) on a successful submit', async () => {
