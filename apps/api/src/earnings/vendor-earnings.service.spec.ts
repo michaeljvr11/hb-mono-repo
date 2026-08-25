@@ -150,6 +150,28 @@ describe('VendorEarningsService', () => {
     expect(result.accrued).toEqual([{ currency: CurrencyCode.ZAR, amount: 85 }]);
   });
 
+  it('never lets order.shippingTotal/order.total (SF-3) leak into vendor gross/net — only unitPrice x quantity counts', async () => {
+    const deliveredAt = new Date('2026-01-10T00:00:00.000Z');
+    const now = new Date(deliveredAt.getTime() + 48 * HOUR_MS); // exact boundary → accrued
+    const order = makeOrder({
+      deliveredAt,
+      subtotal: 100,
+      shippingTotal: 250, // large shipping fee on the order header
+      total: 350,
+    });
+    stageItems([
+      makeItem({ order, unitPrice: '100.00' as never, quantity: 1, commissionRatePercent: 15 }),
+    ]);
+
+    const result = await service.getEarnings({}, FROM, TO, now);
+
+    // 100 - 15% commission = 85, computed purely from the order_item's own
+    // unitPrice x quantity — the R250 shippingTotal / R350 order total never
+    // reach this calculation (order_items are queried directly; shipping
+    // lives only on the order header).
+    expect(result.accrued).toEqual([{ currency: CurrencyCode.ZAR, amount: 85 }]);
+  });
+
   it('excludes a cancelled order from every bucket', async () => {
     const deliveredAt = new Date('2026-01-10T00:00:00.000Z');
     const now = new Date(deliveredAt.getTime() + 49 * HOUR_MS);

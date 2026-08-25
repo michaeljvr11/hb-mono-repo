@@ -1,0 +1,362 @@
+/* Admin Shipping Fee page — tokens from docs/design/DESIGN.md, mirrors admin-commission */
+:host {
+  display: block;
+}
+
+/* ─── Page header ─────────────────────────────────────────────── */
+.shipping-fee-page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 840px;
+}
+
+.page-header {
+  margin-bottom: 8px;
+}
+
+.page-title {
+  margin: 0 0 4px;
+  font: 600 32px/40px Inter, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--hb-on-surface);
+}
+
+.page-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+/* ─── Loading / error states ─────────────────────────────────── */
+.state-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: var(--hb-on-surface-variant);
+  font-size: 14px;
+
+  p {
+    margin: 0;
+  }
+
+  .state-icon {
+    font-size: 40px;
+    opacity: 0.5;
+  }
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background: color-mix(in srgb, var(--hb-error) 10%, transparent);
+  color: var(--hb-error);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  &--inline {
+    margin-bottom: 0;
+    margin-top: 4px;
+  }
+}
+
+/* ─── Shared card ──────────────────────────────────────────────── */
+.detail-card {
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.section-title {
+  margin: 0 0 8px;
+  font: 600 18px/24px Inter, system-ui, sans-serif;
+  color: var(--hb-on-surface);
+}
+
+/* ─── Headline card ───────────────────────────────────────────── */
+.headline-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.headline-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--hb-on-surface-variant);
+}
+
+.headline-meta {
+  font-size: 13px;
+  color: var(--hb-on-surface-variant);
+  margin-bottom: 12px;
+}
+
+/* ─── Fee grid (route x currency) ─────────────────────────────── */
+.fee-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  max-width: 420px;
+
+  th,
+  td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--hb-outline-variant);
+  }
+
+  thead th {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--hb-on-surface-variant);
+  }
+
+  tbody th {
+    font-weight: 500;
+    color: var(--hb-on-surface);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    color: var(--hb-on-surface);
+    font-variant-numeric: tabular-nums;
+  }
+
+  tbody tr:last-child th,
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  &--editable td {
+    padding: 4px 6px;
+  }
+}
+
+/* ─── Form card ───────────────────────────────────────────────── */
+.helper-text {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--hb-on-surface-variant);
+}
+
+.fee-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--hb-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  input {
+    padding: 8px 12px;
+    border: 1px solid var(--hb-outline-variant);
+    border-radius: 8px;
+    background: var(--hb-surface-container-lowest);
+    color: var(--hb-on-surface);
+    font: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+
+    &:focus {
+      outline: none;
+      border-color: var(--hb-primary);
+      box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.fee-grid--editable input {
+  width: 96px;
+}
+
+.row-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--hb-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+}
+
+.link-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--hb-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* ─── Action bar / buttons (mirrors admin-commission) ─────────── */
+.action-bar {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease, opacity 150ms ease;
+
+  &:disabled {
+    cursor: progress;
+    opacity: 0.6;
+  }
+
+  &--activate {
+    background: var(--hb-primary);
+    color: var(--hb-on-primary);
+
+    &:hover:not(:disabled) {
+      background: var(--hb-primary-container);
+      color: var(--hb-on-surface);
+    }
+  }
+}
+
+.btn-spinner {
+  font-size: 18px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─── History list (one card per effective-dated set) ─────────── */
+.history-set {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--hb-outline-variant);
+
+  &:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &--current {
+    background: color-mix(in srgb, var(--hb-primary) 6%, transparent);
+    border-radius: 8px;
+    padding: 16px 12px;
+  }
+}
+
+.history-set-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--hb-on-surface-variant);
+  flex-wrap: wrap;
+}
+
+.history-note {
+  color: var(--hb-on-surface-variant);
+  font-style: italic;
+
+  &::before {
+    content: '— ';
+  }
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: color-mix(in srgb, var(--hb-primary) 14%, transparent);
+  color: var(--hb-primary);
+}
+
+.list-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 16px;
+  color: var(--hb-on-surface-variant);
+  font-size: 14px;
+
+  p {
+    margin: 0;
+  }
+
+  .material-symbols-outlined {
+    font-size: 36px;
+    opacity: 0.45;
+  }
+}
+
+// A (route, currency) with no configured row is not free shipping — it is a
+// gap. Render it as an em dash, never as 0.00.
+.admin-shipping-fee__missing {
+  color: var(--hb-on-surface-variant);
+}

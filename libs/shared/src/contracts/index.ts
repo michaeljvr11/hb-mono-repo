@@ -9,6 +9,7 @@ export * from './address';
 export * from './order';
 export * from './payment';
 export * from './shipping';
+export * from './shipping-fee';
 export * from './cart';
 export * from './wishlist';
 export * from './dashboard';

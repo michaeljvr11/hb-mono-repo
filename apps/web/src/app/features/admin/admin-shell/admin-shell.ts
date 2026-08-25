@@ -30,6 +30,7 @@ export class AdminShell {
     { label: 'Orders',    path: 'orders',    icon: 'shopping_bag' },
     { label: 'Synonyms',  path: 'search-synonyms', icon: 'find_replace' },
     { label: 'Commission', path: 'commission-rates', icon: 'percent' },
+    { label: 'Shipping Fee', path: 'shipping-fee', icon: 'local_shipping' },
     { label: 'Earnings',  path: 'earnings',  icon: 'payments' },
     { label: 'Logs',      path: 'logs',      icon: 'receipt_long' },
     { label: 'Settings',  path: 'settings',  icon: 'settings' },

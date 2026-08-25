@@ -25,6 +25,7 @@ import { AuditModule } from './audit/audit.module';
 import { SearchModule } from './search/search.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { CommissionModule } from './commission/commission.module';
+import { ShippingFeeModule } from './shipping-fee/shipping-fee.module';
 import { EarningsModule } from './earnings/earnings.module';
 import { SettingsModule } from './settings/settings.module';
 import { InquiriesModule } from './inquiries/inquiries.module';
@@ -65,6 +66,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     SearchModule,
     AnalyticsModule,
     CommissionModule,
+    ShippingFeeModule,
     EarningsModule,
     SettingsModule,
     InquiriesModule,

@@ -1,5 +1,6 @@
 import { CountryCode, CurrencyCode, ListingType } from '../enums';
 import { ImageVariantSet } from './image';
+import { ProductShippingFeeOverrideDto } from './shipping-fee';
 
 export interface ProductVendorDto {
   id: string;
@@ -44,6 +45,8 @@ export interface ProductDto {
   categories: ProductCategoryDto[];
   createdAt: string;
   updatedAt: string;
+  /** Admin-configured per-route/currency shipping fee overrides for this product (SF-5). Absent/omitted where not populated by the endpoint — see ProductShippingFeeOverrideService for the source of truth. */
+  shippingFeeOverrides?: ProductShippingFeeOverrideDto[];
 }
 
 export interface ProductCreateRequest {

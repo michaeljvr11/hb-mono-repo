@@ -12,6 +12,7 @@ import {
   CartDto,
   CountryCode,
   CurrencyCode,
+  CurrentShippingFeeDto,
   OrderDto,
   OrderStatus,
 } from '@hb/shared';
@@ -22,6 +23,7 @@ import { authGuard } from '../../core/auth/auth-guard';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
 import { OrdersService } from '../../core/api/orders.service';
+import { ShippingFeeService } from '../../core/api/shipping-fee.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 
@@ -68,6 +70,22 @@ const PLACED_ORDER: OrderDto = {
   updatedAt: '2026-07-07T09:00:00.000Z',
 };
 
+const SHIPPING_FEE: CurrentShippingFeeDto = {
+  amount: 50,
+  currency: CurrencyCode.ZAR,
+  originCountry: CountryCode.SOUTH_AFRICA,
+  destinationCountry: CountryCode.NAMIBIA,
+};
+
+/** A legitimately domestic route — `orders.originCountry` is derived from the
+ *  cart's products, so ZA→ZA and NA→NA orders are representable. */
+const DOMESTIC_FEE: CurrentShippingFeeDto = {
+  amount: 30,
+  currency: CurrencyCode.ZAR,
+  originCountry: CountryCode.SOUTH_AFRICA,
+  destinationCountry: CountryCode.SOUTH_AFRICA,
+};
+
 // ─── Stubs ───────────────────────────────────────────────────────────────────
 
 interface CartStub {
@@ -110,6 +128,7 @@ describe('Checkout', () => {
   let component: Checkout;
   let cartStub: CartStub;
   let ordersStub: { create: ReturnType<typeof vi.fn> };
+  let shippingFeeStub: { current: ReturnType<typeof vi.fn> };
   let authStub: {
     isLoggedIn: ReturnType<typeof vi.fn>;
     currentUser$: BehaviorSubject<AuthUser | null>;
@@ -121,9 +140,13 @@ describe('Checkout', () => {
     purchase: ReturnType<typeof vi.fn>;
   };
 
-  async function setup(cart: CartDto = CART): Promise<void> {
+  async function setup(
+    cart: CartDto = CART,
+    currentFee: ReturnType<typeof vi.fn> = vi.fn(() => of(SHIPPING_FEE)),
+  ): Promise<void> {
     cartStub = makeCartStub(cart);
     ordersStub = { create: vi.fn(() => of(PLACED_ORDER)) };
+    shippingFeeStub = { current: currentFee };
     authStub = {
       isLoggedIn: vi.fn(() => true),
       currentUser$: new BehaviorSubject<AuthUser | null>(null),
@@ -141,6 +164,7 @@ describe('Checkout', () => {
         provideRouter([]),
         { provide: CartService, useValue: cartStub },
         { provide: OrdersService, useValue: ordersStub },
+        { provide: ShippingFeeService, useValue: shippingFeeStub },
         { provide: AuthService, useValue: authStub },
         { provide: AnalyticsService, useValue: analyticsStub },
         { provide: GoogleAnalyticsService, useValue: gaStub },
@@ -150,6 +174,7 @@ describe('Checkout', () => {
     fixture = TestBed.createComponent(Checkout);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await fixture.whenStable();
   }
 
   // ── Guard wiring ───────────────────────────────────────────────────────────
@@ -182,6 +207,143 @@ describe('Checkout', () => {
     await setup({ ...CART, items: [], totals: [], itemCount: 0 });
 
     expect(fixture.nativeElement.textContent).toContain('Nothing to check out');
+  });
+
+  // ── Shipping fee preview (SF-4) ─────────────────────────────────────────────
+
+  it('fetches the live shipping fee (destination + currency only) and renders it as its own line item', async () => {
+    await setup();
+
+    expect(shippingFeeStub.current).toHaveBeenCalledWith({
+      destinationCountry: CountryCode.NAMIBIA,
+      currency: CurrencyCode.ZAR,
+    });
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Shipping (ZA to NA)');
+    expect(el.textContent).toMatch(/R\s?50[.,]00/); // the fee itself, distinct from the subtotal
+  });
+
+  it('binds Total to subtotal + shipping fee, not subtotal alone', async () => {
+    await setup();
+
+    expect(component.grandTotal()).toBe(370 + 50);
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toMatch(/R\s?420[.,]00/);
+  });
+
+  it('does not fetch or render a shipping fee for a mixed-currency cart', async () => {
+    await setup(MIXED_CART);
+
+    expect(shippingFeeStub.current).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).not.toContain('Shipping (');
+  });
+
+  it('refetches the fee when the shipping destination changes, and never shows a stale destination\'s fee', async () => {
+    await setup();
+    shippingFeeStub.current.mockClear();
+    shippingFeeStub.current.mockReturnValue(
+      of({
+        amount: 90,
+        currency: CurrencyCode.ZAR,
+        originCountry: CountryCode.SOUTH_AFRICA,
+        destinationCountry: CountryCode.SOUTH_AFRICA,
+      } satisfies CurrentShippingFeeDto),
+    );
+
+    component.form.controls.countryCode.setValue(CountryCode.SOUTH_AFRICA);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(shippingFeeStub.current).toHaveBeenCalledWith({
+      destinationCountry: CountryCode.SOUTH_AFRICA,
+      currency: CurrencyCode.ZAR,
+    });
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Shipping (ZA domestic)');
+    expect(el.textContent).not.toContain('Shipping (ZA to NA)');
+  });
+
+  it('degrades explicitly on a fee-fetch failure — no silent R0.00 total, with a retry affordance', async () => {
+    await setup(CART, vi.fn(() => throwError(() => ({ status: 500 }))));
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(component.grandTotal()).toBeNull();
+    expect(el.textContent).not.toMatch(/R\s?0[.,]00/);
+    expect(el.textContent).toContain('Unavailable');
+    const retry = el.querySelector('.checkout__summary-retry') as HTMLButtonElement;
+    expect(retry).toBeTruthy();
+
+    shippingFeeStub.current.mockReturnValue(of(SHIPPING_FEE));
+    retry.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.grandTotal()).toBe(370 + 50);
+  });
+
+  // ── Route-honest shipping banner ────────────────────────────────────────────
+
+  it('names the cross-border route in the banner, with the customs badge, when the route crosses a border', async () => {
+    await setup();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(component.isCrossBorder()).toBe(true);
+    expect(el.textContent).toContain('Cross-Border Shipping');
+    expect(el.textContent).toContain('secured logistics from South Africa to Namibia');
+    expect(el.querySelector('.checkout__border-badge')).toBeTruthy();
+  });
+
+  it('calls a domestic route domestic and drops the customs badge, following the charged route not the address form', async () => {
+    await setup(CART, vi.fn(() => of(DOMESTIC_FEE)));
+
+    // The form still says Namibia — the banner must follow the ZA→ZA route the
+    // fee was actually resolved on, never the address selection.
+    expect(component.form.controls.countryCode.value).toBe(CountryCode.NAMIBIA);
+    expect(component.isCrossBorder()).toBe(false);
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Domestic Shipping');
+    expect(el.textContent).toContain('secured logistics within South Africa');
+    expect(el.textContent).not.toContain('Cross-Border Shipping');
+    expect(el.textContent).not.toContain('South Africa to Namibia');
+    expect(el.textContent).not.toContain('CUSTOMS PREPAID');
+    expect(el.querySelector('.checkout__border-badge')).toBeNull();
+  });
+
+  it('flips the banner from cross-border to domestic when the resolved route changes', async () => {
+    await setup();
+    expect(fixture.nativeElement.textContent).toContain('Cross-Border Shipping');
+
+    shippingFeeStub.current.mockReturnValue(of(DOMESTIC_FEE));
+    component.form.controls.countryCode.setValue(CountryCode.SOUTH_AFRICA);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Domestic Shipping');
+    expect(el.textContent).not.toContain('Cross-Border Shipping');
+    expect(el.textContent).not.toContain('CUSTOMS PREPAID');
+  });
+
+  it('asserts no route in the banner while no route is resolved', async () => {
+    await setup(CART, vi.fn(() => throwError(() => ({ status: 500 }))));
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(component.isCrossBorder()).toBeNull();
+    expect(el.textContent).toContain('secured logistics across South Africa and Namibia');
+    expect(el.textContent).not.toContain('Cross-Border Shipping');
+    expect(el.textContent).not.toContain('Domestic Shipping');
+    expect(el.textContent).not.toContain('CUSTOMS PREPAID');
+  });
+
+  it('asserts no route in the banner for a mixed-currency cart, which never resolves a fee', async () => {
+    await setup(MIXED_CART);
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(component.isCrossBorder()).toBeNull();
+    expect(el.textContent).not.toContain('Cross-Border Shipping');
+    expect(el.textContent).not.toContain('CUSTOMS PREPAID');
   });
 
   it('fires CHECKOUT_STARTED once the cart loads with items', async () => {
@@ -266,6 +428,76 @@ describe('Checkout', () => {
     expect(el.textContent).toMatch(/R\s?370[.,]00/);
     // Local cart state dropped so the nav badge resets.
     expect(cartStub.reset).toHaveBeenCalled();
+  });
+
+  it('renders the API shippingTotal on the confirmation even when it differs from the previewed fee', async () => {
+    await setup(); // previewed fee = SHIPPING_FEE.amount (50)
+    fillForm(component);
+
+    expect(component.shippingFee()?.amount).toBe(50);
+
+    // Parity between the previewed and charged fee is enforced server-side:
+    // GET /shipping-fee/current resolves over the caller's cart with the same
+    // MAX(override ?? default) rule OrdersService.create charges, and an API
+    // parity spec asserts the two agree. This spec covers the client's half of
+    // the contract instead — if the API ever does return a different figure,
+    // the confirmation must show the number actually charged, never echo the
+    // stale preview back at the customer.
+    const chargedOrder: OrderDto = { ...PLACED_ORDER, shippingTotal: 400, total: 770 };
+    ordersStub.create.mockReturnValue(of(chargedOrder));
+
+    component.submit();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toMatch(/R\s?400[.,]00/);
+    expect(fixture.nativeElement.textContent).not.toMatch(/R\s?50[.,]00.*shipping/i);
+  });
+
+  it('blocks placing an order while the shipping fee is unknown', async () => {
+    await setup(
+      CART,
+      vi.fn(() => throwError(() => new Error('fee unavailable'))),
+    );
+    fillForm(component);
+
+    expect(component.shippingFeeState()).toBe('error');
+
+    component.submit();
+
+    // No order may be placed against a total the customer was never shown.
+    expect(ordersStub.create).not.toHaveBeenCalled();
+  });
+
+  it('describes the confirmed order by its own route, in prose rather than raw codes', async () => {
+    await setup();
+    fillForm(component);
+
+    component.submit();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('secured logistics from South Africa to Namibia');
+    expect(el.textContent).not.toContain('from ZA to NA');
+  });
+
+  it('describes a domestic order as domestic on the confirmation, never as a ZA-to-ZA transfer', async () => {
+    await setup();
+    fillForm(component);
+    ordersStub.create.mockReturnValue(
+      of({
+        ...PLACED_ORDER,
+        originCountry: CountryCode.SOUTH_AFRICA,
+        destinationCountry: CountryCode.SOUTH_AFRICA,
+      } satisfies OrderDto),
+    );
+
+    component.submit();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('secured logistics within South Africa');
+    expect(el.textContent).not.toContain('from ZA to ZA');
+    expect(el.textContent).not.toContain('South Africa to South Africa');
   });
 
   it('fires SHIPPING_SUBMITTED, PAYMENT_ATTEMPTED and ORDER_COMPLETED (with the order total + currency) on a successful submit', async () => {

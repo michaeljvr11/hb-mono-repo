@@ -37,6 +37,8 @@ import type { PaymentProviderPort } from '../payments/payment-provider.port';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderStatusOverrideDto } from './dto/order-status-override.dto';
 import { CommissionRateService } from '../commission/commission-rate.service';
+import { ShippingFeeResolverService } from '../shipping-fee/shipping-fee-resolver.service';
+import { resolveCartOriginCountry } from '../shipping-fee/cart-origin.util';
 import { OrderEvents } from '../common/events/domain-events';
 
 /**
@@ -84,6 +86,7 @@ export class OrdersService {
     private readonly paymentProvider: PaymentProviderPort,
     private readonly dataSource: DataSource,
     private readonly commissionRateService: CommissionRateService,
+    private readonly shippingFeeResolverService: ShippingFeeResolverService,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -237,14 +240,38 @@ export class OrdersService {
       }
       const [currency] = currencies;
 
+      // The route this order is placed on — constant across every line
+      // (one origin, one destination per order). Computed once and reused
+      // both for fee resolution below and for the order row itself, so the
+      // route a fee is resolved against is exactly the route that gets
+      // written (SF-3). `resolveCartOriginCountry` also backs SF-4's
+      // checkout preview endpoint, so the two can never resolve different
+      // origins for the same cart.
+      const originCountry = resolveCartOriginCountry(originCountries);
+      const destinationCountry = dto.shippingAddress.countryCode;
+
       const shippingAddress = await manager.save(Address, {
         ...dto.shippingAddress,
         userId: user.id,
       });
 
-      // Cross-border delivery fee structure is an open business decision
-      // (HB Domain Model TBD) — until priced, shipping is explicitly 0.00.
-      const shippingCents = 0;
+      // Shipping fee (SF-3): resolved via the shared `ShippingFeeResolverService`
+      // — the exact same MAX(override, default)-across-lines rule SF-4's
+      // checkout preview (`CurrentShippingFeeController`) uses, so the two
+      // can never disagree on the fee for the same cart (FAIL 1, code
+      // review). Resolved against the same `orderCreatedAt` instant as the
+      // commission snapshot above, so a mid-checkout fee change can never
+      // split an order. The resolver throws rather than returning 0, so a
+      // missing fee config fails order creation instead of silently
+      // charging nothing.
+      const productIds = lines.map((line) => line.productId).filter((id): id is string => !!id);
+      const shippingCents = await this.shippingFeeResolverService.resolveShippingCents(
+        productIds,
+        originCountry,
+        destinationCountry,
+        currency,
+        orderCreatedAt,
+      );
 
       const saved = await manager.save(Order, {
         userId: user.id,
@@ -253,9 +280,8 @@ export class OrdersService {
         subtotal: subtotalCents / 100,
         shippingTotal: shippingCents / 100,
         total: (subtotalCents + shippingCents) / 100,
-        originCountry:
-          originCountries.size === 1 ? [...originCountries][0] : CountryCode.SOUTH_AFRICA,
-        destinationCountry: dto.shippingAddress.countryCode,
+        originCountry,
+        destinationCountry,
         shippingAddressId: shippingAddress.id,
         items: lines,
       });

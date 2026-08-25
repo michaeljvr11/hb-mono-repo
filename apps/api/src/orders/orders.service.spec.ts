@@ -23,6 +23,7 @@ import { User } from '../users/entities/user.entity';
 import { PAYMENT_PROVIDER } from '../payments/payment-provider.port';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CommissionRateService } from '../commission/commission-rate.service';
+import { ShippingFeeResolverService } from '../shipping-fee/shipping-fee-resolver.service';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -96,6 +97,17 @@ const SHIPPING_DTO: CreateOrderDto = {
   },
 };
 
+/** ZA→NA default shipping fee used across the money-math suite unless a test overrides it. */
+const DEFAULT_SHIPPING_FEE = {
+  id: 'fee-za-na-zar',
+  amount: 250,
+  currency: CurrencyCode.ZAR,
+  originCountry: 'ZA',
+  destinationCountry: 'NA',
+  effectiveFrom: NOW.toISOString(),
+  createdAt: NOW.toISOString(),
+};
+
 // ─── Suite ───────────────────────────────────────────────────────────────────
 
 describe('OrdersService', () => {
@@ -107,6 +119,7 @@ describe('OrdersService', () => {
   let orderStatusOverridesRepo: Record<string, jest.Mock>;
   let paymentProvider: Record<string, jest.Mock>;
   let commissionRateService: Record<string, jest.Mock>;
+  let shippingFeeResolverService: Record<string, jest.Mock>;
   let eventEmitter: Record<string, jest.Mock>;
   let manager: Record<string, jest.Mock>;
   let dataSourceMock: Record<string, jest.Mock>;
@@ -170,6 +183,15 @@ describe('OrdersService', () => {
         }),
       ),
     };
+    // Default: DEFAULT_SHIPPING_FEE.amount (250) in integer cents — the
+    // money logic itself (MAX-across-lines, override-or-default) now lives
+    // in ShippingFeeResolverService and is unit-tested there directly (see
+    // shipping-fee-resolver.service.spec.ts); this suite only verifies
+    // OrdersService calls it with the right route/currency/productIds/instant
+    // and correctly turns the returned cents into shippingTotal/total.
+    shippingFeeResolverService = {
+      resolveShippingCents: jest.fn(() => Promise.resolve(DEFAULT_SHIPPING_FEE.amount * 100)),
+    };
     eventEmitter = { emit: jest.fn() };
 
     dataSourceMock = {
@@ -189,6 +211,7 @@ describe('OrdersService', () => {
         { provide: PAYMENT_PROVIDER, useValue: paymentProvider },
         { provide: DataSource, useValue: dataSourceMock },
         { provide: CommissionRateService, useValue: commissionRateService },
+        { provide: ShippingFeeResolverService, useValue: shippingFeeResolverService },
         { provide: EventEmitter2, useValue: eventEmitter },
       ],
     }).compile();
@@ -250,13 +273,15 @@ describe('OrdersService', () => {
 
       await service.create(makeUser(), SHIPPING_DTO);
 
-      // 3 × 19.99 + 0.10 = 60.07 — exact, no float drift.
+      // 3 × 19.99 + 0.10 = 60.07 — exact, no float drift. shippingTotal is
+      // the resolved default fee (SF-3, DEFAULT_SHIPPING_FEE.amount = 250),
+      // no longer hardcoded 0 — total includes it.
       expect(manager.save).toHaveBeenCalledWith(
         Order,
         expect.objectContaining({
           subtotal: 60.07,
-          shippingTotal: 0,
-          total: 60.07,
+          shippingTotal: 250,
+          total: 310.07,
           currency: CurrencyCode.ZAR,
           status: OrderStatus.PENDING,
         }),
@@ -381,6 +406,146 @@ describe('OrdersService', () => {
     });
   });
 
+  // ── Order creation: shipping fee (SF-3) ────────────────────────────────────
+
+  describe('create — shipping fee resolution (SF-3)', () => {
+    // The MAX(override, default)-across-lines money logic itself now lives
+    // in ShippingFeeResolverService and is unit-tested there (see
+    // shipping-fee-resolver.service.spec.ts) and cross-checked against the
+    // checkout preview in shipping-fee-preview-parity.spec.ts. This block
+    // verifies OrdersService's side of the contract only: it calls the
+    // resolver with the right route/currency/productIds/instant, and it
+    // turns the returned cents into shippingTotal/total correctly.
+
+    it('resolves via the shared resolver for the order route (ZA→NA), not another route', async () => {
+      stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct({ originCountry: 'ZA' })]);
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(shippingFeeResolverService.resolveShippingCents).toHaveBeenCalledWith(
+        ['prod-1'],
+        'ZA',
+        'NA',
+        CurrencyCode.ZAR,
+        expect.any(Date),
+      );
+    });
+
+    it('resolves via the shared resolver for the order route (NA→NA), not the ZA→NA route', async () => {
+      stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct({ originCountry: 'NA' })]);
+
+      await service.create(makeUser(), {
+        shippingAddress: { ...SHIPPING_DTO.shippingAddress, countryCode: 'NA' },
+      });
+
+      expect(shippingFeeResolverService.resolveShippingCents).toHaveBeenCalledWith(
+        ['prod-1'],
+        'NA',
+        'NA',
+        CurrencyCode.ZAR,
+        expect.any(Date),
+      );
+    });
+
+    it("resolves via the shared resolver for the order's own currency (NAD), not the ZAR pegged equivalent", async () => {
+      stageCart(
+        [{ productId: 'prod-1', quantity: 1 }],
+        [makeProduct({ currency: CurrencyCode.NAD })],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(shippingFeeResolverService.resolveShippingCents).toHaveBeenCalledWith(
+        ['prod-1'],
+        'ZA',
+        'NA',
+        CurrencyCode.NAD,
+        expect.any(Date),
+      );
+    });
+
+    it('resolves the fee against the same orderCreatedAt instant as the commission-rate snapshot', async () => {
+      stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct()]);
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      const rateAtCalls = commissionRateService.getRateAt.mock.calls as [Date][];
+      const resolveCalls = shippingFeeResolverService.resolveShippingCents.mock.calls as [
+        string[],
+        string,
+        string,
+        CurrencyCode,
+        Date,
+      ][];
+      expect(resolveCalls[0][4]).toBe(rateAtCalls[0][0]);
+    });
+
+    it("writes shippingTotal 0 (today's exact prior behaviour) when the resolver returns 0 cents", async () => {
+      shippingFeeResolverService.resolveShippingCents.mockResolvedValue(0);
+      stageCart(
+        [{ productId: 'prod-1', quantity: 2 }],
+        [makeProduct({ price: '185.00' as never })],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(manager.save).toHaveBeenCalledWith(
+        Order,
+        expect.objectContaining({ shippingTotal: 0, total: 370 }),
+      );
+    });
+
+    it('fails order creation (never charges 0) when the resolver throws — no order, no payment', async () => {
+      shippingFeeResolverService.resolveShippingCents.mockRejectedValue(
+        new Error('No shipping fee configured'),
+      );
+      stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct()]);
+
+      await expect(service.create(makeUser(), SHIPPING_DTO)).rejects.toThrow(
+        'No shipping fee configured',
+      );
+
+      expect(manager.save).not.toHaveBeenCalledWith(Order, expect.anything());
+      expect(paymentProvider.initiatePayment).not.toHaveBeenCalled();
+    });
+
+    it('resolves the shipping fee exactly once per order, over every product id in the cart', async () => {
+      stageCart(
+        [
+          { productId: 'prod-1', quantity: 1 },
+          { productId: 'prod-2', quantity: 1 },
+        ],
+        [makeProduct({ id: 'prod-1' }), makeProduct({ id: 'prod-2' })],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(shippingFeeResolverService.resolveShippingCents).toHaveBeenCalledTimes(1);
+      expect(shippingFeeResolverService.resolveShippingCents).toHaveBeenCalledWith(
+        ['prod-1', 'prod-2'],
+        'ZA',
+        'NA',
+        CurrencyCode.ZAR,
+        expect.any(Date),
+      );
+    });
+
+    it('writes shippingTotal/total from the resolved cents (integer-cents → currency conversion)', async () => {
+      shippingFeeResolverService.resolveShippingCents.mockResolvedValue(40000); // R400.00
+      stageCart(
+        [{ productId: 'prod-1', quantity: 1 }],
+        [makeProduct({ price: '185.00' as never })],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(manager.save).toHaveBeenCalledWith(
+        Order,
+        expect.objectContaining({ shippingTotal: 400, total: 585 }), // 185 + 400
+      );
+    });
+  });
+
   // ── Order creation: stock ──────────────────────────────────────────────────
 
   describe('create — stock', () => {
@@ -432,7 +597,7 @@ describe('OrdersService', () => {
   // ── Order creation: payment via the port ───────────────────────────────────
 
   describe('create — payment through PAYMENT_PROVIDER port', () => {
-    it('initiates payment for the server-computed total and confirms the order when paid', async () => {
+    it('initiates payment for the server-computed total (subtotal + shipping fee, SF-3) and confirms the order when paid', async () => {
       stageCart(
         [{ productId: 'prod-1', quantity: 2 }],
         [makeProduct({ price: '185.00' as never })],
@@ -440,9 +605,11 @@ describe('OrdersService', () => {
 
       await service.create(makeUser(), SHIPPING_DTO);
 
+      // subtotal 370 + resolved shipping fee 250 (DEFAULT_SHIPPING_FEE) = 620 —
+      // the payment amount includes the fee, never just the subtotal.
       expect(paymentProvider.initiatePayment).toHaveBeenCalledWith({
         orderId: 'order-1',
-        amount: 370,
+        amount: 620,
         currency: CurrencyCode.ZAR,
       });
       expect(paymentsRepo.save).toHaveBeenCalledWith(

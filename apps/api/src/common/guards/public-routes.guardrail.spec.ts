@@ -11,6 +11,9 @@ import { OrdersController } from '../../orders/orders.controller';
 import { AnalyticsController } from '../../analytics/analytics.controller';
 import { CommissionController } from '../../commission/commission.controller';
 import { ReviewsController } from '../../reviews/reviews.controller';
+import { ShippingFeeController } from '../../shipping-fee/shipping-fee.controller';
+import { CurrentShippingFeeController } from '../../shipping-fee/current-shipping-fee.controller';
+import { ProductShippingFeeOverrideController } from '../../shipping-fee/product-shipping-fee-override.controller';
 
 /**
  * Guardrail: authentication is on by default (global JwtAuthGuard), and a route only
@@ -33,6 +36,9 @@ const CONTROLLERS = [
   AnalyticsController,
   CommissionController,
   ReviewsController,
+  ShippingFeeController,
+  CurrentShippingFeeController,
+  ProductShippingFeeOverrideController,
 ];
 
 const EXPECTED_PUBLIC = [

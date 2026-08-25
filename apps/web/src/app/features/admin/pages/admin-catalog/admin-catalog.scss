@@ -85,6 +85,12 @@
   &:hover { background: var(--hb-primary-container); color: var(--hb-on-surface); }
 }
 
+.section-note {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--hb-on-surface-variant);
+}
+
 /* ─── States ──────────────────────────────────────────────────── */
 .state-placeholder {
   display: flex;
@@ -234,6 +240,86 @@
   white-space: nowrap;
   color: var(--hb-on-surface-variant);
 }
+
+/* ─── Vendor Products — shipping-fee chips + panel (SF-6) ────────── */
+.td-shipping { min-width: 260px; }
+
+.shipping-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 380px;
+}
+
+.shipping-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--hb-surface-container);
+  color: var(--hb-on-surface-variant);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  &--override {
+    background: var(--hb-secondary-fixed);
+    color: var(--hb-on-secondary-container);
+    font-weight: 600;
+  }
+}
+
+.shipping-panel-row td { padding: 0; }
+
+.shipping-panel {
+  padding: 16px 20px;
+  background: var(--hb-surface-container-low);
+  border-top: 1px solid var(--hb-outline-variant);
+  border-bottom: 1px solid var(--hb-outline-variant);
+}
+
+.shipping-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.shipping-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  background: var(--hb-surface-container-lowest);
+}
+
+.shipping-cell-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--hb-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.shipping-cell-current {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--hb-on-surface-variant);
+
+  &--override { color: var(--hb-on-secondary-container); font-weight: 700; }
+}
+
+.shipping-cell-controls { display: flex; gap: 6px; }
+
+.shipping-cell-input {
+  min-width: 0;
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.shipping-cell-error { font-size: 11px; color: var(--hb-error); }
 
 /* ─── Row actions ─────────────────────────────────────────────── */
 .td-actions { display: flex; align-items: center; gap: 6px; white-space: nowrap; }

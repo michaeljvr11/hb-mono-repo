@@ -1,15 +1,26 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { AnalyticsEventType, CountryCode, CreateOrderRequest, OrderDto } from '@hb/shared';
+import {
+  AnalyticsEventType,
+  CountryCode,
+  CreateOrderRequest,
+  CurrentShippingFeeDto,
+  OrderDto,
+} from '@hb/shared';
 import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
 import { CartService } from '../../core/api/cart.service';
 import { OrdersService } from '../../core/api/orders.service';
+import { ShippingFeeService } from '../../core/api/shipping-fee.service';
 import { formatPrice } from '../../shared/format-price';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
+
+/** Preview-fetch state for the checkout shipping-fee line item (SF-4). */
+export type ShippingFeeState = 'idle' | 'loading' | 'ready' | 'error';
 
 type CheckoutState = 'loading' | 'ready' | 'submitting' | 'success' | 'empty' | 'error';
 
@@ -26,6 +37,13 @@ interface ApiErrorShape {
   status?: number;
   error?: { message?: string | string[] };
 }
+
+/** Prose country names for the shipping banner. The summary line item keeps the
+ *  short codes (`shippingLabel`); the banner reads as a sentence. */
+const COUNTRY_NAMES: Record<CountryCode, string> = {
+  [CountryCode.SOUTH_AFRICA]: 'South Africa',
+  [CountryCode.NAMIBIA]: 'Namibia',
+};
 
 /**
  * Checkout (design: docs/design/checkout/). Order summary amounts are display
@@ -45,6 +63,8 @@ export class Checkout implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly analyticsService = inject(AnalyticsService);
   private readonly gaService = inject(GoogleAnalyticsService);
+  private readonly shippingFeeService = inject(ShippingFeeService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly CountryCode = CountryCode;
 
@@ -70,6 +90,126 @@ export class Checkout implements OnInit {
     phone: [''],
   });
 
+  /** Live destination from the shipping form — drives the shipping-fee preview refetch. */
+  private readonly destinationCountry = toSignal(this.form.controls.countryCode.valueChanges, {
+    initialValue: this.form.controls.countryCode.value,
+  });
+
+  /** Bumped to force a refetch after a failed preview (see `retryShippingFee`). */
+  private readonly shippingFeeRetryTrigger = signal(0);
+  /** Guards against a slow, superseded request overwriting a newer one. */
+  private shippingFeeRequestToken = 0;
+
+  readonly shippingFeeState = signal<ShippingFeeState>('idle');
+  readonly shippingFee = signal<CurrentShippingFeeDto | null>(null);
+
+  /** subtotal + live shipping fee, in the cart's single currency. Never mixes
+   *  currencies: null unless the fee we hold matches the cart's currency. */
+  readonly grandTotal = computed(() => {
+    const totals = this.totals();
+    const fee = this.shippingFee();
+    if (totals.length !== 1 || !fee || fee.currency !== totals[0].currency) {
+      return null;
+    }
+    return totals[0].subtotal + fee.amount;
+  });
+
+  /** Honest, route-specific label — never asserts "ZA to NA" for a route that
+   *  isn't the one actually resolved by the API. */
+  readonly shippingLabel = computed(() => {
+    const fee = this.shippingFee();
+    if (!fee) return 'Shipping';
+    return fee.originCountry === fee.destinationCountry
+      ? `Shipping (${fee.originCountry} domestic)`
+      : `Shipping (${fee.originCountry} to ${fee.destinationCountry})`;
+  });
+
+  /** Whether the resolved route actually crosses a border. `null` while no route
+   *  is resolved (loading / error / mixed-currency cart) — the banner then
+   *  asserts neither, rather than defaulting to "cross-border". */
+  readonly isCrossBorder = computed(() => {
+    const fee = this.shippingFee();
+    if (!fee) return null;
+    return fee.originCountry !== fee.destinationCountry;
+  });
+
+  /** Banner heading, keyed on the same resolved route the fee is charged on —
+   *  never on the address form's country selection. */
+  readonly shippingBannerTitle = computed(() => {
+    const crossBorder = this.isCrossBorder();
+    if (crossBorder === null) return 'Shipping';
+    return crossBorder ? 'Cross-Border Shipping' : 'Domestic Shipping';
+  });
+
+  /** Banner body copy. The 3–5 day transit estimate is a cross-border claim and
+   *  stays on the cross-border branch only — there is no sourced domestic SLA,
+   *  and inventing one would just be the next route-lie. */
+  readonly shippingBannerNote = computed(() => {
+    const fee = this.shippingFee();
+    if (!fee) {
+      return 'Trans-Frontier Express: secured logistics across South Africa and Namibia.';
+    }
+    const origin = COUNTRY_NAMES[fee.originCountry];
+    if (fee.originCountry === fee.destinationCountry) {
+      return `Trans-Frontier Express: secured logistics within ${origin}.`;
+    }
+    return `Trans-Frontier Express: secured logistics from ${origin} to ${COUNTRY_NAMES[fee.destinationCountry]}. 3–5 days arrival.`;
+  });
+
+  /** Confirmation-panel logistics line, built from the placed order's own route
+   *  so it reads as honestly as the banner: a domestic order is described as
+   *  domestic, not as a "ZA to ZA" transfer between two countries. */
+  readonly orderLogisticsNote = computed(() => {
+    const order = this.placedOrder();
+    if (!order) return null;
+    const origin = COUNTRY_NAMES[order.originCountry];
+    if (order.originCountry === order.destinationCountry) {
+      return `Trans-Frontier Express: secured logistics within ${origin}.`;
+    }
+    return `Trans-Frontier Express: secured logistics from ${origin} to ${COUNTRY_NAMES[order.destinationCountry]}.`;
+  });
+
+  constructor() {
+    // Refetches the shipping-fee preview whenever the cart's (single)
+    // currency or the shipping destination changes. Mixed-currency / empty
+    // carts never fetch — no fee, no total shown while blocked (AC).
+    effect(() => {
+      const totals = this.totals();
+      const destinationCountry = this.destinationCountry();
+      this.shippingFeeRetryTrigger(); // dependency only — forces a rerun on retry
+
+      if (totals.length !== 1 || !destinationCountry) {
+        this.shippingFee.set(null);
+        this.shippingFeeState.set('idle');
+        return;
+      }
+
+      const requestToken = ++this.shippingFeeRequestToken;
+      this.shippingFeeState.set('loading');
+      this.shippingFeeService
+        .current({ destinationCountry, currency: totals[0].currency })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (fee) => {
+            if (requestToken !== this.shippingFeeRequestToken) return; // superseded
+            this.shippingFee.set(fee);
+            this.shippingFeeState.set('ready');
+          },
+          error: () => {
+            if (requestToken !== this.shippingFeeRequestToken) return; // superseded
+            // Degrade explicitly — never fall back to a silent 0 that reads as free shipping.
+            this.shippingFee.set(null);
+            this.shippingFeeState.set('error');
+          },
+        });
+    });
+  }
+
+  /** Retries a failed shipping-fee preview fetch. */
+  retryShippingFee(): void {
+    this.shippingFeeRetryTrigger.update((value) => value + 1);
+  }
+
   ngOnInit(): void {
     this.cartService.load().subscribe({
       next: (cart) => {
@@ -91,6 +231,13 @@ export class Checkout implements OnInit {
 
   submit(): void {
     if (this.state() === 'submitting' || this.hasMixedCurrencies()) {
+      return;
+    }
+    // Never place an order while the fee is unknown. In 'loading' and 'error'
+    // the summary shows no Total at all, but the server still charges the real
+    // resolved fee — letting the button through here would take payment for a
+    // number the customer was never shown.
+    if (this.shippingFeeState() !== 'ready') {
       return;
     }
     if (this.form.invalid) {

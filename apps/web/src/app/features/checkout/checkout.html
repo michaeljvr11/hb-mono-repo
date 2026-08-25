@@ -24,11 +24,10 @@
           <p class="checkout__success-text">
             Order <strong>#{{ order.id.slice(0, 8) }}</strong> is
             <strong>{{ order.status }}</strong> — total
-            <strong>{{ format(order.total, order.currency) }}</strong>.
+            <strong>{{ format(order.total, order.currency) }}</strong>
+            (includes <strong>{{ format(order.shippingTotal, order.currency) }}</strong> shipping).
           </p>
-          <p class="checkout__success-sub">
-            Trans-Frontier Express: secured logistics from ZA to {{ order.destinationCountry }}.
-          </p>
+          <p class="checkout__success-sub">{{ orderLogisticsNote() }}</p>
         }
         <a class="checkout__success-cta" routerLink="/shop">Continue shopping</a>
       </section>
@@ -36,19 +35,22 @@
     @default {
       <h1 class="checkout__title">Secure Checkout</h1>
 
-      <!-- Cross-border logistics summary (per design) -->
+      <!-- Logistics summary (per design). Copy is built from the route resolved
+           on the fee DTO, never from the address form — the banner can never
+           assert a route different from the one being charged. -->
       <section class="checkout__border-card">
         <div class="checkout__border-head">
           <span class="material-symbols-outlined checkout__border-icon" aria-hidden="true">local_shipping</span>
-          <h2 class="checkout__border-title">Cross-Border Shipping</h2>
-          <span class="checkout__border-badge">
-            <span class="material-symbols-outlined" aria-hidden="true">verified</span>
-            CUSTOMS PREPAID
-          </span>
+          <h2 class="checkout__border-title">{{ shippingBannerTitle() }}</h2>
+          @if (isCrossBorder()) {
+            <!-- Customs is a cross-border concern only — no badge on a domestic route. -->
+            <span class="checkout__border-badge">
+              <span class="material-symbols-outlined" aria-hidden="true">verified</span>
+              CUSTOMS PREPAID
+            </span>
+          }
         </div>
-        <p class="checkout__border-note">
-          Trans-Frontier Express: Secured Logistics from South Africa to Namibia. 3–5 days arrival.
-        </p>
+        <p class="checkout__border-note">{{ shippingBannerNote() }}</p>
       </section>
 
       <!-- Inline, specific error surfaces -->
@@ -230,14 +232,42 @@
               </div>
             }
             @if (!hasMixedCurrencies() && totals().length === 1) {
-              <div class="checkout__summary-row">
-                <span>Shipping (ZA to NA)</span>
-                <span>{{ format(0, totals()[0].currency) }}</span>
-              </div>
-              <div class="checkout__summary-row checkout__summary-row--total">
-                <span>Total</span>
-                <span>{{ format(totals()[0].subtotal, totals()[0].currency) }}</span>
-              </div>
+              @switch (shippingFeeState()) {
+                @case ('loading') {
+                  <div class="checkout__summary-row checkout__summary-row--shipping">
+                    <span>Shipping</span>
+                    <span class="checkout__summary-pending">Calculating…</span>
+                  </div>
+                }
+                @case ('ready') {
+                  @if (shippingFee(); as fee) {
+                    <div class="checkout__summary-row checkout__summary-row--shipping">
+                      <span>{{ shippingLabel() }}</span>
+                      <span>{{ format(fee.amount, fee.currency) }}</span>
+                    </div>
+                  }
+                  @if (grandTotal(); as total) {
+                    <div class="checkout__summary-row checkout__summary-row--total">
+                      <span>Total</span>
+                      <span>{{ format(total, totals()[0].currency) }}</span>
+                    </div>
+                  }
+                }
+                @case ('error') {
+                  <div class="checkout__summary-row checkout__summary-row--shipping checkout__summary-row--error">
+                    <span>Shipping</span>
+                    <span class="checkout__summary-error">
+                      Unavailable
+                      <button type="button" class="checkout__summary-retry" (click)="retryShippingFee()">
+                        Retry
+                      </button>
+                    </span>
+                  </div>
+                }
+                @default {
+                  <!-- idle: no cart destination resolved yet -->
+                }
+              }
             }
             <div class="checkout__parity">
               <span class="material-symbols-outlined" aria-hidden="true">currency_exchange</span>
@@ -247,7 +277,7 @@
             <button
               type="button"
               class="checkout__submit"
-              [disabled]="state() === 'submitting' || hasMixedCurrencies()"
+              [disabled]="state() === 'submitting' || hasMixedCurrencies() || shippingFeeState() !== 'ready'"
               (click)="submit()"
             >
               @if (state() === 'submitting') {
