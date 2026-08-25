@@ -1099,3 +1099,7 @@
 {"ts":"2026-08-24T18:41:34.435Z","type":"edit_lint","file":"apps/api/src/shipping-fee/product-shipping-fee-override.controller.integration.spec.ts","autofixed":true,"tool":"Write"}
 {"ts":"2026-08-24T18:45:01.635Z","type":"agent_token_usage","agentType":"backend-engineer","agentId":"a1900744863a0b55e","sessionId":"bf1d4ba3-ce70-4b68-a448-934779145013","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
 {"ts":"2026-08-24T18:46:52.185Z","type":"agent_token_usage","agentType":"unknown","agentId":"a01c1b59c76fb26b5","sessionId":"bf1d4ba3-ce70-4b68-a448-934779145013","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-24T18:52:21.754Z","type":"agent_token_usage","agentType":"docs-writer","agentId":"ac2939deb5fe4c89d","sessionId":"bf1d4ba3-ce70-4b68-a448-934779145013","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-24T18:55:06.422Z","type":"pr_gate","result":"pass","durationMs":81944}
+{"ts":"2026-08-24T18:56:39.867Z","type":"agent_token_usage","agentType":"unknown","agentId":"a7da27e8316320b4a","sessionId":"bf1d4ba3-ce70-4b68-a448-934779145013","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-25T16:00:19.150Z","type":"agent_token_usage","agentType":"unknown","agentId":"a029c6ac86b0f8eb0","sessionId":"bf1d4ba3-ce70-4b68-a448-934779145013","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}

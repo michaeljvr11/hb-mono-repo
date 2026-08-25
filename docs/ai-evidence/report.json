@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-08-24T18:48:25.992Z",
+  "generatedAt": "2026-08-25T16:02:53.253Z",
   "git": {
-    "totalCommits": 262,
-    "aiCommits": 251,
+    "totalCommits": 264,
+    "aiCommits": 253,
     "aiPct": 96,
-    "appCommits": 188,
-    "ins": 106718,
-    "del": 11269,
-    "net": 95449,
-    "aiIns": 93204,
-    "aiDel": 11095,
+    "appCommits": 189,
+    "ins": 107142,
+    "del": 11420,
+    "net": 95722,
+    "aiIns": 93628,
+    "aiDel": 11246,
     "filesTouched": 810,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 111,
-        "ins": 51810,
-        "del": 3127
+        "commits": 112,
+        "ins": 51980,
+        "del": 3139
       },
       {
         "name": "API (NestJS)",
@@ -26,14 +26,14 @@
       },
       {
         "name": "Docs",
-        "commits": 75,
-        "ins": 16474,
-        "del": 5986
+        "commits": 76,
+        "ins": 16626,
+        "del": 6125
       },
       {
         "name": "AI Factory config",
-        "commits": 81,
-        "ins": 2375,
+        "commits": 82,
+        "ins": 2477,
         "del": 104
       },
       {
@@ -58,6 +58,16 @@
     "firstDate": "2026-06-11",
     "lastDate": "2026-08-24",
     "recent": [
+      {
+        "hash": "69a93e8",
+        "subject": "fix(web): make the checkout shipping copy honest for every route",
+        "ai": true
+      },
+      {
+        "hash": "9b4a4e2",
+        "subject": "chore(evidence): recompile AI-authorship report for the shipping-fee batch",
+        "ai": true
+      },
       {
         "hash": "adb8732",
         "subject": "fix: resolve the checkout preview over the cart, not the global default",
@@ -106,16 +116,6 @@
       {
         "hash": "39021dd",
         "subject": "chore(evidence): recompile AI-authorship report for edit/delete review batch",
-        "ai": true
-      },
-      {
-        "hash": "0b4dbac",
-        "subject": "feat(web): add edit/delete controls for own review on PDP",
-        "ai": true
-      },
-      {
-        "hash": "ab01535",
-        "subject": "fix(api): reject malformed review id with 404 instead of 500",
         "ai": true
       }
     ]
@@ -412,18 +412,18 @@
       "merge/rebase while on protected branch 'main'": 2,
       "bare push from protected branch 'main'": 1
     },
-    "gatePass": 35,
+    "gatePass": 36,
     "gateFail": 2,
     "edits": 842,
     "editsUnfixable": 272,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-24T18:46:52.185Z",
+    "lastTs": "2026-08-25T16:00:19.150Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 68,
+          "invocations": 70,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -477,7 +477,7 @@
         },
         {
           "agentType": "docs-writer",
-          "invocations": 14,
+          "invocations": 15,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -513,21 +513,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-08-18T20:16:30.933Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-18T20:43:53.536Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T13:49:48.659Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-24T13:51:53.309Z",
           "agentType": "unknown",
@@ -612,6 +597,21 @@
           "ts": "2026-08-24T18:46:52.185Z",
           "agentType": "unknown",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-24T18:52:21.754Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-24T18:56:39.867Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-25T16:00:19.150Z",
+          "agentType": "unknown",
+          "totalTokens": 0
         }
       ]
     }
@@ -619,6 +619,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/DwnyCLnX-configurable-shipping-fee",
+      "number": 62,
+      "state": "OPEN",
+      "title": "feat: admin-configurable shipping fee, route-keyed (SF-1..SF-6)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/62"
+    },
     {
       "headRefName": "feat/23PYFGW7-edit-delete-own-review",
       "number": 61,
@@ -1058,11 +1065,11 @@
     },
     {
       "name": "In Progress",
-      "cards": 6
+      "cards": 0
     },
     {
       "name": "In Review",
-      "cards": 0
+      "cards": 6
     },
     {
       "name": "Done",
