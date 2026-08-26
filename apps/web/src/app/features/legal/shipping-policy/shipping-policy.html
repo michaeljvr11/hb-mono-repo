@@ -1,0 +1,74 @@
+<app-nav-bar />
+
+<main class="legal-page" aria-label="Shipping Policy">
+  <div class="legal-page__inner">
+    <h1>Shipping Policy</h1>
+    <p class="legal-page__updated">Last updated: {{ lastUpdated }}</p>
+
+    <h2>Where we deliver</h2>
+    <p>
+      Anywhere in Namibia, and domestically within South Africa. The shipping fee that applies
+      today is set per delivery route (the country your order ships from and the country it
+      ships to) and currency — it does not currently vary by city or address within a
+      destination country, so a Windhoek address and an address elsewhere in Namibia on the
+      same route are charged the same fee. If delivery outside Windhoek is ever quoted
+      separately, we'll state that here before it applies to your order.
+    </p>
+
+    <h2>Shipping fee</h2>
+    <p>
+      A shipping fee is shown as a separate line item at checkout, before you pay, and forms
+      part of your order total. The fee is admin-configurable per delivery route (the country
+      your order ships from and the country it ships to) and per currency, and individual
+      products can carry their own fee where a specific item needs a different rate.
+    </p>
+    <p>
+      If your cart contains several items, you are charged <strong>one</strong> shipping fee
+      for the whole order — the highest fee that applies to any single line in your cart, never
+      the sum of each item's fee. The exact amount(s) currently in effect:
+      <span class="legal-placeholder">[SHIPPING FEE AMOUNT]</span>.
+    </p>
+
+    <h2>How long delivery takes</h2>
+    <p>
+      <span class="legal-placeholder">[DELIVERY TIMEFRAME]</span> — we have not yet published
+      estimated delivery times for any leg of the journey (domestic South Africa, crossing the
+      border, or domestic Namibia). We will publish real timeframes here once they're settled,
+      rather than an estimate we can't stand behind.
+    </p>
+
+    <h2>Cross-border handling</h2>
+    <p>
+      Orders crossing from South Africa into Namibia pass through customs as part of normal
+      delivery. South Africa and Namibia share a customs union (SACU), so goods of South
+      African origin generally cross without import duty. This does not apply to items sourced
+      by our Procurement Service from outside South Africa (for example from Amazon, Shein, or
+      Temu) — those are genuine imports into Namibia and may attract Namibian import duty and
+      VAT. Full customs and export terms are not yet published as a standalone page.
+    </p>
+
+    <h2>Risk in transit</h2>
+    <p>
+      Who bears the risk of loss or damage while your order is in transit has not yet been
+      finalised, and may differ between Marketplace and Procurement Service purchases depending
+      on who is the seller of record for your order. We'll state this plainly here once it's
+      settled.
+    </p>
+
+    <h2>Vendor-fulfilled orders</h2>
+    <p>
+      Marketplace orders are shipped from the vendor to H&amp;B's logistics handoff point, then
+      onward to you — see our <a routerLink="/legal/terms">Terms of Service</a> for how
+      Marketplace purchases work. This may mean a Marketplace order takes an extra step
+      compared to a Procurement Service order; we'll state it here once real delivery
+      timeframes exist (see <span class="legal-placeholder">[DELIVERY TIMEFRAME]</span> above).
+    </p>
+
+    <p>
+      For what happens if you need to cancel or return an order, see our
+      <a routerLink="/legal/returns">Returns &amp; Refunds Policy</a>.
+    </p>
+  </div>
+</main>
+
+<app-footer />

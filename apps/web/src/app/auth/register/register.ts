@@ -38,6 +38,7 @@ export class Register {
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
     rememberMe: [false],
+    acceptedTerms: [false, [Validators.requiredTrue]],
   });
 
   get fullNameControl() {
@@ -50,6 +51,10 @@ export class Register {
 
   get passwordControl() {
     return this.registerForm.controls.password;
+  }
+
+  get acceptedTermsControl() {
+    return this.registerForm.controls.acceptedTerms;
   }
 
   togglePassword(): void {
@@ -69,6 +74,7 @@ export class Register {
       email: this.registerForm.controls.email.value,
       password: this.registerForm.controls.password.value,
       rememberMe: this.registerForm.controls.rememberMe.value,
+      acceptedTerms: this.registerForm.controls.acceptedTerms.value,
     };
 
     this.isSubmitting.set(true);

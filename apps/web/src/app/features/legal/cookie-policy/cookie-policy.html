@@ -1,0 +1,110 @@
+<app-nav-bar />
+
+<main class="legal-page" aria-label="Cookie Policy">
+  <div class="legal-page__inner">
+    <h1>Cookie Policy</h1>
+    <p class="legal-page__updated">Last updated: {{ lastUpdated }}</p>
+
+    <p>
+      This page explains the cookies H&amp;B E-Commerce uses and how to control them. It's the
+      policy referenced by the cookie banner you see when you first visit the Platform.
+    </p>
+
+    <h2>What are cookies</h2>
+    <p>
+      Small files stored on your device that let a website remember information between
+      visits.
+    </p>
+
+    <h2>What we use</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Purpose</th>
+          <th>Can you decline?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Strictly necessary</td>
+          <td>
+            Keep you signed in and keep the site secure. We set exactly two cookies:
+            <code>RefreshToken</code>, an httpOnly cookie that keeps your session refreshed
+            while you're signed in, and <code>g_oauth_state</code>, a short-lived (10-minute),
+            httpOnly cookie that protects the Google sign-in round trip from cross-site
+            request forgery.
+          </td>
+          <td>No — required for the site to function</td>
+        </tr>
+        <tr>
+          <td>Analytics</td>
+          <td>
+            Google Analytics — once we enable it and once you accept, this helps us understand
+            how the storefront is used so we can improve it. No Google Analytics property is
+            configured yet, so <strong>no analytics cookies are being set today</strong>,
+            regardless of your choice below.
+          </td>
+          <td>Yes — declined by default until you accept</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      We currently run one consent-gated analytics integration (Google Analytics, not yet
+      configured — see the table above) plus a first-party, non-cookie usage-events feature
+      used for internal product analytics. That feature sets no cookies and collects no
+      cross-site tracking data, which is why it isn't gated by this banner. It does store an
+      anonymous session id in your browser's local storage — see "Browser storage we use that
+      isn't cookies" below.
+    </p>
+
+    <h2>Browser storage we use that isn't cookies</h2>
+    <p>
+      Some parts of the Platform use your browser's local storage instead of cookies. Local
+      storage isn't sent to us automatically with every request the way a cookie is, and none
+      of the following identify you personally:
+    </p>
+    <ul>
+      <li>
+        <code>hb.analytics.sessionId</code> — an anonymous, randomly generated id that groups
+        your usage events together for the current visit. Never your name, email, or a
+        persistent user id.
+      </li>
+      <li>
+        <code>hb.consent.analytics</code> — remembers the Accept/Decline choice you make on
+        this banner, so we don't ask again on this device.
+      </li>
+      <li>
+        A sign-in session token, if you're logged in — lets the app keep you signed in without
+        re-entering your password on every page.
+      </li>
+    </ul>
+
+    <h2>Your choice</h2>
+    <p>
+      When you first visit, a banner lets you <strong>Accept</strong> or
+      <strong>Decline</strong> analytics cookies. Your choice is stored on your device (see
+      above) and applies until you change it. You can change your choice at any time by
+      clearing this site's data in your browser settings, which resets the banner so you can
+      choose again — a persistent "manage cookies" control elsewhere on the Platform isn't
+      available yet.
+    </p>
+
+    <h2>Third-party cookies</h2>
+    <p>
+      Google Analytics, when enabled and accepted, sets its own cookies under Google's privacy
+      policy (<a href="https://policies.google.com/privacy" rel="noopener" target="_blank"
+        >policies.google.com/privacy</a
+      >). We don't control what Google does with analytics data beyond what our GA
+      configuration sends it.
+    </p>
+
+    <p>
+      For how we handle personal information more broadly, see our
+      <a routerLink="/legal/privacy">Privacy Policy</a>.
+    </p>
+  </div>
+</main>
+
+<app-footer />

@@ -18,6 +18,13 @@ export interface RegisterRequest {
   // vendor onboarding sets the role in VendorsService. See docs/security.
   /** When true, the refresh session is long-lived (30d) instead of short (24h). */
   rememberMe?: boolean;
+  /**
+   * Records that the user ticked the Terms of Service / Privacy Policy consent
+   * checkbox at signup. Must be `true` — a missing or `false` value is rejected.
+   * The acceptance timestamp itself is never trusted from the client; it is
+   * derived server-side from request time when the audit record is written.
+   */
+  acceptedTerms: boolean;
 }
 
 export interface ForgotPasswordRequest {

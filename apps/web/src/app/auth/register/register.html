@@ -84,6 +84,31 @@
         <span>Keep me signed in for 30 days</span>
       </label>
 
+      <div class="field">
+        <div class="accept-terms">
+          <input
+            id="acceptedTerms"
+            type="checkbox"
+            formControlName="acceptedTerms"
+            aria-required="true"
+            [attr.aria-describedby]="
+              acceptedTermsControl.hasError('required') && acceptedTermsControl.touched
+                ? 'acceptedTerms-error'
+                : null
+            "
+          />
+          <label for="acceptedTerms">
+            I agree to the
+            <a routerLink="/legal/terms">Terms of Service</a>
+            and
+            <a routerLink="/legal/privacy">Privacy Policy</a>
+          </label>
+        </div>
+        @if (acceptedTermsControl.hasError('required') && acceptedTermsControl.touched) {
+          <small id="acceptedTerms-error">You must accept the Terms of Service and Privacy Policy to continue.</small>
+        }
+      </div>
+
       @if (errorMessage()) {
         <p class="status-error" role="alert">{{ errorMessage() }}</p>
       }

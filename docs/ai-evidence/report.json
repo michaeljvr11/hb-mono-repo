@@ -1,45 +1,45 @@
 {
-  "generatedAt": "2026-08-25T16:02:53.253Z",
+  "generatedAt": "2026-08-26T17:28:09.137Z",
   "git": {
-    "totalCommits": 264,
-    "aiCommits": 253,
+    "totalCommits": 268,
+    "aiCommits": 257,
     "aiPct": 96,
-    "appCommits": 189,
-    "ins": 107142,
-    "del": 11420,
-    "net": 95722,
-    "aiIns": 93628,
-    "aiDel": 11246,
-    "filesTouched": 810,
+    "appCommits": 193,
+    "ins": 108532,
+    "del": 11358,
+    "net": 97174,
+    "aiIns": 95018,
+    "aiDel": 11184,
+    "filesTouched": 831,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 112,
-        "ins": 51980,
-        "del": 3139
+        "commits": 116,
+        "ins": 53332,
+        "del": 3175
       },
       {
         "name": "API (NestJS)",
-        "commits": 101,
-        "ins": 33214,
-        "del": 1972
+        "commits": 102,
+        "ins": 33315,
+        "del": 1975
       },
       {
         "name": "Docs",
         "commits": 76,
-        "ins": 16626,
-        "del": 6125
+        "ins": 16553,
+        "del": 6024
       },
       {
         "name": "AI Factory config",
         "commits": 82,
-        "ins": 2477,
+        "ins": 2480,
         "del": 104
       },
       {
         "name": "Shared contracts",
-        "commits": 43,
-        "ins": 1730,
+        "commits": 44,
+        "ins": 1737,
         "del": 56
       },
       {
@@ -56,8 +56,38 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-24",
+    "lastDate": "2026-08-26",
     "recent": [
+      {
+        "hash": "038a8a4",
+        "subject": "fix(web): make the legal pages honest about what the code actually does",
+        "ai": true
+      },
+      {
+        "hash": "442067a",
+        "subject": "feat: capture and log terms acceptance at signup",
+        "ai": true
+      },
+      {
+        "hash": "2ac571c",
+        "subject": "feat(web): add the Shipping and Returns & Refunds Policy pages",
+        "ai": true
+      },
+      {
+        "hash": "3c23524",
+        "subject": "feat(web): add the Terms of Service page and wire the dead login links",
+        "ai": true
+      },
+      {
+        "hash": "0b43b0b",
+        "subject": "feat(web): add Privacy and Cookie Policy pages, wire the consent banner",
+        "ai": true
+      },
+      {
+        "hash": "509eed6",
+        "subject": "chore(evidence): recompile AI-authorship report for the route-honest checkout copy",
+        "ai": true
+      },
       {
         "hash": "69a93e8",
         "subject": "fix(web): make the checkout shipping copy honest for every route",
@@ -74,16 +104,6 @@
         "ai": true
       },
       {
-        "hash": "09957c5",
-        "subject": "chore(evidence): recompile AI-authorship report for the route-honest checkout copy",
-        "ai": true
-      },
-      {
-        "hash": "8e4095d",
-        "subject": "fix(web): make the checkout shipping copy honest for every route",
-        "ai": true
-      },
-      {
         "hash": "1264f48",
         "subject": "feat(web): render the real shipping fee and corrected total at checkout",
         "ai": true
@@ -96,26 +116,6 @@
       {
         "hash": "cac9a3f",
         "subject": "feat(web): add admin shipping-fee management screen",
-        "ai": true
-      },
-      {
-        "hash": "bfdd094",
-        "subject": "feat(api): charge the configured shipping fee at order creation",
-        "ai": true
-      },
-      {
-        "hash": "7d9b57f",
-        "subject": "feat(api): add per-product shipping-fee overrides keyed by route",
-        "ai": true
-      },
-      {
-        "hash": "98bbf14",
-        "subject": "feat(api): add route-keyed shipping_fees history + admin API",
-        "ai": true
-      },
-      {
-        "hash": "39021dd",
-        "subject": "chore(evidence): recompile AI-authorship report for edit/delete review batch",
         "ai": true
       }
     ]
@@ -210,6 +210,11 @@
       "branch": "feat/QAeB8YGv-admin-commission-rate",
       "cardId": "QAeB8YGv",
       "slug": "admin-commission-rate"
+    },
+    {
+      "branch": "feat/QQKjOiEH-legal-policy-pages",
+      "cardId": "QQKjOiEH",
+      "slug": "legal-policy-pages"
     },
     {
       "branch": "feat/Sm1kSNO8-safe-category-delete",
@@ -383,9 +388,9 @@
     }
   ],
   "tests": {
-    "total": 143,
-    "api": 71,
-    "web": 72
+    "total": 149,
+    "api": 72,
+    "web": 77
   },
   "design": {
     "files": 34,
@@ -414,10 +419,10 @@
     },
     "gatePass": 36,
     "gateFail": 2,
-    "edits": 842,
-    "editsUnfixable": 272,
+    "edits": 853,
+    "editsUnfixable": 278,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-25T16:00:19.150Z",
+    "lastTs": "2026-08-26T17:26:50.049Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
@@ -432,7 +437,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 31,
+          "invocations": 32,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -441,7 +446,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 40,
+          "invocations": 45,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -459,7 +464,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 28,
+          "invocations": 29,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -513,41 +518,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-08-24T13:51:53.309Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T13:52:54.114Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:01:23.033Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:04:58.485Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:21:14.501Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:25:38.578Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:29:47.831Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-24T14:31:51.658Z",
           "agentType": "unknown",
@@ -612,6 +582,41 @@
           "ts": "2026-08-25T16:00:19.150Z",
           "agentType": "unknown",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-26T16:49:36.527Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-26T16:55:55.644Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-26T17:01:23.072Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-26T17:07:59.032Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-26T17:10:36.436Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-26T17:20:40.125Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-26T17:26:50.049Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
         }
       ]
     }
@@ -622,7 +627,7 @@
     {
       "headRefName": "feat/DwnyCLnX-configurable-shipping-fee",
       "number": 62,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat: admin-configurable shipping fee, route-keyed (SF-1..SF-6)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/62"
     },
@@ -1061,11 +1066,11 @@
     },
     {
       "name": "To Do",
-      "cards": 25
+      "cards": 21
     },
     {
       "name": "In Progress",
-      "cards": 0
+      "cards": 4
     },
     {
       "name": "In Review",

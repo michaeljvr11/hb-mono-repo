@@ -56,6 +56,7 @@ describe('Register', () => {
       email: 'a@b.com',
       password: 'password1',
       rememberMe: true,
+      acceptedTerms: true,
     });
     component.submit();
 
@@ -65,6 +66,7 @@ describe('Register', () => {
       email: 'a@b.com',
       password: 'password1',
       rememberMe: true,
+      acceptedTerms: true,
     });
   });
 
@@ -80,6 +82,7 @@ describe('Register', () => {
       email: 'a@b.com',
       password: 'password1',
       rememberMe: false,
+      acceptedTerms: true,
     });
     component.submit();
 
@@ -88,7 +91,103 @@ describe('Register', () => {
       email: 'a@b.com',
       password: 'password1',
       rememberMe: false,
+      acceptedTerms: true,
     });
+  });
+});
+
+describe('Register terms acceptance checkbox', () => {
+  let component: Register;
+  let fixture: ComponentFixture<Register>;
+  let authService: { register: ReturnType<typeof vi.fn> };
+
+  beforeEach(async () => {
+    authService = { register: vi.fn() };
+
+    await TestBed.configureTestingModule({
+      imports: [Register],
+      providers: [
+        provideNoopAnimations(),
+        provideRouter([]),
+        { provide: AuthService, useValue: authService },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(Register);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+    fixture.detectChanges();
+  });
+
+  function checkboxEl(): HTMLInputElement {
+    return fixture.nativeElement.querySelector('#acceptedTerms');
+  }
+
+  function validFormValue(overrides: Partial<{ acceptedTerms: boolean }> = {}) {
+    return {
+      fullName: 'Avery Smith',
+      email: 'a@b.com',
+      password: 'password1',
+      rememberMe: false,
+      acceptedTerms: false,
+      ...overrides,
+    };
+  }
+
+  it('renders unchecked by default', () => {
+    const checkbox = checkboxEl();
+    expect(checkbox).toBeTruthy();
+    expect(checkbox.checked).toBe(false);
+    expect(component.acceptedTermsControl.value).toBe(false);
+  });
+
+  it('keeps the form invalid while the checkbox is unchecked and blocks submission', () => {
+    component.registerForm.setValue(validFormValue({ acceptedTerms: false }));
+    expect(component.registerForm.invalid).toBe(true);
+
+    component.submit();
+
+    expect(authService.register).not.toHaveBeenCalled();
+  });
+
+  it('becomes valid and calls AuthService.register with acceptedTerms: true once checked', () => {
+    authService.register.mockReturnValue(
+      of({ access_token: 'token', user: { id: '1', email: 'a@b.com', role: 'customer' } }),
+    );
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+
+    component.registerForm.setValue(validFormValue({ acceptedTerms: true }));
+    expect(component.registerForm.valid).toBe(true);
+
+    component.submit();
+
+    expect(authService.register).toHaveBeenCalledWith(
+      expect.objectContaining({ acceptedTerms: true }),
+    );
+  });
+
+  it('links the consent label to the legal terms and privacy routes', () => {
+    const links: HTMLAnchorElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('label[for="acceptedTerms"] a'),
+    );
+    const hrefs = links.map((link) => link.getAttribute('routerLink') ?? link.getAttribute('href'));
+
+    expect(hrefs).toContain('/legal/terms');
+    expect(hrefs).toContain('/legal/privacy');
+  });
+
+  it('shows the inline error once the checkbox is touched and left unchecked', () => {
+    expect(
+      fixture.nativeElement.querySelector('#acceptedTerms-error'),
+    ).toBeNull();
+
+    component.acceptedTermsControl.markAsTouched();
+    fixture.detectChanges();
+
+    const error = fixture.nativeElement.querySelector('#acceptedTerms-error');
+    expect(error).toBeTruthy();
+    expect(error.textContent).toContain('You must accept the Terms of Service and Privacy Policy');
   });
 });
 
@@ -132,6 +231,7 @@ describe('Register returnUrl handling', () => {
       email: 'a@b.com',
       password: 'password1',
       rememberMe: false,
+      acceptedTerms: true,
     });
     component.submit();
     expect(navigate).toHaveBeenCalledWith('/vendor/dashboard');
@@ -144,6 +244,7 @@ describe('Register returnUrl handling', () => {
       email: 'a@b.com',
       password: 'password1',
       rememberMe: false,
+      acceptedTerms: true,
     });
     component.submit();
     expect(navigate).toHaveBeenCalledWith('/shop');

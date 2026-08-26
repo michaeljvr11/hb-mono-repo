@@ -12,6 +12,7 @@ export const AuditAction = {
   USER_ROLE_ASSIGNED: 'user.role_assigned',
   USER_ACTIVATED: 'user.activated',
   USER_DEACTIVATED: 'user.deactivated',
+  USER_TERMS_ACCEPTED: 'user.terms_accepted',
   PRODUCT_CREATED: 'product.created',
   PRODUCT_UPDATED: 'product.updated',
   PRODUCT_DELETED: 'product.deleted',

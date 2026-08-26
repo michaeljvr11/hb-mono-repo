@@ -41,7 +41,12 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const { email, password, rememberMe, ...rest } = registerDto;
+    // acceptedTerms is destructured out (like rememberMe) so it never reaches
+    // usersService.create / the User entity, which has no such column. It is
+    // validated `true` by RegisterDto's @Equals(true) before we get here; the
+    // consent fact is recorded via the audit log below, not via this variable.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { email, password, rememberMe, acceptedTerms, ...rest } = registerDto;
 
     const existing = await this.usersService.findByEmail(email);
     if (existing) {
@@ -56,6 +61,25 @@ export class AuthService {
       // ever leaks back into the DTO/whitelist, it can never elevate here. Elevated
       // roles are assigned only via the admin-only role endpoint. See docs/security.
       role: UserRole.CUSTOMER,
+    });
+
+    // Log the Terms/Privacy consent acceptance, tied to the new user, with a
+    // server-derived timestamp (the DB's createdAt is the authoritative one;
+    // the metadata instant below is corroborating only).
+    // NOTE: AuditService.log is best-effort — it swallows its own DB errors and
+    // only logs a warning, so registration still succeeds even if this write is
+    // lost. For a consent record that's a real gap: a lost write leaves no
+    // provable acceptance for this account. Known limitation, tracked as a
+    // follow-up rather than fixed here.
+    await this.auditService.log({
+      userId: user.id,
+      action: AuditAction.USER_TERMS_ACCEPTED,
+      entityType: 'user',
+      entityId: user.id,
+      metadata: {
+        documents: ['terms_of_service', 'privacy_policy'],
+        acceptedAt: new Date().toISOString(),
+      },
     });
 
     // Send the email-verification link (best-effort — registration still

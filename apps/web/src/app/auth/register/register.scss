@@ -117,6 +117,34 @@ form {
   cursor: pointer;
 }
 
+.accept-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-left: 4px;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+}
+
+.accept-terms input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex: none;
+  accent-color: var(--hb-primary);
+  cursor: pointer;
+}
+
+.accept-terms label {
+  cursor: pointer;
+  user-select: none;
+}
+
+.accept-terms a {
+  color: var(--hb-primary);
+  font-weight: 600;
+}
+
 .primary-action {
   margin-top: 8px;
   border-radius: 12px;

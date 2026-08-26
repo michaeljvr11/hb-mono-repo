@@ -117,7 +117,7 @@ describe('AuthService', () => {
       usersService.findByEmail.mockResolvedValue(null);
       usersService.create.mockResolvedValue({ ...activeUser, isVerified: false });
 
-      await service.register({ email: 'a@b.com', password: 'password1' });
+      await service.register({ email: 'a@b.com', password: 'password1', acceptedTerms: true });
 
       expect(usersService.setEmailVerificationToken).toHaveBeenCalled();
       expect(mailService.sendEmailVerification).toHaveBeenCalledWith('a@b.com', expect.any(String));
@@ -131,6 +131,7 @@ describe('AuthService', () => {
       await service.register({
         email: 'a@b.com',
         password: 'password1',
+        acceptedTerms: true,
         role: UserRole.ADMIN,
       } as Parameters<typeof service.register>[0]);
 
@@ -142,6 +143,32 @@ describe('AuthService', () => {
       expect(usersService.create).not.toHaveBeenCalledWith(
         expect.objectContaining({ role: UserRole.ADMIN }),
       );
+    });
+
+    it('logs a terms-accepted audit record tied to the new user', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue({ ...activeUser, isVerified: false });
+
+      await service.register({ email: 'a@b.com', password: 'password1', acceptedTerms: true });
+
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'u1',
+          action: 'user.terms_accepted',
+          entityType: 'user',
+          entityId: 'u1',
+        }),
+      );
+    });
+
+    it('never forwards acceptedTerms into usersService.create', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue({ ...activeUser, isVerified: false });
+
+      await service.register({ email: 'a@b.com', password: 'password1', acceptedTerms: true });
+
+      const calls = usersService.create.mock.calls as unknown as Array<[Record<string, unknown>]>;
+      expect(calls[0][0]).not.toHaveProperty('acceptedTerms');
     });
   });
 

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PLATFORM_ID, signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { ConsentBanner } from './consent-banner';
@@ -27,6 +28,7 @@ async function setup(
   await TestBed.configureTestingModule({
     imports: [ConsentBanner],
     providers: [
+      provideRouter([]),
       { provide: ConsentService, useValue: consentStub },
       { provide: PLATFORM_ID, useValue: platform },
     ],
@@ -43,6 +45,18 @@ describe('ConsentBanner', () => {
     const fixture = await setup(consentStub);
 
     expect(fixture.nativeElement.querySelector('.consent-banner')).toBeTruthy();
+  });
+
+  it('links to the real Cookie Policy and Privacy Policy pages', async () => {
+    const consentStub = makeConsentStub('unknown');
+    const fixture = await setup(consentStub);
+
+    const links: HTMLAnchorElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.consent-banner__text a'),
+    );
+    const hrefs = links.map((a) => a.getAttribute('href'));
+    expect(hrefs).toContain('/legal/cookies');
+    expect(hrefs).toContain('/legal/privacy');
   });
 
   it('is hidden when consent is already "granted"', async () => {

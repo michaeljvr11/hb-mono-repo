@@ -1,4 +1,4 @@
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
+import { Equals, IsBoolean, IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 import { RegisterRequest } from '@hb/shared';
 
 export class RegisterDto implements RegisterRequest {
@@ -25,4 +25,10 @@ export class RegisterDto implements RegisterRequest {
   @IsOptional()
   @IsBoolean()
   rememberMe?: boolean;
+
+  @IsBoolean()
+  @Equals(true, {
+    message: 'You must accept the Terms of Service and Privacy Policy to create an account.',
+  })
+  acceptedTerms: boolean;
 }

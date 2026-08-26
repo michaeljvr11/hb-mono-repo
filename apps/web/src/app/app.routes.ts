@@ -146,6 +146,26 @@ export const routes: Routes = [
     path: 'contact',
     loadComponent: () => import('./features/contact/contact').then(m => m.Contact)
   },
+  {
+    path: 'legal/privacy',
+    loadComponent: () => import('./features/legal/privacy-policy/privacy-policy').then(m => m.PrivacyPolicy)
+  },
+  {
+    path: 'legal/cookies',
+    loadComponent: () => import('./features/legal/cookie-policy/cookie-policy').then(m => m.CookiePolicy)
+  },
+  {
+    path: 'legal/terms',
+    loadComponent: () => import('./features/legal/terms-of-service/terms-of-service').then(m => m.TermsOfService)
+  },
+  {
+    path: 'legal/shipping',
+    loadComponent: () => import('./features/legal/shipping-policy/shipping-policy').then(m => m.ShippingPolicy)
+  },
+  {
+    path: 'legal/returns',
+    loadComponent: () => import('./features/legal/returns-policy/returns-policy').then(m => m.ReturnsPolicy)
+  },
 
   // Catch-all route
   {
