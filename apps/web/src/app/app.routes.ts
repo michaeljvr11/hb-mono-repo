@@ -154,6 +154,10 @@ export const routes: Routes = [
     path: 'legal/cookies',
     loadComponent: () => import('./features/legal/cookie-policy/cookie-policy').then(m => m.CookiePolicy)
   },
+  {
+    path: 'legal/terms',
+    loadComponent: () => import('./features/legal/terms-of-service/terms-of-service').then(m => m.TermsOfService)
+  },
 
   // Catch-all route
   {

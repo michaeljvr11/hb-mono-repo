@@ -82,6 +82,15 @@ describe('Login', () => {
 
     expect(component.errorMessage()).toBe('Invalid credentials');
   });
+
+  it('links the footer Terms of Trade and Privacy Policy to their real routes, not the coming-soon snackbar', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const termsLink = el.querySelector('a[href="/legal/terms"]');
+    const privacyLink = el.querySelector('a[href="/legal/privacy"]');
+    expect(termsLink?.textContent?.trim()).toBe('Terms of Trade');
+    expect(privacyLink?.textContent?.trim()).toBe('Privacy Policy');
+  });
 });
 
 describe('Login returnUrl handling', () => {
