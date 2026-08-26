@@ -146,6 +146,14 @@ export const routes: Routes = [
     path: 'contact',
     loadComponent: () => import('./features/contact/contact').then(m => m.Contact)
   },
+  {
+    path: 'legal/privacy',
+    loadComponent: () => import('./features/legal/privacy-policy/privacy-policy').then(m => m.PrivacyPolicy)
+  },
+  {
+    path: 'legal/cookies',
+    loadComponent: () => import('./features/legal/cookie-policy/cookie-policy').then(m => m.CookiePolicy)
+  },
 
   // Catch-all route
   {

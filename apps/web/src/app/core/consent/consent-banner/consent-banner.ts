@@ -1,5 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Component, PLATFORM_ID, computed, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { ConsentService } from '../consent.service';
 
@@ -12,6 +13,7 @@ import { ConsentService } from '../consent.service';
  */
 @Component({
   selector: 'app-consent-banner',
+  imports: [RouterLink],
   templateUrl: './consent-banner.html',
   styleUrl: './consent-banner.scss',
 })

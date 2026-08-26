@@ -523,3 +523,108 @@ body {
 .marketing-cta__btn:hover {
   filter: brightness(1.1);
 }
+
+/* Shared static-legal-page primitives (LC-2 /legal/privacy + /legal/cookies share
+   these; LC-3..LC-5 Terms/Shipping/Returns reuse the same set). Deliberately plain —
+   these are read-heavy policy documents, not marketing surfaces, so no hero/CTA. */
+.legal-page {
+  background: var(--hb-background);
+  color: var(--hb-on-surface);
+}
+
+.legal-page__inner {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 16px 96px;
+
+  @media (min-width: 768px) {
+    padding: 64px 40px 120px;
+  }
+}
+
+.legal-page__updated {
+  margin: 0 0 40px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--hb-on-surface-variant);
+}
+
+.legal-page h1 {
+  margin: 0 0 12px;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 48px;
+  letter-spacing: -0.02em;
+  color: var(--hb-primary);
+
+  @media (max-width: 767px) {
+    font-size: 28px;
+    line-height: 36px;
+  }
+}
+
+.legal-page h2 {
+  margin: 40px 0 16px;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: -0.01em;
+  color: var(--hb-on-surface);
+}
+
+.legal-page p {
+  margin: 0 0 16px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--hb-on-surface);
+}
+
+.legal-page ul {
+  margin: 0 0 16px;
+  padding-left: 24px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--hb-on-surface);
+}
+
+.legal-page li {
+  margin: 0 0 8px;
+}
+
+.legal-page table {
+  width: 100%;
+  margin: 0 0 24px;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.legal-page th,
+.legal-page td {
+  padding: 12px 16px;
+  border: 1px solid var(--hb-outline-variant);
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal-page th {
+  background: var(--hb-surface-container);
+  font-weight: 600;
+  color: var(--hb-on-surface);
+}
+
+.legal-page td {
+  background: var(--hb-surface-container-lowest);
+}
+
+/* Every unresolved `[TOKEN]` fact renders visibly flagged rather than silently as
+   plain text — an unresolved legal fact should never blend into shipped copy. */
+.legal-placeholder {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--hb-secondary-fixed);
+  color: var(--hb-on-secondary-container);
+  font-weight: 600;
+  white-space: nowrap;
+}

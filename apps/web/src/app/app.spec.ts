@@ -1,10 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      // LC-2: the consent banner now links to /legal/cookies + /legal/privacy via
+      // RouterLink, which needs a Router/ActivatedRoute in the injector tree.
+      providers: [provideRouter([])],
     }).compileComponents();
   });
 
