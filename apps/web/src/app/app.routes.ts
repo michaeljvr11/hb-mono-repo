@@ -158,6 +158,14 @@ export const routes: Routes = [
     path: 'legal/terms',
     loadComponent: () => import('./features/legal/terms-of-service/terms-of-service').then(m => m.TermsOfService)
   },
+  {
+    path: 'legal/shipping',
+    loadComponent: () => import('./features/legal/shipping-policy/shipping-policy').then(m => m.ShippingPolicy)
+  },
+  {
+    path: 'legal/returns',
+    loadComponent: () => import('./features/legal/returns-policy/returns-policy').then(m => m.ReturnsPolicy)
+  },
 
   // Catch-all route
   {
