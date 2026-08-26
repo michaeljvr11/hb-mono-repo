@@ -58,11 +58,17 @@ describe('CookiePolicy', () => {
     expect(meta.getTag('name="description"')?.content).toContain('H&B');
   });
 
-  it('names the two real cookies and does not claim the cart is stored in one', () => {
+  it('names exactly the two real cookies in the "What we use" table and never claims one stores the cart', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('RefreshToken');
-    expect(el.textContent).toContain('g_oauth_state');
-    expect(el.textContent?.toLowerCase()).not.toContain('remember your cart');
+    const table = el.querySelector('table');
+    expect(table).toBeTruthy();
+    const tableText = table?.textContent ?? '';
+    expect(tableText).toContain('RefreshToken');
+    expect(tableText).toContain('g_oauth_state');
+    // Scoped to the cookie table itself — a regression that renames the copy
+    // (e.g. "we set a cookie to store your cart") must still fail this, since
+    // no cookie in this table is permitted to be about the cart at all.
+    expect(tableText.toLowerCase()).not.toMatch(/cart/i);
   });
 
   it('states GA is not configured yet rather than claiming it is running', () => {

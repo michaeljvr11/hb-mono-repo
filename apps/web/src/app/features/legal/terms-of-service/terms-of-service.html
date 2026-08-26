@@ -18,8 +18,10 @@
       <span class="legal-placeholder">[LEGAL ENTITY NAME]</span>, registration number
       <span class="legal-placeholder">[REGISTRATION NUMBER]</span>, registered address
       <span class="legal-placeholder">[REGISTERED ADDRESS]</span>. Contact:
-      info&#64;hb-ecommerce.com, +264 81 355 9921, WhatsApp wa.me/264813559921. Support
-      responds within 1 business day; English and Afrikaans.
+      <a href="{{ contact.emailHref }}">{{ contact.email }}</a>,
+      <a href="{{ contact.phoneHref }}">{{ contact.phoneDisplay }}</a>, WhatsApp
+      wa.me/{{ whatsappNumber }}. Support responds within 1 business day; English and
+      Afrikaans.
     </p>
 
     <h2>2. Two kinds of purchase on this Platform</h2>
@@ -43,7 +45,12 @@
         record</strong>.
       </li>
     </ul>
-    <p>Your order will show which kind each item is.</p>
+    <p>
+      Today, the way to tell which kind an item is: on the product page, a Marketplace item
+      shows a vendor card linking to that vendor's storefront, and a Procurement Service item
+      doesn't. Your order history doesn't yet carry a per-line label for this — we'll add one
+      here once it does.
+    </p>
 
     <h2>3. Placing an order</h2>
     <ul>
@@ -71,8 +78,9 @@
 
     <h2>5. Delivery</h2>
     <p>
-      See our <a routerLink="/legal/shipping">Shipping Policy</a> for timeframes, costs, and
-      who bears risk in transit.
+      See our <a routerLink="/legal/shipping">Shipping Policy</a> for where we deliver and how
+      the shipping fee is calculated. Delivery timeframes and who bears risk in transit aren't
+      published yet — that page says so plainly.
     </p>
 
     <h2>6. Your right to cancel (cooling-off)</h2>
@@ -104,8 +112,8 @@
 
     <h2>9. Changes to these terms</h2>
     <p>
-      We may update these terms; material changes will be flagged in-app and by email to
-      account holders.
+      We may update these terms; we'll post changes here and update the "Last updated" date
+      above.
     </p>
   </div>
 </main>

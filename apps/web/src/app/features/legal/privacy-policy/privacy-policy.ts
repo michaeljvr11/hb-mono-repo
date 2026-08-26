@@ -13,7 +13,6 @@ const PAGE_DESCRIPTION =
   selector: 'app-privacy-policy',
   imports: [NavBar, Footer, RouterLink],
   templateUrl: './privacy-policy.html',
-  styleUrl: './privacy-policy.scss',
 })
 export class PrivacyPolicy {
   private readonly titleService = inject(Title);

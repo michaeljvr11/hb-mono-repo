@@ -13,7 +13,6 @@ const PAGE_DESCRIPTION =
   selector: 'app-cookie-policy',
   imports: [NavBar, Footer, RouterLink],
   templateUrl: './cookie-policy.html',
-  styleUrl: './cookie-policy.scss',
 })
 export class CookiePolicy {
   private readonly titleService = inject(Title);

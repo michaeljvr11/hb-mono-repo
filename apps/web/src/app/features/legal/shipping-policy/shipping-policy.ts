@@ -13,7 +13,6 @@ const PAGE_DESCRIPTION =
   selector: 'app-shipping-policy',
   imports: [NavBar, Footer, RouterLink],
   templateUrl: './shipping-policy.html',
-  styleUrl: './shipping-policy.scss',
 })
 export class ShippingPolicy {
   private readonly titleService = inject(Title);

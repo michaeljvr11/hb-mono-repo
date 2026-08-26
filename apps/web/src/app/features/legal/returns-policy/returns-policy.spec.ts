@@ -10,6 +10,7 @@ import { AuthUser } from '@hb/shared';
 
 import { ReturnsPolicy } from './returns-policy';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CONTACT_DETAILS } from '../../../shared/constants/site.constants';
 
 describe('ReturnsPolicy', () => {
   let fixture: ComponentFixture<ReturnsPolicy>;
@@ -77,6 +78,12 @@ describe('ReturnsPolicy', () => {
     expect(el.textContent).toContain('Marketplace purchases');
     expect(el.textContent).toContain('Procurement Service purchases');
     expect(el.textContent).toContain('seller of record');
+  });
+
+  it('states the cancellation contact facts from the shared CONTACT_DETAILS constant', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain(CONTACT_DETAILS.email);
+    expect(el.querySelector(`a[href="${CONTACT_DETAILS.emailHref}"]`)).toBeTruthy();
   });
 
   it('renders the unresolved exclusions list as a visible placeholder token', () => {

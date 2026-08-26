@@ -10,6 +10,15 @@ import { AuthUser } from '@hb/shared';
 
 import { TermsOfService } from './terms-of-service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CONTACT_DETAILS } from '../../../shared/constants/site.constants';
+
+/** Finds the <p> that immediately follows the <h2> whose text matches `heading`. */
+function paragraphAfterHeading(el: HTMLElement, heading: string): string {
+  const headings = Array.from(el.querySelectorAll('h2'));
+  const match = headings.find((h) => h.textContent?.trim() === heading);
+  const paragraph = match?.nextElementSibling;
+  return paragraph?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+}
 
 describe('TermsOfService', () => {
   let fixture: ComponentFixture<TermsOfService>;
@@ -63,11 +72,12 @@ describe('TermsOfService', () => {
     expect(meta.getTag('name="description"')?.content).toContain('H&B');
   });
 
-  it('states the mandatory-disclosure contact facts exactly as they appear on /contact', () => {
+  it('states the mandatory-disclosure contact facts from the shared CONTACT_DETAILS constant', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('info@hb-ecommerce.com');
-    expect(el.textContent).toContain('+264 81 355 9921');
-    expect(el.textContent).toContain('wa.me/264813559921');
+    expect(el.textContent).toContain(CONTACT_DETAILS.email);
+    expect(el.textContent).toContain(CONTACT_DETAILS.phoneDisplay);
+    expect(el.querySelector(`a[href="${CONTACT_DETAILS.emailHref}"]`)).toBeTruthy();
+    expect(el.querySelector(`a[href="${CONTACT_DETAILS.phoneHref}"]`)).toBeTruthy();
     expect(el.textContent).toContain('1 business day');
   });
 
@@ -84,12 +94,19 @@ describe('TermsOfService', () => {
     expect(el.querySelectorAll('.legal-placeholder').length).toBeGreaterThan(0);
   });
 
-  it('does not name a payment provider', () => {
+  it('renders §4 Payment as an unresolved placeholder, not any named provider', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).not.toContain('Stitch');
-    expect(el.textContent).not.toContain('DPO');
-    expect(el.textContent).not.toContain('FNB');
-    expect(el.textContent).not.toContain('PCI');
+    const paymentParagraph = paragraphAfterHeading(el, '4. Payment');
+    expect(paymentParagraph).toBe(
+      'Payment is processed by [PAYMENT PROVIDER], a licensed third-party payment provider. We do not store your card details.',
+    );
+
+    const headings = Array.from(el.querySelectorAll('h2'));
+    const paymentHeading = headings.find((h) => h.textContent?.trim() === '4. Payment');
+    const paymentPlaceholder = paymentHeading?.nextElementSibling?.querySelector(
+      '.legal-placeholder',
+    );
+    expect(paymentPlaceholder?.textContent?.trim()).toBe('[PAYMENT PROVIDER]');
   });
 
   it('links to Shipping, Returns, Cookie, and Privacy policies', () => {
