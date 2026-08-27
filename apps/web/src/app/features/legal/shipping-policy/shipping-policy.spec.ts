@@ -60,17 +60,21 @@ describe('ShippingPolicy', () => {
     expect(meta.getTag('name="description"')?.content).toContain('H&B');
   });
 
-  it('renders the unresolved facts as visible placeholder tokens, not invented numbers', () => {
+  it('states the confirmed delivery timeframe rather than a placeholder', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('[DELIVERY TIMEFRAME]');
-    expect(el.textContent).toContain('[SHIPPING FEE AMOUNT]');
-    expect(el.querySelectorAll('.legal-placeholder').length).toBeGreaterThan(0);
+    expect(el.textContent).toContain('14');
+    expect(el.textContent).toContain('28');
+    expect(el.textContent).not.toContain('[DELIVERY TIMEFRAME]');
   });
 
-  it('never invents a delivery-time estimate or claims free shipping', () => {
+  it('renders the still-unresolved shipping fee amount as a visible placeholder token', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).not.toMatch(/\d+\s*[-–—]\s*\d+\s*business day/i);
-    expect(el.textContent).not.toMatch(/\d+\s*business days?/i);
+    expect(el.textContent).toContain('[SHIPPING FEE AMOUNT]');
+    expect(el.querySelectorAll('.legal-placeholder').length).toBe(1);
+  });
+
+  it('never claims free shipping', () => {
+    const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent?.toLowerCase()).not.toContain('free shipping');
   });
 

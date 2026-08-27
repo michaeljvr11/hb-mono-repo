@@ -97,10 +97,12 @@ describe('VendorAgreement', () => {
     expect(text).toContain('does not currently charge vendors a cancellation fee');
   });
 
-  it('renders the unsettled termination terms as a visible placeholder token', () => {
+  it('states the confirmed termination notice period rather than a placeholder', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('[TERMINATION TERMS]');
-    expect(el.querySelectorAll('.legal-placeholder').length).toBe(1);
+    expect(el.textContent).toContain("one month's notice");
+    expect(el.textContent).toContain('paid out on the normal settlement schedule');
+    expect(el.textContent).not.toContain('[TERMINATION TERMS]');
+    expect(el.querySelectorAll('.legal-placeholder').length).toBe(0);
   });
 
   it('links to the Terms of Service and Privacy Policy', () => {

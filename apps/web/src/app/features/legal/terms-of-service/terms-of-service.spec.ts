@@ -87,26 +87,23 @@ describe('TermsOfService', () => {
     expect(el.textContent).toContain('cooling-off');
   });
 
-  it('renders the unresolved facts as visible placeholder tokens', () => {
+  it('states the confirmed entity facts and governing law rather than placeholders', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('[GOVERNING LAW JURISDICTION]');
-    expect(el.textContent).toContain('[LEGAL ENTITY NAME]');
-    expect(el.querySelectorAll('.legal-placeholder').length).toBeGreaterThan(0);
+    expect(el.textContent).toContain('Hammond and Brewer Trading Enterprises CC');
+    expect(el.textContent).toContain('CC/2022/10761');
+    expect(el.textContent).toContain('ERF 109, Block D, Rehoboth, Namibia');
+    expect(el.textContent).toContain('the Republic of Namibia');
+    expect(el.querySelectorAll('.legal-placeholder').length).toBe(0);
+    expect(el.textContent).not.toContain('[LEGAL ENTITY NAME]');
+    expect(el.textContent).not.toContain('[GOVERNING LAW JURISDICTION]');
   });
 
-  it('renders §4 Payment as an unresolved placeholder, not any named provider', () => {
+  it('names both payment providers in §4, keyed by currency', () => {
     const el: HTMLElement = fixture.nativeElement;
     const paymentParagraph = paragraphAfterHeading(el, '4. Payment');
-    expect(paymentParagraph).toBe(
-      'Payment is processed by [PAYMENT PROVIDER], a licensed third-party payment provider. We do not store your card details.',
-    );
-
-    const headings = Array.from(el.querySelectorAll('h2'));
-    const paymentHeading = headings.find((h) => h.textContent?.trim() === '4. Payment');
-    const paymentPlaceholder = paymentHeading?.nextElementSibling?.querySelector(
-      '.legal-placeholder',
-    );
-    expect(paymentPlaceholder?.textContent?.trim()).toBe('[PAYMENT PROVIDER]');
+    expect(paymentParagraph).toContain('DPO Group');
+    expect(paymentParagraph).toContain('Stitch');
+    expect(paymentParagraph).not.toContain('[PAYMENT PROVIDER]');
   });
 
   it('links to Shipping, Returns, Cookie, and Privacy policies', () => {

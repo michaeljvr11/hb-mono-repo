@@ -84,21 +84,34 @@ describe('ExportCustoms', () => {
     expect(text).toContain('any import duty or VAT');
   });
 
-  it('renders the unresolved facts as visible placeholder tokens, not invented answers', () => {
+  it('names H&B as importer of record and states the exporter of record is still unconfirmed', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('[EXPORTER OF RECORD]');
-    expect(el.textContent).toContain('[IMPORTER OF RECORD]');
-    expect(el.textContent).toContain('[PROHIBITED GOODS LIST]');
-    expect(el.textContent).toContain('[COURIER]');
-    expect(el.querySelectorAll('.legal-placeholder').length).toBe(4);
+    expect(el.textContent).toContain('Hammond and Brewer Trading Enterprises CC is the importer of record');
+    expect(el.textContent).toContain('exporter of record');
+    expect(el.textContent).toContain('have not yet been confirmed');
+    expect(el.textContent).not.toContain('[EXPORTER OF RECORD]');
+    expect(el.textContent).not.toContain('[IMPORTER OF RECORD]');
   });
 
-  // Card LC-6 AC 3 — no invented courier name, and no invented prohibited-goods list.
-  it('names no courier and lists no prohibited goods', () => {
-    const text = (fixture.nativeElement.textContent as string).toLowerCase();
-    for (const courier of ['dhl', 'fedex', 'ups', 'aramex', 'postnet', 'the courier guy']) {
-      expect(text).not.toContain(courier);
-    }
+  it('publishes a baseline prohibited-goods list rather than an empty placeholder', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Firearms, ammunition, and weapons');
+    expect(el.textContent).toContain('Illegal drugs and narcotics');
+    expect(el.textContent).not.toContain('[PROHIBITED GOODS LIST]');
+    // The baseline is explicitly framed as unreviewed — this is not a legal sign-off.
+    expect(el.textContent).toContain('starting baseline');
+  });
+
+  it('names the confirmed courier for the ZA→NA leg', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('FP du Toit');
+    expect(el.textContent).toContain('JETX');
+    expect(el.textContent).not.toContain('[COURIER]');
+  });
+
+  it('has no remaining unresolved placeholder tokens', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelectorAll('.legal-placeholder').length).toBe(0);
   });
 
   // The vault template claimed the customsReference rule is "already enforced"

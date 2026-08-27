@@ -3,7 +3,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { Footer } from '../../../layout/footer/footer';
 import { NavBar } from '../../../layout/nav-bar/nav-bar';
-import { CONTACT_DETAILS } from '../../../shared/constants/site.constants';
+import { CONTACT_DETAILS, ENTITY_DETAILS } from '../../../shared/constants/site.constants';
 
 /** LC-6 — see privacy-policy.ts for the Title/Meta + NavBar/Footer pattern this copies. */
 const PAGE_TITLE = 'Export & Customs Terms — H&B E-Commerce';
@@ -25,6 +25,9 @@ export class ExportCustoms {
   /** Same constant `/contact` and the Returns policy bind to, so support
    *  details can never drift between pages. */
   readonly contact = CONTACT_DETAILS;
+
+  /** Registered entity facts — see ENTITY_DETAILS for provenance. */
+  readonly entity = ENTITY_DETAILS;
 
   constructor() {
     this.titleService.setTitle(PAGE_TITLE);

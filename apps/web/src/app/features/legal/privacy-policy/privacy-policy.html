@@ -13,11 +13,10 @@
 
     <h2>Who we are</h2>
     <p>
-      <span class="legal-placeholder">[LEGAL ENTITY NAME]</span>, registration number
-      <span class="legal-placeholder">[REGISTRATION NUMBER]</span>, registered address
-      <span class="legal-placeholder">[REGISTERED ADDRESS]</span>. Our appointed Information
-      Officer is <span class="legal-placeholder">[INFORMATION OFFICER NAME]</span>, contactable
-      at <span class="legal-placeholder">[INFORMATION OFFICER EMAIL]</span>.
+      {{ entity.legalName }}, registration number {{ entity.registrationNumber }}, registered
+      address {{ entity.registeredAddress }}. Our appointed Information Officer is
+      <span class="legal-placeholder">[INFORMATION OFFICER NAME]</span>, contactable at
+      <span class="legal-placeholder">[INFORMATION OFFICER EMAIL]</span>.
     </p>
 
     <h2>What we collect</h2>
@@ -52,9 +51,11 @@
         email, phone number (optional), and message you submit.
       </li>
       <li>
-        We do <strong>not</strong> collect or store payment card numbers. Payments are handled
-        by <span class="legal-placeholder">[PAYMENT PROVIDER]</span> and any card data goes
-        directly to them, not through H&amp;B's servers.
+        We do <strong>not</strong> collect or store payment card numbers. Once payment
+        processing is live, orders in Namibian Dollar (NAD) will be handled by
+        <strong>DPO Group</strong> and orders in South African Rand (ZAR) by
+        <strong>Stitch</strong>; any card data goes directly to whichever of the two
+        processed your order, not through H&amp;B's servers.
       </li>
     </ul>
 
@@ -90,8 +91,9 @@
         SA↔Namibia corridor.
       </li>
       <li>
-        <span class="legal-placeholder">[PAYMENT PROVIDER]</span>, to process payment — they
-        act as an independent responsible party for the payment data they hold.
+        <strong>DPO Group</strong> (for NAD orders) or <strong>Stitch</strong> (for ZAR orders),
+        once payment processing is live, to process payment — each acts as an independent
+        responsible party for the payment data it holds.
       </li>
       <li><strong>Google Analytics</strong>, only if you've consented to analytics cookies.</li>
       <li>We do not sell your personal information to anyone.</li>
@@ -107,10 +109,11 @@
 
     <h2>How long we keep it</h2>
     <p>
-      <span class="legal-placeholder">[RETENTION SCHEDULE]</span>. Suggested default pending a
-      real records-retention decision: account data for the life of the account plus a limited
-      period after closure for legal/tax purposes; order records for the period required by
-      tax law in the relevant jurisdiction.
+      We keep your account information for as long as your account is active, and for
+      <strong>24 months</strong> after it's closed in case you reopen it or a legal claim
+      arises. We keep order and transaction records for <strong>5 years</strong>, which is
+      what South African and Namibian tax law requires for business records. After these
+      periods, we delete or anonymise the information rather than keep it indefinitely.
     </p>
 
     <h2>Your rights</h2>

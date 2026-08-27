@@ -86,10 +86,11 @@ describe('ReturnsPolicy', () => {
     expect(el.querySelector(`a[href="${CONTACT_DETAILS.emailHref}"]`)).toBeTruthy();
   });
 
-  it('renders the unresolved exclusions list as a visible placeholder token', () => {
+  it('states perishables as the confirmed exclusion, not a placeholder', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('[EXCLUSIONS LIST]');
-    expect(el.querySelectorAll('.legal-placeholder').length).toBeGreaterThan(0);
+    expect(el.textContent).toContain('Perishable goods');
+    expect(el.textContent).not.toContain('[EXCLUSIONS LIST]');
+    expect(el.querySelectorAll('.legal-placeholder').length).toBe(0);
   });
 
   it('links to the Shipping policy and Terms of Service', () => {

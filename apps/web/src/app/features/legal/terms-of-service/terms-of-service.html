@@ -15,9 +15,8 @@
 
     <h2>1. Who we are (mandatory pre-sale disclosure)</h2>
     <p>
-      <span class="legal-placeholder">[LEGAL ENTITY NAME]</span>, registration number
-      <span class="legal-placeholder">[REGISTRATION NUMBER]</span>, registered address
-      <span class="legal-placeholder">[REGISTERED ADDRESS]</span>. Contact:
+      {{ entity.legalName }}, registration number {{ entity.registrationNumber }}, registered
+      address {{ entity.registeredAddress }}. Contact:
       <a href="{{ contact.emailHref }}">{{ contact.email }}</a>,
       <a href="{{ contact.phoneHref }}">{{ contact.phoneDisplay }}</a>, WhatsApp
       wa.me/{{ whatsappNumber }}. Support responds within 1 business day; English and
@@ -72,8 +71,9 @@
 
     <h2>4. Payment</h2>
     <p>
-      Payment is processed by <span class="legal-placeholder">[PAYMENT PROVIDER]</span>, a
-      licensed third-party payment provider. We do not store your card details.
+      Once payment processing is live, orders in Namibian Dollar (NAD) will be processed by
+      <strong>DPO Group</strong> and orders in South African Rand (ZAR) by <strong>Stitch</strong>
+      — both licensed third-party payment providers. We do not store your card details.
     </p>
 
     <h2>5. Delivery</h2>
@@ -104,10 +104,8 @@
 
     <h2>8. Governing law</h2>
     <p>
-      These terms are governed by the law of
-      <span class="legal-placeholder">[GOVERNING LAW JURISDICTION]</span>. This section cannot
-      be filled in until H&amp;B's legal entity and its registered jurisdiction are confirmed
-      — see the disclosure in section 1.
+      These terms are governed by the law of {{ entity.governingLawJurisdiction }}, where
+      H&amp;B is registered — see the disclosure in section 1.
     </p>
 
     <h2>9. Changes to these terms</h2>
