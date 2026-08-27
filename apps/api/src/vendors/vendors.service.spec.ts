@@ -51,6 +51,16 @@ const mockVendor = (overrides: Partial<Vendor> = {}): Vendor =>
     ...overrides,
   }) as Vendor;
 
+/** Shape of an AuditService.log() call, captured so assertions stay typed
+ *  instead of reaching into `mock.calls` (which is `any`). */
+type LoggedAuditEntry = {
+  userId?: string | null;
+  action: string;
+  entityType: string;
+  entityId: string;
+  metadata?: Record<string, unknown> | null;
+};
+
 const mockUser = (overrides: Partial<User> = {}): User =>
   ({
     id: 'u1',
@@ -388,6 +398,7 @@ describe('VendorsService', () => {
       const dto: CreateVendorDto = {
         businessName: 'Dune Crafts',
         countryCode: CountryCode.NAMIBIA,
+        acceptedTerms: true,
       };
 
       vendorRepo.findOne.mockResolvedValue(null);
@@ -410,6 +421,7 @@ describe('VendorsService', () => {
       const dto: CreateVendorDto = {
         businessName: 'Dune Crafts',
         countryCode: CountryCode.NAMIBIA,
+        acceptedTerms: true,
       };
 
       vendorRepo.findOne.mockResolvedValue(null);
@@ -429,6 +441,7 @@ describe('VendorsService', () => {
       const dto: CreateVendorDto = {
         businessName: 'Dune Crafts',
         countryCode: CountryCode.NAMIBIA,
+        acceptedTerms: true,
       };
 
       vendorRepo.findOne.mockResolvedValue(mockVendor({ userId: 'u1' }));
@@ -436,6 +449,68 @@ describe('VendorsService', () => {
       await expect(service.create(dto, user)).rejects.toBeInstanceOf(ConflictException);
       expect(vendorRepo.save).not.toHaveBeenCalled();
       expect(usersService.update).not.toHaveBeenCalled();
+    });
+
+    // LC-7: the Vendor Agreement acceptance has to leave a record tied to the
+    // applying user, not merely gate the form client-side.
+    it('records a vendor.terms_accepted audit entry against the applicant', async () => {
+      const user = mockUser({ id: 'u1', role: UserRole.CUSTOMER });
+      const dto: CreateVendorDto = {
+        businessName: 'Dune Crafts',
+        countryCode: CountryCode.NAMIBIA,
+        acceptedTerms: true,
+      };
+
+      const loggedEntries: LoggedAuditEntry[] = [];
+      auditService.log.mockImplementation((e: LoggedAuditEntry) => {
+        loggedEntries.push(e);
+        return Promise.resolve();
+      });
+
+      vendorRepo.findOne.mockResolvedValue(null);
+      vendorRepo.create.mockImplementation((data: Partial<Vendor>) => ({ ...data }));
+      vendorRepo.save.mockImplementation((v: Partial<Vendor>) =>
+        Promise.resolve({ id: 'v2', tradingName: null, ...v } as Vendor),
+      );
+      usersService.update.mockResolvedValue({});
+
+      await service.create(dto, user);
+
+      expect(loggedEntries).toHaveLength(1);
+      const entry = loggedEntries[0];
+      expect(entry.userId).toBe('u1');
+      expect(entry.action).toBe('vendor.terms_accepted');
+      expect(entry.entityType).toBe('vendor');
+      expect(entry.entityId).toBe('v2');
+      expect(entry.metadata?.documents).toEqual(['vendor_agreement']);
+      expect(typeof entry.metadata?.acceptedAt).toBe('string');
+    });
+
+    // acceptedTerms is a consent flag, not vendor data — the Vendor entity has
+    // no such column and it must never be spread onto the row.
+    it('never persists acceptedTerms onto the vendor row', async () => {
+      const user = mockUser();
+      const dto: CreateVendorDto = {
+        businessName: 'Dune Crafts',
+        countryCode: CountryCode.NAMIBIA,
+        acceptedTerms: true,
+      };
+
+      const createdRows: Partial<Vendor>[] = [];
+      vendorRepo.findOne.mockResolvedValue(null);
+      vendorRepo.create.mockImplementation((data: Partial<Vendor>) => {
+        createdRows.push(data);
+        return { ...data };
+      });
+      vendorRepo.save.mockImplementation((v: Partial<Vendor>) =>
+        Promise.resolve({ id: 'v2', tradingName: null, ...v } as Vendor),
+      );
+      usersService.update.mockResolvedValue({});
+
+      await service.create(dto, user);
+
+      expect(createdRows).toHaveLength(1);
+      expect(createdRows[0]).not.toHaveProperty('acceptedTerms');
     });
   });
 

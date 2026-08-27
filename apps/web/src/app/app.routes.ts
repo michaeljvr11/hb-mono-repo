@@ -28,6 +28,14 @@ export const routes: Routes = [
     path: 'auth/callback',
     loadComponent: () => import('./auth/callback/auth-callback').then(m => m.AuthCallback)
   },
+  // LC-9 consent interstitial. Guarded (you must be signed in to accept), and
+  // authGuard exempts this path from its own terms gate so it can't bounce to
+  // itself forever.
+  {
+    path: 'accept-terms',
+    canActivate: [authGuard],
+    loadComponent: () => import('./auth/accept-terms/accept-terms').then(m => m.AcceptTerms)
+  },
   {
     path: '',
     redirectTo: 'shop',
@@ -165,6 +173,14 @@ export const routes: Routes = [
   {
     path: 'legal/returns',
     loadComponent: () => import('./features/legal/returns-policy/returns-policy').then(m => m.ReturnsPolicy)
+  },
+  {
+    path: 'legal/customs',
+    loadComponent: () => import('./features/legal/export-customs/export-customs').then(m => m.ExportCustoms)
+  },
+  {
+    path: 'legal/vendor-agreement',
+    loadComponent: () => import('./features/legal/vendor-agreement/vendor-agreement').then(m => m.VendorAgreement)
   },
 
   // Catch-all route

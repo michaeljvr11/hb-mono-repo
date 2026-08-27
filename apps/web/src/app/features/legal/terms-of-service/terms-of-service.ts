@@ -3,7 +3,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { Footer } from '../../../layout/footer/footer';
 import { NavBar } from '../../../layout/nav-bar/nav-bar';
-import { CONTACT_DETAILS } from '../../../shared/constants/site.constants';
+import { CONTACT_DETAILS, ENTITY_DETAILS } from '../../../shared/constants/site.constants';
 
 /** LC-4 — see privacy-policy.ts for the Title/Meta + NavBar/Footer pattern this copies. */
 const PAGE_TITLE = 'Terms of Service — H&B E-Commerce';
@@ -29,6 +29,9 @@ export class TermsOfService {
   /** Derived, not duplicated: the wa.me path is the phone number without
    *  the `tel:` scheme or leading `+`. */
   readonly whatsappNumber = CONTACT_DETAILS.phoneHref.replace(/^tel:\+?/, '');
+
+  /** Registered entity facts — see ENTITY_DETAILS for provenance. */
+  readonly entity = ENTITY_DETAILS;
 
   constructor() {
     this.titleService.setTitle(PAGE_TITLE);

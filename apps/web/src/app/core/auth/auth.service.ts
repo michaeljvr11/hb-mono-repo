@@ -100,6 +100,18 @@ export class AuthService {
     );
   }
 
+  /**
+   * Record acceptance of the Terms of Service and Privacy Policy for the
+   * already-signed-in account (LC-9's OAuth interstitial), then fold the
+   * returned user back into `currentUser$` so the terms gate in `authGuard`
+   * stops firing without needing a page reload.
+   */
+  acceptTerms(): Observable<{ user: AuthUser }> {
+    return this.http
+      .post<{ user: AuthUser }>(`${this.API_URL}/auth/accept-terms`, {}, { withCredentials: true })
+      .pipe(tap((response) => this.currentUserSubject.next(response.user)));
+  }
+
   refreshCurrentUser(): Observable<UserDto> {
     return this.http.get<UserDto>(`${this.API_URL}/users/me`).pipe(
       tap((user) => this.currentUserSubject.next(user)),

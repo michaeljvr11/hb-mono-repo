@@ -13,6 +13,9 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'cart', renderMode: RenderMode.Client },
   { path: 'checkout', renderMode: RenderMode.Client },
   { path: 'wishlist', renderMode: RenderMode.Client },
+  // Same constraint as the pages above: its guard reads auth state that only
+  // exists in the browser, so SSR would always bounce it to /login.
+  { path: 'accept-terms', renderMode: RenderMode.Client },
   // Admin & vendor portals stay client-rendered: their route guards depend on
   // localStorage (absent on the server), so SSR would always redirect to /login.
   { path: 'admin', renderMode: RenderMode.Client },
@@ -28,6 +31,8 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'legal/terms', renderMode: RenderMode.Prerender },
   { path: 'legal/shipping', renderMode: RenderMode.Prerender },
   { path: 'legal/returns', renderMode: RenderMode.Prerender },
+  { path: 'legal/customs', renderMode: RenderMode.Prerender },
+  { path: 'legal/vendor-agreement', renderMode: RenderMode.Prerender },
   // Remaining public routes can be server-rendered.
   { path: '**', renderMode: RenderMode.Server },
 ];

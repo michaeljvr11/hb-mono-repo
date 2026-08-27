@@ -7,4 +7,6 @@ export class UserResponseDto implements UserDto {
   lastName?: string;
   name?: string;
   role: UserRole;
+  isVerified?: boolean;
+  termsAcceptedAt?: string | null;
 }

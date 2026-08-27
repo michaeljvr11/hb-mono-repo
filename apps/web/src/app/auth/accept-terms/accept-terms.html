@@ -1,0 +1,48 @@
+<div class="auth-screen">
+  <header class="auth-topbar">
+    <span class="brand" aria-label="H&B E-Commerce">
+      <span class="brand-name">H&amp;B</span>
+      <span class="brand-tag">E-Commerce</span>
+    </span>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-card">
+      <div class="card-head">
+        <h1>One thing before you start</h1>
+        <p>
+          You signed in with Google, so you haven't had the chance to agree to our terms yet.
+          We need that on record before you can use your account.
+        </p>
+      </div>
+
+      <p class="consent-body">
+        By continuing you agree to the
+        <a routerLink="/legal/terms">Terms of Service</a> and the
+        <a routerLink="/legal/privacy">Privacy Policy</a>. We record the date and time you
+        accept, tied to your account.
+      </p>
+
+      @if (errorMessage()) {
+        <p class="status-error" role="alert">{{ errorMessage() }}</p>
+      }
+
+      <button
+        class="primary-action"
+        type="button"
+        [disabled]="isSubmitting()"
+        (click)="accept()"
+      >
+        {{ isSubmitting() ? 'Recording your acceptance…' : 'Agree and continue' }}
+      </button>
+
+      <button class="link-button" type="button" (click)="declineAndSignOut()">
+        Not now — sign me out
+      </button>
+    </div>
+  </main>
+
+  <footer class="auth-footer">
+    <p>&copy; {{ currentYear }} H&amp;B E-Commerce.</p>
+  </footer>
+</div>

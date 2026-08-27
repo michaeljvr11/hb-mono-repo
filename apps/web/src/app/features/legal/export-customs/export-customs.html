@@ -1,0 +1,126 @@
+<app-nav-bar />
+
+<main class="legal-page" aria-label="Export and Customs Terms">
+  <div class="legal-page__inner">
+    <h1>Export &amp; Customs Terms</h1>
+    <p class="legal-page__updated">Last updated: {{ lastUpdated }}</p>
+
+    <h2>The short version</h2>
+    <p>
+      Whether your order attracts Namibian import duty depends on <strong>where the goods
+      came from</strong>, not on which of our services you used to buy them.
+    </p>
+    <ul>
+      <li>
+        <strong>Goods of South African origin</strong> — including everything sold by our
+        Marketplace vendors trading from South Africa, and Procurement Service items we buy
+        for you from a South African retailer — generally cross into Namibia
+        <strong>without import duty</strong>. South Africa and Namibia are both members of
+        the Southern African Customs Union (SACU), which is a single customs area.
+      </li>
+      <li>
+        <strong>Goods sourced from outside South Africa</strong> — for example a Procurement
+        Service order we buy for you from Amazon, Shein, or Temu — are a genuine
+        international import into Namibia. They <strong>may attract Namibian import duty and
+        VAT</strong>, and SACU does not cover them.
+      </li>
+    </ul>
+    <p>
+      We will not tell you that your order crosses the border duty-free as a blanket
+      statement, because for non-South-African-sourced goods that would not be true.
+    </p>
+
+    <h2>What this means for the price you pay</h2>
+    <p>
+      Your order total today is made up of the item prices plus a single shipping fee (see
+      our <a routerLink="/legal/shipping">Shipping Policy</a>). <strong>It does not include
+      any import duty or VAT</strong> — we do not currently calculate, quote, or collect
+      duties at checkout, and no duty line appears on your order.
+    </p>
+    <p>
+      So where duty or VAT is genuinely payable on a Procurement Service item sourced from
+      outside South Africa, that cost is handled separately from the checkout total and
+      passed on to you at what it actually cost us — we do not add a margin to it. If you
+      are ordering something we will source from outside South Africa and you want to know
+      the likely duty before you commit, contact us at
+      <a [href]="contact.emailHref">{{ contact.email }}</a> or
+      <a [href]="contact.phoneHref">{{ contact.phoneDisplay }}</a> and we will find out
+      before you order rather than surprise you afterwards.
+    </p>
+
+    <h2>Who is the exporter and importer of record</h2>
+    <p>
+      <strong>{{ entity.legalName }} is the importer of record</strong> for goods entering
+      Namibia, and holds a registered import number for that purpose. The
+      <strong>exporter of record</strong> for goods leaving South Africa, and H&amp;B's export
+      number, have not yet been confirmed — we are not going to guess in a document you are
+      entitled to rely on. This has real consequences for who is liable for customs
+      declarations and duties on the South African side, and we will state it here plainly
+      once it has been settled.
+    </p>
+
+    <h2>Customs paperwork</h2>
+    <p>
+      What customs documentation is required for a cross-border order, and who produces it,
+      is also still being worked out. We are not currently asking you to supply any customs
+      paperwork yourself. If that changes for a particular order, we will contact you
+      directly about it before your order ships.
+    </p>
+
+    <h2>Restricted and prohibited goods</h2>
+    <p>
+      We will not source or ship the following categories of goods across the border:
+    </p>
+    <ul>
+      <li>Firearms, ammunition, and weapons of any kind</li>
+      <li>Illegal drugs and narcotics</li>
+      <li>Hazardous, flammable, corrosive, or radioactive materials</li>
+      <li>Counterfeit or pirated goods</li>
+      <li>Endangered species and products made from them (CITES-restricted wildlife)</li>
+      <li>Live animals and plants</li>
+      <li>Undeclared currency, bearer negotiable instruments, and precious metals or stones above the legal declaration threshold</li>
+      <li>Pornographic or obscene material</li>
+      <li>Tobacco and vaping products without the required excise or import permit</li>
+      <li>Prescription medicines and pharmaceuticals without a valid prescription or import permit</li>
+    </ul>
+    <p>
+      This list is a starting baseline and has not yet been checked line-by-line against
+      Namibian import law by a customs compliance professional — we will update it once that
+      review happens. Namibian import law restricts or prohibits certain categories of goods
+      regardless of what our Platform allows you to add to a cart, and it is your
+      responsibility not to order something you may not lawfully import. Where we become aware
+      that an item cannot lawfully cross the border, we will cancel that line and refund it
+      under our <a routerLink="/legal/returns">Returns &amp; Refunds Policy</a> rather than
+      ship it.
+    </p>
+
+    <h2>Tracking your order through customs</h2>
+    <p>
+      Our systems record a customs reference against a cross-border shipment, and record
+      whether a shipment is at the border or has cleared it. <strong>None of this is visible
+      to you in your account today</strong> — there is no customs-status or shipment-tracking
+      screen in the Platform yet, so for now the way to find out where a cross-border order
+      has got to is to ask our support team. We will link a real tracking view here once one
+      exists rather than describe one that does not.
+    </p>
+
+    <h2>Which courier carries your order</h2>
+    <p>
+      The South Africa to Namibia leg is carried by <strong>FP du Toit / JETX</strong> (the
+      same company). Where a different courier handles part of the journey — for example the
+      final domestic leg within South Africa or Namibia — we may use another provider for that
+      portion.
+    </p>
+
+    <h2>How this fits with the rest of our terms</h2>
+    <p>
+      These Export &amp; Customs Terms sit alongside our
+      <a routerLink="/legal/terms">Terms of Service</a>, which set out the difference between
+      a Marketplace purchase and a Procurement Service purchase and who is the seller of
+      record in each case. Nothing on this page limits your right to cancel an order within
+      seven days under our <a routerLink="/legal/returns">Returns &amp; Refunds Policy</a>.
+    </p>
+  </div>
+</main>
+
+<app-footer />

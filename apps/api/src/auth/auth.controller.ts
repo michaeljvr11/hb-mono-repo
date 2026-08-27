@@ -133,6 +133,15 @@ export class AuthController {
     return this.authService.resendVerification(user.id);
   }
 
+  // LC-9: the consent interstitial a first-time Google sign-in lands on.
+  // Authenticated (no @Public) — the caller is already signed in; what is
+  // missing is their acceptance record, not their identity.
+  @Post('accept-terms')
+  @HttpCode(200)
+  async acceptTerms(@GetUser() user: User) {
+    return this.authService.acceptTerms(user.id);
+  }
+
   @Post('logout')
   async logout(@GetUser() user: User, @Res({ passthrough: true }) res: Response) {
     await this.usersService.updateRefreshToken(user.id, null);

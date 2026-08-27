@@ -69,6 +69,23 @@ export class User {
   @Column({ type: 'timestamptz', nullable: true })
   emailVerificationExpires?: Date;
 
+  /**
+   * When this account accepted the Terms of Service and Privacy Policy (LC-10).
+   *
+   * Written in the SAME insert as the account row, so an account cannot exist
+   * without its acceptance timestamp: if the write fails, registration fails.
+   * The `user.terms_accepted` audit entry still records *which* documents were
+   * accepted, but it is no longer the only evidence — `AuditService.log` is
+   * best-effort by design and swallows its own errors, which is right for
+   * telemetry and too weak for a consent record.
+   *
+   * Nullable, and null means exactly one thing: this account predates the
+   * consent capture, or was created on a path that does not capture it. It is
+   * never "accepted but unknown when".
+   */
+  @Column({ type: 'timestamptz', nullable: true })
+  termsAcceptedAt?: Date | null;
+
   @BeforeInsert()
   async hashPassword() {
     this.password = await bcrypt.hash(this.password, 12);

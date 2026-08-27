@@ -44,10 +44,18 @@ export class VendorOnboarding implements OnInit {
     tradingName: [''],
     registrationNumber: [''],
     countryCode: ['' as CountryCode | ''],
+    // requiredTrue, not required: plain `required` is satisfied by `false` on a
+    // checkbox, which would let an unticked box through. Same reasoning as the
+    // signup consent checkbox (LC-3).
+    acceptedTerms: [false, [Validators.requiredTrue]],
   });
 
   get businessNameControl() {
     return this.applyForm.controls.businessName;
+  }
+
+  get acceptedTermsControl() {
+    return this.applyForm.controls.acceptedTerms;
   }
 
   ngOnInit(): void {
@@ -73,6 +81,7 @@ export class VendorOnboarding implements OnInit {
     const raw = this.applyForm.getRawValue();
     const payload: CreateVendorRequest = {
       businessName: raw.businessName,
+      acceptedTerms: raw.acceptedTerms,
       ...(raw.tradingName ? { tradingName: raw.tradingName } : {}),
       ...(raw.registrationNumber ? { registrationNumber: raw.registrationNumber } : {}),
       ...(raw.countryCode ? { countryCode: raw.countryCode as CountryCode } : {}),

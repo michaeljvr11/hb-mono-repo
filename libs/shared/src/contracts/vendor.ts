@@ -55,9 +55,22 @@ export interface CreateVendorRequest {
   website?: string;
   description?: string;
   countryCode?: CountryCode;
+  /**
+   * The applicant's acceptance of the Vendor Agreement (`/legal/vendor-agreement`).
+   * Required and must be `true` — the API rejects an application without it, the
+   * same shape as `RegisterRequest.acceptedTerms` (LC-3). It is never persisted on
+   * the vendor row; the acceptance is recorded as a `vendor.terms_accepted` audit
+   * entry against the applying user.
+   */
+  acceptedTerms: boolean;
 }
 
-export interface AdminCreateVendorRequest extends CreateVendorRequest {
+/**
+ * Admin-created vendors deliberately drop `acceptedTerms`: an admin creating a
+ * vendor record on someone's behalf is not that vendor accepting the agreement,
+ * and recording it as if they had would be a false consent record.
+ */
+export interface AdminCreateVendorRequest extends Omit<CreateVendorRequest, 'acceptedTerms'> {
   userId?: string;
   status?: VendorStatus;
 }

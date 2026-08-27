@@ -10,6 +10,10 @@ export interface UserDto {
   role: UserRole;
   /** Whether the user has confirmed their email address. */
   isVerified?: boolean;
+  /** ISO timestamp of terms acceptance, or `null` when there is no record.
+   *  Mirrors `AuthUser.termsAcceptedAt` — the web app reads whichever of the
+   *  two shapes is currently in `currentUser$`. */
+  termsAcceptedAt?: string | null;
 }
 
 export interface AdminUserDto extends UserDto {

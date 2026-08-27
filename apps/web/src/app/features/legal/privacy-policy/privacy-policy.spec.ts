@@ -60,11 +60,35 @@ describe('PrivacyPolicy', () => {
     expect(meta.getTag('name="description"')?.content).toContain('H&B');
   });
 
-  it('renders the unresolved LC-1 facts as visible placeholder tokens', () => {
+  it('states the confirmed entity facts rather than a placeholder', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('[LEGAL ENTITY NAME]');
+    expect(el.textContent).toContain('Hammond and Brewer Trading Enterprises CC');
+    expect(el.textContent).toContain('CC/2022/10761');
+    expect(el.textContent).toContain('ERF 109, Block D, Rehoboth, Namibia');
+    expect(el.textContent).not.toContain('[LEGAL ENTITY NAME]');
+  });
+
+  it('renders the still-unresolved Information Officer facts as visible placeholder tokens', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('[INFORMATION OFFICER NAME]');
     expect(el.textContent).toContain('[INFORMATION OFFICER EMAIL]');
-    expect(el.querySelectorAll('.legal-placeholder').length).toBeGreaterThan(0);
+    // [INFORMATION OFFICER EMAIL] appears three times (contact, rights requests,
+    // complaints) plus [INFORMATION OFFICER NAME] once.
+    expect(el.querySelectorAll('.legal-placeholder').length).toBe(4);
+  });
+
+  it('names both payment providers rather than a single unresolved placeholder', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('DPO Group');
+    expect(el.textContent).toContain('Stitch');
+    expect(el.textContent).not.toContain('[PAYMENT PROVIDER]');
+  });
+
+  it('states a concrete data-retention schedule', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('24 months');
+    expect(el.textContent).toContain('5 years');
+    expect(el.textContent).not.toContain('[RETENTION SCHEDULE]');
   });
 
   it('links to the Cookie Policy', () => {
