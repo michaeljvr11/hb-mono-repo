@@ -1,46 +1,46 @@
 {
-  "generatedAt": "2026-08-26T17:28:09.137Z",
+  "generatedAt": "2026-08-27T17:16:48.026Z",
   "git": {
-    "totalCommits": 268,
-    "aiCommits": 257,
+    "totalCommits": 274,
+    "aiCommits": 263,
     "aiPct": 96,
-    "appCommits": 193,
-    "ins": 108532,
-    "del": 11358,
-    "net": 97174,
-    "aiIns": 95018,
-    "aiDel": 11184,
-    "filesTouched": 831,
+    "appCommits": 198,
+    "ins": 110288,
+    "del": 11509,
+    "net": 98779,
+    "aiIns": 96774,
+    "aiDel": 11335,
+    "filesTouched": 842,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 116,
-        "ins": 53332,
-        "del": 3175
+        "commits": 120,
+        "ins": 54499,
+        "del": 3185
       },
       {
         "name": "API (NestJS)",
-        "commits": 102,
-        "ins": 33315,
-        "del": 1975
+        "commits": 105,
+        "ins": 33727,
+        "del": 1990
       },
       {
         "name": "Docs",
-        "commits": 76,
-        "ins": 16553,
-        "del": 6024
+        "commits": 77,
+        "ins": 16684,
+        "del": 6149
       },
       {
         "name": "AI Factory config",
-        "commits": 82,
-        "ins": 2480,
+        "commits": 83,
+        "ins": 2498,
         "del": 104
       },
       {
         "name": "Shared contracts",
-        "commits": 44,
-        "ins": 1737,
-        "del": 56
+        "commits": 46,
+        "ins": 1765,
+        "del": 57
       },
       {
         "name": "Root & config",
@@ -56,8 +56,38 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-26",
+    "lastDate": "2026-08-27",
     "recent": [
+      {
+        "hash": "00a1fff",
+        "subject": "feat: capture terms acceptance on the Google OAuth signup path",
+        "ai": true
+      },
+      {
+        "hash": "f0d8a36",
+        "subject": "fix(api): make the terms-acceptance record durable, not best-effort",
+        "ai": true
+      },
+      {
+        "hash": "a9d0a1c",
+        "subject": "fix(web): point the footer's legal links at the pages that now exist",
+        "ai": true
+      },
+      {
+        "hash": "7013e0a",
+        "subject": "feat: add the Vendor Agreement page and gate applications on accepting it",
+        "ai": true
+      },
+      {
+        "hash": "607d608",
+        "subject": "feat(web): add the Export & Customs Terms page",
+        "ai": true
+      },
+      {
+        "hash": "c6f56e4",
+        "subject": "chore(evidence): recompile AI-authorship report for the legal-pages batch",
+        "ai": true
+      },
       {
         "hash": "038a8a4",
         "subject": "fix(web): make the legal pages honest about what the code actually does",
@@ -86,36 +116,6 @@
       {
         "hash": "509eed6",
         "subject": "chore(evidence): recompile AI-authorship report for the route-honest checkout copy",
-        "ai": true
-      },
-      {
-        "hash": "69a93e8",
-        "subject": "fix(web): make the checkout shipping copy honest for every route",
-        "ai": true
-      },
-      {
-        "hash": "9b4a4e2",
-        "subject": "chore(evidence): recompile AI-authorship report for the shipping-fee batch",
-        "ai": true
-      },
-      {
-        "hash": "adb8732",
-        "subject": "fix: resolve the checkout preview over the cart, not the global default",
-        "ai": true
-      },
-      {
-        "hash": "1264f48",
-        "subject": "feat(web): render the real shipping fee and corrected total at checkout",
-        "ai": true
-      },
-      {
-        "hash": "c90d631",
-        "subject": "feat(web): add admin Vendor Products tab with shipping-fee overrides",
-        "ai": true
-      },
-      {
-        "hash": "cac9a3f",
-        "subject": "feat(web): add admin shipping-fee management screen",
         "ai": true
       }
     ]
@@ -347,6 +347,11 @@
       "slug": "public-vendor-profile"
     },
     {
+      "branch": "feat/wokJ3PfW-legal-pages-and-consent-durability",
+      "cardId": "wokJ3PfW",
+      "slug": "legal-pages-and-consent-durability"
+    },
+    {
       "branch": "feat/wygImWJb-order-paid-notifications",
       "cardId": "wygImWJb",
       "slug": "order-paid-notifications"
@@ -388,9 +393,9 @@
     }
   ],
   "tests": {
-    "total": 149,
+    "total": 152,
     "api": 72,
-    "web": 77
+    "web": 80
   },
   "design": {
     "files": 34,
@@ -419,10 +424,10 @@
     },
     "gatePass": 36,
     "gateFail": 2,
-    "edits": 853,
-    "editsUnfixable": 278,
+    "edits": 864,
+    "editsUnfixable": 281,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-26T17:26:50.049Z",
+    "lastTs": "2026-08-27T17:07:35.761Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
@@ -624,6 +629,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/QQKjOiEH-legal-policy-pages",
+      "number": 63,
+      "state": "MERGED",
+      "title": "LC-2/LC-3/LC-4/LC-5: legal policy pages + signup consent capture",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/63"
+    },
     {
       "headRefName": "feat/DwnyCLnX-configurable-shipping-fee",
       "number": 62,
@@ -1066,19 +1078,19 @@
     },
     {
       "name": "To Do",
-      "cards": 21
+      "cards": 17
     },
     {
       "name": "In Progress",
-      "cards": 4
+      "cards": 5
     },
     {
       "name": "In Review",
-      "cards": 6
+      "cards": 0
     },
     {
       "name": "Done",
-      "cards": 91
+      "cards": 102
     },
     {
       "name": "Fable Documentation",
