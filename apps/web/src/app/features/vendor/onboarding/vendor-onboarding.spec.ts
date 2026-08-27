@@ -119,6 +119,7 @@ describe('VendorOnboarding — customer mode (form)', () => {
     authStub.refreshCurrentUser.mockReturnValue(of({ id: 'u1', role: 'vendor' }));
 
     component.applyForm.controls.businessName.setValue('Acme Trading');
+    component.applyForm.controls.acceptedTerms.setValue(true);
     component.applyForm.controls.tradingName.setValue('Acme');
     component.applyForm.controls.registrationNumber.setValue('2024/001/07');
     component.applyForm.controls.countryCode.setValue(CountryCode.SOUTH_AFRICA);
@@ -128,6 +129,7 @@ describe('VendorOnboarding — customer mode (form)', () => {
 
     expect(vendorStub.create).toHaveBeenCalledWith({
       businessName: 'Acme Trading',
+      acceptedTerms: true,
       tradingName: 'Acme',
       registrationNumber: '2024/001/07',
       countryCode: CountryCode.SOUTH_AFRICA,
@@ -139,6 +141,7 @@ describe('VendorOnboarding — customer mode (form)', () => {
     authStub.refreshCurrentUser.mockReturnValue(of({ id: 'u1', role: 'vendor' }));
 
     component.applyForm.controls.businessName.setValue('Acme Trading');
+    component.applyForm.controls.acceptedTerms.setValue(true);
     component.submit();
     await fixture.whenStable();
 
@@ -150,6 +153,7 @@ describe('VendorOnboarding — customer mode (form)', () => {
     authStub.refreshCurrentUser.mockReturnValue(of({ id: 'u1', role: 'vendor' }));
 
     component.applyForm.controls.businessName.setValue('Acme Trading');
+    component.applyForm.controls.acceptedTerms.setValue(true);
     component.submit();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -166,6 +170,7 @@ describe('VendorOnboarding — customer mode (form)', () => {
     vendorStub.getMe.mockReturnValue(of(PENDING_VENDOR));
 
     component.applyForm.controls.businessName.setValue('Acme Trading');
+    component.applyForm.controls.acceptedTerms.setValue(true);
     component.submit();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -180,6 +185,7 @@ describe('VendorOnboarding — customer mode (form)', () => {
     vendorStub.create.mockReturnValue(throwError(() => ({ status: 500, error: { message: 'Server error' } })));
 
     component.applyForm.controls.businessName.setValue('Acme Trading');
+    component.applyForm.controls.acceptedTerms.setValue(true);
     component.submit();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -191,12 +197,37 @@ describe('VendorOnboarding — customer mode (form)', () => {
     expect(el.textContent).toContain('Server error');
   });
 
+  // LC-7: the Vendor Agreement acceptance gates the application, and an
+  // unticked box must not get through — `required` alone is satisfied by
+  // `false` on a checkbox, which is why the control uses requiredTrue.
+  it('does not call create when the Vendor Agreement box is unticked', () => {
+    component.applyForm.controls.businessName.setValue('Acme Trading');
+    component.applyForm.controls.acceptedTerms.setValue(false);
+
+    component.submit();
+
+    expect(vendorStub.create).not.toHaveBeenCalled();
+    expect(component.acceptedTermsControl.hasError('required')).toBe(true);
+  });
+
+  it('renders a consent checkbox linking the Vendor Agreement page', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('input#vendorAcceptedTerms[type="checkbox"]')).toBeTruthy();
+    expect(el.querySelector('a[href="/legal/vendor-agreement"]')).toBeTruthy();
+  });
+
+  it('does not pre-tick the consent checkbox', () => {
+    expect(component.applyForm.controls.acceptedTerms.value).toBe(false);
+  });
+
   it('submit is guarded against double-submit', async () => {
     vendorStub.create.mockReturnValue(of(PENDING_VENDOR));
     authStub.refreshCurrentUser.mockReturnValue(of({ id: 'u1', role: 'vendor' }));
 
     component.isSubmitting.set(true);
     component.applyForm.controls.businessName.setValue('Acme Trading');
+    component.applyForm.controls.acceptedTerms.setValue(true);
     component.submit();
     await fixture.whenStable();
 

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, Equals } from 'class-validator';
 import { CountryCode, CreateVendorRequest } from '@hb/shared';
 
 export class CreateVendorDto implements CreateVendorRequest {
@@ -25,4 +25,11 @@ export class CreateVendorDto implements CreateVendorRequest {
   @IsEnum(CountryCode)
   @IsOptional()
   countryCode?: CountryCode;
+
+  // Same shape as RegisterDto.acceptedTerms (LC-3): @IsBoolean rejects a
+  // non-boolean, @Equals(true) rejects an explicit `false`, so "I agree to the
+  // Vendor Agreement" cannot be satisfied by omitting or unticking the box.
+  @IsBoolean()
+  @Equals(true)
+  acceptedTerms: boolean;
 }

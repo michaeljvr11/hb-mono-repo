@@ -396,3 +396,32 @@ form {
   font-size: 16px;
   color: var(--hb-on-surface-variant);
 }
+
+/* Vendor Agreement acceptance (LC-7) — mirrors the signup consent checkbox
+   in auth/register/register.scss so the two consent gates look the same. */
+.accept-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--hb-on-surface-variant);
+
+  input {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    flex: none;
+    accent-color: var(--hb-primary);
+    cursor: pointer;
+  }
+
+  label {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  a {
+    color: var(--hb-primary);
+    font-weight: 600;
+  }
+}

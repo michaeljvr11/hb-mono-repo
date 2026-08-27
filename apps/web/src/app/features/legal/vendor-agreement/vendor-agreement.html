@@ -1,0 +1,130 @@
+<app-nav-bar />
+
+<main class="legal-page" aria-label="Vendor Agreement">
+  <div class="legal-page__inner">
+    <h1>Vendor Agreement</h1>
+    <p class="legal-page__updated">Last updated: {{ lastUpdated }}</p>
+
+    <p>
+      This agreement governs your participation as a vendor on the H&amp;B E-Commerce
+      marketplace. You accept it when you submit a vendor application.
+    </p>
+
+    <h2>1. What you are selling through</h2>
+    <p>
+      You sell your own goods directly to H&amp;B customers through our Platform.
+      <strong>H&amp;B never takes ownership of your inventory</strong> — you remain the
+      seller of record for every item you list, and you are responsible for the goods
+      themselves. This is different from H&amp;B's own Procurement Service, a separate
+      service in which H&amp;B buys goods and resells them; see our
+      <a routerLink="/legal/terms">Terms of Service</a> for how the two differ.
+    </p>
+
+    <h2>2. Onboarding — what we check, and what we do not</h2>
+    <p>
+      <strong>Vendor onboarding is self-declared and is not independently verified.</strong>
+      When you apply you give us a business name (required), and optionally a trading name,
+      a registration number, and your country. We do not currently ask for or review any
+      supporting document — no proof of registration, no identity document, no trading
+      licence — before approving a vendor account.
+    </p>
+    <p>
+      This is a deliberate decision for the current version of the Platform, not an
+      oversight, and we would rather say so than let you or a customer assume a check
+      happens that does not. Nothing on the Platform should be read as H&amp;B having
+      confirmed your legal identity or your right to trade. You confirm that everything you
+      give us is accurate and that you have the legal right to sell the goods you list, and
+      you remain responsible for that being true.
+    </p>
+
+    <h2>3. Commission</h2>
+    <p>
+      H&amp;B charges a commission on each sale, currently <strong>{{ commissionPercent }}%</strong>
+      of the item's price — you receive <strong>{{ vendorSharePercent }}%</strong>.
+    </p>
+    <p>
+      <strong>This rate can change.</strong> Commission is held as a dated history rather
+      than a single setting: when a rate changes, the new rate applies from its effective
+      date onwards, and every order line keeps the rate that was in force when that sale
+      happened. We will never retroactively restate what you earned on an order that has
+      already been placed.
+    </p>
+
+    <h2>4. Getting paid</h2>
+    <p>
+      Your earnings on a sale become eligible for payout once the order is marked delivered
+      and a <strong>{{ damageClaimWindowHours }}-hour damage-claim window</strong> has
+      passed with no claim against it. Eligible earnings then accrue and are grouped into
+      two-weekly settlement periods, which is what your vendor earnings screen shows you.
+      Cancelled and refunded lines never count towards your earnings.
+    </p>
+    <p>
+      <strong>That is an accounting model, not an automatic bank payment.</strong> H&amp;B
+      does not currently run an automated payout: no settlement job exists, and no money
+      moves to your bank account without a person at H&amp;B arranging it. The figures on
+      your earnings screen tell you what you are owed and when it became eligible; actually
+      receiving it is arranged with our team at
+      <a [href]="contact.emailHref">{{ contact.email }}</a>. We will replace this section
+      with a description of the real mechanism once one exists rather than describe one that
+      does not.
+    </p>
+
+    <h2>5. Cancellations</h2>
+    <p>
+      If an order is cancelled because of something on your side — you do not have the stock
+      you listed, or you decline to fulfil — that line does not earn you anything.
+      <strong>H&amp;B does not currently charge vendors a cancellation fee</strong>; no such
+      fee exists on the Platform. If one is ever introduced, we will state the amount here
+      before it applies to you.
+    </p>
+
+    <h2>6. Fulfilment</h2>
+    <p>
+      You must hand confirmed orders over to H&amp;B's logistics promptly. We have not set a
+      fixed deadline in hours or days, and no automated timer enforces one today — but
+      repeated failure to fulfil orders you have accepted is grounds for suspension under
+      section 8.
+    </p>
+
+    <h2>7. Your listings</h2>
+    <p>
+      You are responsible for the accuracy of your product listings — description, price,
+      stock levels, and the images you upload, which you must have the right to use. H&amp;B
+      may remove a listing that breaches this agreement or applicable law: without notice
+      where the issue is urgent or unlawful, and with notice otherwise.
+    </p>
+
+    <h2>8. Approval, suspension and termination</h2>
+    <p>
+      Every application starts as <strong>pending</strong>. From there H&amp;B may approve or
+      reject it. An approved vendor may later be suspended, and a suspended vendor may be
+      reinstated; a rejected application is final and cannot be reopened into an approved
+      account. These are the only status changes the Platform allows.
+    </p>
+    <p>
+      Either party may end this agreement. Notice periods, and what happens to orders already
+      in flight and to earnings not yet paid out when an account ends, are
+      <span class="legal-placeholder">[TERMINATION TERMS]</span> — not yet settled, and we
+      are not going to state a number we have not decided. If your account ends while you are
+      owed money, that money remains owed to you.
+    </p>
+
+    <h2>9. Your customers' information</h2>
+    <p>
+      To fulfil an order you receive what you need to deliver it — the customer's name,
+      delivery address, and the items they ordered. You may use it for that order and
+      nothing else: not marketing, not resale, not building your own list. Our
+      <a routerLink="/legal/privacy">Privacy Policy</a> sets out how H&amp;B handles personal
+      information generally.
+    </p>
+
+    <h2>10. Questions</h2>
+    <p>
+      Contact us at <a [href]="contact.emailHref">{{ contact.email }}</a> or
+      <a [href]="contact.phoneHref">{{ contact.phoneDisplay }}</a>. We acknowledge support
+      messages within one business day.
+    </p>
+  </div>
+</main>
+
+<app-footer />

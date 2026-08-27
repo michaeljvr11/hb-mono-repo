@@ -9,6 +9,7 @@ import { AuditLog } from './entities/audit-log.entity';
  *  typos and to make cross-module usage greppable. */
 export const AuditAction = {
   VENDOR_STATUS_CHANGED: 'vendor.status_changed',
+  VENDOR_TERMS_ACCEPTED: 'vendor.terms_accepted',
   USER_ROLE_ASSIGNED: 'user.role_assigned',
   USER_ACTIVATED: 'user.activated',
   USER_DEACTIVATED: 'user.deactivated',

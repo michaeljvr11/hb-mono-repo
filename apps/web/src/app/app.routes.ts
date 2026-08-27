@@ -170,6 +170,10 @@ export const routes: Routes = [
     path: 'legal/customs',
     loadComponent: () => import('./features/legal/export-customs/export-customs').then(m => m.ExportCustoms)
   },
+  {
+    path: 'legal/vendor-agreement',
+    loadComponent: () => import('./features/legal/vendor-agreement/vendor-agreement').then(m => m.VendorAgreement)
+  },
 
   // Catch-all route
   {

@@ -29,6 +29,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'legal/shipping', renderMode: RenderMode.Prerender },
   { path: 'legal/returns', renderMode: RenderMode.Prerender },
   { path: 'legal/customs', renderMode: RenderMode.Prerender },
+  { path: 'legal/vendor-agreement', renderMode: RenderMode.Prerender },
   // Remaining public routes can be server-rendered.
   { path: '**', renderMode: RenderMode.Server },
 ];

@@ -6,7 +6,7 @@
         <span class="brand-name">H&amp;B E-Commerce</span>
       </a>
       <h1>Sell on H&amp;B</h1>
-      <p>Reach customers across South Africa and Namibia. Apply to become a verified vendor.</p>
+      <p>Reach customers across South Africa and Namibia. Apply to become a vendor.</p>
     </header>
 
     <!-- ── Customer: Application form ───────────────────────────────────── -->
@@ -70,6 +70,31 @@
             </select>
             <span class="material-symbols-outlined select-chevron" aria-hidden="true">expand_more</span>
           </div>
+        </div>
+
+        <div class="field">
+          <div class="accept-terms">
+            <input
+              id="vendorAcceptedTerms"
+              type="checkbox"
+              formControlName="acceptedTerms"
+              aria-required="true"
+              [attr.aria-describedby]="
+                acceptedTermsControl.hasError('required') && acceptedTermsControl.touched
+                  ? 'vendorAcceptedTerms-error'
+                  : null
+              "
+            />
+            <label for="vendorAcceptedTerms">
+              I have read and agree to the
+              <a routerLink="/legal/vendor-agreement">Vendor Agreement</a>
+            </label>
+          </div>
+          @if (acceptedTermsControl.hasError('required') && acceptedTermsControl.touched) {
+            <small class="field-error" id="vendorAcceptedTerms-error">
+              You must accept the Vendor Agreement to apply.
+            </small>
+          }
         </div>
 
         @if (errorMessage()) {

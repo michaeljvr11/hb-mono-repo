@@ -147,14 +147,39 @@ export class VendorsService {
       throw new ConflictException('You already have a vendor profile');
     }
 
+    // acceptedTerms is destructured out so it never reaches the Vendor entity,
+    // which has no such column — the same treatment RegisterDto's acceptedTerms
+    // gets in AuthService.register. It is validated `true` by CreateVendorDto's
+    // @Equals(true) before we get here; the consent fact is recorded as the
+    // audit entry below, not as a vendor column.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { acceptedTerms, ...vendorFields } = createDto;
+
     const vendor = this.vendorRepository.create({
-      ...createDto,
+      ...vendorFields,
       user,
       userId: user.id,
       status: VendorStatus.PENDING,
     });
 
     const saved = await this.vendorRepository.save(vendor);
+
+    // Record the applicant's acceptance of the Vendor Agreement (LC-7), tied to
+    // the user who applied and to the vendor row the acceptance was given for.
+    // NOTE: AuditService.log is best-effort and swallows its own errors, so a
+    // lost write leaves an application with no provable acceptance. LC-10 fixes
+    // that for the *signup* consent record via a User column; the vendor-side
+    // record still rides the audit log alone. Known, not hidden.
+    await this.auditService.log({
+      userId: user.id,
+      action: AuditAction.VENDOR_TERMS_ACCEPTED,
+      entityType: 'vendor',
+      entityId: saved.id,
+      metadata: {
+        documents: ['vendor_agreement'],
+        acceptedAt: new Date().toISOString(),
+      },
+    });
 
     if (user.role !== UserRole.VENDOR) {
       await this.usersService.update(user.id, { role: UserRole.VENDOR });
