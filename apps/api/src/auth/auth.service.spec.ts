@@ -170,6 +170,72 @@ describe('AuthService', () => {
       const calls = usersService.create.mock.calls as unknown as Array<[Record<string, unknown>]>;
       expect(calls[0][0]).not.toHaveProperty('acceptedTerms');
     });
+
+    // ── LC-10: the acceptance record is durable, not best-effort ──────────
+
+    it('writes termsAcceptedAt in the same insert as the account', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue({ ...activeUser, isVerified: false });
+
+      await service.register({ email: 'a@b.com', password: 'password1', acceptedTerms: true });
+
+      const calls = usersService.create.mock.calls as unknown as Array<[Record<string, unknown>]>;
+      expect(calls[0][0].termsAcceptedAt).toBeInstanceOf(Date);
+    });
+
+    it('stamps the column and the audit metadata with the same instant', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue({ ...activeUser, isVerified: false });
+
+      await service.register({ email: 'a@b.com', password: 'password1', acceptedTerms: true });
+
+      const createCalls = usersService.create.mock.calls as unknown as Array<
+        [{ termsAcceptedAt: Date }]
+      >;
+      const logCalls = auditService.log.mock.calls as unknown as Array<
+        [{ metadata: { acceptedAt: string } }]
+      >;
+      expect(logCalls[0][0].metadata.acceptedAt).toBe(
+        createCalls[0][0].termsAcceptedAt.toISOString(),
+      );
+    });
+
+    // The core LC-10 guarantee: an acceptance that cannot be recorded must
+    // take the registration down with it, rather than leaving a live account
+    // with no proof of consent. Because the timestamp rides the account's own
+    // INSERT, a failed write means no account at all.
+    it('does not create an account when the acceptance write fails', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockRejectedValue(new Error('insert failed'));
+
+      await expect(
+        service.register({ email: 'a@b.com', password: 'password1', acceptedTerms: true }),
+      ).rejects.toThrow('insert failed');
+
+      // No session was minted and no verification mail went out for an
+      // account that does not exist.
+      expect(usersService.updateRefreshToken).not.toHaveBeenCalled();
+      expect(mailService.sendEmailVerification).not.toHaveBeenCalled();
+    });
+
+    // LC-10 explicitly must not change AuditService.log semantics for its
+    // existing callers: registration still succeeds when the audit write is
+    // lost, because the durable record is now the user column.
+    it('still registers when the best-effort audit write is lost', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue({ ...activeUser, isVerified: false });
+      auditService.log.mockResolvedValue(undefined);
+
+      const result = await service.register({
+        email: 'a@b.com',
+        password: 'password1',
+        acceptedTerms: true,
+      });
+
+      expect(result.access_token).toBeDefined();
+      const calls = usersService.create.mock.calls as unknown as Array<[{ termsAcceptedAt: Date }]>;
+      expect(calls[0][0].termsAcceptedAt).toBeInstanceOf(Date);
+    });
   });
 
   describe('bootstrapAdmin', () => {

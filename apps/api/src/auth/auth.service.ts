@@ -41,10 +41,10 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    // acceptedTerms is destructured out (like rememberMe) so it never reaches
-    // usersService.create / the User entity, which has no such column. It is
-    // validated `true` by RegisterDto's @Equals(true) before we get here; the
-    // consent fact is recorded via the audit log below, not via this variable.
+    // acceptedTerms is destructured out (like rememberMe) so the raw boolean
+    // never reaches usersService.create — the User entity records *when*
+    // acceptance happened, not that a flag was sent. It is validated `true` by
+    // RegisterDto's @Equals(true) before we get here.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { email, password, rememberMe, acceptedTerms, ...rest } = registerDto;
 
@@ -52,6 +52,10 @@ export class AuthService {
     if (existing) {
       throw new BadRequestException('Email already exists');
     }
+
+    // One server-derived instant shared by the durable column and the audit
+    // entry, so the two can never disagree about when consent was given.
+    const acceptedAt = new Date();
 
     const user = await this.usersService.create({
       email,
@@ -61,16 +65,17 @@ export class AuthService {
       // ever leaks back into the DTO/whitelist, it can never elevate here. Elevated
       // roles are assigned only via the admin-only role endpoint. See docs/security.
       role: UserRole.CUSTOMER,
+      // LC-10: the acceptance record rides the same INSERT as the account, so
+      // there is no window in which an account exists without proof of consent.
+      // If this write fails, registration fails — which is the point.
+      termsAcceptedAt: acceptedAt,
     });
 
-    // Log the Terms/Privacy consent acceptance, tied to the new user, with a
-    // server-derived timestamp (the DB's createdAt is the authoritative one;
-    // the metadata instant below is corroborating only).
-    // NOTE: AuditService.log is best-effort — it swallows its own DB errors and
-    // only logs a warning, so registration still succeeds even if this write is
-    // lost. For a consent record that's a real gap: a lost write leaves no
-    // provable acceptance for this account. Known limitation, tracked as a
-    // follow-up rather than fixed here.
+    // The audit entry records *which* documents were accepted, complementing
+    // the user column's *when*. AuditService.log stays best-effort by design
+    // (it swallows its own errors), so this write can still be lost — but a
+    // lost write no longer leaves an account with no acceptance record at all,
+    // which was the LC-3 gap this closes.
     await this.auditService.log({
       userId: user.id,
       action: AuditAction.USER_TERMS_ACCEPTED,
@@ -78,7 +83,7 @@ export class AuthService {
       entityId: user.id,
       metadata: {
         documents: ['terms_of_service', 'privacy_policy'],
-        acceptedAt: new Date().toISOString(),
+        acceptedAt: acceptedAt.toISOString(),
       },
     });
 
