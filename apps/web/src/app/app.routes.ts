@@ -166,6 +166,10 @@ export const routes: Routes = [
     path: 'legal/returns',
     loadComponent: () => import('./features/legal/returns-policy/returns-policy').then(m => m.ReturnsPolicy)
   },
+  {
+    path: 'legal/customs',
+    loadComponent: () => import('./features/legal/export-customs/export-customs').then(m => m.ExportCustoms)
+  },
 
   // Catch-all route
   {
