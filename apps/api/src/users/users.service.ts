@@ -68,6 +68,16 @@ export class UsersService {
     });
   }
 
+  /**
+   * Stamp terms acceptance on an existing account (LC-9's OAuth interstitial).
+   * Unlike the register path — where the timestamp rides the account's own
+   * INSERT — this is an UPDATE, so it can fail on its own; the caller must let
+   * that failure surface rather than swallow it.
+   */
+  async setTermsAccepted(id: string, acceptedAt: Date): Promise<void> {
+    await this.usersRepository.update(id, { termsAcceptedAt: acceptedAt });
+  }
+
   async setEmailVerificationToken(id: string, hash: string | null, expires: Date | null) {
     await this.usersRepository.update(id, {
       emailVerificationTokenHash: hash,

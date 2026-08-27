@@ -11,6 +11,9 @@ export function UserToResponseDto(user: User): UserDto {
     name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}`.trim() : undefined,
     role: user.role,
     isVerified: user.isVerified,
+    // null (not undefined) when there is no acceptance record — the web app
+    // gates on this, and "absent" must not read as "accepted".
+    termsAcceptedAt: user.termsAcceptedAt ? user.termsAcceptedAt.toISOString() : null,
   };
 }
 

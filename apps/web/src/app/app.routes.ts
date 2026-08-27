@@ -28,6 +28,14 @@ export const routes: Routes = [
     path: 'auth/callback',
     loadComponent: () => import('./auth/callback/auth-callback').then(m => m.AuthCallback)
   },
+  // LC-9 consent interstitial. Guarded (you must be signed in to accept), and
+  // authGuard exempts this path from its own terms gate so it can't bounce to
+  // itself forever.
+  {
+    path: 'accept-terms',
+    canActivate: [authGuard],
+    loadComponent: () => import('./auth/accept-terms/accept-terms').then(m => m.AcceptTerms)
+  },
   {
     path: '',
     redirectTo: 'shop',

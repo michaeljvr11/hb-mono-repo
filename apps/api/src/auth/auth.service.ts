@@ -145,6 +145,13 @@ export class AuthService {
       // First Google sign-in creates a verified account. The password is random
       // and unused (the user authenticates via Google) but satisfies NOT NULL;
       // they can set a real one later via the password-reset flow.
+      //
+      // LC-9: `termsAcceptedAt` is deliberately NOT set here. This path never
+      // showed a consent checkbox, so stamping a timestamp would manufacture
+      // consent that was never given. The account is created with a null
+      // acceptance record and the web app holds it at the /accept-terms
+      // interstitial — see acceptTerms() below — until the person actually
+      // accepts.
       user = await this.usersService.create({
         email: profile.email,
         password: randomBytes(32).toString('hex'),
@@ -160,6 +167,53 @@ export class AuthService {
     }
 
     return this.getTokensAndUpdateRefresh(user, false);
+  }
+
+  /**
+   * Record terms acceptance for an already-authenticated account (LC-9).
+   *
+   * Backs the /accept-terms interstitial that a first-time Google sign-in
+   * lands on: `validateOAuthLogin` creates the account but never captures
+   * consent, so the account exists with a null acceptance record until this
+   * runs.
+   *
+   * Idempotent — a second call keeps the ORIGINAL timestamp rather than
+   * refreshing it. The first acceptance is the one with evidentiary value;
+   * silently moving it later would rewrite the record.
+   *
+   * Deliberately NOT best-effort: if the write fails, the call fails and the
+   * user stays at the interstitial. An acceptance that was reported as
+   * recorded but was not is exactly the LC-10 failure mode.
+   */
+  async acceptTerms(userId: string) {
+    const user = await this.usersService.findOneFull(userId);
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException();
+    }
+
+    if (user.termsAcceptedAt) {
+      return { user: this.toAuthUser(user) };
+    }
+
+    const acceptedAt = new Date();
+    await this.usersService.setTermsAccepted(user.id, acceptedAt);
+    user.termsAcceptedAt = acceptedAt;
+
+    await this.auditService.log({
+      userId: user.id,
+      action: AuditAction.USER_TERMS_ACCEPTED,
+      entityType: 'user',
+      entityId: user.id,
+      metadata: {
+        documents: ['terms_of_service', 'privacy_policy'],
+        acceptedAt: acceptedAt.toISOString(),
+        // Distinguishes an interstitial acceptance from a signup-form one, so
+        // the audit trail says which surface the consent was given on.
+        via: 'interstitial',
+      },
+    });
+
+    return { user: this.toAuthUser(user) };
   }
 
   // One-time setup endpoint: seeds the first admin account.
@@ -291,6 +345,9 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       isVerified: user.isVerified ?? false,
+      // null, never undefined: the web app's terms gate treats "no record" as
+      // "must accept", and an omitted key would read as accepted.
+      termsAcceptedAt: user.termsAcceptedAt ? user.termsAcceptedAt.toISOString() : null,
     };
   }
 

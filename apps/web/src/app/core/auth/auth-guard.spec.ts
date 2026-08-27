@@ -5,10 +5,20 @@ import { lastValueFrom, of, Observable } from 'rxjs';
 import { authGuard } from './auth-guard';
 import { AuthService } from './auth.service';
 
+type GuardUser = {
+  id: string;
+  email: string;
+  role: string;
+  termsAcceptedAt?: string | null;
+};
+
+/** An account that has accepted the terms — the ordinary case. */
+const ACCEPTED = '2026-08-20T09:00:00.000Z';
+
 /** Run authGuard for a given attempted URL + auth state, normalising the result to a value. */
 async function runGuard(
   attemptedUrl: string,
-  user: { id: string; email: string; role: string } | null,
+  user: GuardUser | null,
 ): Promise<boolean | UrlTree> {
   const authService = { currentUser$: of(user) };
   TestBed.configureTestingModule({
@@ -39,6 +49,7 @@ describe('authGuard', () => {
       id: '1',
       email: 'vendor@hb.com',
       role: 'vendor',
+      termsAcceptedAt: ACCEPTED,
     });
     expect(result).toBe(true);
   });
@@ -49,6 +60,50 @@ describe('authGuard', () => {
     const tree = result as UrlTree;
     expect(tree.toString()).toContain('/login');
     expect(tree.queryParams['returnUrl']).toBe('/vendor/dashboard');
+  });
+
+  // ── LC-9: the terms gate ────────────────────────────────────────────────
+
+  it('holds an account with no acceptance record at the interstitial', async () => {
+    const result = await runGuard('/checkout', {
+      id: '1',
+      email: 'oauth@hb.com',
+      role: 'customer',
+      termsAcceptedAt: null,
+    });
+
+    expect(result).toBeInstanceOf(UrlTree);
+    const tree = result as UrlTree;
+    expect(tree.toString()).toContain('/accept-terms');
+    expect(tree.queryParams['returnUrl']).toBe('/checkout');
+  });
+
+  // A missing key is a contract bug, not consent — it must fail closed.
+  it('treats an absent termsAcceptedAt as not accepted', async () => {
+    const result = await runGuard('/cart', {
+      id: '1',
+      email: 'oauth@hb.com',
+      role: 'customer',
+    });
+
+    expect(result).toBeInstanceOf(UrlTree);
+    expect((result as UrlTree).toString()).toContain('/accept-terms');
+  });
+
+  it('lets an unaccepted account reach the interstitial itself, so it cannot loop', async () => {
+    const result = await runGuard('/accept-terms', {
+      id: '1',
+      email: 'oauth@hb.com',
+      role: 'customer',
+      termsAcceptedAt: null,
+    });
+
+    expect(result).toBe(true);
+  });
+
+  it('sends an anonymous visitor to /login, not to the terms gate', async () => {
+    const result = await runGuard('/checkout', null);
+    expect((result as UrlTree).toString()).toContain('/login');
   });
 
   it('preserves query params of the attempted url inside returnUrl', async () => {

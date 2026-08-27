@@ -42,6 +42,7 @@ describe('AuthService', () => {
       findByEmailVerificationTokenHash: jest.fn(),
       setPassword: jest.fn(),
       markEmailVerified: jest.fn(),
+      setTermsAccepted: jest.fn().mockResolvedValue(undefined),
       countByRole: jest.fn(),
     };
     jwtService = { sign: jest.fn().mockReturnValue('signed.jwt') };
@@ -235,6 +236,90 @@ describe('AuthService', () => {
       expect(result.access_token).toBeDefined();
       const calls = usersService.create.mock.calls as unknown as Array<[{ termsAcceptedAt: Date }]>;
       expect(calls[0][0].termsAcceptedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  // ── LC-9: the OAuth consent interstitial ────────────────────────────────
+
+  describe('validateOAuthLogin', () => {
+    const googleProfile = {
+      email: 'oauth@b.com',
+      emailVerified: true,
+      firstName: 'Olive',
+      lastName: 'Auth',
+    };
+
+    it('creates a Google account with no acceptance record rather than a fabricated one', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue({ ...activeUser, isVerified: true });
+
+      await service.validateOAuthLogin(googleProfile);
+
+      const calls = usersService.create.mock.calls as unknown as Array<[Record<string, unknown>]>;
+      expect(calls[0][0]).not.toHaveProperty('termsAcceptedAt');
+    });
+
+    it('reports the new account as having no acceptance record', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue({ ...activeUser, isVerified: true });
+
+      const result = await service.validateOAuthLogin(googleProfile);
+
+      // null, not undefined — the web gate treats an absent key as accepted.
+      expect(result.user.termsAcceptedAt).toBeNull();
+    });
+  });
+
+  describe('acceptTerms', () => {
+    it('stamps the acceptance and reports it back on the user', async () => {
+      usersService.findOneFull.mockResolvedValue({ ...activeUser, termsAcceptedAt: null });
+
+      const result = await service.acceptTerms('u1');
+
+      const calls = usersService.setTermsAccepted.mock.calls as unknown as Array<[string, Date]>;
+      expect(calls[0][0]).toBe('u1');
+      expect(calls[0][1]).toBeInstanceOf(Date);
+      expect(result.user.termsAcceptedAt).toBe(calls[0][1].toISOString());
+    });
+
+    it('writes an audit entry marked as given at the interstitial', async () => {
+      usersService.findOneFull.mockResolvedValue({ ...activeUser, termsAcceptedAt: null });
+
+      await service.acceptTerms('u1');
+
+      const logCalls = auditService.log.mock.calls as unknown as Array<
+        [{ action: string; metadata: { via?: string } }]
+      >;
+      expect(logCalls[0][0].action).toBe('user.terms_accepted');
+      expect(logCalls[0][0].metadata.via).toBe('interstitial');
+    });
+
+    it('is idempotent and keeps the original timestamp on a second call', async () => {
+      const original = new Date('2026-01-02T03:04:05.000Z');
+      usersService.findOneFull.mockResolvedValue({ ...activeUser, termsAcceptedAt: original });
+
+      const result = await service.acceptTerms('u1');
+
+      expect(usersService.setTermsAccepted).not.toHaveBeenCalled();
+      expect(auditService.log).not.toHaveBeenCalled();
+      expect(result.user.termsAcceptedAt).toBe(original.toISOString());
+    });
+
+    // Not best-effort: an acceptance reported as recorded but lost is the very
+    // failure mode LC-10 closed on the register path.
+    it('fails rather than reporting acceptance when the write fails', async () => {
+      usersService.findOneFull.mockResolvedValue({ ...activeUser, termsAcceptedAt: null });
+      usersService.setTermsAccepted.mockRejectedValue(new Error('update failed'));
+
+      await expect(service.acceptTerms('u1')).rejects.toThrow('update failed');
+      expect(auditService.log).not.toHaveBeenCalled();
+    });
+
+    it('rejects a deactivated account', async () => {
+      usersService.findOneFull.mockResolvedValue({ ...activeUser, isActive: false });
+
+      await expect(service.acceptTerms('u1')).rejects.toThrow(UnauthorizedException);
+      expect(usersService.setTermsAccepted).not.toHaveBeenCalled();
     });
   });
 

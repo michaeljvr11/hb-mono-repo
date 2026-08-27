@@ -60,6 +60,16 @@ export interface AuthUser {
   firstName?: string;
   lastName?: string;
   isVerified?: boolean;
+  /**
+   * ISO timestamp of when this account accepted the Terms of Service and
+   * Privacy Policy, or `null` when it has no acceptance record (LC-9/LC-10).
+   *
+   * `null` is load-bearing on the client: an account created through Google
+   * sign-in has never seen a consent checkbox, and the web app holds it at the
+   * /accept-terms interstitial until it does. Never inferred from the account
+   * existing.
+   */
+  termsAcceptedAt?: string | null;
 }
 
 export interface AuthResponse {

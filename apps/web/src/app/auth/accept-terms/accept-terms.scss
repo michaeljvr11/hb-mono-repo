@@ -1,0 +1,108 @@
+/* LC-9 consent interstitial. Deliberately narrow: it borrows the auth screens'
+   shape (centred card on a plain ground) without importing their form styles,
+   since this screen has no form. */
+.auth-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--hb-surface);
+}
+
+.auth-topbar {
+  display: flex;
+  align-items: center;
+  padding: 16px 24px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--hb-on-surface);
+}
+
+.brand-tag {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--hb-on-surface-variant);
+}
+
+.auth-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 440px;
+  padding: 32px 24px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 16px;
+  background: var(--hb-surface-container-lowest, var(--hb-surface));
+}
+
+.card-head h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  line-height: 32px;
+  color: var(--hb-on-surface);
+}
+
+.card-head p,
+.consent-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--hb-on-surface-variant);
+}
+
+.consent-body a {
+  color: var(--hb-primary);
+  font-weight: 600;
+}
+
+.status-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--hb-error);
+}
+
+.primary-action {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-action:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.link-button {
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--hb-on-surface-variant);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.auth-footer {
+  padding: 16px 24px;
+  font-size: 12px;
+  color: var(--hb-on-surface-variant);
+  text-align: center;
+}
