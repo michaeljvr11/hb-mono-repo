@@ -28,8 +28,9 @@
       <p class="site-footer__col-heading">Trade Info</p>
       <a class="site-footer__link" routerLink="/about">About Us</a>
       <a class="site-footer__link" routerLink="/services">Services</a>
-      <a class="site-footer__link" href="#">Shipping Policy</a>
-      <a class="site-footer__link" href="#">Terms of Trade</a>
+      <a class="site-footer__link" routerLink="/legal/shipping">Shipping Policy</a>
+      <a class="site-footer__link" routerLink="/legal/returns">Returns &amp; Refunds</a>
+      <a class="site-footer__link" routerLink="/legal/terms">Terms of Trade</a>
       <a class="site-footer__link" routerLink="/contact">Contact Support</a>
     </div>
 
@@ -37,7 +38,11 @@
     <div class="site-footer__col">
       <p class="site-footer__col-heading">SME Access</p>
       <a class="site-footer__link" routerLink="/vendor/apply">Register as Vendor</a>
-      <a class="site-footer__link" href="#">Export Documentation</a>
+      <a class="site-footer__link" routerLink="/legal/vendor-agreement">Vendor Agreement</a>
+      <a class="site-footer__link" routerLink="/legal/customs">Export &amp; Customs Terms</a>
+      <!-- Success Stories has no page behind it. It stays a dead link on the
+           LSM-6 precedent: an unbuilt page stays dead rather than pointing at
+           something that isn't it. -->
       <a class="site-footer__link" href="#">Success Stories</a>
     </div>
 
@@ -47,6 +52,8 @@
       <p class="site-footer__blurb">
         Stay informed on new SME arrivals, trade news, and regional logistics updates.
       </p>
+      <a class="site-footer__link" routerLink="/legal/privacy">Privacy Policy</a>
+      <a class="site-footer__link" routerLink="/legal/cookies">Cookie Policy</a>
     </div>
   </div>
 
