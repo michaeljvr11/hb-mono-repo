@@ -1132,3 +1132,8 @@
 {"ts":"2026-08-27T17:06:42.515Z","type":"edit_lint","file":"apps/api/src/database/migrations/1788172800000-UserTermsAcceptedAt.ts","autofixed":true,"tool":"Write"}
 {"ts":"2026-08-27T17:07:06.845Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.ts","autofixed":true,"tool":"Edit"}
 {"ts":"2026-08-27T17:07:35.761Z","type":"edit_lint","file":"apps/api/src/auth/auth.service.spec.ts","autofixed":true,"tool":"Edit"}
+{"ts":"2026-08-31T18:11:41.272Z","type":"agent_token_usage","agentType":"unknown","agentId":"a5dd4f1db07d5ad41","sessionId":"7bc7465a-6219-4406-84a9-5b9631d971b8","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-31T18:14:19.548Z","type":"agent_token_usage","agentType":"frontend-engineer","agentId":"a6890ec801d5eed05","sessionId":"7bc7465a-6219-4406-84a9-5b9631d971b8","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-31T18:14:24.632Z","type":"agent_token_usage","agentType":"frontend-engineer","agentId":"af77cc112ba82921b","sessionId":"7bc7465a-6219-4406-84a9-5b9631d971b8","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-31T18:36:28.649Z","type":"agent_token_usage","agentType":"test-engineer","agentId":"a38a66d28119652b2","sessionId":"7bc7465a-6219-4406-84a9-5b9631d971b8","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}
+{"ts":"2026-08-31T18:46:50.074Z","type":"agent_token_usage","agentType":"code-reviewer","agentId":"a9a6b256cd5ddbed7","sessionId":"7bc7465a-6219-4406-84a9-5b9631d971b8","inputTokens":0,"outputTokens":0,"cacheCreationInputTokens":0,"cacheReadInputTokens":0}

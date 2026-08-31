@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-08-27T17:16:48.026Z",
+  "generatedAt": "2026-08-31T18:55:20.609Z",
   "git": {
-    "totalCommits": 274,
-    "aiCommits": 263,
+    "totalCommits": 282,
+    "aiCommits": 271,
     "aiPct": 96,
-    "appCommits": 198,
-    "ins": 110288,
-    "del": 11509,
-    "net": 98779,
-    "aiIns": 96774,
-    "aiDel": 11335,
+    "appCommits": 205,
+    "ins": 111081,
+    "del": 11832,
+    "net": 99249,
+    "aiIns": 97567,
+    "aiDel": 11658,
     "filesTouched": 842,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 120,
-        "ins": 54499,
-        "del": 3185
+        "commits": 127,
+        "ins": 55173,
+        "del": 3417
       },
       {
         "name": "API (NestJS)",
@@ -26,14 +26,14 @@
       },
       {
         "name": "Docs",
-        "commits": 77,
-        "ins": 16684,
-        "del": 6149
+        "commits": 78,
+        "ins": 16786,
+        "del": 6238
       },
       {
         "name": "AI Factory config",
-        "commits": 83,
-        "ins": 2498,
+        "commits": 84,
+        "ins": 2509,
         "del": 104
       },
       {
@@ -44,9 +44,9 @@
       },
       {
         "name": "Root & config",
-        "commits": 15,
-        "ins": 915,
-        "del": 22
+        "commits": 16,
+        "ins": 921,
+        "del": 24
       },
       {
         "name": "CI / templates",
@@ -56,8 +56,48 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-27",
+    "lastDate": "2026-08-31",
     "recent": [
+      {
+        "hash": "7992e10",
+        "subject": "fix(web): address code review on the pre-launch polish batch",
+        "ai": true
+      },
+      {
+        "hash": "b0f2e81",
+        "subject": "test(web): cover the brand links, footer social links and placeholder copy",
+        "ai": true
+      },
+      {
+        "hash": "a2173dc",
+        "subject": "fix(web): remove the mobile horizontal overflow and enlarge footer links",
+        "ai": true
+      },
+      {
+        "hash": "76e00c1",
+        "subject": "feat(web): replace the dead footer icons with real social links",
+        "ai": true
+      },
+      {
+        "hash": "bf6074e",
+        "subject": "fix(web): correct the search placeholders and broaden the contact copy",
+        "ai": true
+      },
+      {
+        "hash": "bbf8105",
+        "subject": "feat(web): point brand links at the storefront and enlarge the logo",
+        "ai": true
+      },
+      {
+        "hash": "e2cc8b6",
+        "subject": "feat(web): fill in the legal-page placeholders with facts confirmed by the owner",
+        "ai": true
+      },
+      {
+        "hash": "c84f555",
+        "subject": "chore(evidence): recompile AI-authorship report for the LC-6..LC-10 batch",
+        "ai": true
+      },
       {
         "hash": "00a1fff",
         "subject": "feat: capture terms acceptance on the Google OAuth signup path",
@@ -77,46 +117,6 @@
         "hash": "7013e0a",
         "subject": "feat: add the Vendor Agreement page and gate applications on accepting it",
         "ai": true
-      },
-      {
-        "hash": "607d608",
-        "subject": "feat(web): add the Export & Customs Terms page",
-        "ai": true
-      },
-      {
-        "hash": "c6f56e4",
-        "subject": "chore(evidence): recompile AI-authorship report for the legal-pages batch",
-        "ai": true
-      },
-      {
-        "hash": "038a8a4",
-        "subject": "fix(web): make the legal pages honest about what the code actually does",
-        "ai": true
-      },
-      {
-        "hash": "442067a",
-        "subject": "feat: capture and log terms acceptance at signup",
-        "ai": true
-      },
-      {
-        "hash": "2ac571c",
-        "subject": "feat(web): add the Shipping and Returns & Refunds Policy pages",
-        "ai": true
-      },
-      {
-        "hash": "3c23524",
-        "subject": "feat(web): add the Terms of Service page and wire the dead login links",
-        "ai": true
-      },
-      {
-        "hash": "0b43b0b",
-        "subject": "feat(web): add Privacy and Cookie Policy pages, wire the consent banner",
-        "ai": true
-      },
-      {
-        "hash": "509eed6",
-        "subject": "chore(evidence): recompile AI-authorship report for the route-honest checkout copy",
-        "ai": true
       }
     ]
   },
@@ -135,6 +135,11 @@
       "branch": "feat/23PYFGW7-edit-delete-own-review",
       "cardId": "23PYFGW7",
       "slug": "edit-delete-own-review"
+    },
+    {
+      "branch": "feat/3QJYmybN-storefront-prelaunch-polish",
+      "cardId": "3QJYmybN",
+      "slug": "storefront-prelaunch-polish"
     },
     {
       "branch": "feat/4loUsIJ7-review-contracts-read-api",
@@ -427,13 +432,13 @@
     "edits": 864,
     "editsUnfixable": 281,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-27T17:07:35.761Z",
+    "lastTs": "2026-08-31T18:46:50.074Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 70,
+          "invocations": 71,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -451,7 +456,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 45,
+          "invocations": 47,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -460,7 +465,7 @@
         },
         {
           "agentType": "test-engineer",
-          "invocations": 8,
+          "invocations": 9,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -469,7 +474,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 29,
+          "invocations": 30,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -523,31 +528,6 @@
         }
       ],
       "recent": [
-        {
-          "ts": "2026-08-24T14:31:51.658Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:34:36.360Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:42:05.800Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:44:43.101Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:45:47.867Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
         {
           "ts": "2026-08-24T14:46:12.997Z",
           "agentType": "frontend-engineer",
@@ -622,6 +602,31 @@
           "ts": "2026-08-26T17:26:50.049Z",
           "agentType": "frontend-engineer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-31T18:11:41.272Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-31T18:14:19.548Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-31T18:14:24.632Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-31T18:36:28.649Z",
+          "agentType": "test-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-31T18:46:50.074Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
         }
       ]
     }
@@ -629,6 +634,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/wokJ3PfW-legal-pages-and-consent-durability",
+      "number": 64,
+      "state": "MERGED",
+      "title": "feat: Export & Customs + Vendor Agreement pages, footer wiring, and durable consent capture (LC-6, LC-7, LC-8, LC-9, LC-10)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/64"
+    },
     {
       "headRefName": "feat/QQKjOiEH-legal-policy-pages",
       "number": 63,
@@ -1078,11 +1090,11 @@
     },
     {
       "name": "To Do",
-      "cards": 17
+      "cards": 11
     },
     {
       "name": "In Progress",
-      "cards": 5
+      "cards": 6
     },
     {
       "name": "In Review",
@@ -1090,7 +1102,7 @@
     },
     {
       "name": "Done",
-      "cards": 102
+      "cards": 107
     },
     {
       "name": "Fable Documentation",
