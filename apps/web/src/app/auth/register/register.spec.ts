@@ -94,6 +94,21 @@ describe('Register', () => {
       acceptedTerms: true,
     });
   });
+
+  it('routes the brand link to the storefront, not back to /login', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const brandLink = el.querySelector('a.brand');
+    expect(brandLink?.getAttribute('href')).toBe('/shop');
+  });
+
+  it('renders a Contact link that routes to /contact', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const contactLink = el.querySelector('a.contact-link');
+    expect(contactLink?.textContent?.trim()).toBe('Contact');
+    expect(contactLink?.getAttribute('href')).toBe('/contact');
+  });
 });
 
 describe('Register terms acceptance checkbox', () => {

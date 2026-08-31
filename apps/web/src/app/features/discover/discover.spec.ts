@@ -232,6 +232,20 @@ describe('Discover', () => {
     expect(component).toBeTruthy();
   });
 
+  it('passes the storefront placeholder to the search bar', () => {
+    const searchInput = fixture.nativeElement.querySelector('.search-bar__input') as HTMLInputElement;
+    expect(searchInput.placeholder).toBe('Shop our latest products');
+  });
+
+  // Regression test for the CP1252/UTF-8 mis-decode that rendered
+  // "productsâ€¦" / "Loading productsâ€¦" to users. `â€` is the signature byte
+  // sequence of that corruption class — its absence from the rendered
+  // template is what this guards.
+  it('renders no mojibake from the historical UTF-8/CP1252 encoding bug', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).not.toContain('â€');
+  });
+
   it('fetches products on init with no filters, page 1 and the newest sort', () => {
     expect(productsStub.list).toHaveBeenCalledWith({
       q: undefined,

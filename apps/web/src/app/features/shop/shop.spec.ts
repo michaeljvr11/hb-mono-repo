@@ -126,6 +126,13 @@ describe('Shop', () => {
     expect(component).toBeTruthy();
   });
 
+  it('passes the storefront placeholder to the mobile search bar', () => {
+    flushLoads();
+    fixture.detectChanges();
+    const searchInput = fixture.nativeElement.querySelector('.search-bar__input') as HTMLInputElement;
+    expect(searchInput.placeholder).toBe('Shop our latest products');
+  });
+
   it('renders the "New in Namibia" section heading', () => {
     flushLoads();
     fixture.detectChanges();
