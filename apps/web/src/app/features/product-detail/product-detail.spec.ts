@@ -414,6 +414,31 @@ describe('ProductDetail', () => {
     expect(productsStub.getById).toHaveBeenCalledWith('p1');
   });
 
+  // Regression tests for the CP1252/UTF-8 mis-decode that rendered
+  // "Loading productâ€¦" / "Loading reviewsâ€¦" to users. `â€` is the signature
+  // byte sequence of that corruption class.
+  //
+  // The loaded state is not enough on its own: both corrupted strings live in
+  // the *loading* branch, which has already been replaced by the time the
+  // default fixture settles. So the loading state is held open deliberately
+  // here with an observable that never emits.
+  it('renders the loading state with a real ellipsis, not mojibake', async () => {
+    productsStub.getById.mockReturnValue(new Subject());
+    paramMap$.next(convertToParamMap({ id: 'pending' }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Loading product…');
+    expect(el.textContent).not.toContain('â€');
+  });
+
+  it('renders no mojibake once the product has loaded', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).not.toContain('â€');
+  });
+
   it('fires PRODUCT_VIEWED once the product loads successfully', () => {
     expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.PRODUCT_VIEWED, {
       productId: 'p1',
