@@ -1,18 +1,22 @@
 <div class="auth-screen">
   <main class="register-shell">
     <header class="register-head">
-      <a class="link-button contact-link" routerLink="/contact">Contact</a>
-      <a class="brand" routerLink="/shop" aria-label="H&B E-Commerce storefront home">
-        <img
-          class="brand-logo"
-          [src]="brandLogo"
-          width="36"
-          height="36"
-          alt=""
-          aria-hidden="true"
-        />
-        <span class="brand-name">H&amp;B E-Commerce</span>
-      </a>
+      <!-- Brand first in the DOM so focus order matches visual order; the row
+           is a flex pair, mirroring login's .auth-topbar. -->
+      <div class="register-head__top">
+        <a class="brand" routerLink="/shop" aria-label="H&B E-Commerce storefront home">
+          <img
+            class="brand-logo"
+            [src]="brandLogo"
+            width="36"
+            height="36"
+            alt=""
+            aria-hidden="true"
+          />
+          <span class="brand-name">H&amp;B E-Commerce</span>
+        </a>
+        <a class="link-button" routerLink="/contact">Contact</a>
+      </div>
       <h1>Create Your Account</h1>
       <p>
         Join the ZA-NA trade bridge. Connect, trade, and grow across borders with

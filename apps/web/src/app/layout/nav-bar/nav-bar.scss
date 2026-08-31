@@ -98,7 +98,7 @@
 /* Desktop nav links — hidden on mobile. Gap/padding tighten between 768–1023px,
    where the four links share the row with the brand and the action icons; full
    spacing returns at 1024px+. Sell-on-H&B and the utilities only rejoin the row
-   at 1240px. */
+   at 1280px. */
 .nav-bar__links {
   display: none;
   align-items: center;
@@ -141,9 +141,11 @@
     font-weight: 700;
   }
 
-  /* Hidden below 1240px. The full row (brand + links + sell + utils + actions,
-     with gaps and padding) measures 1200px, so anything narrower overflows —
-     this is the largest discretionary item in it at 115px. Vendor signup is
+  /* Hidden below 1280px. With this and the utilities in the row, the nav's
+     children plus their gaps measure ~1218px against a content box that tops
+     out at 1200px once `.nav-bar__inner` hits its 1280px max-width — measured
+     32px of real overflow at a 1240px window, and clean from 1280px up. This
+     is the largest discretionary item in that row at 115px. Vendor signup is
      not a shopper action, and the footer's "Register as Vendor" link still
      reaches /vendor/apply at every width. */
   &--sell {
@@ -155,7 +157,7 @@
     padding: 4px 12px;
     transition: background 150ms ease, border-color 150ms ease;
 
-    @media (min-width: 1240px) {
+    @media (min-width: 1280px) {
       display: inline-block;
     }
 
@@ -166,7 +168,7 @@
   }
 }
 
-/* Desktop utilities — hidden below 1240px, alongside the Sell link. The
+/* Desktop utilities — hidden below 1280px, alongside the Sell link. The
    currency switcher is still a `notifyComingSoon` stub, so its 112px is the
    cheapest thing to reclaim in the band where the row would overflow. */
 .nav-bar__utils {
@@ -174,7 +176,7 @@
   align-items: center;
   gap: 8px;
 
-  @media (min-width: 1240px) {
+  @media (min-width: 1280px) {
     display: flex;
   }
 }
@@ -217,8 +219,8 @@
 .nav-bar__actions {
   display: flex;
   align-items: center;
-  /* Tight below 400px so the brand keeps its wordmark there; the icons are
-     still 40px-wide tap targets, only the space between them shrinks. */
+  /* Tight below 400px so the brand keeps its wordmark there; the controls
+     themselves keep their 36–40px width, only the space between them shrinks. */
   gap: 4px;
 
   @media (min-width: 400px) {
@@ -230,8 +232,10 @@
   }
 }
 
-/* Search is hidden below 768px: it only navigates to /discover, which the
-   radial nav already offers, and /shop carries its own mobile search bar. */
+/* Search is hidden below 768px: it only navigates to /discover, which /shop
+   reaches through its own mobile search bar (and the radial nav offers
+   directly on the routes that mount it). The brand links to /shop at every
+   width, so the path is never more than one tap further away. */
 .nav-bar__icon-btn {
   display: none;
   align-items: center;

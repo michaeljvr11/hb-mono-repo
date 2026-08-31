@@ -105,7 +105,7 @@ describe('Register', () => {
   it('renders a Contact link that routes to /contact', () => {
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
-    const contactLink = el.querySelector('a.contact-link');
+    const contactLink = el.querySelector('.register-head__top a.link-button');
     expect(contactLink?.textContent?.trim()).toBe('Contact');
     expect(contactLink?.getAttribute('href')).toBe('/contact');
   });

@@ -38,10 +38,20 @@
   height: 36px;
 }
 
+/* 24px/600 is DESIGN.md's headline-md. Steps down below 400px so the wordmark
+   stays on one line beside the Contact link on a 320px viewport — the same
+   treatment the nav bar's brand uses. Login and register must stay identical. */
 .brand-name {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+  white-space: nowrap;
   color: var(--hb-primary);
+
+  @media (min-width: 400px) {
+    font-size: 24px;
+    line-height: 32px;
+  }
 }
 
 /* Main / card */
@@ -151,6 +161,8 @@ form {
 }
 
 /* Links */
+/* `text-decoration` is needed explicitly: this is an <a> since the Support
+   stub became a real Contact link, and `font: inherit` does not reset it. */
 .link-button {
   border: 0;
   background: none;
@@ -159,6 +171,7 @@ form {
   font-size: 16px;
   font-weight: 600;
   color: var(--hb-primary);
+  text-decoration: none;
   cursor: pointer;
 }
 
