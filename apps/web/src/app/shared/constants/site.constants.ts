@@ -7,8 +7,25 @@ export const CONTACT_DETAILS = {
   phoneHref: 'tel:+264813559921',
   email: 'info@hb-ecommerce.com',
   emailHref: 'mailto:info@hb-ecommerce.com',
+  /** No prefilled `?text=` — the footer's social icon is a generic "talk to us"
+   *  entry point, not a quote request. The two prefilled variants below extend
+   *  this same number; keep them in sync if it ever changes. */
+  whatsappUrl: 'https://wa.me/264813559921',
   whatsappQuoteUrl: "https://wa.me/264813559921?text=Hi%20H%26B%2C%20I'd%20like%20a%20quote%20for%20importing...",
   whatsappImportRequestUrl: "https://wa.me/264813559921?text=Hi%20H%26B%2C%20I'd%20like%20to%20request%20an%20import%20quote",
+} as const;
+
+/**
+ * Public social profiles, linked from the footer.
+ *
+ * Facebook is deliberately absent: the business has no Facebook page, and the
+ * card that added these icons was itself about *removing* footer icons that
+ * lead nowhere. Add a `facebook` entry here when a page exists.
+ */
+export const SOCIAL_LINKS = {
+  whatsapp: CONTACT_DETAILS.whatsappUrl,
+  instagram: 'https://www.instagram.com/hbecommerce/',
+  tiktok: 'https://www.tiktok.com/@hb.ebuy',
 } as const;
 
 /**
