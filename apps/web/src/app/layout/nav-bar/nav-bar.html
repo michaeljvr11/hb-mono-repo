@@ -2,7 +2,9 @@
   <div class="nav-bar__inner">
     <!-- Brand -->
     <div class="nav-bar__brand-group">
-      <a class="nav-bar__brand" routerLink="/shop" aria-label="H&B E-Commerce home">
+      <!-- Below 400px the wordmark is hidden and the mark stands alone; the
+           anchor's aria-label carries the accessible name at every width. -->
+      <a class="nav-bar__brand" routerLink="/shop" aria-label="H&B E-Commerce storefront home">
         <img
           class="nav-bar__logo"
           [src]="brandLogo"
@@ -11,7 +13,7 @@
           alt=""
           aria-hidden="true"
         />
-        H&amp;B E-Commerce
+        <span class="nav-bar__brand-name">H&amp;B E-Commerce</span>
       </a>
     </div>
 

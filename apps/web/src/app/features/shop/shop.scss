@@ -329,6 +329,11 @@
 .vendors-section {
   background: var(--hb-surface-container-low);
   border-radius: 24px;
+  /* `.section` sets `width: 100%`, which is the *container's* width and does
+     not account for the horizontal margins below — the box then overflows by
+     exactly one margin (16px on mobile). `auto` lets the block size itself to
+     the space the margins leave. */
+  width: auto;
   /* Override section padding to include the rounded container */
   margin: 0 16px 48px;
   padding: 48px 24px;
