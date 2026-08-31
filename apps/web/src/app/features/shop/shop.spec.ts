@@ -400,15 +400,6 @@ describe('Shop', () => {
     flushLoads();
   });
 
-  it('shows a coming-soon notice for the orders radial nav item', () => {
-    flushLoads();
-    fixture.detectChanges();
-    const notificationService = TestBed.inject(NotificationService);
-    const infoSpy = vi.spyOn(notificationService, 'info');
-
-    component.onRadialNavSelect('orders');
-    expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining('My Orders'));
-  });
 });
 
 describe('deriveCategoryCounts', () => {

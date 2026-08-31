@@ -205,14 +205,13 @@ export class Shop implements OnInit {
   }
 
   onRadialNavSelect(itemId: RadialNavItemId): void {
+    // Cart is the only item without a routerLink: it needs the anonymous
+    // redirect to carry a returnUrl, which a guard cannot do.
     if (itemId === 'cart') {
       this.onCartClick();
       return;
     }
-    const labels: Partial<Record<RadialNavItemId, string>> = {
-      orders: 'My Orders',
-    };
-    this.notifyComingSoon(labels[itemId] ?? 'This feature');
+    this.notifyComingSoon('This feature');
   }
 
   private onCartClick(): void {
