@@ -43,8 +43,9 @@ HERO_WIDTHS = (640, 960, 1280, 1536)
 WEBP_QUALITY = 80
 JPEG_QUALITY = 80
 
-# The logo renders at 32px (nav) and 28px (footer); 96px covers both at DPR 3.
-LOGO_SIZE = 96
+# The logo renders at 44px (nav) and 40px (footer); 144px covers up to 48px at
+# DPR 3, with headroom above both.
+LOGO_SIZE = 144
 # It is a flat two-colour wordmark, so a small palette is lossless in practice.
 LOGO_PALETTE_COLORS = 32
 

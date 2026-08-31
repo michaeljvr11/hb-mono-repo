@@ -36,7 +36,9 @@
 .nav-bar__brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  /* Slightly wider than the standard 8px gap — balances the larger 44px logo
+     against the 32px line-height wordmark next to it. */
+  gap: 10px;
   font-size: 24px;
   font-weight: 700;
   line-height: 32px;
@@ -48,13 +50,13 @@
   }
 }
 
-/* Intrinsic hb-logo.png is 96x96 (1:1) — 3x the 32px render, for DPR 3 screens.
-   Sized explicitly (both the `width`/`height` attrs on the <img> and here) so the
-   image reserves its box before it loads — no layout shift. */
+/* Intrinsic hb-logo.png is 144x144 (1:1) — headroom above the 44px render, for
+   DPR 3 screens. Sized explicitly (both the `width`/`height` attrs on the <img>
+   and here) so the image reserves its box before it loads — no layout shift. */
 .nav-bar__logo {
   display: block;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
 }
 
 /* Desktop nav links — hidden on mobile. Gap/padding tighten between 768–1023px

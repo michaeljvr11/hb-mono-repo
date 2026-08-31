@@ -48,7 +48,7 @@ export const SITE_IMAGES = {
   /**
    * Ships on every route, so it is deliberately a single small file rather than a
    * `<picture>` set — at well under 1 KB the format negotiation would cost more
-   * markup than it saves bytes. 96px covers its 32px (nav) and 28px (footer)
+   * markup than it saves bytes. 144px covers its 44px (nav) and 40px (footer)
    * render sizes at DPR 3.
    */
   logo: '/logos/hb-logo.png',

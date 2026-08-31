@@ -37,13 +37,15 @@
   margin: 0 0 8px;
 }
 
-/* Intrinsic hb-logo.png is 96x96 (1:1). Explicit width/height reserve the
-   box before the image loads — no layout shift. */
+/* Intrinsic hb-logo.png is 144x144 (1:1). Explicit width/height reserve the
+   box before the image loads — no layout shift. NOTE: the matching
+   `width`/`height` attrs on footer.html's <img> still need bumping from 28
+   to 40 — that template is owned by Slice B. */
 .site-footer__logo {
   display: block;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
 }
 
 .site-footer__brand {

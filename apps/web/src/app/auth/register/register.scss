@@ -14,7 +14,31 @@
 
 /* Header */
 .register-head {
+  position: relative;
   margin-bottom: 32px;
+}
+
+/* Top-right utility link, consistent with login's .auth-topbar Contact link. */
+.link-button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--hb-primary);
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.contact-link {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .brand {
@@ -26,8 +50,13 @@
   color: var(--hb-primary);
 }
 
-.brand .material-symbols-outlined {
-  font-size: 32px;
+/* Intrinsic hb-logo.png is 144x144 — reserved at its rendered size (both the
+   `width`/`height` attrs on the <img> and here) so it doesn't shift layout
+   on load. Matches the login brand mark. */
+.brand-logo {
+  display: block;
+  width: 36px;
+  height: 36px;
 }
 
 .brand-name {

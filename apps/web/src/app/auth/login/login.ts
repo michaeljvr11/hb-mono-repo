@@ -6,6 +6,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { sanitizeReturnUrl } from '../../core/auth/return-url';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { environment } from '../../../environments/environment';
+import { SITE_IMAGES } from '../../shared/constants/image.constants';
 import { AuthResponse, LoginRequest, UserRole } from '@hb/shared';
 
 @Component({
@@ -24,6 +25,7 @@ export class Login {
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal('');
   readonly currentYear = new Date().getFullYear();
+  protected readonly brandLogo = SITE_IMAGES.logo;
   // Full-page redirect into the server-side Google OAuth flow.
   readonly googleAuthUrl = `${environment.apiBaseUrl}/auth/google`;
   readonly returnUrl = computed(
@@ -77,12 +79,6 @@ export class Login {
             this.getErrorMessage(error, 'We could not sign you in. Check your details and try again.'),
           ),
       });
-  }
-
-  // Password reset and Google sign-in are not built yet (see Auth & Roles note).
-  // Surface an honest "coming soon" message instead of wiring a fake flow.
-  notifyComingSoon(feature: string): void {
-    this.notificationService.info(`${feature} is coming soon.`);
   }
 
   private showSuccessMessage(message: string): void {
