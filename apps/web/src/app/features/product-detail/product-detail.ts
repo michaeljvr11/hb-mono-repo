@@ -130,6 +130,26 @@ export class ProductDetail {
 
   readonly relatedProducts = signal<ProductDto[]>([]);
 
+  // ── Size selection (Product Sizing) ─────────────────────────────────────
+  // Opt-in per product: `product.sizes` is absent/empty for unsized products,
+  // which renders and behaves exactly as before this feature.
+  readonly selectedSizeId = signal<string | null>(null);
+
+  readonly hasSizes = computed(() => (this.product()?.sizes?.length ?? 0) > 0);
+
+  readonly selectedSize = computed(() => {
+    const id = this.selectedSizeId();
+    if (!id) return null;
+    return this.product()?.sizes?.find((s) => s.id === id) ?? null;
+  });
+
+  /** Unsized products can always add to cart; sized products need an in-stock size chosen. */
+  readonly canAddToCart = computed(() => {
+    if (!this.hasSizes()) return true;
+    const size = this.selectedSize();
+    return size !== null && size.stockQuantity > 0;
+  });
+
   // ── Reviews tab ──────────────────────────────────────────────────────────
   // Fetched eagerly alongside the product (not gated on it, and never behind
   // hydration) so the first page is present in the SSR payload — reviews are
@@ -269,6 +289,9 @@ export class ProductDetail {
         this.state.set('not-found');
         return;
       }
+      // Reset before loading so a product switch never carries a size
+      // selection from the previous product into the new one's state.
+      this.selectedSizeId.set(null);
       this.loadProduct(id);
       this.loadReviews(id, 1);
       this.resetReviewForm();
@@ -398,13 +421,27 @@ export class ProductDetail {
     void this.router.navigate(['/vendors', vendorId]);
   }
 
+  /**
+   * Size chip click handler. Out-of-stock sizes are already rendered
+   * `disabled` (see the template), so this native click shouldn't fire for
+   * them — this guard is defense-in-depth against the state machine ever
+   * landing on an out-of-stock "selected" size with an enabled cart button.
+   */
+  selectSize(sizeId: string): void {
+    const size = this.product()?.sizes?.find((s) => s.id === sizeId);
+    if (!size || size.stockQuantity === 0) return;
+    this.selectedSizeId.set(sizeId);
+  }
+
   onAddToCart(): void {
     const product = this.product();
-    if (!product) return;
-    this.addProductToCart(product);
+    if (!product || !this.canAddToCart()) return;
+    this.addProductToCart(product, this.selectedSizeId() ?? undefined);
   }
 
   onRelatedAddToCart(product: ProductDto): void {
+    // Sized related products route to their own PDP instead (see ProductCard),
+    // so this only ever fires for unsized products in practice.
     this.addProductToCart(product);
   }
 
@@ -421,9 +458,18 @@ export class ProductDetail {
     return true;
   }
 
-  private addProductToCart(product: ProductDto): void {
+  /**
+   * `sizeId` is only ever passed for a sized product with a valid, in-stock
+   * selection (guarded by `canAddToCart` in `onAddToCart`) — omitted entirely
+   * for unsized products so the request shape (and this call) stays exactly
+   * what it was before Product Sizing.
+   */
+  private addProductToCart(product: ProductDto, sizeId?: string): void {
     if (this.redirectAnonymous()) return;
-    this.cartService.addItem(product.id).subscribe({
+    const request$ = sizeId
+      ? this.cartService.addItem(product.id, 1, sizeId)
+      : this.cartService.addItem(product.id);
+    request$.subscribe({
       next: () => {
         this.analyticsService.track(AnalyticsEventType.ADD_TO_CART, {
           productId: product.id,

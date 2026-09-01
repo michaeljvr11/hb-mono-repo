@@ -77,6 +77,14 @@ describe('CartService', () => {
     req.flush(CART);
   });
 
+  it('addItem() includes productSizeId when passed (Product Sizing)', () => {
+    service.addItem('p4', 1, 's3').subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/cart/items`);
+    expect(req.request.body).toEqual({ productId: 'p4', quantity: 1, productSizeId: 's3' });
+    req.flush(CART);
+  });
+
   it('updateItem() PATCHes the line quantity', () => {
     service.updateItem('item-1', 5).subscribe();
 

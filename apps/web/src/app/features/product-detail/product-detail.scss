@@ -152,6 +152,68 @@
   color: var(--hb-primary);
 }
 
+/* ── Size selector (Product Sizing) ───────────────────────────────────── */
+
+.pdp__size-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pdp__size-selector-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--hb-on-surface-variant);
+}
+
+.pdp__size-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pdp__size-chip {
+  padding: 8px 16px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: var(--hb-radius-pill);
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-on-surface);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--hb-primary);
+  }
+
+  &--selected {
+    border-color: var(--hb-primary);
+    background: var(--hb-primary);
+    color: var(--hb-on-primary);
+  }
+
+  &--out-of-stock {
+    color: var(--hb-outline);
+    background: var(--hb-surface-container);
+    text-decoration: line-through;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.pdp__size-selector-hint {
+  font-size: 13px;
+  color: var(--hb-on-surface-variant);
+}
+
 /* ── Cross-border shipping card ───────────────────────────────────────── */
 
 .pdp__shipping-card {
@@ -922,6 +984,19 @@
 
   &:hover {
     filter: brightness(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+
+    &:active {
+      transform: none;
+    }
+
+    &:hover {
+      filter: none;
+    }
   }
 }
 
