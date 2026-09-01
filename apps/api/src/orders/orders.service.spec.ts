@@ -166,6 +166,16 @@ describe('OrdersService', () => {
       }),
       update: jest.fn(() => Promise.resolve()),
       delete: jest.fn(() => Promise.resolve()),
+      count: jest.fn((entity: unknown, options: { where?: { productId?: string } }) => {
+        if (entity === ProductSize) {
+          const productId = options.where?.productId ?? '';
+          const count = [...sizeFixtures.values()].filter(
+            (size) => size.productId === productId,
+          ).length;
+          return Promise.resolve(count);
+        }
+        return Promise.resolve(0);
+      }),
     };
 
     ordersRepo = {
@@ -711,6 +721,46 @@ describe('OrdersService', () => {
       );
       expect(manager.save).not.toHaveBeenCalledWith(Order, expect.anything());
       expect(paymentProvider.initiatePayment).not.toHaveBeenCalled();
+    });
+
+    // ── Deleted-size cart line (code review FAIL 4) ──────────────────────────
+    // `cart_items.productSizeId` is ON DELETE SET NULL — a cart line survives
+    // its size being deleted rather than being removed outright. A null
+    // productSizeId on a line whose product still carries other size rows
+    // means "this line's size was deleted", not "this product was never
+    // sized" — those two cases must not both fall into the legacy
+    // products.stockQuantity path.
+
+    it("rejects checkout with 409 when a cart line's size was deleted (product still has size rows, line has no productSizeId) — no stock decremented anywhere", async () => {
+      stageCart(
+        [{ productId: 'prod-1', quantity: 1 }], // no productSizeId — the size row it pointed at is gone
+        [makeProduct({ id: 'prod-1', name: 'Fynbos Honey', stockQuantity: 10 })],
+        [makeSize({ id: 'size-still-there', productId: 'prod-1', stockQuantity: 5 })], // a sibling size row still exists
+      );
+
+      await expect(service.create(makeUser(), SHIPPING_DTO)).rejects.toMatchObject({
+        constructor: ConflictException,
+        message:
+          "Please re-select a size for 'Fynbos Honey' — the size you selected is no longer available",
+      });
+
+      // Full rollback: no legacy stock decrement, no sibling size touched,
+      // no order/payment/cart-clear.
+      expect(manager.update).not.toHaveBeenCalled();
+      expect(manager.save).not.toHaveBeenCalledWith(Order, expect.anything());
+      expect(manager.delete).not.toHaveBeenCalled();
+      expect(paymentProvider.initiatePayment).not.toHaveBeenCalled();
+    });
+
+    it('still uses the legacy stockQuantity path for a genuinely never-sized product (no size rows exist at all)', async () => {
+      stageCart(
+        [{ productId: 'prod-1', quantity: 2 }], // no productSizeId, and the product has no sizes
+        [makeProduct({ id: 'prod-1', stockQuantity: 10 })],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(manager.update).toHaveBeenCalledWith(Product, 'prod-1', { stockQuantity: 8 });
     });
 
     it('mixed cart: decrements the size row for the sized line and the product row for the unsized line, independently', async () => {

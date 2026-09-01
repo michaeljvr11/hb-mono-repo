@@ -249,6 +249,27 @@ export class OrdersService {
           });
           sizeLabel = size.label;
         } else {
+          // A null productSizeId is ambiguous by itself: it means either the
+          // product was never sized (legacy stock path, correct), or it WAS
+          // sized and the size this cart line pointed at has since been
+          // deleted (`cart_items.productSizeId` is ON DELETE SET NULL — the
+          // line survives, matching the "out of stock" UX pattern rather
+          // than hard-failing at delete time). Falling through to the
+          // legacy `products.stockQuantity` decrement for the latter case
+          // would drain a counter a sized product never actually maintains
+          // and lose the size the customer ordered. Disambiguate with a
+          // targeted count query rather than eager-loading `sizes` on this
+          // locked read — `sizes` is a nullable-side one-to-many join, which
+          // (like `images`/`categories`) can't be combined with FOR UPDATE.
+          const sizeCount = await manager.count(ProductSize, {
+            where: { productId: product.id },
+          });
+          if (sizeCount > 0) {
+            throw new ConflictException(
+              `Please re-select a size for '${product.name}' — the size you selected is no longer available`,
+            );
+          }
+
           if (product.stockQuantity < cartItem.quantity) {
             throw new ConflictException(
               `Insufficient stock for '${product.name}' — only ${product.stockQuantity} left`,

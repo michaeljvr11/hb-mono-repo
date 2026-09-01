@@ -107,6 +107,51 @@ describe('WishlistService', () => {
     });
   });
 
+  // ── hasSizes (wishlist contract gap, code review) ──────────────────────────
+
+  it('reports hasSizes true for a product with per-size stock rows', async () => {
+    const item = makeWishlistItem({
+      product: makeProduct({
+        sizes: [
+          { id: 'size-1', productId: 'prod-1', label: 'Small', stockQuantity: 3, displayOrder: 0 },
+        ] as never,
+      }),
+    });
+    wishlistItemRepo.find.mockResolvedValue([item]);
+
+    const dto = await service.getWishlist('user-1');
+
+    expect(dto.items[0].hasSizes).toBe(true);
+  });
+
+  it('reports hasSizes false for an unsized product (no size rows)', async () => {
+    const item = makeWishlistItem({ product: makeProduct({ sizes: [] }) });
+    wishlistItemRepo.find.mockResolvedValue([item]);
+
+    const dto = await service.getWishlist('user-1');
+
+    expect(dto.items[0].hasSizes).toBe(false);
+  });
+
+  it('reports hasSizes false when the sizes relation is undefined (not loaded)', async () => {
+    const item = makeWishlistItem({ product: makeProduct({ sizes: undefined }) });
+    wishlistItemRepo.find.mockResolvedValue([item]);
+
+    const dto = await service.getWishlist('user-1');
+
+    expect(dto.items[0].hasSizes).toBe(false);
+  });
+
+  it('loads the product.sizes relation alongside product/product.images', async () => {
+    wishlistItemRepo.find.mockResolvedValue([]);
+
+    await service.getWishlist('user-1');
+
+    expect(wishlistItemRepo.find).toHaveBeenCalledWith(
+      expect.objectContaining({ relations: ['product', 'product.images', 'product.sizes'] }),
+    );
+  });
+
   it('picks the primary image when one is flagged isPrimary', async () => {
     const item = makeWishlistItem({
       product: makeProduct({
