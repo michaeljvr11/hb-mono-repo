@@ -227,6 +227,12 @@
       border-color: color-mix(in srgb, var(--hb-error) 50%, transparent);
     }
   }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+    &:hover { background: var(--hb-surface-container-lowest); border-color: var(--hb-outline-variant); color: var(--hb-on-surface-variant); }
+  }
 }
 
 /* ─── Drawer ──────────────────────────────────────────────────── */
@@ -358,6 +364,65 @@
 .checkbox-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .checkbox-input { width: 16px; height: 16px; accent-color: var(--hb-primary); flex-shrink: 0; cursor: pointer; }
 .checkbox-label { font-size: 14px; color: var(--hb-on-surface); }
+
+/* ─── Sizes (Product Sizing) ──────────────────────────────────── */
+.sizes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.size-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 6px;
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 130ms ease;
+
+  .material-symbols-outlined { font-size: 16px; }
+  &:hover { background: var(--hb-surface-container-low); }
+}
+
+.size-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  background: var(--hb-surface-container-lowest);
+}
+
+.size-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--hb-outline-variant);
+
+  &:last-child { border-bottom: 0; padding-bottom: 0; }
+}
+
+.size-row-fields { display: flex; gap: 8px; flex: 1; min-width: 0; }
+.size-label-input { flex: 2; min-width: 0; }
+.size-stock-input { flex: 1; min-width: 0; }
+.size-row-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
+.field-error {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--hb-error);
+}
 
 /* ─── Drawer actions ──────────────────────────────────────────── */
 .drawer-actions {
