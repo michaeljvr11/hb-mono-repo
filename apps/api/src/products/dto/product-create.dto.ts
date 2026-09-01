@@ -73,7 +73,7 @@ export class ProductCreateDto implements ProductCreateRequest {
       return value;
     }
     if (!Array.isArray(parsed)) return parsed;
-    return parsed.map((item) => plainToInstance(ProductSizeInputDto, item));
+    return plainToInstance(ProductSizeInputDto, parsed);
   })
   @IsOptional()
   @IsArray()
