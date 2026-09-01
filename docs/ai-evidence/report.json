@@ -1,52 +1,52 @@
 {
-  "generatedAt": "2026-08-27T17:16:48.026Z",
+  "generatedAt": "2026-09-01T20:29:36.118Z",
   "git": {
-    "totalCommits": 274,
-    "aiCommits": 263,
+    "totalCommits": 295,
+    "aiCommits": 284,
     "aiPct": 96,
-    "appCommits": 198,
-    "ins": 110288,
-    "del": 11509,
-    "net": 98779,
-    "aiIns": 96774,
-    "aiDel": 11335,
-    "filesTouched": 842,
+    "appCommits": 217,
+    "ins": 114446,
+    "del": 12080,
+    "net": 102366,
+    "aiIns": 100932,
+    "aiDel": 11906,
+    "filesTouched": 848,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 120,
-        "ins": 54499,
-        "del": 3185
+        "commits": 135,
+        "ins": 56948,
+        "del": 3512
       },
       {
         "name": "API (NestJS)",
-        "commits": 105,
-        "ins": 33727,
-        "del": 1990
+        "commits": 110,
+        "ins": 35066,
+        "del": 2033
       },
       {
         "name": "Docs",
-        "commits": 77,
-        "ins": 16684,
-        "del": 6149
+        "commits": 79,
+        "ins": 16908,
+        "del": 6347
       },
       {
         "name": "AI Factory config",
-        "commits": 83,
-        "ins": 2498,
+        "commits": 86,
+        "ins": 2596,
         "del": 104
       },
       {
         "name": "Shared contracts",
-        "commits": 46,
-        "ins": 1765,
-        "del": 57
+        "commits": 50,
+        "ins": 1807,
+        "del": 58
       },
       {
         "name": "Root & config",
-        "commits": 15,
-        "ins": 915,
-        "del": 22
+        "commits": 16,
+        "ins": 921,
+        "del": 24
       },
       {
         "name": "CI / templates",
@@ -56,66 +56,66 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-27",
+    "lastDate": "2026-09-01",
     "recent": [
       {
-        "hash": "00a1fff",
-        "subject": "feat: capture terms acceptance on the Google OAuth signup path",
+        "hash": "c5d81e1",
+        "subject": "refactor: apply code-review advisory cleanups",
         "ai": true
       },
       {
-        "hash": "f0d8a36",
-        "subject": "fix(api): make the terms-acceptance record durable, not best-effort",
+        "hash": "3d884f0",
+        "subject": "fix(api): parse multipart sizes JSON, guard deleted-size checkout, add wishlist hasSizes",
         "ai": true
       },
       {
-        "hash": "a9d0a1c",
-        "subject": "fix(web): point the footer's legal links at the pages that now exist",
+        "hash": "49ef079",
+        "subject": "fix(web): surface size labels, size-aware wishlist, and Items styling",
         "ai": true
       },
       {
-        "hash": "7013e0a",
-        "subject": "feat: add the Vendor Agreement page and gate applications on accepting it",
+        "hash": "1aa4c9b",
+        "subject": "fix(web): trim size-selector CSS and raise component-style error budget",
         "ai": true
       },
       {
-        "hash": "607d608",
-        "subject": "feat(web): add the Export & Customs Terms page",
+        "hash": "53d6c20",
+        "subject": "feat(web): PDP size selector and \"sizing available\" card hint",
         "ai": true
       },
       {
-        "hash": "c6f56e4",
-        "subject": "chore(evidence): recompile AI-authorship report for the legal-pages batch",
+        "hash": "b86ed2b",
+        "subject": "feat(web): show ordered size on customer, vendor, and admin order views",
         "ai": true
       },
       {
-        "hash": "038a8a4",
-        "subject": "fix(web): make the legal pages honest about what the code actually does",
+        "hash": "64dd7aa",
+        "subject": "feat(api): surface size snapshot on vendor order lines",
         "ai": true
       },
       {
-        "hash": "442067a",
-        "subject": "feat: capture and log terms acceptance at signup",
+        "hash": "436c76b",
+        "subject": "feat(api): wire product sizing through cart selection and inventory-safe checkout",
         "ai": true
       },
       {
-        "hash": "2ac571c",
-        "subject": "feat(web): add the Shipping and Returns & Refunds Policy pages",
+        "hash": "10baa05",
+        "subject": "feat(web): add Sizes section to vendor/admin product forms",
         "ai": true
       },
       {
-        "hash": "3c23524",
-        "subject": "feat(web): add the Terms of Service page and wire the dead login links",
+        "hash": "ec6254f",
+        "subject": "feat(api): add product sizing schema + API foundation (contract, entity, migration)",
         "ai": true
       },
       {
-        "hash": "0b43b0b",
-        "subject": "feat(web): add Privacy and Cookie Policy pages, wire the consent banner",
+        "hash": "ac818ec",
+        "subject": "fix(web): link the radial nav's My Orders item to /profile/orders",
         "ai": true
       },
       {
-        "hash": "509eed6",
-        "subject": "chore(evidence): recompile AI-authorship report for the route-honest checkout copy",
+        "hash": "7423e3a",
+        "subject": "fix(web): repair the product-detail encoding and align the profile wordmark",
         "ai": true
       }
     ]
@@ -135,6 +135,11 @@
       "branch": "feat/23PYFGW7-edit-delete-own-review",
       "cardId": "23PYFGW7",
       "slug": "edit-delete-own-review"
+    },
+    {
+      "branch": "feat/3QJYmybN-storefront-prelaunch-polish",
+      "cardId": "3QJYmybN",
+      "slug": "storefront-prelaunch-polish"
     },
     {
       "branch": "feat/4loUsIJ7-review-contracts-read-api",
@@ -215,6 +220,11 @@
       "branch": "feat/QQKjOiEH-legal-policy-pages",
       "cardId": "QQKjOiEH",
       "slug": "legal-policy-pages"
+    },
+    {
+      "branch": "feat/SZihvfYb-product-sizing",
+      "cardId": "SZihvfYb",
+      "slug": "product-sizing"
     },
     {
       "branch": "feat/Sm1kSNO8-safe-category-delete",
@@ -393,8 +403,8 @@
     }
   ],
   "tests": {
-    "total": 152,
-    "api": 72,
+    "total": 154,
+    "api": 74,
     "web": 80
   },
   "design": {
@@ -424,16 +434,16 @@
     },
     "gatePass": 36,
     "gateFail": 2,
-    "edits": 864,
-    "editsUnfixable": 281,
+    "edits": 933,
+    "editsUnfixable": 306,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-27T17:07:35.761Z",
+    "lastTs": "2026-09-01T20:27:08.615Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 70,
+          "invocations": 78,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -442,7 +452,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 32,
+          "invocations": 35,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -451,7 +461,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 45,
+          "invocations": 49,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -469,7 +479,7 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 29,
+          "invocations": 31,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -524,91 +534,6 @@
       ],
       "recent": [
         {
-          "ts": "2026-08-24T14:31:51.658Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:34:36.360Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:42:05.800Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:44:43.101Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:45:47.867Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:46:12.997Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:46:59.518Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:57:25.289Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T18:45:01.635Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T18:46:52.185Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T18:52:21.754Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T18:56:39.867Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-25T16:00:19.150Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-26T16:49:36.527Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-26T16:55:55.644Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-26T17:01:23.072Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-26T17:07:59.032Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
           "ts": "2026-08-26T17:10:36.436Z",
           "agentType": "frontend-engineer",
           "totalTokens": 0
@@ -622,6 +547,91 @@
           "ts": "2026-08-26T17:26:50.049Z",
           "agentType": "frontend-engineer",
           "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T18:02:59.006Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T18:21:52.282Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:20:52.136Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:22:24.004Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:31:16.349Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:31:24.243Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:41:33.599Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:45:31.646Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:50:14.671Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:50:21.274Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:50:36.447Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:08:08.131Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:10:29.889Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:19:13.385Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:19:21.392Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:19:31.631Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:26:22.718Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
         }
       ]
     }
@@ -629,6 +639,20 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/3QJYmybN-storefront-prelaunch-polish",
+      "number": 65,
+      "state": "OPEN",
+      "title": "feat(web): storefront pre-launch polish (6-card batch)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/65"
+    },
+    {
+      "headRefName": "feat/wokJ3PfW-legal-pages-and-consent-durability",
+      "number": 64,
+      "state": "MERGED",
+      "title": "feat: Export & Customs + Vendor Agreement pages, footer wiring, and durable consent capture (LC-6, LC-7, LC-8, LC-9, LC-10)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/64"
+    },
     {
       "headRefName": "feat/QQKjOiEH-legal-policy-pages",
       "number": 63,
@@ -1078,7 +1102,7 @@
     },
     {
       "name": "To Do",
-      "cards": 17
+      "cards": 16
     },
     {
       "name": "In Progress",
@@ -1086,11 +1110,11 @@
     },
     {
       "name": "In Review",
-      "cards": 0
+      "cards": 6
     },
     {
       "name": "Done",
-      "cards": 102
+      "cards": 107
     },
     {
       "name": "Fable Documentation",
