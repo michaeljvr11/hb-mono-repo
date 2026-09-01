@@ -7,9 +7,11 @@ import {
   IsArray,
   IsUUID,
   IsEnum,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CountryCode, CurrencyCode, ProductCreateRequest } from '@hb/shared';
+import { ProductSizeInputDto } from './product-size-input.dto';
 
 export class ProductCreateDto implements ProductCreateRequest {
   @IsString()
@@ -47,4 +49,10 @@ export class ProductCreateDto implements ProductCreateRequest {
   @IsUUID('all', { each: true })
   @Type(() => String)
   categoryIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductSizeInputDto)
+  sizes?: ProductSizeInputDto[];
 }

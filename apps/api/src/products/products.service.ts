@@ -22,7 +22,9 @@ import {
 } from '@hb/shared';
 import { Product } from './entities/product.entity';
 import { ProductImage } from './entities/product-image.entity';
+import { ProductSize } from './entities/product-size.entity';
 import { ProductCreateDto } from './dto/product-create.dto';
+import { ProductSizeInputDto } from './dto/product-size-input.dto';
 import { ProductUpdateDto } from './dto/product-update.dto';
 import { CreateProductImageDto } from './dto/create-product-image.dto';
 import { PRODUCT_IMAGE_PRESETS } from './upload/product-image.presets';
@@ -55,6 +57,8 @@ export class ProductsService {
     private productsRepository: Repository<Product>,
     @InjectRepository(ProductImage)
     private imageRepository: Repository<ProductImage>,
+    @InjectRepository(ProductSize)
+    private sizeRepository: Repository<ProductSize>,
     @InjectRepository(Vendor)
     private vendorRepository: Repository<Vendor>,
     @InjectRepository(Category)
@@ -80,8 +84,15 @@ export class ProductsService {
       throw new BadRequestException('Platform listings cannot have a vendor');
     }
 
+    const { sizes, ...rest } = createData;
+
+    // Validate before any write — a duplicate-label 400 must leave no partial product row.
+    if (sizes?.length) {
+      this.assertUniqueSizeLabels(sizes);
+    }
+
     const product = this.productsRepository.create({
-      ...createData,
+      ...rest,
       listingType,
       stockQuantity: createData.stockQuantity ?? 0,
     });
@@ -98,7 +109,50 @@ export class ProductsService {
       product.categories = categories;
     }
 
-    return this.productsRepository.save(product);
+    const saved = await this.productsRepository.save(product);
+
+    // Opt-in: only set sizes when the caller actually supplied a non-empty list.
+    if (sizes?.length) {
+      await this.replaceSizes(saved.id, sizes);
+    }
+
+    return saved;
+  }
+
+  /** Cross-row check — mirrors the categoryIds existence check: not expressible as a per-field decorator. */
+  private assertUniqueSizeLabels(sizes: ProductSizeInputDto[]): void {
+    const seen = new Set<string>();
+    for (const size of sizes) {
+      const label = size.label.trim();
+      if (seen.has(label)) {
+        throw new BadRequestException(`Duplicate size label: "${label}"`);
+      }
+      seen.add(label);
+    }
+  }
+
+  // ponytail: replaceSizes runs as two separate statements outside the product
+  // save() call, not one DB transaction with the rest of create()/update() — a
+  // mid-request failure after this resolves but before the product save could
+  // leave sizes replaced with stale product fields. Upgrade trigger: wrap
+  // create()/update() in a queryRunner transaction if that interleaving is
+  // ever observed (or once a second entity needs the same guarantee).
+  /** Whole-list replace for a product's sizes — mirrors the categoryIds update pattern. */
+  private async replaceSizes(productId: string, sizes: ProductSizeInputDto[]): Promise<void> {
+    await this.sizeRepository.delete({ productId });
+
+    if (!sizes.length) return;
+
+    const entities = sizes.map((size, index) =>
+      this.sizeRepository.create({
+        productId,
+        label: size.label.trim(),
+        stockQuantity: size.stockQuantity,
+        displayOrder: size.displayOrder ?? index,
+      }),
+    );
+
+    await this.sizeRepository.save(entities);
   }
 
   /**
@@ -267,7 +321,8 @@ export class ProductsService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.vendor', 'vendor')
-      .leftJoinAndSelect('product.categories', 'categories');
+      .leftJoinAndSelect('product.categories', 'categories')
+      .leftJoinAndSelect('product.sizes', 'sizes');
 
     // Approved-vendor visibility (card c2o6xfZs): platform listings are always
     // visible; vendor listings only when the owning vendor is approved. Every
@@ -323,7 +378,7 @@ export class ProductsService {
         { id, listingType: ListingType.PLATFORM },
         { id, listingType: ListingType.VENDOR, vendor: { status: VendorStatus.APPROVED } },
       ],
-      relations: ['images', 'vendor', 'categories'],
+      relations: ['images', 'vendor', 'categories', 'sizes'],
     });
     if (!product) throw new NotFoundException('Product not found');
     return ProductToResponseDto(product);
@@ -332,7 +387,7 @@ export class ProductsService {
   async findOneFull(id: string): Promise<Product> {
     const product = await this.productsRepository.findOne({
       where: { id },
-      relations: ['images', 'vendor', 'categories'],
+      relations: ['images', 'vendor', 'categories', 'sizes'],
     });
 
     if (!product) throw new NotFoundException('Product not found');
@@ -375,6 +430,16 @@ export class ProductsService {
 
         product.categories = categories;
       }
+    }
+
+    // Whole-list replace, exactly mirroring categoryIds above: present (even
+    // []) replaces the full size set — [] makes the product unsized; absent
+    // (undefined) leaves existing sizes untouched.
+    if (updateDto.sizes !== undefined) {
+      if (updateDto.sizes.length > 0) {
+        this.assertUniqueSizeLabels(updateDto.sizes);
+      }
+      await this.replaceSizes(productId, updateDto.sizes);
     }
 
     const updated = await this.productsRepository.save(product);

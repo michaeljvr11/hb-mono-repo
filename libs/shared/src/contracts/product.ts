@@ -28,6 +28,21 @@ export interface ProductImageDto {
   variants?: ImageVariantSet;
 }
 
+/** Per-product, opt-in size row with its own stock count (Product Sizing). */
+export interface ProductSizeDto {
+  id: string;
+  label: string;
+  stockQuantity: number;
+  displayOrder: number;
+}
+
+/** Body shape for creating/replacing one size when submitting `sizes` on create/update. */
+export interface ProductSizeInput {
+  label: string;
+  stockQuantity: number;
+  displayOrder?: number;
+}
+
 export interface ProductDto {
   id: string;
   name: string;
@@ -47,6 +62,8 @@ export interface ProductDto {
   updatedAt: string;
   /** Admin-configured per-route/currency shipping fee overrides for this product (SF-5). Absent/omitted where not populated by the endpoint — see ProductShippingFeeOverrideService for the source of truth. */
   shippingFeeOverrides?: ProductShippingFeeOverrideDto[];
+  /** Opt-in per-size stock list (Product Sizing), ordered by displayOrder. Absent/omitted for unsized products — zero sizes ⇒ unchanged legacy single-stock behaviour. */
+  sizes?: ProductSizeDto[];
 }
 
 export interface ProductCreateRequest {
@@ -58,8 +75,14 @@ export interface ProductCreateRequest {
   originCountry?: CountryCode;
   vendorId?: string;
   categoryIds?: string[];
+  /** Opt-in per-size stock list. Omitted/empty ⇒ product stays unsized. */
+  sizes?: ProductSizeInput[];
 }
 
+/**
+ * `sizes` uses whole-list-replace semantics on update, matching `categoryIds`:
+ * present (even `[]`) replaces the full set; absent leaves existing sizes untouched.
+ */
 export type ProductUpdateRequest = Partial<ProductCreateRequest>;
 
 /** Sort order for GET /products. Defaults to 'newest' when omitted. */

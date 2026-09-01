@@ -9,6 +9,7 @@ import { CurrencyCode, CountryCode, ListingType, UserRole, VendorStatus } from '
 import { ProductsService } from './products.service';
 import { Product } from './entities/product.entity';
 import { ProductImage } from './entities/product-image.entity';
+import { ProductSize } from './entities/product-size.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
 import { Category } from '../categories/entities/category.entity';
 import { FileUrlService } from './upload/file-url.service';
@@ -469,6 +470,7 @@ describe('ProductsService', () => {
   let service: ProductsService;
   let productRepo: Record<string, jest.Mock>;
   let imageRepo: Record<string, jest.Mock>;
+  let sizeRepo: Record<string, jest.Mock>;
   let vendorRepo: Record<string, jest.Mock>;
   let categoryRepo: Record<string, jest.Mock>;
   let fileUrlService: { getFileUrl: jest.Mock; getUploadDir: jest.Mock };
@@ -490,6 +492,11 @@ describe('ProductsService', () => {
       create: jest.fn((dto: unknown) => dto),
       save: jest.fn((entities: unknown) => Promise.resolve(entities)),
     };
+    sizeRepo = {
+      create: jest.fn((dto: unknown) => dto),
+      save: jest.fn((entities: unknown) => Promise.resolve(entities)),
+      delete: jest.fn().mockResolvedValue({ affected: 0 }),
+    };
     vendorRepo = { findOne: jest.fn() };
     categoryRepo = { findBy: jest.fn() };
     fileUrlService = {
@@ -510,6 +517,7 @@ describe('ProductsService', () => {
         ProductsService,
         { provide: getRepositoryToken(Product), useValue: productRepo },
         { provide: getRepositoryToken(ProductImage), useValue: imageRepo },
+        { provide: getRepositoryToken(ProductSize), useValue: sizeRepo },
         { provide: getRepositoryToken(Vendor), useValue: vendorRepo },
         { provide: getRepositoryToken(Category), useValue: categoryRepo },
         { provide: FileUrlService, useValue: fileUrlService },
@@ -1204,6 +1212,213 @@ describe('ProductsService', () => {
       expect(productRepo.delete).toHaveBeenCalledWith('new-product-id');
       expect(mockedUnlink).toHaveBeenCalledTimes(1);
       expect(mockedUnlink).toHaveBeenCalledWith('/uploads/products/key-1-full.webp');
+    });
+  });
+
+  // ── Product Sizing — opt-in per-product sizes with per-size stock ──────────
+  describe('sizes (Product Sizing)', () => {
+    const adminUser = { id: 'admin-1', role: UserRole.ADMIN } as User;
+
+    describe('create', () => {
+      it('persists a sizes list, whole-list, when createData.sizes has entries', async () => {
+        productRepo.create.mockImplementation((data: Record<string, unknown>) => ({ ...data }));
+        productRepo.save.mockImplementation((product: Record<string, unknown>) =>
+          Promise.resolve({ ...product, id: 'p-sizes-1' }),
+        );
+
+        const result = await service.create({
+          name: 'Shirt',
+          description: 'A shirt',
+          price: 100,
+          listingType: ListingType.PLATFORM,
+          sizes: [
+            { label: 'S', stockQuantity: 5 },
+            { label: 'M', stockQuantity: 3, displayOrder: 1 },
+          ],
+        });
+
+        expect(sizeRepo.delete).toHaveBeenCalledWith({ productId: 'p-sizes-1' });
+        expect(sizeRepo.save).toHaveBeenCalledTimes(1);
+        const [savedSizes] = sizeRepo.save.mock.calls[0] as [Array<Record<string, unknown>>];
+        expect(savedSizes).toHaveLength(2);
+        expect(savedSizes[0]).toMatchObject({
+          productId: 'p-sizes-1',
+          label: 'S',
+          stockQuantity: 5,
+          displayOrder: 0, // defaulted from array index when omitted
+        });
+        expect(savedSizes[1]).toMatchObject({
+          productId: 'p-sizes-1',
+          label: 'M',
+          stockQuantity: 3,
+          displayOrder: 1,
+        });
+        expect(result.id).toBe('p-sizes-1');
+      });
+
+      it('does not touch the size repository when sizes is omitted (unsized product)', async () => {
+        productRepo.create.mockImplementation((data: Record<string, unknown>) => ({ ...data }));
+        productRepo.save.mockImplementation((product: Record<string, unknown>) =>
+          Promise.resolve({ ...product, id: 'p-unsized-1' }),
+        );
+
+        await service.create({
+          name: 'Mug',
+          description: 'A mug',
+          price: 20,
+          listingType: ListingType.PLATFORM,
+        });
+
+        expect(sizeRepo.delete).not.toHaveBeenCalled();
+        expect(sizeRepo.save).not.toHaveBeenCalled();
+      });
+
+      it('does not touch the size repository when sizes is an empty array', async () => {
+        productRepo.create.mockImplementation((data: Record<string, unknown>) => ({ ...data }));
+        productRepo.save.mockImplementation((product: Record<string, unknown>) =>
+          Promise.resolve({ ...product, id: 'p-empty-1' }),
+        );
+
+        await service.create({
+          name: 'Mug',
+          description: 'A mug',
+          price: 20,
+          listingType: ListingType.PLATFORM,
+          sizes: [],
+        });
+
+        expect(sizeRepo.delete).not.toHaveBeenCalled();
+        expect(sizeRepo.save).not.toHaveBeenCalled();
+      });
+
+      it('rejects duplicate labels with 400 and saves neither the product nor the sizes', async () => {
+        await expect(
+          service.create({
+            name: 'Shirt',
+            description: 'A shirt',
+            price: 100,
+            listingType: ListingType.PLATFORM,
+            sizes: [
+              { label: 'M', stockQuantity: 5 },
+              { label: 'M', stockQuantity: 3 },
+            ],
+          }),
+        ).rejects.toBeInstanceOf(BadRequestException);
+
+        expect(productRepo.save).not.toHaveBeenCalled();
+        expect(sizeRepo.save).not.toHaveBeenCalled();
+      });
+
+      it('treats labels differing only by surrounding whitespace as duplicates', async () => {
+        await expect(
+          service.create({
+            name: 'Shirt',
+            description: 'A shirt',
+            price: 100,
+            listingType: ListingType.PLATFORM,
+            sizes: [
+              { label: 'M', stockQuantity: 5 },
+              { label: ' M ', stockQuantity: 3 },
+            ],
+          }),
+        ).rejects.toBeInstanceOf(BadRequestException);
+      });
+    });
+
+    describe('update', () => {
+      const existingProduct = makeProduct({ id: 'p-update-1', vendor: undefined, categories: [] });
+
+      it('replaces the full size set when sizes is provided', async () => {
+        productRepo.findOne.mockResolvedValue({ ...existingProduct });
+        productRepo.save.mockImplementation((product: unknown) => Promise.resolve(product));
+
+        await service.update(
+          'p-update-1',
+          { sizes: [{ label: 'L', stockQuantity: 2, displayOrder: 0 }] },
+          adminUser,
+        );
+
+        expect(sizeRepo.delete).toHaveBeenCalledWith({ productId: 'p-update-1' });
+        expect(sizeRepo.save).toHaveBeenCalledTimes(1);
+        const [savedSizes] = sizeRepo.save.mock.calls[0] as [Array<Record<string, unknown>>];
+        expect(savedSizes).toEqual([
+          expect.objectContaining({
+            productId: 'p-update-1',
+            label: 'L',
+            stockQuantity: 2,
+            displayOrder: 0,
+          }),
+        ]);
+      });
+
+      it('clears sizes (product becomes unsized) when sizes is an explicit empty array', async () => {
+        productRepo.findOne.mockResolvedValue({ ...existingProduct });
+        productRepo.save.mockImplementation((product: unknown) => Promise.resolve(product));
+
+        await service.update('p-update-1', { sizes: [] }, adminUser);
+
+        expect(sizeRepo.delete).toHaveBeenCalledWith({ productId: 'p-update-1' });
+        expect(sizeRepo.save).not.toHaveBeenCalled();
+      });
+
+      it('leaves existing sizes untouched when sizes is omitted from the update payload', async () => {
+        productRepo.findOne.mockResolvedValue({ ...existingProduct });
+        productRepo.save.mockImplementation((product: unknown) => Promise.resolve(product));
+
+        await service.update('p-update-1', { name: 'Renamed' }, adminUser);
+
+        expect(sizeRepo.delete).not.toHaveBeenCalled();
+        expect(sizeRepo.save).not.toHaveBeenCalled();
+      });
+
+      it('rejects duplicate labels with 400 and does not touch the size repository or save the product', async () => {
+        productRepo.findOne.mockResolvedValue({ ...existingProduct });
+
+        await expect(
+          service.update(
+            'p-update-1',
+            {
+              sizes: [
+                { label: 'S', stockQuantity: 1 },
+                { label: 'S', stockQuantity: 2 },
+              ],
+            },
+            adminUser,
+          ),
+        ).rejects.toBeInstanceOf(BadRequestException);
+
+        expect(sizeRepo.delete).not.toHaveBeenCalled();
+        expect(sizeRepo.save).not.toHaveBeenCalled();
+        expect(productRepo.save).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('unsized products stay unaffected', () => {
+      it('findOne omits `sizes` from the response DTO when the product has no size rows', async () => {
+        productRepo.findOne.mockImplementation(respectsWhereFindOne([platformProduct]));
+
+        const result = await service.findOne('platform-1');
+
+        expect(result.sizes).toBeUndefined();
+      });
+
+      it('findOne returns `sizes` ordered by displayOrder for a sized product', async () => {
+        const sized = makeProduct({
+          id: 'sized-1',
+          sizes: [
+            { id: 's2', label: 'L', stockQuantity: 1, displayOrder: 1 } as ProductSize,
+            { id: 's1', label: 'S', stockQuantity: 5, displayOrder: 0 } as ProductSize,
+          ],
+        });
+        productRepo.findOne.mockImplementation(respectsWhereFindOne([sized]));
+
+        const result = await service.findOne('sized-1');
+
+        expect(result.sizes).toEqual([
+          { id: 's1', label: 'S', stockQuantity: 5, displayOrder: 0 },
+          { id: 's2', label: 'L', stockQuantity: 1, displayOrder: 1 },
+        ]);
+      });
     });
   });
 });
