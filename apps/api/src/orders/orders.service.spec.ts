@@ -16,6 +16,7 @@ import { OrderItem } from './entities/order-item.entity';
 import { OrderStatusOverride } from './entities/order-status-override.entity';
 import { Cart } from '../cart/entities/cart.entity';
 import { Product } from '../products/entities/product.entity';
+import { ProductSize } from '../products/entities/product-size.entity';
 import { Address } from '../addresses/entities/address.entity';
 import { Payment } from '../payments/entities/payment.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
@@ -70,6 +71,17 @@ function makeOrder(overrides: Partial<Order> = {}): Order {
     updatedAt: NOW,
     ...overrides,
   } as Order;
+}
+
+function makeSize(overrides: Partial<ProductSize> = {}): ProductSize {
+  return {
+    id: 'size-1',
+    productId: 'prod-1',
+    label: 'Small',
+    stockQuantity: 5,
+    displayOrder: 0,
+    ...overrides,
+  };
 }
 
 function makeOrderItem(overrides: Partial<OrderItem> = {}): OrderItem {
@@ -127,16 +139,21 @@ describe('OrdersService', () => {
   /** Per-entity dispatch for the transactional EntityManager mock. */
   let cartFixture: Cart | null;
   let productFixtures: Map<string, Product>;
+  let sizeFixtures: Map<string, ProductSize>;
 
   beforeEach(async () => {
     cartFixture = null;
     productFixtures = new Map();
+    sizeFixtures = new Map();
 
     manager = {
       findOne: jest.fn((entity: unknown, options: { where?: { id?: string } }) => {
         if (entity === Cart) return Promise.resolve(cartFixture);
         if (entity === Product) {
           return Promise.resolve(productFixtures.get(options.where?.id ?? '') ?? null);
+        }
+        if (entity === ProductSize) {
+          return Promise.resolve(sizeFixtures.get(options.where?.id ?? '') ?? null);
         }
         return Promise.resolve(null);
       }),
@@ -219,7 +236,11 @@ describe('OrdersService', () => {
     service = module.get(OrdersService);
   });
 
-  function stageCart(items: Array<{ productId: string; quantity: number }>, product?: Product[]) {
+  function stageCart(
+    items: Array<{ productId: string; quantity: number; productSizeId?: string }>,
+    product?: Product[],
+    sizes?: ProductSize[],
+  ) {
     cartFixture = {
       id: 'cart-1',
       userId: 'user-1',
@@ -227,6 +248,9 @@ describe('OrdersService', () => {
     } as Cart;
     for (const p of product ?? []) {
       productFixtures.set(p.id, p);
+    }
+    for (const s of sizes ?? []) {
+      sizeFixtures.set(s.id, s);
     }
     // findOneForUser at the end of create()
     ordersRepo.findOne.mockResolvedValue(
@@ -591,6 +615,183 @@ describe('OrdersService', () => {
       await service.create(makeUser(), SHIPPING_DTO);
 
       expect(manager.delete).toHaveBeenCalledWith(expect.anything(), { cartId: 'cart-1' });
+    });
+  });
+
+  // ── Order creation: sized products (Product Sizing, card pxOYnZNI) ────────
+
+  describe('create — sized products', () => {
+    it("locks and decrements the ProductSize row for a sized line, leaving the product's own stockQuantity untouched", async () => {
+      stageCart(
+        [{ productId: 'prod-1', quantity: 2, productSizeId: 'size-1' }],
+        [makeProduct({ stockQuantity: 10 })], // unrelated legacy stock — must not move
+        [makeSize({ id: 'size-1', stockQuantity: 5 })],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(manager.findOne).toHaveBeenCalledWith(
+        ProductSize,
+        expect.objectContaining({
+          where: { id: 'size-1', productId: 'prod-1' },
+          lock: { mode: 'pessimistic_write' },
+        }),
+      );
+      expect(manager.update).toHaveBeenCalledWith(ProductSize, 'size-1', { stockQuantity: 3 });
+      expect(manager.update).not.toHaveBeenCalledWith(Product, 'prod-1', expect.anything());
+    });
+
+    it('reads the parent Product row without a lock for a sized line (price/currency/origin/listingType/vendorId only — stock lives on the size)', async () => {
+      stageCart(
+        [{ productId: 'prod-1', quantity: 1, productSizeId: 'size-1' }],
+        [makeProduct()],
+        [makeSize()],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      const productCall = (manager.findOne.mock.calls as [unknown, Record<string, unknown>][]).find(
+        ([entity]) => entity === Product,
+      );
+      expect(productCall?.[1]).not.toHaveProperty('lock');
+    });
+
+    it('snapshots sizeLabel and productSizeId onto the order line for a sized purchase', async () => {
+      stageCart(
+        [{ productId: 'prod-1', quantity: 1, productSizeId: 'size-1' }],
+        [makeProduct({ name: 'Fynbos Honey' })],
+        [makeSize({ id: 'size-1', label: 'Medium' })],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(manager.save).toHaveBeenCalledWith(
+        Order,
+        expect.objectContaining({
+          items: [
+            expect.objectContaining({
+              productId: 'prod-1',
+              productSizeId: 'size-1',
+              sizeLabel: 'Medium',
+            }),
+          ],
+        }),
+      );
+    });
+
+    it('leaves productSizeId/sizeLabel undefined on unsized lines', async () => {
+      stageCart([{ productId: 'prod-1', quantity: 1 }], [makeProduct()]);
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(manager.save).toHaveBeenCalledWith(
+        Order,
+        expect.objectContaining({
+          items: [expect.objectContaining({ productSizeId: undefined, sizeLabel: undefined })],
+        }),
+      );
+    });
+
+    it('rejects insufficient size stock with 409 — the parent product having plenty of stock is irrelevant', async () => {
+      stageCart(
+        [{ productId: 'prod-1', quantity: 5, productSizeId: 'size-1' }],
+        [makeProduct({ name: 'Fynbos Honey', stockQuantity: 999 })],
+        [makeSize({ id: 'size-1', label: 'Small', stockQuantity: 2 })],
+      );
+
+      await expect(service.create(makeUser(), SHIPPING_DTO)).rejects.toMatchObject({
+        constructor: ConflictException,
+        message: "Insufficient stock for 'Fynbos Honey' (Small) — only 2 left",
+      });
+
+      expect(manager.update).not.toHaveBeenCalledWith(
+        ProductSize,
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(manager.save).not.toHaveBeenCalledWith(Order, expect.anything());
+      expect(paymentProvider.initiatePayment).not.toHaveBeenCalled();
+    });
+
+    it('mixed cart: decrements the size row for the sized line and the product row for the unsized line, independently', async () => {
+      stageCart(
+        [
+          { productId: 'prod-sized', quantity: 2, productSizeId: 'size-1' },
+          { productId: 'prod-plain', quantity: 3 },
+        ],
+        [
+          makeProduct({ id: 'prod-sized', stockQuantity: 999 }),
+          makeProduct({ id: 'prod-plain', stockQuantity: 10 }),
+        ],
+        [makeSize({ id: 'size-1', productId: 'prod-sized', stockQuantity: 5 })],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      expect(manager.update).toHaveBeenCalledWith(ProductSize, 'size-1', { stockQuantity: 3 });
+      expect(manager.update).toHaveBeenCalledWith(Product, 'prod-plain', { stockQuantity: 7 });
+      expect(manager.update).not.toHaveBeenCalledWith(Product, 'prod-sized', expect.anything());
+    });
+
+    // ── Concurrent-checkout stock-lock discipline (deterministic lock order) ──
+    // Extends the plain-product concurrent-checkout coverage above: the
+    // deterministic sort now has to hold across a mix of Product-row and
+    // ProductSize-row locks, or two simultaneous checkouts sharing a product
+    // (one buying a size, one buying unsized stock — or two different sizes
+    // of the same product) could lock in different orders and deadlock.
+    it('locks rows in a single deterministic (productId, productSizeId) order across mixed sized/unsized lines, regardless of cart submission order', async () => {
+      // Cart submission order is deliberately the WRONG (reverse) order —
+      // 'prod-b' (unsized) is listed before 'prod-a/size-x' — to prove the
+      // service re-sorts rather than trusting cart order.
+      stageCart(
+        [
+          { productId: 'prod-b', quantity: 1 },
+          { productId: 'prod-a', quantity: 1, productSizeId: 'size-x' },
+        ],
+        [makeProduct({ id: 'prod-a' }), makeProduct({ id: 'prod-b' })],
+        [makeSize({ id: 'size-x', productId: 'prod-a' })],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      // 'prod-a::size-x' sorts before 'prod-b::' — prod-a's rows (unlocked
+      // Product read, then the ProductSize lock) must both be touched before
+      // prod-b's locked Product read, no matter what order the cart items
+      // were originally in.
+      const order = (manager.findOne.mock.calls as [unknown, Record<string, unknown>][])
+        .filter(([entity]) => entity === Product || entity === ProductSize)
+        .map(
+          ([entity, options]) =>
+            `${entity === Product ? 'Product' : 'ProductSize'}:${(options.where as { id?: string })?.id}`,
+        );
+
+      expect(order).toEqual(['Product:prod-a', 'ProductSize:size-x', 'Product:prod-b']);
+    });
+
+    it('locks two different sizes of the same product in a deterministic order (by productSizeId), not cart-submission order', async () => {
+      stageCart(
+        // Deliberately submitted Large-before-Small to prove the sort, not
+        // the cart order, controls lock acquisition order.
+        [
+          { productId: 'prod-1', quantity: 1, productSizeId: 'size-large' },
+          { productId: 'prod-1', quantity: 1, productSizeId: 'size-small' },
+        ],
+        [makeProduct()],
+        [
+          makeSize({ id: 'size-large', label: 'Large' }),
+          makeSize({ id: 'size-small', label: 'Small' }),
+        ],
+      );
+
+      await service.create(makeUser(), SHIPPING_DTO);
+
+      const sizeLockOrder = (manager.findOne.mock.calls as [unknown, Record<string, unknown>][])
+        .filter(([entity]) => entity === ProductSize)
+        .map(([, options]) => (options.where as { id?: string })?.id);
+
+      // 'size-large' < 'size-small' lexicographically — the deterministic
+      // sort, not submission order, decides which lock is taken first.
+      expect(sizeLockOrder).toEqual(['size-large', 'size-small']);
     });
   });
 
