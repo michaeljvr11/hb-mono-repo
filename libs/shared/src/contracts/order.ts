@@ -106,6 +106,8 @@ export interface VendorOrderLineDto {
   orderStatus: OrderStatus;
   orderCreatedAt: string;
   productName: string;
+  /** Purchase-time size snapshot (Product Sizing). Absent for unsized lines. */
+  sizeLabel?: string;
   unitPrice: number;
   currency: CurrencyCode;
   quantity: number;

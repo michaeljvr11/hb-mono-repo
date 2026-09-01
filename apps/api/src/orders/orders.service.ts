@@ -137,6 +137,7 @@ export class OrdersService {
       orderStatus: item.order.status,
       orderCreatedAt: item.order.createdAt.toISOString(),
       productName: item.productName,
+      sizeLabel: item.sizeLabel ?? undefined,
       unitPrice: Number(item.unitPrice),
       currency: item.currency,
       quantity: item.quantity,
