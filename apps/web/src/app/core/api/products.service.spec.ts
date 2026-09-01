@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { PagedResponse, ProductDto } from '@hb/shared';
+import { PagedResponse, ProductCreateRequest, ProductDto } from '@hb/shared';
 import { ProductsService } from './products.service';
 import { environment } from '../../../environments/environment';
 
@@ -92,6 +92,46 @@ describe('ProductsService', () => {
 
     const req = httpMock.expectOne(`${API_URL}/p1`);
     expect(req.request.method).toBe('GET');
+    req.flush({} as ProductDto);
+  });
+
+  it('create() with images and sizes appends the JSON-stringified sizes to the FormData', () => {
+    const data: ProductCreateRequest = {
+      name: 'Honey',
+      description: 'Raw honey',
+      price: 100,
+      categoryIds: ['cat-1'],
+      sizes: [
+        { label: 'Small', stockQuantity: 5, displayOrder: 0 },
+        { label: 'Large', stockQuantity: 3, displayOrder: 1 },
+      ],
+    };
+    const images = [new File(['x'], 'photo.jpg', { type: 'image/jpeg' })];
+
+    service.create(data, images).subscribe();
+
+    const req = httpMock.expectOne(API_URL);
+    expect(req.request.method).toBe('POST');
+    const body = req.request.body as FormData;
+    expect(body.get('sizes')).toBe(JSON.stringify(data.sizes));
+    expect(body.getAll('categoryIds')).toEqual(['cat-1']);
+    expect(body.getAll('images').length).toBe(1);
+    req.flush({} as ProductDto);
+  });
+
+  it('create() with images but no sizes omits the sizes field from the FormData', () => {
+    const data: ProductCreateRequest = {
+      name: 'Honey',
+      description: 'Raw honey',
+      price: 100,
+    };
+    const images = [new File(['x'], 'photo.jpg', { type: 'image/jpeg' })];
+
+    service.create(data, images).subscribe();
+
+    const req = httpMock.expectOne(API_URL);
+    const body = req.request.body as FormData;
+    expect(body.has('sizes')).toBe(false);
     req.flush({} as ProductDto);
   });
 });

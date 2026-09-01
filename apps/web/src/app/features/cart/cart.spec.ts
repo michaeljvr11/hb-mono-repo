@@ -157,6 +157,25 @@ describe('Cart page', () => {
     expect(increase.disabled).toBe(true);
   });
 
+  it('renders the size label under the product name when present', () => {
+    flushCart({
+      ...CART,
+      items: [{ ...CART.items[0], sizeLabel: 'Medium' }, CART.items[1]],
+    });
+
+    const el: HTMLElement = fixture.nativeElement;
+    const sizeEls = el.querySelectorAll('.cart__item-size');
+    expect(sizeEls.length).toBe(1);
+    expect(sizeEls[0].textContent).toContain('Medium');
+  });
+
+  it('omits the size label for unsized lines (no sizeLabel)', () => {
+    flushCart(); // neither seeded item has sizeLabel
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelectorAll('.cart__item-size').length).toBe(0);
+  });
+
   it('navigates to /checkout from the summary CTA', () => {
     flushCart();
     const router = TestBed.inject(Router);

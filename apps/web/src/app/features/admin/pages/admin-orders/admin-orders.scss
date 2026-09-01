@@ -480,6 +480,19 @@
   word-break: break-all;
 }
 
+/* ─── Line items (heading reuses .detail-heading; rows reuse .detail-row) ─── */
+.items-section {
+  margin-top: 24px;
+}
+
+.line-items {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 /* ─── Override / audit sections (headings reuse .detail-heading / .detail-sub) ── */
 .override-section,
 .audit-section {

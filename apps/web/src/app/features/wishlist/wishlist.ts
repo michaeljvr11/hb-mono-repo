@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { WishlistItemDto } from '@hb/shared';
 import { WishlistService } from '../../core/api/wishlist.service';
 import { CartService } from '../../core/api/cart.service';
@@ -27,6 +27,7 @@ export class Wishlist implements OnInit {
   private readonly wishlistService = inject(WishlistService);
   private readonly cartService = inject(CartService);
   private readonly notificationService = inject(NotificationService);
+  private readonly router = inject(Router);
 
   readonly state = signal<LoadState>('loading');
   /** Product id currently being mutated (disables its row controls while in flight). */
@@ -55,6 +56,14 @@ export class Wishlist implements OnInit {
   }
 
   addToCart(item: WishlistItemDto): void {
+    if (item.hasSizes) {
+      // Sized products don't carry a meaningful stockQuantity, and the cart
+      // API requires a productSizeId for them — same problem ProductCard
+      // solves for its own quick-add. Route to the PDP so the customer can
+      // pick a size instead of quick-adding.
+      void this.router.navigate(['/products', item.productId]);
+      return;
+    }
     if (item.stockQuantity === 0) return;
     this.busyProductId.set(item.productId);
     this.cartService.addItem(item.productId).subscribe({
