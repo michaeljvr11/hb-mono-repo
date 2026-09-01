@@ -5,6 +5,7 @@ import {
   AdminOrderListDto,
   AdminOrderListItemDto,
   CurrencyCode,
+  OrderDto,
   OrderStatus,
   OrderStatusOverrideAuditDto,
   OrderStatusOverrideRequest,
@@ -73,6 +74,12 @@ export class AdminOrders implements OnInit {
   readonly auditHistory = signal<OrderStatusOverrideAuditDto[]>([]);
   readonly auditLoading = signal(false);
   readonly auditError = signal<string | null>(null);
+
+  /** Full order detail (incl. line items) for the selected order — the list row
+   *  itself only carries an itemCount, not the lines. */
+  readonly orderDetail = signal<OrderDto | null>(null);
+  readonly orderDetailLoading = signal(false);
+  readonly orderDetailError = signal<string | null>(null);
 
   readonly statusTabs: StatusTab[] = [
     { label: 'All',        value: 'all' },
@@ -144,6 +151,7 @@ export class AdminOrders implements OnInit {
     this.clearOverrideState();
     this.overrideStatus.set(this.selectedOrder()?.status ?? OrderStatus.PENDING);
     this.fetchAuditHistory(id);
+    this.fetchOrderDetail(id);
   }
 
   goToPrev(): void {
@@ -267,6 +275,29 @@ export class AdminOrders implements OnInit {
     });
   }
 
+  /** Fetches the full order (incl. line items) for the detail panel's Items
+   *  section. The list row only carries itemCount, not the lines themselves. */
+  private fetchOrderDetail(orderId: string): void {
+    this.orderDetailLoading.set(true);
+    this.orderDetailError.set(null);
+
+    this.ordersService.getById(orderId).subscribe({
+      next: (order) => {
+        // Stale response guard — see fetchAuditHistory() for why this matters.
+        if (this.selectedId() !== orderId) return;
+
+        this.orderDetail.set(order);
+        this.orderDetailLoading.set(false);
+      },
+      error: () => {
+        if (this.selectedId() !== orderId) return;
+
+        this.orderDetailError.set('Failed to load order items.');
+        this.orderDetailLoading.set(false);
+      },
+    });
+  }
+
   /** Resets override-form + audit state for a new selection. Deliberately does NOT
    *  touch overridePendingId — an in-flight request's own completion is the only
    *  thing that releases that lock (unconditionally, even if stale); see
@@ -281,6 +312,9 @@ export class AdminOrders implements OnInit {
     this.auditHistory.set([]);
     this.auditLoading.set(false);
     this.auditError.set(null);
+    this.orderDetail.set(null);
+    this.orderDetailLoading.set(false);
+    this.orderDetailError.set(null);
   }
 
   /** Humanise an OrderStatus string (e.g. "pending" → "Pending",

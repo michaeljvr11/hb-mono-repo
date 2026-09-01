@@ -223,6 +223,46 @@ describe('ProfileOrders — detail view', () => {
     expect(component.lineTotal(400, 3)).toBe(1200);
   });
 
+  it('renders the size label when present on a line item', async () => {
+    stub.getById.mockReturnValue(
+      of(
+        makeOrder({
+          id: ORDER_1.id,
+          items: [
+            {
+              id: 'item-1',
+              productId: 'prod-1',
+              productName: 'Widget',
+              unitPrice: 400,
+              currency: CurrencyCode.ZAR,
+              quantity: 3,
+              listingType: ListingType.PLATFORM,
+              sizeLabel: 'M',
+            },
+          ],
+        }),
+      ),
+    );
+
+    component.selectOrder(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const item = nativeEl.querySelector('.line-item');
+    expect(item!.textContent).toContain('Size: M');
+  });
+
+  it('does not render a size label when absent on a line item', async () => {
+    component.selectOrder(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const item = nativeEl.querySelector('.line-item');
+    expect(item!.querySelector('.line-item-size')).toBeNull();
+  });
+
   it('renders the shipping address', async () => {
     component.selectOrder(ORDER_1.id);
     fixture.detectChanges();

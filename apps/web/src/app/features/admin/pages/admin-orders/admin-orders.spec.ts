@@ -10,6 +10,7 @@ import {
   AdminOrderListItemDto,
   CountryCode,
   CurrencyCode,
+  ListingType,
   OrderDto,
   OrderStatus,
   OrderStatusOverrideAuditDto,
@@ -111,12 +112,14 @@ interface AdminOrdersServiceStub {
 interface OrdersServiceStub {
   overrideStatus: ReturnType<typeof vi.fn>;
   getStatusOverrides: ReturnType<typeof vi.fn>;
+  getById: ReturnType<typeof vi.fn>;
 }
 
 function makeOrdersServiceStub(overrides: Partial<OrdersServiceStub> = {}): OrdersServiceStub {
   return {
     overrideStatus: vi.fn(() => of(makeOrderDto())),
     getStatusOverrides: vi.fn(() => of([])),
+    getById: vi.fn(() => of(makeOrderDto())),
     ...overrides,
   };
 }
@@ -637,6 +640,96 @@ describe('AdminOrders — status override & audit history', () => {
   });
 });
 
+// ─── Order items detail ────────────────────────────────────────────────────────
+
+describe('AdminOrders — order items detail', () => {
+  let component: AdminOrders;
+  let fixture: ComponentFixture<AdminOrders>;
+  let nativeEl: HTMLElement;
+  let ordersStub: OrdersServiceStub;
+
+  beforeEach(async () => {
+    const adminOrdersStub: AdminOrdersServiceStub = {
+      getDashboard: vi.fn(),
+      listOrders: vi.fn(() => of(makeResult())),
+    };
+    ordersStub = makeOrdersServiceStub({
+      getById: vi.fn(() =>
+        of(
+          makeOrderDto({
+            items: [
+              {
+                id: 'item-1',
+                productId: 'prod-1',
+                productName: 'Widget',
+                unitPrice: 100,
+                currency: CurrencyCode.ZAR,
+                quantity: 2,
+                listingType: ListingType.PLATFORM,
+                sizeLabel: 'M',
+              },
+              {
+                id: 'item-2',
+                productId: 'prod-2',
+                productName: 'Gadget',
+                unitPrice: 50,
+                currency: CurrencyCode.ZAR,
+                quantity: 1,
+                listingType: ListingType.PLATFORM,
+              },
+            ],
+          }),
+        ),
+      ),
+    });
+
+    ({ component, fixture, nativeEl } = await createComponent(adminOrdersStub, ordersStub));
+
+    component.selectOrder(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  });
+
+  it('fetches the full order via getById when an order is selected', () => {
+    expect(ordersStub.getById).toHaveBeenCalledWith(ORDER_1.id);
+  });
+
+  it('renders each line item with product name, qty, and unit price', () => {
+    const rows = nativeEl.querySelectorAll('.line-items .detail-row');
+    expect(rows.length).toBe(2);
+    expect(rows[0].textContent).toContain('Widget');
+    expect(rows[0].textContent).toContain('Qty 2');
+    expect(rows[1].textContent).toContain('Gadget');
+    expect(rows[1].textContent).toContain('Qty 1');
+  });
+
+  it('renders the size label when present, and omits it when absent', () => {
+    const rows = nativeEl.querySelectorAll('.line-items .detail-row');
+    expect(rows[0].textContent).toContain('Size: M');
+    expect(rows[1].textContent).not.toContain('Size:');
+  });
+
+  it('surfaces an error when getById fails', async () => {
+    ordersStub.getById.mockReturnValue(throwError(() => new Error('500')));
+    component.selectOrder(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.orderDetailError()).toBeTruthy();
+  });
+
+  it('clears orderDetail when switching selection so stale items do not flash', () => {
+    ordersStub.getById.mockClear();
+    ordersStub.getById.mockReturnValue(new Subject<OrderDto>().asObservable());
+
+    component.selectOrder(ORDER_2.id);
+
+    expect(component.orderDetail()).toBeNull();
+  });
+});
+
 // ─── Stale-response race guard ─────────────────────────────────────────────────
 //
 // Regression coverage for a review finding: switching the selected order mid-flight
@@ -681,6 +774,58 @@ describe('AdminOrders — stale response race guard', () => {
     // Must still show B's audit history — A's stale response was a no-op.
     expect(component.selectedId()).toBe(ORDER_2.id);
     expect(component.auditHistory()).toEqual(auditRowsForB);
+  });
+
+  it('a stale order-detail response for order A does not overwrite order B\'s items', async () => {
+    const detailForA = new Subject<OrderDto>();
+    const detailForB = makeOrderDto({
+      id: ORDER_2.id,
+      items: [
+        {
+          id: 'item-b',
+          productId: 'prod-b',
+          productName: 'B Product',
+          unitPrice: 10,
+          currency: CurrencyCode.ZAR,
+          quantity: 1,
+          listingType: ListingType.PLATFORM,
+        },
+      ],
+    });
+
+    const adminOrdersStub: AdminOrdersServiceStub = {
+      getDashboard: vi.fn(),
+      listOrders: vi.fn(() => of(makeResult())),
+    };
+    const ordersStub = makeOrdersServiceStub({
+      getById: vi.fn((id: string) =>
+        id === ORDER_1.id ? detailForA.asObservable() : of(detailForB),
+      ),
+    });
+
+    const { component, fixture } = await createComponent(adminOrdersStub, ordersStub);
+
+    // Select order A — its detail fetch is left hanging.
+    component.selectOrder(ORDER_1.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.orderDetail()).toBeNull();
+
+    // Navigate to order B before A's response arrives — B's own fetch resolves immediately.
+    component.selectOrder(ORDER_2.id);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.orderDetail()).toEqual(detailForB);
+
+    // A's slow response finally arrives.
+    detailForA.next(makeOrderDto({ id: ORDER_1.id }));
+    detailForA.complete();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Must still show B's items — A's stale response was a no-op.
+    expect(component.selectedId()).toBe(ORDER_2.id);
+    expect(component.orderDetail()).toEqual(detailForB);
   });
 
   it('a stale confirmOverride() success response for order A does not touch order B\'s panel state', async () => {
