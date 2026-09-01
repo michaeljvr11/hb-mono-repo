@@ -161,12 +161,14 @@
   margin-top: 16px;
 }
 
-.pdp__size-selector-label {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.pdp__size-selector-label,
+.pdp__size-selector-hint {
+  font-size: 13px;
   color: var(--hb-on-surface-variant);
+}
+
+.pdp__size-selector-label {
+  font-weight: 600;
 }
 
 .pdp__size-list {
@@ -181,15 +183,10 @@
   border-radius: var(--hb-radius-pill);
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface);
-  font-family: inherit;
+  font: inherit;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
-
-  &:hover:not(:disabled) {
-    border-color: var(--hb-primary);
-  }
 
   &--selected {
     border-color: var(--hb-primary);
@@ -201,17 +198,9 @@
     color: var(--hb-outline);
     background: var(--hb-surface-container);
     text-decoration: line-through;
-  }
-
-  &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }
-}
-
-.pdp__size-selector-hint {
-  font-size: 13px;
-  color: var(--hb-on-surface-variant);
 }
 
 /* ── Cross-border shipping card ───────────────────────────────────────── */
@@ -989,14 +978,6 @@
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-
-    &:active {
-      transform: none;
-    }
-
-    &:hover {
-      filter: none;
-    }
   }
 }
 
