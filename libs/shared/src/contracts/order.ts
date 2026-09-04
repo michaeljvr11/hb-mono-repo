@@ -89,6 +89,8 @@ export interface OrderItemDto {
   listingType: ListingType;
   /** Absent for platform (first-party) items. */
   vendorId?: string;
+  /** Snapshot of the selected size's label at purchase time (Product Sizing) — absent for unsized lines. */
+  sizeLabel?: string;
 }
 
 /**
@@ -104,6 +106,8 @@ export interface VendorOrderLineDto {
   orderStatus: OrderStatus;
   orderCreatedAt: string;
   productName: string;
+  /** Purchase-time size snapshot (Product Sizing). Absent for unsized lines. */
+  sizeLabel?: string;
   unitPrice: number;
   currency: CurrencyCode;
   quantity: number;

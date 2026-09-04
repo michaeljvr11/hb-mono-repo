@@ -211,4 +211,61 @@ describe('ProductCard', () => {
 
     expect(navigate).not.toHaveBeenCalled();
   });
+
+  // ── Sizing available hint + quick-add behavior (Product Sizing) ────────
+
+  const sizedProduct: ProductDto = {
+    ...baseProduct,
+    id: 'p-sized',
+    sizes: [
+      { id: 's1', label: 'Small', stockQuantity: 5, displayOrder: 0 },
+      { id: 's2', label: 'Medium', stockQuantity: 0, displayOrder: 1 },
+    ],
+  };
+
+  it('does not render the "Sizing available" hint for an unsized product', async () => {
+    await setup();
+    expect(fixture.nativeElement.querySelector('.product-card__size-hint')).toBeNull();
+  });
+
+  it('renders the "Sizing available" hint when the product has sizes', async () => {
+    await setup(sizedProduct);
+    const hint = fixture.nativeElement.querySelector('.product-card__size-hint');
+    expect(hint).toBeTruthy();
+    expect(hint.textContent).toContain('Sizing available');
+  });
+
+  it('does not emit addToCart for a sized product — lets the click fall through to the PDP link instead', async () => {
+    await setup(sizedProduct);
+    // The click is expected to fall through and trigger the wrapping <a>'s
+    // routerLink navigation — stub it out so this test only asserts on
+    // addToCart, not on an actual (unrouted, in this fixture) navigation.
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const spy = vi.fn();
+    component.addToCart.subscribe(spy);
+
+    const button = fixture.nativeElement.querySelector('.product-card__cart-btn') as HTMLButtonElement;
+    button.click();
+
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('still emits addToCart on click for an unsized product (regression: existing behaviour unchanged)', async () => {
+    await setup();
+    const spy = vi.fn();
+    component.addToCart.subscribe(spy);
+
+    const button = fixture.nativeElement.querySelector('.product-card__cart-btn') as HTMLButtonElement;
+    button.click();
+
+    expect(spy).toHaveBeenCalledWith(baseProduct);
+  });
+
+  it('uses a "select a size" aria-label and distinct icon for the quick-add button on a sized product', async () => {
+    await setup(sizedProduct);
+    const button = fixture.nativeElement.querySelector('.product-card__cart-btn') as HTMLButtonElement;
+    expect(button.getAttribute('aria-label')).toBe(`Select a size for ${sizedProduct.name}`);
+    expect(button.querySelector('.material-symbols-outlined')?.textContent).toBe('straighten');
+  });
 });

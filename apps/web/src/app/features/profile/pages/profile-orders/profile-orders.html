@@ -68,6 +68,9 @@
             <div class="line-item" role="listitem">
               <div class="line-item-main">
                 <span class="line-item-name">{{ item.productName }}</span>
+                @if (item.sizeLabel) {
+                  <span class="line-item-size">Size: {{ item.sizeLabel }}</span>
+                }
                 <span class="line-item-qty">Qty {{ item.quantity }} × {{ formatMoney(item.unitPrice, item.currency) }}</span>
               </div>
               <span class="line-item-total">{{ formatMoney(lineTotal(item.unitPrice, item.quantity), item.currency) }}</span>

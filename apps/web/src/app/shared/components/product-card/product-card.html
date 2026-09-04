@@ -38,25 +38,31 @@
       <p class="product-card__category">{{ category }}</p>
     }
     <h3 class="product-card__name">{{ product().name }}</h3>
+    @if (hasSizes()) {
+      <span class="product-card__size-hint">
+        <span class="material-symbols-outlined" aria-hidden="true">straighten</span>
+        Sizing available
+      </span>
+    }
     <div class="product-card__footer">
       <span class="product-card__price">{{ price() }}</span>
       @if (variant() === 'carousel') {
         <button
           type="button"
           class="product-card__cart-btn product-card__cart-btn--icon"
-          [attr.aria-label]="'Add ' + product().name + ' to cart'"
+          [attr.aria-label]="hasSizes() ? 'Select a size for ' + product().name : 'Add ' + product().name + ' to cart'"
           (click)="onAddToCart($event)"
         >
-          <span class="material-symbols-outlined" aria-hidden="true">add</span>
+          <span class="material-symbols-outlined" aria-hidden="true">{{ hasSizes() ? 'straighten' : 'add' }}</span>
         </button>
       } @else {
         <button
           type="button"
           class="product-card__cart-btn"
-          [attr.aria-label]="'Add ' + product().name + ' to cart'"
+          [attr.aria-label]="hasSizes() ? 'Select a size for ' + product().name : 'Add ' + product().name + ' to cart'"
           (click)="onAddToCart($event)"
         >
-          <span class="material-symbols-outlined" aria-hidden="true">add_shopping_cart</span>
+          <span class="material-symbols-outlined" aria-hidden="true">{{ hasSizes() ? 'straighten' : 'add_shopping_cart' }}</span>
         </button>
       }
     </div>

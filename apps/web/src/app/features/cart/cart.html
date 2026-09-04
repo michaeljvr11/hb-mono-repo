@@ -33,6 +33,9 @@
 
                 <div class="cart__item-body">
                   <a class="cart__item-name" [routerLink]="['/products', item.productId]">{{ item.productName }}</a>
+                  @if (item.sizeLabel) {
+                    <span class="cart__item-size">Size: {{ item.sizeLabel }}</span>
+                  }
                   <span class="cart__item-unit">{{ format(item.unitPrice, item.currency) }} each</span>
 
                   @if (item.quantity >= item.stockQuantity) {

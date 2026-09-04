@@ -94,7 +94,7 @@ export class WishlistService {
   private async findItems(userId: string): Promise<WishlistItem[]> {
     return this.wishlistItemRepository.find({
       where: { userId },
-      relations: ['product', 'product.images'],
+      relations: ['product', 'product.images', 'product.sizes'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -121,6 +121,7 @@ export class WishlistService {
           price: Number(item.product.price),
           currency: item.product.currency,
           stockQuantity: item.product.stockQuantity,
+          hasSizes: (item.product.sizes?.length ?? 0) > 0,
           imageUrl: primaryImage?.url,
           addedAt: item.createdAt.toISOString(),
         };

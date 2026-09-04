@@ -9,6 +9,7 @@ import {
 import { CurrencyCode, ListingType } from '@hb/shared';
 import { Order } from './order.entity';
 import { Product } from '../../products/entities/product.entity';
+import { ProductSize } from '../../products/entities/product-size.entity';
 import { Vendor } from '../../vendors/entities/vendor.entity';
 
 /**
@@ -38,6 +39,23 @@ export class OrderItem {
 
   @Column()
   productName: string; // snapshot
+
+  /**
+   * Selected size (Product Sizing), nullable/`ON DELETE SET NULL` — mirrors
+   * the `product` FK above: a vendor renaming/deleting a size after the
+   * order ships must never break the historical record. `sizeLabel` is the
+   * actual snapshot (same style as `productName`); this FK is only a live
+   * reference for as long as the size row survives.
+   */
+  @ManyToOne(() => ProductSize, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'productSizeId' })
+  productSize?: ProductSize;
+
+  @Column({ type: 'uuid', nullable: true })
+  productSizeId?: string;
+
+  @Column({ nullable: true })
+  sizeLabel?: string; // snapshot — absent for unsized lines
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   unitPrice: number; // snapshot

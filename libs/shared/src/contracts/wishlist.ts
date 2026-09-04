@@ -16,6 +16,13 @@ export interface WishlistItemDto {
   currency: CurrencyCode;
   /** Live available stock — the UI disables add-to-cart at zero. */
   stockQuantity: number;
+  /**
+   * Live product display data (resolved at read time, never stored). True
+   * when the product has any per-size stock rows — sized products don't
+   * maintain `stockQuantity` meaningfully, and quick-add requires picking a
+   * size first, so the UI routes these to the PDP instead of quick-adding.
+   */
+  hasSizes: boolean;
   /** Primary product image, when one exists. */
   imageUrl?: string;
   addedAt: string;

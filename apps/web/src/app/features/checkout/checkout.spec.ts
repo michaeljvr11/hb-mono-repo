@@ -203,6 +203,25 @@ describe('Checkout', () => {
     expect(el.textContent).toContain('Subtotal (ZAR)');
   });
 
+  it('renders the size label under the product name when present', async () => {
+    await setup({
+      ...CART,
+      items: [{ ...CART.items[0], sizeLabel: 'Medium' }],
+    });
+
+    const el: HTMLElement = fixture.nativeElement;
+    const sizeEls = el.querySelectorAll('.checkout__item-size');
+    expect(sizeEls.length).toBe(1);
+    expect(sizeEls[0].textContent).toContain('Medium');
+  });
+
+  it('omits the size label for unsized lines (no sizeLabel)', async () => {
+    await setup(); // CART's line item has no sizeLabel
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelectorAll('.checkout__item-size').length).toBe(0);
+  });
+
   it('shows the empty state when the cart has nothing to check out', async () => {
     await setup({ ...CART, items: [], totals: [], itemCount: 0 });
 

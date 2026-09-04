@@ -152,6 +152,57 @@
   color: var(--hb-primary);
 }
 
+/* ── Size selector (Product Sizing) ───────────────────────────────────── */
+
+.pdp__size-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pdp__size-selector-label,
+.pdp__size-selector-hint {
+  font-size: 13px;
+  color: var(--hb-on-surface-variant);
+}
+
+.pdp__size-selector-label {
+  font-weight: 600;
+}
+
+.pdp__size-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pdp__size-chip {
+  padding: 8px 16px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: var(--hb-radius-pill);
+  background: var(--hb-surface-container-lowest);
+  color: var(--hb-on-surface);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &--selected {
+    border-color: var(--hb-primary);
+    background: var(--hb-primary);
+    color: var(--hb-on-primary);
+  }
+
+  &--out-of-stock {
+    color: var(--hb-outline);
+    background: var(--hb-surface-container);
+    text-decoration: line-through;
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
 /* ── Cross-border shipping card ───────────────────────────────────────── */
 
 .pdp__shipping-card {
@@ -922,6 +973,11 @@
 
   &:hover {
     filter: brightness(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 }
 
