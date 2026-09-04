@@ -56,6 +56,13 @@ describe('ProfileShell', () => {
     expect(el.textContent).toContain('My Account');
   });
 
+  it('links the wordmark to the storefront', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const wordmark = el.querySelector('a.wordmark');
+    expect(wordmark?.getAttribute('href')).toBe('/shop');
+    expect(wordmark?.getAttribute('aria-label')).toBe('H&B E-Commerce storefront home');
+  });
+
   it('toggles sidebar open and closed', () => {
     expect(component.sidebarOpen()).toBe(false);
     component.toggleSidebar();

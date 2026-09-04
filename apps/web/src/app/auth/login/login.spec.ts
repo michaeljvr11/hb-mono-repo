@@ -91,6 +91,21 @@ describe('Login', () => {
     expect(termsLink?.textContent?.trim()).toBe('Terms of Trade');
     expect(privacyLink?.textContent?.trim()).toBe('Privacy Policy');
   });
+
+  it('routes the brand link to the storefront, not back to /login', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const brandLink = el.querySelector('a.brand');
+    expect(brandLink?.getAttribute('href')).toBe('/shop');
+  });
+
+  it('renders a Contact link (replacing the old coming-soon Support button) that routes to /contact', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const contactLink = el.querySelector('a.link-button');
+    expect(contactLink?.textContent?.trim()).toBe('Contact');
+    expect(contactLink?.getAttribute('href')).toBe('/contact');
+  });
 });
 
 describe('Login returnUrl handling', () => {

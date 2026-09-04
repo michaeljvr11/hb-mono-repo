@@ -6,6 +6,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { sanitizeReturnUrl } from '../../core/auth/return-url';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { environment } from '../../../environments/environment';
+import { SITE_IMAGES } from '../../shared/constants/image.constants';
 import { RegisterRequest } from '@hb/shared';
 
 @Component({
@@ -24,6 +25,7 @@ export class Register {
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal('');
   readonly showPassword = signal(false);
+  protected readonly brandLogo = SITE_IMAGES.logo;
   // Full-page redirect into the server-side Google OAuth flow.
   readonly googleAuthUrl = `${environment.apiBaseUrl}/auth/google`;
   readonly returnUrl = computed(

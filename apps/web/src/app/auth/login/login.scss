@@ -29,20 +29,29 @@
   text-decoration: none;
 }
 
-.brand-name {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--hb-primary);
+/* Intrinsic hb-logo.png is 144x144 — reserved at its rendered size (both the
+   `width`/`height` attrs on the <img> and here) so it doesn't shift layout
+   on load. Matches the register brand mark. */
+.brand-logo {
+  display: block;
+  width: 36px;
+  height: 36px;
 }
 
-.brand-tag {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--hb-on-surface-variant);
-  padding-left: 12px;
-  border-left: 1px solid var(--hb-outline-variant);
+/* 24px/600 is DESIGN.md's headline-md. Steps down below 400px so the wordmark
+   stays on one line beside the Contact link on a 320px viewport — the same
+   treatment the nav bar's brand uses. Login and register must stay identical. */
+.brand-name {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+  white-space: nowrap;
+  color: var(--hb-primary);
+
+  @media (min-width: 400px) {
+    font-size: 24px;
+    line-height: 32px;
+  }
 }
 
 /* Main / card */
@@ -152,6 +161,8 @@ form {
 }
 
 /* Links */
+/* `text-decoration` is needed explicitly: this is an <a> since the Support
+   stub became a real Contact link, and `font: inherit` does not reset it. */
 .link-button {
   border: 0;
   background: none;
@@ -160,6 +171,7 @@ form {
   font-size: 16px;
   font-weight: 600;
   color: var(--hb-primary);
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -279,7 +291,6 @@ form {
 }
 
 @media (max-width: 520px) {
-  .brand-tag,
   .trust-badges .dot {
     display: none;
   }

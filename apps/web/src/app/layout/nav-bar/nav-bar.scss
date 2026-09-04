@@ -15,7 +15,13 @@
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 16px 16px;
+  /* 12px side padding below 400px — the 8px it reclaims is what lets the brand
+     keep its wordmark next to the action row on a 360px viewport. */
+  padding: 16px 12px;
+
+  @media (min-width: 400px) {
+    padding: 16px 16px;
+  }
 
   @media (min-width: 768px) {
     padding: 16px 24px;
@@ -27,39 +33,72 @@
   }
 }
 
+/* `flex-shrink: 0` + the `nowrap` below: as a flex child under
+   `justify-content: space-between` the group would otherwise be squeezed under
+   its content width and the wordmark would break across two lines. It fits at
+   every width once it is allowed to keep its intrinsic size. */
 .nav-bar__brand-group {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
+/* `nowrap` keeps the wordmark on one line; without it the flex row squeezes
+   the brand under its content width and "H&B E-Commerce" breaks in two.
+   18px below 768px: the wordmark measures 210px at 24px against 157px at
+   18px, and on mobile it shares the row with the action icons. */
 .nav-bar__brand {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
-  line-height: 32px;
+  line-height: 24px;
+  white-space: nowrap;
   color: var(--hb-primary);
   text-decoration: none;
+
+  /* Full size only from 768px. The wordmark is 210px at 24px against 157px at
+     18px, and below 768px it has to share the row with the action icons — at
+     24px that does not fit even a 414px viewport. */
+  @media (min-width: 768px) {
+    /* Slightly wider than the standard 8px gap — balances the larger 44px logo
+       against the 32px line-height wordmark next to it. */
+    gap: 10px;
+    font-size: 24px;
+    line-height: 32px;
+  }
 
   &:hover {
     opacity: 0.85;
   }
 }
 
-/* Intrinsic hb-logo.png is 96x96 (1:1) — 3x the 32px render, for DPR 3 screens.
-   Sized explicitly (both the `width`/`height` attrs on the <img> and here) so the
-   image reserves its box before it loads — no layout shift. */
-.nav-bar__logo {
-  display: block;
-  width: 32px;
-  height: 32px;
+/* Below 360px even the stepped-down wordmark cannot share the row with the
+   action icons, so the mark stands alone — it reads "H&B" itself, and the
+   anchor's aria-label carries the accessible name at every width. */
+.nav-bar__brand-name {
+  display: none;
+
+  @media (min-width: 360px) {
+    display: inline;
+  }
 }
 
-/* Desktop nav links — hidden on mobile. Gap/padding tighten between 768–1023px
-   (four links now share the row with the brand, Sell-on-H&B, and utilities;
-   full spacing returns once there's room at 1024px+). */
+/* Intrinsic hb-logo.png is 144x144 (1:1) — headroom above the 44px render, for
+   DPR 3 screens. Sized explicitly (both the `width`/`height` attrs on the <img>
+   and here) so the image reserves its box before it loads — no layout shift. */
+.nav-bar__logo {
+  display: block;
+  width: 44px;
+  height: 44px;
+}
+
+/* Desktop nav links — hidden on mobile. Gap/padding tighten between 768–1023px,
+   where the four links share the row with the brand and the action icons; full
+   spacing returns at 1024px+. Sell-on-H&B and the utilities only rejoin the row
+   at 1280px. */
 .nav-bar__links {
   display: none;
   align-items: center;
@@ -102,13 +141,25 @@
     font-weight: 700;
   }
 
+  /* Hidden below 1280px. With this and the utilities in the row, the nav's
+     children plus their gaps measure ~1218px against a content box that tops
+     out at 1200px once `.nav-bar__inner` hits its 1280px max-width — measured
+     32px of real overflow at a 1240px window, and clean from 1280px up. This
+     is the largest discretionary item in that row at 115px. Vendor signup is
+     not a shopper action, and the footer's "Register as Vendor" link still
+     reaches /vendor/apply at every width. */
   &--sell {
+    display: none;
     color: var(--hb-primary);
     font-weight: 600;
     border: 1px solid rgba(46, 125, 50, 0.3);
     border-radius: 6px;
     padding: 4px 12px;
     transition: background 150ms ease, border-color 150ms ease;
+
+    @media (min-width: 1280px) {
+      display: inline-block;
+    }
 
     &:hover {
       background: rgba(46, 125, 50, 0.06);
@@ -117,13 +168,15 @@
   }
 }
 
-/* Desktop utilities — hidden on mobile */
+/* Desktop utilities — hidden below 1280px, alongside the Sell link. The
+   currency switcher is still a `notifyComingSoon` stub, so its 112px is the
+   cheapest thing to reclaim in the band where the row would overflow. */
 .nav-bar__utils {
   display: none;
   align-items: center;
   gap: 8px;
 
-  @media (min-width: 768px) {
+  @media (min-width: 1280px) {
     display: flex;
   }
 }
@@ -166,11 +219,25 @@
 .nav-bar__actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  /* Tight below 400px so the brand keeps its wordmark there; the controls
+     themselves keep their 36–40px width, only the space between them shrinks. */
+  gap: 4px;
+
+  @media (min-width: 400px) {
+    gap: 8px;
+  }
+
+  @media (min-width: 768px) {
+    gap: 16px;
+  }
 }
 
+/* Search is hidden below 768px: it only navigates to /discover, which /shop
+   reaches through its own mobile search bar (and the radial nav offers
+   directly on the routes that mount it). The brand links to /shop at every
+   width, so the path is never more than one tap further away. */
 .nav-bar__icon-btn {
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 4px;
@@ -180,6 +247,10 @@
   color: var(--hb-on-surface-variant);
   border-radius: 4px;
   transition: color 150ms ease, background 150ms ease;
+
+  @media (min-width: 768px) {
+    display: flex;
+  }
 
   .material-symbols-outlined {
     font-size: 24px;
@@ -256,6 +327,7 @@
 
 .nav-bar__cart-label {
   display: none;
+  white-space: nowrap;
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
@@ -297,6 +369,7 @@
 
 .nav-bar__signin-label {
   display: none;
+  white-space: nowrap;
 
   @media (min-width: 768px) {
     display: inline;
@@ -371,6 +444,7 @@
 
 .nav-bar__signout-label {
   display: none;
+  white-space: nowrap;
 
   @media (min-width: 768px) {
     display: inline;

@@ -1,4 +1,22 @@
 {
+  "generatedAt": "2026-08-31T18:55:20.609Z",
+  "git": {
+    "totalCommits": 282,
+    "aiCommits": 271,
+    "aiPct": 96,
+    "appCommits": 205,
+    "ins": 111081,
+    "del": 11832,
+    "net": 99249,
+    "aiIns": 97567,
+    "aiDel": 11658,
+    "filesTouched": 842,
+    "areaRows": [
+      {
+        "name": "Web (Angular)",
+        "commits": 127,
+        "ins": 55173,
+        "del": 3417
   "generatedAt": "2026-09-01T20:29:36.118Z",
   "git": {
     "totalCommits": 295,
@@ -26,6 +44,14 @@
       },
       {
         "name": "Docs",
+        "commits": 78,
+        "ins": 16786,
+        "del": 6238
+      },
+      {
+        "name": "AI Factory config",
+        "commits": 84,
+        "ins": 2509,
         "commits": 79,
         "ins": 16908,
         "del": 6347
@@ -56,6 +82,51 @@
       }
     ],
     "firstDate": "2026-06-11",
+    "lastDate": "2026-08-31",
+    "recent": [
+      {
+        "hash": "7992e10",
+        "subject": "fix(web): address code review on the pre-launch polish batch",
+        "ai": true
+      },
+      {
+        "hash": "b0f2e81",
+        "subject": "test(web): cover the brand links, footer social links and placeholder copy",
+        "ai": true
+      },
+      {
+        "hash": "a2173dc",
+        "subject": "fix(web): remove the mobile horizontal overflow and enlarge footer links",
+        "ai": true
+      },
+      {
+        "hash": "76e00c1",
+        "subject": "feat(web): replace the dead footer icons with real social links",
+        "ai": true
+      },
+      {
+        "hash": "bf6074e",
+        "subject": "fix(web): correct the search placeholders and broaden the contact copy",
+        "ai": true
+      },
+      {
+        "hash": "bbf8105",
+        "subject": "feat(web): point brand links at the storefront and enlarge the logo",
+        "ai": true
+      },
+      {
+        "hash": "e2cc8b6",
+        "subject": "feat(web): fill in the legal-page placeholders with facts confirmed by the owner",
+        "ai": true
+      },
+      {
+        "hash": "c84f555",
+        "subject": "chore(evidence): recompile AI-authorship report for the LC-6..LC-10 batch",
+        "ai": true
+      },
+      {
+        "hash": "00a1fff",
+        "subject": "feat: capture terms acceptance on the Google OAuth signup path",
     "lastDate": "2026-09-01",
     "recent": [
       {
@@ -437,12 +508,14 @@
     "edits": 933,
     "editsUnfixable": 306,
     "firstTs": "2026-06-18T12:14:47.925Z",
+    "lastTs": "2026-08-31T18:46:50.074Z",
     "lastTs": "2026-09-01T20:27:08.615Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
+          "invocations": 71,
           "invocations": 78,
           "inputTokens": 0,
           "outputTokens": 0,
@@ -461,6 +534,7 @@
         },
         {
           "agentType": "frontend-engineer",
+          "invocations": 47,
           "invocations": 49,
           "inputTokens": 0,
           "outputTokens": 0,
@@ -470,7 +544,7 @@
         },
         {
           "agentType": "test-engineer",
-          "invocations": 8,
+          "invocations": 9,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -479,6 +553,7 @@
         },
         {
           "agentType": "code-reviewer",
+          "invocations": 30,
           "invocations": 31,
           "inputTokens": 0,
           "outputTokens": 0,
@@ -534,6 +609,66 @@
       ],
       "recent": [
         {
+          "ts": "2026-08-24T14:46:12.997Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-24T14:46:59.518Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-24T14:57:25.289Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-24T18:45:01.635Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-24T18:46:52.185Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-24T18:52:21.754Z",
+          "agentType": "docs-writer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-24T18:56:39.867Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-25T16:00:19.150Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-26T16:49:36.527Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-26T16:55:55.644Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-26T17:01:23.072Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-26T17:07:59.032Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
           "ts": "2026-08-26T17:10:36.436Z",
           "agentType": "frontend-engineer",
           "totalTokens": 0
@@ -549,11 +684,13 @@
           "totalTokens": 0
         },
         {
+          "ts": "2026-08-31T18:11:41.272Z",
           "ts": "2026-09-01T18:02:59.006Z",
           "agentType": "unknown",
           "totalTokens": 0
         },
         {
+          "ts": "2026-08-31T18:14:19.548Z",
           "ts": "2026-09-01T18:21:52.282Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -574,6 +711,7 @@
           "totalTokens": 0
         },
         {
+          "ts": "2026-08-31T18:14:24.632Z",
           "ts": "2026-09-01T19:31:24.243Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -594,6 +732,12 @@
           "totalTokens": 0
         },
         {
+          "ts": "2026-08-31T18:36:28.649Z",
+          "agentType": "test-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-08-31T18:46:50.074Z",
           "ts": "2026-09-01T19:50:21.274Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -1102,11 +1246,12 @@
     },
     {
       "name": "To Do",
+      "cards": 11
       "cards": 16
     },
     {
       "name": "In Progress",
-      "cards": 5
+      "cards": 6
     },
     {
       "name": "In Review",

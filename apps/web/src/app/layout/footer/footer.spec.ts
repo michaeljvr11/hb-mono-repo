@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { Footer } from './footer';
+import { SOCIAL_LINKS } from '../../shared/constants/site.constants';
 
 describe('Footer', () => {
   let component: Footer;
@@ -78,5 +79,58 @@ describe('Footer', () => {
     const dead = Array.from(el.querySelectorAll('a[href="#"]'));
     expect(dead).toHaveLength(1);
     expect(dead[0].textContent).toContain('Success Stories');
+  });
+
+  // The three dead Material glyph spans (public/shield/payments) were replaced
+  // by real social links. Guard the count, the security-relevant new-tab
+  // attributes, the URLs (against SOCIAL_LINKS, not hardcoded), the
+  // accessible name, the deliberate Facebook omission, and that none of them
+  // regress back into dead "#" links.
+  describe('social links', () => {
+    function socialLinks(): HTMLAnchorElement[] {
+      const el: HTMLElement = fixture.nativeElement;
+      return Array.from(el.querySelectorAll('.site-footer__social-link'));
+    }
+
+    it('renders exactly three social links', () => {
+      fixture.detectChanges();
+      expect(socialLinks()).toHaveLength(3);
+    });
+
+    it('opens every social link in a new tab without granting it access to window.opener', () => {
+      fixture.detectChanges();
+      for (const link of socialLinks()) {
+        expect(link.getAttribute('target')).toBe('_blank');
+        expect(link.getAttribute('rel')).toContain('noopener');
+      }
+    });
+
+    it("points each social link at its SOCIAL_LINKS URL", () => {
+      fixture.detectChanges();
+      const hrefs = socialLinks().map((a) => a.getAttribute('href'));
+      expect(hrefs).toContain(SOCIAL_LINKS.whatsapp);
+      expect(hrefs).toContain(SOCIAL_LINKS.instagram);
+      expect(hrefs).toContain(SOCIAL_LINKS.tiktok);
+    });
+
+    it('gives every social link a non-empty accessible label (the icon svgs are aria-hidden)', () => {
+      fixture.detectChanges();
+      for (const link of socialLinks()) {
+        expect(link.getAttribute('aria-label')?.trim()).toBeTruthy();
+      }
+    });
+
+    it('renders no Facebook link — the business deliberately has no Facebook page', () => {
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('a[aria-label*="Facebook" i]')).toBeNull();
+      expect(el.querySelector('a[href*="facebook.com"]')).toBeNull();
+    });
+
+    it('leaves no dead "#" links inside the social nav', () => {
+      fixture.detectChanges();
+      const dead = socialLinks().filter((a) => a.getAttribute('href') === '#');
+      expect(dead).toHaveLength(0);
+    });
   });
 });

@@ -1,10 +1,17 @@
 <div class="auth-screen">
   <header class="auth-topbar">
-    <a class="brand" routerLink="/login" aria-label="H&B E-Commerce home">
-      <span class="brand-name">H&amp;B</span>
-      <span class="brand-tag">E-Commerce</span>
+    <a class="brand" routerLink="/shop" aria-label="H&B E-Commerce storefront home">
+      <img
+        class="brand-logo"
+        [src]="brandLogo"
+        width="36"
+        height="36"
+        alt=""
+        aria-hidden="true"
+      />
+      <span class="brand-name">H&amp;B E-Commerce</span>
     </a>
-    <button type="button" class="link-button" (click)="notifyComingSoon('Support')">Support</button>
+    <a class="link-button" routerLink="/contact">Contact</a>
   </header>
 
   <main class="auth-main">

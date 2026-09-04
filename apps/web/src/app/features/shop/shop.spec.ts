@@ -126,6 +126,13 @@ describe('Shop', () => {
     expect(component).toBeTruthy();
   });
 
+  it('passes the storefront placeholder to the mobile search bar', () => {
+    flushLoads();
+    fixture.detectChanges();
+    const searchInput = fixture.nativeElement.querySelector('.search-bar__input') as HTMLInputElement;
+    expect(searchInput.placeholder).toBe('Shop our latest products');
+  });
+
   it('renders the "New in Namibia" section heading', () => {
     flushLoads();
     fixture.detectChanges();
@@ -393,15 +400,6 @@ describe('Shop', () => {
     flushLoads();
   });
 
-  it('shows a coming-soon notice for the orders radial nav item', () => {
-    flushLoads();
-    fixture.detectChanges();
-    const notificationService = TestBed.inject(NotificationService);
-    const infoSpy = vi.spyOn(notificationService, 'info');
-
-    component.onRadialNavSelect('orders');
-    expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining('My Orders'));
-  });
 });
 
 describe('deriveCategoryCounts', () => {

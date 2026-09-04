@@ -37,13 +37,14 @@
   margin: 0 0 8px;
 }
 
-/* Intrinsic hb-logo.png is 96x96 (1:1). Explicit width/height reserve the
-   box before the image loads — no layout shift. */
+/* Intrinsic hb-logo.png is 144x144 (1:1). Explicit width/height reserve the
+   box before the image loads — no layout shift; the `width`/`height` attrs on
+   footer.html's <img> carry the same 40px. */
 .site-footer__logo {
   display: block;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
 }
 
 .site-footer__brand {
@@ -62,21 +63,37 @@
   color: var(--hb-on-surface-variant);
 }
 
+/* Each link is a 44px tap target around a 24px mark, so it carries 10px of
+   padding on every side. `gap` is set to 4px (not 16px) because that padding
+   already contributes 20px between adjacent marks; the negative left margin
+   pulls the first mark's padding back so it optically aligns with the brand
+   text above it. */
 .site-footer__social {
   display: flex;
-  gap: 16px;
-  margin-top: 8px;
+  gap: 4px;
+  margin: 8px 0 0 -10px;
+}
+
+.site-footer__social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  color: var(--hb-primary);
+  transition: color 150ms ease, transform 150ms ease;
+
+  &:hover {
+    color: var(--hb-on-secondary-container);
+    transform: scale(1.1);
+  }
 }
 
 .site-footer__social-icon {
-  font-size: 24px;
-  color: var(--hb-primary);
-  cursor: pointer;
-  transition: transform 150ms ease;
-
-  &:hover {
-    transform: scale(1.1);
-  }
+  display: block;
+  width: 24px;
+  height: 24px;
 }
 
 .site-footer__col-heading {
@@ -89,13 +106,22 @@
   letter-spacing: 0.05em;
 }
 
+/* 16px/24px on mobile, where the footer is a single stacked column and these
+   are the page's last navigation affordance; 14px from 768px up, where the
+   four columns sit side by side and the smaller size keeps them balanced
+   against the column headings. */
 .site-footer__link {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 24px;
   color: var(--hb-on-surface-variant);
   text-decoration: none;
   transition: color 150ms ease;
+
+  @media (min-width: 768px) {
+    font-size: 14px;
+    line-height: 20px;
+  }
 
   &:hover {
     color: var(--hb-on-secondary-container);

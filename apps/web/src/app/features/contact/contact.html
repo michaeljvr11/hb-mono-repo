@@ -24,8 +24,9 @@
     <div class="contact-hero__content marketing-hero__content">
       <h1 id="contact-hero-heading" class="contact-hero__title marketing-hero__title">Get in Touch</h1>
       <p class="contact-hero__subtitle marketing-hero__subtitle">
-        Send us a message or chat on WhatsApp — we're here to help with quotes and import requests for
-        anything not listed on the marketplace.
+        Send us a message or chat on WhatsApp — whether it's a question about an existing order,
+        support with something that's gone wrong, or a quote on an import request for anything not
+        listed on the marketplace, we're here to help.
       </p>
     </div>
   </section>
@@ -38,7 +39,8 @@
         <div class="contact-form-column">
           <h2 id="contact-form-heading" class="contact-form-column__title">Send us a Message</h2>
           <p class="contact-form-column__intro">
-            Tell us what you're looking for and we'll get back to you within 1 business day.
+            Tell us what's going on — an order issue, a general question, or something you'd like a
+            quote on — and we'll get back to you within 1 business day.
           </p>
 
           <form
@@ -154,10 +156,11 @@
                 ></textarea>
               </div>
               <p class="contact-field__hint">
-                Please provide details about your request, and any product or shopping-cart links.
+                Include any details that will help us — an order or reference number, product or
+                shopping-cart links, or what you'd like help with.
               </p>
               @if (messageControl.hasError('required') && messageControl.touched) {
-                <small>Please tell us what you're looking for.</small>
+                <small>Please tell us how we can help.</small>
               } @else if (messageControl.hasError('maxlength') && messageControl.touched) {
                 <small>Message must be {{ maxLengths.message }} characters or fewer.</small>
               }
@@ -172,7 +175,8 @@
         <aside class="contact-quick" aria-labelledby="contact-whatsapp-heading">
           <h2 id="contact-whatsapp-heading">Or Message Us on WhatsApp</h2>
           <p class="contact-quick__intro">
-            Fastest way to get a quote — especially if you have product links ready.
+            Fastest way to reach us — for order support, a general question, or a quote, especially
+            if you have a reference number or product links ready.
           </p>
 
           <a

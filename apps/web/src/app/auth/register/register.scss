@@ -17,23 +17,65 @@
   margin-bottom: 32px;
 }
 
+/* Brand + Contact share one row, the same shape as login's .auth-topbar. Kept
+   in flow rather than absolutely positioned so the Contact link reserves real
+   space and cannot overlap the wordmark on a narrow viewport. */
+.register-head__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* Top-right utility link, consistent with login's .auth-topbar Contact link. */
+.link-button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--hb-primary);
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
   text-decoration: none;
   color: var(--hb-primary);
 }
 
-.brand .material-symbols-outlined {
-  font-size: 32px;
+/* Intrinsic hb-logo.png is 144x144 — reserved at its rendered size (both the
+   `width`/`height` attrs on the <img> and here) so it doesn't shift layout
+   on load. Matches the login brand mark. */
+.brand-logo {
+  display: block;
+  width: 36px;
+  height: 36px;
 }
 
+/* 24px/600 is DESIGN.md's headline-md. Steps down below 400px so the wordmark
+   stays on one line beside the Contact link on a 320px viewport — the same
+   treatment the nav bar's brand uses. Login and register must stay identical. */
 .brand-name {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 600;
+  line-height: 24px;
+  white-space: nowrap;
   color: var(--hb-primary);
+
+  @media (min-width: 400px) {
+    font-size: 24px;
+    line-height: 32px;
+  }
 }
 
 .register-head h1 {

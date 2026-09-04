@@ -12,3 +12,6 @@ backups/*.sql
 .design-sync/config.json
 .DS_Store
 Thumbs.db
+
+# Python bytecode from scripts/optimize-brand-assets.py
+__pycache__/

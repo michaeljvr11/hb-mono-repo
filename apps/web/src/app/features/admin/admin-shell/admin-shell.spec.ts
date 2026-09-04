@@ -56,6 +56,12 @@ describe('AdminShell', () => {
     expect(el.textContent).toContain('Admin Console');
   });
 
+  it('routes the wordmark to the storefront, not back into the admin console', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const wordmark = el.querySelector('a.wordmark');
+    expect(wordmark?.getAttribute('href')).toBe('/shop');
+  });
+
   it('toggles sidebar open and closed', () => {
     expect(component.sidebarOpen()).toBe(false);
     component.toggleSidebar();

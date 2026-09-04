@@ -1,11 +1,11 @@
-﻿<app-nav-bar />
+<app-nav-bar />
 
 <main class="pdp" aria-label="Product detail">
 
   @if (state() === 'loading') {
     <div class="state-message" role="status" aria-live="polite">
       <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
-      <p>Loading productâ€¦</p>
+      <p>Loading product…</p>
     </div>
   } @else if (state() === 'not-found') {
     <div class="state-message" role="status">
@@ -20,14 +20,14 @@
       <a class="pdp__back-link" routerLink="/discover">Back to shop</a>
     </div>
   } @else if (product(); as product) {
-    <!-- â”€â”€ Back header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ── Back header ─────────────────────────────────────────────────── -->
     <div class="pdp__header">
       <button type="button" class="pdp__back-btn" aria-label="Go back" (click)="goBack()">
         <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
       </button>
     </div>
 
-    <!-- â”€â”€ Hero image gallery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ── Hero image gallery ──────────────────────────────────────────── -->
     <section class="pdp__hero">
       @if (activeImageAttrs(); as img) {
         <img
@@ -57,7 +57,7 @@
       }
     </section>
 
-    <!-- â”€â”€ Product header & pricing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ── Product header & pricing ────────────────────────────────────── -->
     <section class="pdp__section">
       <h1 class="pdp__title">{{ product.name }}</h1>
       <p class="pdp__price">{{ priceLabel() }}</p>
@@ -88,7 +88,7 @@
       }
     </section>
 
-    <!-- â”€â”€ Cross-border shipping info (static per design) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ── Cross-border shipping info (static per design) ──────────────── -->
     <section class="pdp__section">
       <div class="pdp__shipping-card">
         <div class="pdp__shipping-heading">
@@ -121,7 +121,7 @@
       </div>
     </section>
 
-    <!-- â”€â”€ Description â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ── Description ──────────────────────────────────────────────────── -->
     <section class="pdp__section">
       <h2 class="pdp__section-title">Description</h2>
       <div class="pdp__description">
@@ -133,7 +133,7 @@
       </div>
     </section>
 
-    <!-- â”€â”€ Reviews tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ── Reviews tab ────────────────────────────────────────────────── -->
     <section class="pdp__section pdp__reviews">
       <div class="pdp__reviews-tablist" role="tablist" aria-label="Product information tabs">
         <button
@@ -157,7 +157,7 @@
         @if (reviewsState() === 'loading') {
           <div class="pdp__reviews-state" role="status" aria-live="polite">
             <span class="material-symbols-outlined pdp__reviews-state-icon">hourglass_top</span>
-            <p>Loading reviewsâ€¦</p>
+            <p>Loading reviews…</p>
           </div>
         } @else if (reviewsState() === 'error') {
           <div class="pdp__reviews-state" role="alert">
@@ -170,7 +170,7 @@
             <p>No reviews yet.</p>
           </div>
         } @else if (reviewsList(); as reviews) {
-          <!-- â”€â”€ Summary header â”€â”€ -->
+          <!-- ── Summary header ── -->
           <div class="pdp__reviews-summary">
             @if (reviewAverage(); as average) {
               <span class="pdp__reviews-summary-score">{{ average.toFixed(1) }}</span>
@@ -187,7 +187,7 @@
             <span class="pdp__reviews-summary-count">{{ reviewCount() }} reviews</span>
           </div>
 
-          <!-- â”€â”€ Review list â”€â”€ -->
+          <!-- ── Review list ── -->
           <ul class="pdp__reviews-list">
             @for (review of reviews.items; track review.id) {
               <li class="pdp__review">
@@ -224,7 +224,7 @@
             }
           </ul>
 
-          <!-- â”€â”€ Pagination â”€â”€ -->
+          <!-- ── Pagination ── -->
           @if (reviewTotalPages() > 1) {
             <div class="pdp__reviews-pagination" role="navigation" aria-label="Reviews pagination">
               <button
@@ -514,7 +514,7 @@
       </div>
     </section>
 
-    <!-- â”€â”€ Vendor card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ── Vendor card ──────────────────────────────────────────────── -->
     @if (product.vendor; as vendor) {
       <section class="pdp__section">
         <div class="pdp__vendor-card">
@@ -533,7 +533,7 @@
       </section>
     }
 
-    <!-- â”€â”€ You May Also Like â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ── You May Also Like ───────────────────────────────────────────── -->
     @if (relatedProducts().length) {
       <section class="pdp__section">
         <h2 class="pdp__section-title">You May Also Like</h2>
@@ -551,7 +551,7 @@
       </section>
     }
 
-    <!-- â”€â”€ Sticky add-to-cart bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ── Sticky add-to-cart bar ───────────────────────────────────────── -->
     <div class="pdp__sticky-bar">
       <button
         type="button"

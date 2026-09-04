@@ -56,6 +56,12 @@ describe('VendorShell', () => {
     expect(el.textContent).toContain('Vendor Portal');
   });
 
+  it('routes the wordmark to the storefront, not back into the vendor portal', () => {
+    const el: HTMLElement = fixture.nativeElement;
+    const wordmark = el.querySelector('a.wordmark');
+    expect(wordmark?.getAttribute('href')).toBe('/shop');
+  });
+
   it('toggles sidebar open and closed', () => {
     expect(component.sidebarOpen()).toBe(false);
     component.toggleSidebar();

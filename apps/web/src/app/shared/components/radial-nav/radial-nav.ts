@@ -63,7 +63,9 @@ export class RadialNav {
   private readonly items: RadialNavItem[] = [
     { id: 'home', icon: 'home', label: 'Home', routerLink: '/shop' },
     { id: 'search', icon: 'search', label: 'Search', routerLink: '/discover' },
-    { id: 'orders', icon: 'receipt_long', label: 'My Orders' },
+    // /profile/orders is behind authGuard, same as /wishlist below — the guard
+    // handles the anonymous case, so this is a plain link like the rest.
+    { id: 'orders', icon: 'receipt_long', label: 'My Orders', routerLink: '/profile/orders' },
     { id: 'profile', icon: 'person', label: 'Profile', routerLink: '/profile' },
     { id: 'cart', icon: 'shopping_cart', label: 'Cart' },
     { id: 'wishlist', icon: 'favorite', label: 'Wishlist', routerLink: '/wishlist' },
