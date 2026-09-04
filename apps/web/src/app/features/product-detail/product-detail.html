@@ -61,6 +61,31 @@
     <section class="pdp__section">
       <h1 class="pdp__title">{{ product.name }}</h1>
       <p class="pdp__price">{{ priceLabel() }}</p>
+
+      @if (product.sizes?.length) {
+        <div class="pdp__size-selector">
+          <span class="pdp__size-selector-label">Size</span>
+          <div class="pdp__size-list" role="group" aria-label="Select a size">
+            @for (size of product.sizes; track size.id) {
+              <button
+                type="button"
+                class="pdp__size-chip"
+                [class.pdp__size-chip--selected]="selectedSizeId() === size.id"
+                [class.pdp__size-chip--out-of-stock]="size.stockQuantity === 0"
+                [disabled]="size.stockQuantity === 0"
+                [attr.aria-pressed]="selectedSizeId() === size.id"
+                [attr.aria-label]="size.label + (size.stockQuantity === 0 ? ' (out of stock)' : '')"
+                (click)="selectSize(size.id)"
+              >
+                {{ size.label }}
+              </button>
+            }
+          </div>
+          @if (!selectedSizeId()) {
+            <span class="pdp__size-selector-hint">Select a size to add this item to your cart.</span>
+          }
+        </div>
+      }
     </section>
 
     <!-- ── Cross-border shipping info (static per design) ──────────────── -->
@@ -539,9 +564,19 @@
         <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
         <span class="pdp__wishlist-btn-label">{{ isWishlisted(product.id) ? 'Saved' : 'Save to wishlist' }}</span>
       </button>
-      <button type="button" class="pdp__add-to-cart-btn" (click)="onAddToCart()">
+      <button
+        type="button"
+        class="pdp__add-to-cart-btn"
+        [disabled]="!canAddToCart()"
+        [attr.aria-label]="canAddToCart() ? null : 'Select a size to add this item to your cart'"
+        (click)="onAddToCart()"
+      >
         <span class="material-symbols-outlined" aria-hidden="true">add_shopping_cart</span>
-        Add to Cart - {{ priceLabel() }}
+        @if (hasSizes() && !selectedSizeId()) {
+          Select a Size
+        } @else {
+          Add to Cart - {{ priceLabel() }}
+        }
       </button>
     </div>
   }

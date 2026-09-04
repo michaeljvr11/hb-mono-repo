@@ -16,6 +16,7 @@ const WISHLIST: WishlistDto = {
       price: 185,
       currency: CurrencyCode.ZAR,
       stockQuantity: 10,
+      hasSizes: false,
       addedAt: '2026-07-07T09:00:00.000Z',
     },
   ],

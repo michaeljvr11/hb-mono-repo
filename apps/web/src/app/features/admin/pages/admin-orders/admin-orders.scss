@@ -407,7 +407,8 @@
   color: var(--hb-on-surface-variant);
 }
 
-.detail-list {
+.detail-list,
+.line-items {
   margin: 0;
   padding: 0;
   display: flex;
@@ -480,7 +481,8 @@
   word-break: break-all;
 }
 
-/* ─── Override / audit sections (headings reuse .detail-heading / .detail-sub) ── */
+/* ─── Line items / override / audit sections (headings reuse .detail-heading) ─── */
+.items-section,
 .override-section,
 .audit-section {
   margin-top: 24px;

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { AuthUser, CurrencyCode, WishlistDto } from '@hb/shared';
@@ -21,6 +21,7 @@ const WISHLIST: WishlistDto = {
       price: 185,
       currency: CurrencyCode.ZAR,
       stockQuantity: 3,
+      hasSizes: false,
       imageUrl: 'https://example.com/honey.jpg',
       addedAt: '2026-07-07T09:00:00.000Z',
     },
@@ -31,6 +32,7 @@ const WISHLIST: WishlistDto = {
       price: 19.99,
       currency: CurrencyCode.NAD,
       stockQuantity: 0,
+      hasSizes: false,
       addedAt: '2026-07-07T09:05:00.000Z',
     },
   ],
@@ -163,5 +165,53 @@ describe('Wishlist page', () => {
 
     expect(addItem).not.toHaveBeenCalled();
     httpMock.expectNone(`${environment.apiBaseUrl}/cart/items`);
+  });
+
+  // ── Sized wishlist items (Product Sizing FAIL 3) ────────────────────────────
+
+  it('routes a sized item to the PDP instead of calling CartService.addItem', () => {
+    flushWishlist({
+      ...WISHLIST,
+      items: [{ ...WISHLIST.items[0], hasSizes: true, stockQuantity: 0 }],
+    });
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const cartService = TestBed.inject(CartService);
+    const addItem = vi.spyOn(cartService, 'addItem');
+
+    component.addToCart({ ...WISHLIST.items[0], hasSizes: true, stockQuantity: 0 });
+
+    expect(navigate).toHaveBeenCalledWith(['/products', 'p1']);
+    expect(addItem).not.toHaveBeenCalled();
+  });
+
+  it('still adds an unsized item straight to cart (regression)', () => {
+    flushWishlist();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate');
+    const cartService = TestBed.inject(CartService);
+    const addItem = vi.spyOn(cartService, 'addItem');
+
+    component.addToCart(WISHLIST.items[0]);
+
+    expect(addItem).toHaveBeenCalledWith('p1');
+    expect(navigate).not.toHaveBeenCalled();
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/cart/items`);
+    req.flush({ id: 'cart-1', items: [], totals: [], itemCount: 1, updatedAt: '' });
+  });
+
+  it('does not show a false out-of-stock state for a sized item with stockQuantity 0', () => {
+    flushWishlist({
+      ...WISHLIST,
+      items: [{ ...WISHLIST.items[0], hasSizes: true, stockQuantity: 0 }],
+    });
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).not.toContain('Out of stock');
+
+    const addBtn = el.querySelector('.wishlist__add-btn') as HTMLButtonElement;
+    expect(addBtn.disabled).toBe(false);
+    expect(addBtn.textContent).toContain('Select Size');
   });
 });

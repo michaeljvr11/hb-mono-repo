@@ -191,6 +191,38 @@
             </div>
           </dl>
 
+          <!-- Line items -->
+          <div class="items-section">
+            <h3 class="detail-heading">Items</h3>
+
+            @if (orderDetailLoading()) {
+              <p class="detail-muted">Loading items…</p>
+            }
+
+            @if (orderDetailError()) {
+              <div class="error-banner" role="alert">
+                <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                <span>{{ orderDetailError() }}</span>
+              </div>
+            }
+
+            @if (orderDetail(); as detail) {
+              <dl class="line-items" role="list">
+                @for (item of detail.items; track item.id) {
+                  <div class="detail-row" role="listitem">
+                    <dt>
+                      {{ item.productName }}
+                      @if (item.sizeLabel) {
+                        <span class="detail-secondary">Size: {{ item.sizeLabel }}</span>
+                      }
+                    </dt>
+                    <dd>Qty {{ item.quantity }} × {{ formatMoney(item.unitPrice, item.currency) }}</dd>
+                  </div>
+                }
+              </dl>
+            }
+          </div>
+
           <!-- Status override -->
           <div class="override-section">
             <h3 class="detail-heading">Override status</h3>

@@ -186,6 +186,11 @@ describe('VendorOrders component', () => {
     expect(buttons.length).toBe(0);
   });
 
+  it('does not render a size label when sizeLabel is absent on a line', () => {
+    const rows = fixture.nativeElement.querySelectorAll('.order-row');
+    expect(rows[0].textContent).not.toContain('Size');
+  });
+
   it('clicking an action button calls updateStatus and updates the line in place', async () => {
     component.applyAction(LINE_CONFIRMED, OrderStatus.PROCESSING);
     fixture.detectChanges();
@@ -214,6 +219,21 @@ describe('VendorOrders component', () => {
     component.applyAction(LINE_PROCESSING, OrderStatus.HANDED_TO_HB);
     expect(stub.updateStatus).toHaveBeenCalledTimes(1);
     expect(component.pendingId()).toBe('line-1');
+  });
+});
+
+// ─── Size label suite ─────────────────────────────────────────────────────────
+
+describe('VendorOrders — size label', () => {
+  it('renders the size label when present on a line', async () => {
+    const lineWithSize: VendorOrderLineDto = { ...LINE_CONFIRMED, sizeLabel: 'L' };
+    await setupTestBed(makeStub([lineWithSize]));
+    const fixture = TestBed.createComponent(VendorOrders);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const rows = fixture.nativeElement.querySelectorAll('.order-row');
+    expect(rows[0].textContent).toContain('Size L');
   });
 });
 

@@ -6,9 +6,11 @@ import {
   IsArray,
   IsUUID,
   IsEnum,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CountryCode, CurrencyCode, ProductUpdateRequest } from '@hb/shared';
+import { ProductSizeInputDto } from './product-size-input.dto';
 
 export class ProductUpdateDto implements ProductUpdateRequest {
   @IsString()
@@ -47,4 +49,15 @@ export class ProductUpdateDto implements ProductUpdateRequest {
   @IsUUID('all', { each: true })
   @Type(() => String)
   categoryIds?: string[];
+
+  /**
+   * Whole-list replace on update (matches `categoryIds`): present (even `[]`)
+   * replaces the full size set — `[]` makes the product unsized; absent
+   * leaves existing sizes untouched.
+   */
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductSizeInputDto)
+  sizes?: ProductSizeInputDto[];
 }

@@ -1,4 +1,10 @@
-import { ProductCategoryDto, ProductDto, ProductImageDto, UserDto } from '@hb/shared';
+import {
+  ProductCategoryDto,
+  ProductDto,
+  ProductImageDto,
+  ProductSizeDto,
+  UserDto,
+} from '@hb/shared';
 import { User } from '../../users/entities/user.entity';
 import { Product } from '../../products/entities/product.entity';
 
@@ -58,5 +64,20 @@ export function ProductToResponseDto(product: Product): ProductDto {
 
     createdAt: product.createdAt.toISOString(),
     updatedAt: product.updatedAt.toISOString(),
+
+    // Absent (not []) for unsized products — zero sizes must read as "legacy
+    // single-stock product", not "sized product with an empty size list".
+    sizes: product.sizes?.length
+      ? [...product.sizes]
+          .sort((a, b) => a.displayOrder - b.displayOrder)
+          .map(
+            (size): ProductSizeDto => ({
+              id: size.id,
+              label: size.label,
+              stockQuantity: size.stockQuantity,
+              displayOrder: size.displayOrder,
+            }),
+          )
+      : undefined,
   };
 }

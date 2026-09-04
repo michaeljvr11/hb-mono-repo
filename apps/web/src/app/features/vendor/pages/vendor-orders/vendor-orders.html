@@ -44,6 +44,9 @@
             <div class="order-row__main">
               <span class="order-product">{{ line.productName }}</span>
               <span class="order-meta">
+                @if (line.sizeLabel) {
+                  Size {{ line.sizeLabel }} ·
+                }
                 Qty {{ line.quantity }} · {{ line.currency === CurrencyCode.ZAR ? 'R' : 'N$' }}&nbsp;{{ line.unitPrice | number:'1.2-2' }}
                 · Ordered {{ line.orderCreatedAt | date:'d MMM y' }}
               </span>

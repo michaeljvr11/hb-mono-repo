@@ -36,7 +36,7 @@
                 <a class="wishlist__item-name" [routerLink]="['/products', item.productId]">{{ item.productName }}</a>
                 <span class="wishlist__item-price">{{ format(item.price, item.currency) }}</span>
 
-                @if (item.stockQuantity === 0) {
+                @if (!item.hasSizes && item.stockQuantity === 0) {
                   <span class="wishlist__item-badge">Out of stock</span>
                 }
 
@@ -44,12 +44,12 @@
                   <button
                     type="button"
                     class="wishlist__add-btn"
-                    [disabled]="item.stockQuantity === 0 || busyProductId() === item.productId"
+                    [disabled]="(!item.hasSizes && item.stockQuantity === 0) || busyProductId() === item.productId"
                     (click)="addToCart(item)"
-                    [attr.aria-label]="'Add ' + item.productName + ' to cart'"
+                    [attr.aria-label]="item.hasSizes ? 'Select a size for ' + item.productName : 'Add ' + item.productName + ' to cart'"
                   >
-                    <span class="material-symbols-outlined" aria-hidden="true">add_shopping_cart</span>
-                    Add to Cart
+                    <span class="material-symbols-outlined" aria-hidden="true">{{ item.hasSizes ? 'straighten' : 'add_shopping_cart' }}</span>
+                    {{ item.hasSizes ? 'Select Size' : 'Add to Cart' }}
                   </button>
 
                   <button

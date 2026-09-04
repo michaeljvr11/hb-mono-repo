@@ -1,11 +1,12 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { CurrencyCode } from '@hb/shared';
 import { CartService, clampQuantity } from './cart.service';
 import { Cart } from './entities/cart.entity';
 import { CartItem } from './entities/cart-item.entity';
 import { Product } from '../products/entities/product.entity';
+import { ProductSize } from '../products/entities/product-size.entity';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,17 @@ function makeItem(overrides: Partial<CartItem> = {}): CartItem {
     updatedAt: NOW,
     ...overrides,
   } as CartItem;
+}
+
+function makeSize(overrides: Partial<ProductSize> = {}): ProductSize {
+  return {
+    id: 'size-s',
+    productId: 'prod-1',
+    label: 'Small',
+    stockQuantity: 5,
+    displayOrder: 0,
+    ...overrides,
+  };
 }
 
 // ─── Suite ───────────────────────────────────────────────────────────────────
@@ -171,6 +183,36 @@ describe('CartService', () => {
     expect(dto.totals[0].subtotal).toBe(0.3);
   });
 
+  it('live-reads sized-line stockQuantity/sizeLabel off the linked ProductSize, not the product', async () => {
+    const item = makeItem({
+      productSizeId: 'size-s',
+      product: makeProduct({ stockQuantity: 999 }),
+      productSize: makeSize({ stockQuantity: 3, label: 'Small' }),
+    });
+    cartRepo.findOne.mockResolvedValue(makeCart({ items: [item] }));
+
+    const dto = await service.getCart('user-1');
+
+    expect(dto.items[0]).toEqual(
+      expect.objectContaining({
+        productSizeId: 'size-s',
+        sizeLabel: 'Small',
+        stockQuantity: 3,
+      }),
+    );
+  });
+
+  it('leaves productSizeId/sizeLabel undefined and reads product stockQuantity for unsized lines', async () => {
+    const item = makeItem({ product: makeProduct({ stockQuantity: 7 }) });
+    cartRepo.findOne.mockResolvedValue(makeCart({ items: [item] }));
+
+    const dto = await service.getCart('user-1');
+
+    expect(dto.items[0].productSizeId).toBeUndefined();
+    expect(dto.items[0].sizeLabel).toBeUndefined();
+    expect(dto.items[0].stockQuantity).toBe(7);
+  });
+
   // ── addItem ────────────────────────────────────────────────────────────────
 
   it('adds a new line clamped to available stock', async () => {
@@ -211,6 +253,117 @@ describe('CartService', () => {
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
+  // ── addItem: sized products (Product Sizing) ──────────────────────────────
+
+  describe('addItem — sized products', () => {
+    it('requires productSizeId when the product has sizes (400)', async () => {
+      productRepo.findOne.mockResolvedValue(
+        makeProduct({ sizes: [makeSize(), makeSize({ id: 'size-l', label: 'Large' })] }),
+      );
+
+      await expect(
+        service.addItem('user-1', { productId: 'prod-1', quantity: 1 }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(cartItemRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('rejects a productSizeId on an unsized product (400)', async () => {
+      productRepo.findOne.mockResolvedValue(makeProduct({ sizes: [] }));
+
+      await expect(
+        service.addItem('user-1', {
+          productId: 'prod-1',
+          quantity: 1,
+          productSizeId: 'size-s',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(cartItemRepo.save).not.toHaveBeenCalled();
+    });
+
+    it("404s when productSizeId doesn't belong to the product", async () => {
+      productRepo.findOne.mockResolvedValue(makeProduct({ sizes: [makeSize()] }));
+
+      await expect(
+        service.addItem('user-1', {
+          productId: 'prod-1',
+          quantity: 1,
+          productSizeId: 'not-a-real-size',
+        }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(cartItemRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('rejects an out-of-stock size with 409, even though the product itself has stock', async () => {
+      productRepo.findOne.mockResolvedValue(
+        makeProduct({ stockQuantity: 50, sizes: [makeSize({ stockQuantity: 0 })] }),
+      );
+
+      await expect(
+        service.addItem('user-1', { productId: 'prod-1', quantity: 1, productSizeId: 'size-s' }),
+      ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it('creates two distinct lines for two different sizes of the same product — never merges', async () => {
+      const product = makeProduct({
+        sizes: [makeSize(), makeSize({ id: 'size-l', label: 'Large', stockQuantity: 8 })],
+      });
+      productRepo.findOne.mockResolvedValue(product);
+      const smallLine = makeItem({ id: 'item-small', productSizeId: 'size-s', quantity: 1 });
+      // First call: cart already has the Small line; adding Large must not merge into it.
+      cartRepo.findOne.mockResolvedValue(makeCart({ items: [smallLine] }));
+
+      await service.addItem('user-1', {
+        productId: 'prod-1',
+        quantity: 2,
+        productSizeId: 'size-l',
+      });
+
+      // A brand new line is created (not a save of the existing Small line).
+      expect(cartItemRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ productId: 'prod-1', productSizeId: 'size-l', quantity: 2 }),
+      );
+      expect(cartItemRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ productSizeId: 'size-l' }),
+      );
+      // The existing Small line's quantity is untouched — no merge happened.
+      expect(cartItemRepo.save).not.toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'item-small' }),
+      );
+    });
+
+    it('merges quantity for the same size (same productId + productSizeId), clamped to that size stock', async () => {
+      productRepo.findOne.mockResolvedValue(
+        makeProduct({ sizes: [makeSize({ stockQuantity: 4 })] }),
+      );
+      const existing = makeItem({ productSizeId: 'size-s', quantity: 1 });
+      cartRepo.findOne.mockResolvedValue(makeCart({ items: [existing] }));
+
+      await service.addItem('user-1', {
+        productId: 'prod-1',
+        quantity: 10,
+        productSizeId: 'size-s',
+      });
+
+      // 1 + 10 = 11 → clamped to the size's stock (4), not the product's.
+      expect(cartItemRepo.save).toHaveBeenCalledWith(expect.objectContaining({ quantity: 4 }));
+    });
+
+    it('clamps a new sized line to the selected size stock, not the product stock', async () => {
+      productRepo.findOne.mockResolvedValue(
+        makeProduct({ stockQuantity: 999, sizes: [makeSize({ stockQuantity: 3 })] }),
+      );
+      cartRepo.findOne.mockResolvedValue(makeCart({ items: [] }));
+
+      await service.addItem('user-1', {
+        productId: 'prod-1',
+        quantity: 20,
+        productSizeId: 'size-s',
+      });
+
+      expect(cartItemRepo.save).toHaveBeenCalledWith(expect.objectContaining({ quantity: 3 }));
+    });
+  });
+
   // ── updateItem ─────────────────────────────────────────────────────────────
 
   it('updates quantity clamped to live stock', async () => {
@@ -222,6 +375,21 @@ describe('CartService', () => {
     await service.updateItem('user-1', 'item-1', { quantity: 20 });
 
     expect(cartItemRepo.save).toHaveBeenCalledWith(expect.objectContaining({ quantity: 6 }));
+  });
+
+  it('updates quantity for a sized line clamped to the size stock, not the product stock', async () => {
+    cartItemRepo.findOne.mockResolvedValue(
+      makeItem({
+        productSizeId: 'size-s',
+        product: makeProduct({ stockQuantity: 999 }),
+        productSize: makeSize({ stockQuantity: 2 }),
+      }),
+    );
+    cartRepo.findOne.mockResolvedValue(makeCart());
+
+    await service.updateItem('user-1', 'item-1', { quantity: 20 });
+
+    expect(cartItemRepo.save).toHaveBeenCalledWith(expect.objectContaining({ quantity: 2 }));
   });
 
   it("404s when the item belongs to another user's cart (no existence leak)", async () => {

@@ -1,11 +1,19 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+  ValidatorFn,
+  FormGroup,
+  FormArray,
+} from '@angular/forms';
 import {
   CategoryDto,
   CountryCode,
   CurrencyCode,
   ProductDto,
+  ProductSizeInput,
 } from '@hb/shared';
 import { ProductsService } from '../../../../core/api/products.service';
 import { VendorsService } from '../../../../core/api/vendors.service';
@@ -13,6 +21,24 @@ import { CategoriesService } from '../../../../core/api/categories.service';
 
 /** Server-side max page size — used to avoid truncating the vendor's own product list. */
 const PRODUCT_LIST_MAX = 100;
+
+/**
+ * FormArray-level validator for the `sizes` rows — mirrors the server's
+ * `assertUniqueSizeLabels` (products.service.ts): trims each label before
+ * comparing, case-sensitive. Re-runs automatically whenever a child row's
+ * value changes (Angular propagates child valueChanges up to the parent).
+ */
+const sizeLabelsUniqueValidator: ValidatorFn = (control) => {
+  const rows = control as FormArray<FormGroup>;
+  const seen = new Set<string>();
+  for (const row of rows.controls) {
+    const label = ((row.get('label')?.value as string) ?? '').trim();
+    if (!label) continue; // empty labels are surfaced by the per-row `required` validator
+    if (seen.has(label)) return { duplicateLabel: label };
+    seen.add(label);
+  }
+  return null;
+};
 
 @Component({
   selector: 'app-vendor-products',
@@ -64,7 +90,14 @@ export class VendorProducts implements OnInit {
     stockQuantity: [0, [Validators.required, Validators.min(0)]],
     originCountry: [CountryCode.SOUTH_AFRICA, Validators.required],
     categoryIds: [[] as string[]],
+    /** Opt-in per-size stock rows (Product Sizing) — displayOrder is implicit (array index). */
+    sizes: this.fb.array<FormGroup>([], sizeLabelsUniqueValidator),
   });
+
+  /** Typed accessor for the `sizes` FormArray — nested FormGroups of { label, stockQuantity }. */
+  get sizeRows(): FormArray<FormGroup> {
+    return this.productForm.get('sizes') as FormArray<FormGroup>;
+  }
 
   /** Image files selected for upload — create only; not used on edit. */
   readonly selectedImages = signal<File[]>([]);
@@ -142,6 +175,7 @@ export class VendorProducts implements OnInit {
       originCountry: CountryCode.SOUTH_AFRICA,
       categoryIds: [],
     });
+    this.setSizeRows([]);
     this.selectedImages.set([]);
     this.productFormError.set(null);
     this.productFormOpen.set(true);
@@ -159,8 +193,61 @@ export class VendorProducts implements OnInit {
       originCountry: product.originCountry,
       categoryIds: product.categories.map(c => c.id),
     });
+    this.setSizeRows(product.sizes ?? []);
     this.productFormError.set(null);
     this.productFormOpen.set(true);
+  }
+
+  // ─── Sizes (Product Sizing) ─────────────────────────────────────────────
+
+  private createSizeRow(label = '', stockQuantity = 0): FormGroup {
+    return this.fb.group({
+      label: [label, Validators.required],
+      stockQuantity: [stockQuantity, [Validators.required, Validators.min(0)]],
+    });
+  }
+
+  /** Clears and rebuilds the sizes FormArray — used on open (create/edit), not a partial patch. */
+  private setSizeRows(sizes: Array<{ label: string; stockQuantity: number }>): void {
+    const rows = this.sizeRows;
+    while (rows.length) rows.removeAt(0);
+    for (const size of sizes) {
+      rows.push(this.createSizeRow(size.label, size.stockQuantity));
+    }
+  }
+
+  addSizeRow(): void {
+    this.sizeRows.push(this.createSizeRow());
+  }
+
+  removeSizeRow(index: number): void {
+    this.sizeRows.removeAt(index);
+  }
+
+  /** Vendor-controlled display order (not auto-sorted) — swaps this row with the one above it. */
+  moveSizeRowUp(index: number): void {
+    if (index <= 0) return;
+    const rows = this.sizeRows;
+    const row = rows.at(index);
+    rows.removeAt(index);
+    rows.insert(index - 1, row);
+  }
+
+  moveSizeRowDown(index: number): void {
+    const rows = this.sizeRows;
+    if (index >= rows.length - 1) return;
+    const row = rows.at(index);
+    rows.removeAt(index);
+    rows.insert(index + 1, row);
+  }
+
+  /** `ProductSizeInput[]`, ordered by the current row order — displayOrder is the array index. */
+  private sizesPayload(): ProductSizeInput[] {
+    return this.sizeRows.getRawValue().map((row, index) => ({
+      label: (row['label'] as string).trim(),
+      stockQuantity: row['stockQuantity'] as number,
+      displayOrder: index,
+    }));
   }
 
   closeProductForm(): void {
@@ -192,6 +279,7 @@ export class VendorProducts implements OnInit {
     const raw = this.productForm.getRawValue();
 
     if (this.productFormMode() === 'create') {
+      const sizes = this.sizesPayload();
       // vendorId is NOT included — server resolves it from the authenticated token.
       const payload = {
         name: raw.name as string,
@@ -201,6 +289,8 @@ export class VendorProducts implements OnInit {
         stockQuantity: raw.stockQuantity as number,
         originCountry: raw.originCountry as CountryCode,
         categoryIds: (raw.categoryIds as string[]).length ? raw.categoryIds as string[] : undefined,
+        // Opt-in: omitted (not an empty array) when no rows — product stays unsized.
+        sizes: sizes.length ? sizes : undefined,
       };
       const images = this.selectedImages();
       this.productsService.create(payload, images).subscribe({
@@ -225,6 +315,9 @@ export class VendorProducts implements OnInit {
         stockQuantity: raw.stockQuantity as number,
         originCountry: raw.originCountry as CountryCode,
         categoryIds: raw.categoryIds as string[],
+        // Whole-list-replace on update — always sent (even []) so removing every row
+        // actually clears sizes server-side instead of being silently ignored.
+        sizes: this.sizesPayload(),
       };
       this.productsService.update(id, payload).subscribe({
         next: (updated) => {

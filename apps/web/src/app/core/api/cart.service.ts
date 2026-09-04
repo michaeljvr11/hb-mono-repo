@@ -27,8 +27,13 @@ export class CartService {
     return this.http.get<CartDto>(this.API_URL).pipe(tap((cart) => this.cart.set(cart)));
   }
 
-  addItem(productId: string, quantity = 1): Observable<CartDto> {
-    const body: AddCartItemRequest = { productId, quantity };
+  /** `productSizeId` is required by the API when the product has sizes, and rejected otherwise (Product Sizing). */
+  addItem(productId: string, quantity = 1, productSizeId?: string): Observable<CartDto> {
+    const body: AddCartItemRequest = {
+      productId,
+      quantity,
+      ...(productSizeId ? { productSizeId } : {}),
+    };
     return this.http
       .post<CartDto>(`${this.API_URL}/items`, body)
       .pipe(tap((cart) => this.cart.set(cart)));

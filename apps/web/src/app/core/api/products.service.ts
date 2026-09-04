@@ -79,6 +79,11 @@ export class ProductsService {
     }
 
     data.categoryIds?.forEach(categoryId => formData.append('categoryIds', categoryId));
+
+    if (data.sizes?.length) {
+      formData.append('sizes', JSON.stringify(data.sizes));
+    }
+
     images.forEach(image => formData.append('images', image));
 
     return formData;

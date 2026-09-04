@@ -17,12 +17,30 @@
         "commits": 127,
         "ins": 55173,
         "del": 3417
+  "generatedAt": "2026-09-01T20:29:36.118Z",
+  "git": {
+    "totalCommits": 295,
+    "aiCommits": 284,
+    "aiPct": 96,
+    "appCommits": 217,
+    "ins": 114446,
+    "del": 12080,
+    "net": 102366,
+    "aiIns": 100932,
+    "aiDel": 11906,
+    "filesTouched": 848,
+    "areaRows": [
+      {
+        "name": "Web (Angular)",
+        "commits": 135,
+        "ins": 56948,
+        "del": 3512
       },
       {
         "name": "API (NestJS)",
-        "commits": 105,
-        "ins": 33727,
-        "del": 1990
+        "commits": 110,
+        "ins": 35066,
+        "del": 2033
       },
       {
         "name": "Docs",
@@ -34,13 +52,21 @@
         "name": "AI Factory config",
         "commits": 84,
         "ins": 2509,
+        "commits": 79,
+        "ins": 16908,
+        "del": 6347
+      },
+      {
+        "name": "AI Factory config",
+        "commits": 86,
+        "ins": 2596,
         "del": 104
       },
       {
         "name": "Shared contracts",
-        "commits": 46,
-        "ins": 1765,
-        "del": 57
+        "commits": 50,
+        "ins": 1807,
+        "del": 58
       },
       {
         "name": "Root & config",
@@ -101,21 +127,66 @@
       {
         "hash": "00a1fff",
         "subject": "feat: capture terms acceptance on the Google OAuth signup path",
+    "lastDate": "2026-09-01",
+    "recent": [
+      {
+        "hash": "c5d81e1",
+        "subject": "refactor: apply code-review advisory cleanups",
         "ai": true
       },
       {
-        "hash": "f0d8a36",
-        "subject": "fix(api): make the terms-acceptance record durable, not best-effort",
+        "hash": "3d884f0",
+        "subject": "fix(api): parse multipart sizes JSON, guard deleted-size checkout, add wishlist hasSizes",
         "ai": true
       },
       {
-        "hash": "a9d0a1c",
-        "subject": "fix(web): point the footer's legal links at the pages that now exist",
+        "hash": "49ef079",
+        "subject": "fix(web): surface size labels, size-aware wishlist, and Items styling",
         "ai": true
       },
       {
-        "hash": "7013e0a",
-        "subject": "feat: add the Vendor Agreement page and gate applications on accepting it",
+        "hash": "1aa4c9b",
+        "subject": "fix(web): trim size-selector CSS and raise component-style error budget",
+        "ai": true
+      },
+      {
+        "hash": "53d6c20",
+        "subject": "feat(web): PDP size selector and \"sizing available\" card hint",
+        "ai": true
+      },
+      {
+        "hash": "b86ed2b",
+        "subject": "feat(web): show ordered size on customer, vendor, and admin order views",
+        "ai": true
+      },
+      {
+        "hash": "64dd7aa",
+        "subject": "feat(api): surface size snapshot on vendor order lines",
+        "ai": true
+      },
+      {
+        "hash": "436c76b",
+        "subject": "feat(api): wire product sizing through cart selection and inventory-safe checkout",
+        "ai": true
+      },
+      {
+        "hash": "10baa05",
+        "subject": "feat(web): add Sizes section to vendor/admin product forms",
+        "ai": true
+      },
+      {
+        "hash": "ec6254f",
+        "subject": "feat(api): add product sizing schema + API foundation (contract, entity, migration)",
+        "ai": true
+      },
+      {
+        "hash": "ac818ec",
+        "subject": "fix(web): link the radial nav's My Orders item to /profile/orders",
+        "ai": true
+      },
+      {
+        "hash": "7423e3a",
+        "subject": "fix(web): repair the product-detail encoding and align the profile wordmark",
         "ai": true
       }
     ]
@@ -220,6 +291,11 @@
       "branch": "feat/QQKjOiEH-legal-policy-pages",
       "cardId": "QQKjOiEH",
       "slug": "legal-policy-pages"
+    },
+    {
+      "branch": "feat/SZihvfYb-product-sizing",
+      "cardId": "SZihvfYb",
+      "slug": "product-sizing"
     },
     {
       "branch": "feat/Sm1kSNO8-safe-category-delete",
@@ -398,8 +474,8 @@
     }
   ],
   "tests": {
-    "total": 152,
-    "api": 72,
+    "total": 154,
+    "api": 74,
     "web": 80
   },
   "design": {
@@ -429,16 +505,18 @@
     },
     "gatePass": 36,
     "gateFail": 2,
-    "edits": 864,
-    "editsUnfixable": 281,
+    "edits": 933,
+    "editsUnfixable": 306,
     "firstTs": "2026-06-18T12:14:47.925Z",
     "lastTs": "2026-08-31T18:46:50.074Z",
+    "lastTs": "2026-09-01T20:27:08.615Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
           "invocations": 71,
+          "invocations": 78,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -447,7 +525,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 32,
+          "invocations": 35,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -457,6 +535,7 @@
         {
           "agentType": "frontend-engineer",
           "invocations": 47,
+          "invocations": 49,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -475,6 +554,7 @@
         {
           "agentType": "code-reviewer",
           "invocations": 30,
+          "invocations": 31,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -605,16 +685,49 @@
         },
         {
           "ts": "2026-08-31T18:11:41.272Z",
+          "ts": "2026-09-01T18:02:59.006Z",
           "agentType": "unknown",
           "totalTokens": 0
         },
         {
           "ts": "2026-08-31T18:14:19.548Z",
+          "ts": "2026-09-01T18:21:52.282Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:20:52.136Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:22:24.004Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:31:16.349Z",
           "agentType": "frontend-engineer",
           "totalTokens": 0
         },
         {
           "ts": "2026-08-31T18:14:24.632Z",
+          "ts": "2026-09-01T19:31:24.243Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:41:33.599Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:45:31.646Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:50:14.671Z",
           "agentType": "frontend-engineer",
           "totalTokens": 0
         },
@@ -625,6 +738,42 @@
         },
         {
           "ts": "2026-08-31T18:46:50.074Z",
+          "ts": "2026-09-01T19:50:21.274Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T19:50:36.447Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:08:08.131Z",
+          "agentType": "code-reviewer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:10:29.889Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:19:13.385Z",
+          "agentType": "frontend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:19:21.392Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:19:31.631Z",
+          "agentType": "backend-engineer",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-01T20:26:22.718Z",
           "agentType": "code-reviewer",
           "totalTokens": 0
         }
@@ -634,6 +783,13 @@
   "steeringAudit": null,
   "extractionCandidates": null,
   "prs": [
+    {
+      "headRefName": "feat/3QJYmybN-storefront-prelaunch-polish",
+      "number": 65,
+      "state": "OPEN",
+      "title": "feat(web): storefront pre-launch polish (6-card batch)",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/65"
+    },
     {
       "headRefName": "feat/wokJ3PfW-legal-pages-and-consent-durability",
       "number": 64,
@@ -1091,6 +1247,7 @@
     {
       "name": "To Do",
       "cards": 11
+      "cards": 16
     },
     {
       "name": "In Progress",
@@ -1098,7 +1255,7 @@
     },
     {
       "name": "In Review",
-      "cards": 0
+      "cards": 6
     },
     {
       "name": "Done",

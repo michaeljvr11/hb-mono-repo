@@ -216,6 +216,9 @@
                   }
                   <div class="checkout__item-body">
                     <span class="checkout__item-name">{{ item.productName }}</span>
+                    @if (item.sizeLabel) {
+                      <span class="checkout__item-size">Size: {{ item.sizeLabel }}</span>
+                    }
                     <span class="checkout__item-qty">Qty: {{ item.quantity }}</span>
                   </div>
                   <span class="checkout__item-total">{{ format(item.lineTotal, item.currency) }}</span>

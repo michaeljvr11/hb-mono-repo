@@ -28,6 +28,7 @@ import { OrderStatusOverride } from './entities/order-status-override.entity';
 import { Cart } from '../cart/entities/cart.entity';
 import { CartItem } from '../cart/entities/cart-item.entity';
 import { Product } from '../products/entities/product.entity';
+import { ProductSize } from '../products/entities/product-size.entity';
 import { Address } from '../addresses/entities/address.entity';
 import { Payment } from '../payments/entities/payment.entity';
 import { Vendor } from '../vendors/entities/vendor.entity';
@@ -136,6 +137,7 @@ export class OrdersService {
       orderStatus: item.order.status,
       orderCreatedAt: item.order.createdAt.toISOString(),
       productName: item.productName,
+      sizeLabel: item.sizeLabel ?? undefined,
       unitPrice: Number(item.unitPrice),
       currency: item.currency,
       quantity: item.quantity,
@@ -173,9 +175,18 @@ export class OrdersService {
         throw new BadRequestException('Your cart is empty');
       }
 
-      // Lock products in a deterministic order so two concurrent checkouts
-      // sharing products can never deadlock.
-      const cartItems = [...cart.items].sort((a, b) => a.productId.localeCompare(b.productId));
+      // Lock rows in a deterministic order so two concurrent checkouts
+      // sharing products (or product sizes) can never deadlock. The sort key
+      // covers both cases so it stays a single, total order regardless of
+      // which lines are sized: unsized lines still lock the Product row
+      // (existing path, unchanged); sized lines lock the ProductSize row
+      // instead — see the per-line handling below for why the Product row
+      // itself is only ever plain-read (never locked) for sized lines.
+      const cartItems = [...cart.items].sort((a, b) => {
+        const keyA = `${a.productId}::${a.productSizeId ?? ''}`;
+        const keyB = `${b.productId}::${b.productSizeId ?? ''}`;
+        return keyA.localeCompare(keyB);
+      });
 
       const currencies = new Set<CurrencyCode>();
       const originCountries = new Set<CountryCode>();
@@ -191,20 +202,83 @@ export class OrdersService {
       const commissionRate = await this.commissionRateService.getRateAt(orderCreatedAt);
 
       for (const cartItem of cartItems) {
-        // Row lock; eager relations are skipped because FOR UPDATE cannot be
-        // applied to the nullable side of the image/category joins.
-        const product = await manager.findOne(Product, {
-          where: { id: cartItem.productId },
-          lock: { mode: 'pessimistic_write' },
-          loadEagerRelations: false,
-        });
+        const isSized = !!cartItem.productSizeId;
+
+        // Sized lines still need the parent Product row for price/currency/
+        // origin/listingType/vendorId — but not its stock — so it's a plain
+        // read here (no row lock: under READ COMMITTED, a plain SELECT never
+        // takes a lock, so it can't participate in a lock-ordering deadlock).
+        // The pessimistic_write lock only ever lands on whichever row
+        // actually carries the stock being decremented for this line
+        // (Product for unsized, ProductSize for sized) — that's the resource
+        // the `cartItems` sort above puts in a deterministic global order.
+        // Eager relations are skipped on the locked read because FOR UPDATE
+        // cannot be applied to the nullable side of the image/category joins.
+        const product = isSized
+          ? await manager.findOne(Product, {
+              where: { id: cartItem.productId },
+              loadEagerRelations: false,
+            })
+          : await manager.findOne(Product, {
+              where: { id: cartItem.productId },
+              lock: { mode: 'pessimistic_write' },
+              loadEagerRelations: false,
+            });
         if (!product) {
           throw new BadRequestException('A product in your cart is no longer available');
         }
-        if (product.stockQuantity < cartItem.quantity) {
-          throw new ConflictException(
-            `Insufficient stock for '${product.name}' — only ${product.stockQuantity} left`,
-          );
+
+        let sizeLabel: string | undefined;
+
+        if (isSized) {
+          const size = await manager.findOne(ProductSize, {
+            where: { id: cartItem.productSizeId, productId: product.id },
+            lock: { mode: 'pessimistic_write' },
+          });
+          if (!size) {
+            throw new BadRequestException('A size in your cart is no longer available');
+          }
+          if (size.stockQuantity < cartItem.quantity) {
+            throw new ConflictException(
+              `Insufficient stock for '${product.name}' (${size.label}) — only ${size.stockQuantity} left`,
+            );
+          }
+
+          await manager.update(ProductSize, size.id, {
+            stockQuantity: size.stockQuantity - cartItem.quantity,
+          });
+          sizeLabel = size.label;
+        } else {
+          // A null productSizeId is ambiguous by itself: it means either the
+          // product was never sized (legacy stock path, correct), or it WAS
+          // sized and the size this cart line pointed at has since been
+          // deleted (`cart_items.productSizeId` is ON DELETE SET NULL — the
+          // line survives, matching the "out of stock" UX pattern rather
+          // than hard-failing at delete time). Falling through to the
+          // legacy `products.stockQuantity` decrement for the latter case
+          // would drain a counter a sized product never actually maintains
+          // and lose the size the customer ordered. Disambiguate with a
+          // targeted count query rather than eager-loading `sizes` on this
+          // locked read — `sizes` is a nullable-side one-to-many join, which
+          // (like `images`/`categories`) can't be combined with FOR UPDATE.
+          const sizeCount = await manager.count(ProductSize, {
+            where: { productId: product.id },
+          });
+          if (sizeCount > 0) {
+            throw new ConflictException(
+              `Please re-select a size for '${product.name}' — the size you selected is no longer available`,
+            );
+          }
+
+          if (product.stockQuantity < cartItem.quantity) {
+            throw new ConflictException(
+              `Insufficient stock for '${product.name}' — only ${product.stockQuantity} left`,
+            );
+          }
+
+          await manager.update(Product, product.id, {
+            stockQuantity: product.stockQuantity - cartItem.quantity,
+          });
         }
 
         const unitCents = Math.round(Number(product.price) * 100);
@@ -223,10 +297,8 @@ export class OrdersService {
           // Platform lines (no vendor) carry no commission — see the "no
           // fake house vendor" invariant (Listing Types & Vendor Rules).
           commissionRatePercent: product.vendorId ? commissionRate.ratePercent : null,
-        });
-
-        await manager.update(Product, product.id, {
-          stockQuantity: product.stockQuantity - cartItem.quantity,
+          productSizeId: cartItem.productSizeId ?? undefined,
+          sizeLabel, // snapshot — the size row may change or be removed later
         });
       }
 
@@ -565,6 +637,7 @@ export class OrdersService {
       quantity: item.quantity,
       listingType: item.listingType,
       vendorId: item.vendorId ?? undefined,
+      sizeLabel: item.sizeLabel ?? undefined,
     }));
 
     let shippingAddress: AddressDto | undefined;

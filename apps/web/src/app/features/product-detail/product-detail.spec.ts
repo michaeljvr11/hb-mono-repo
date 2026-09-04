@@ -187,6 +187,17 @@ const PLATFORM_PRODUCT: ProductDto = {
   updatedAt: '',
 };
 
+const SIZED_PRODUCT: ProductDto = {
+  ...HONEY,
+  id: 'p4',
+  name: 'Sized Cotton Tote',
+  sizes: [
+    { id: 's1', label: 'Small', stockQuantity: 5, displayOrder: 0 },
+    { id: 's2', label: 'Medium', stockQuantity: 0, displayOrder: 1 },
+    { id: 's3', label: 'Large', stockQuantity: 3, displayOrder: 2 },
+  ],
+};
+
 // ─── Stub interfaces ──────────────────────────────────────────────────────────
 
 interface ProductsStub {
@@ -1403,6 +1414,109 @@ describe('ProductDetail', () => {
       expect(el.textContent).not.toContain('(edited)');
       expect(el.textContent).not.toContain('Edited');
       expect(el.querySelector('[data-edited]')).toBeNull();
+    });
+  });
+
+  // ── Size selection (Product Sizing) ──────────────────────────────────────
+
+  describe('size selection', () => {
+    async function loadSizedProduct(): Promise<void> {
+      productsStub.getById.mockReturnValue(of(SIZED_PRODUCT));
+      paramMap$.next(convertToParamMap({ id: 'p4' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+    }
+
+    it('renders no size selector and an immediately-enabled Add to Cart button for an unsized product (regression)', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('.pdp__size-selector')).toBeNull();
+      const btn = el.querySelector('.pdp__add-to-cart-btn') as HTMLButtonElement;
+      expect(btn.disabled).toBe(false);
+      expect(btn.textContent).toContain('Add to Cart');
+    });
+
+    it('renders size chips in displayOrder, with the out-of-stock size disabled', async () => {
+      await loadSizedProduct();
+      const el: HTMLElement = fixture.nativeElement;
+      const chips = Array.from(el.querySelectorAll('.pdp__size-chip')) as HTMLButtonElement[];
+      expect(chips.map((c) => c.textContent?.trim())).toEqual(['Small', 'Medium', 'Large']);
+      expect(chips[0].disabled).toBe(false);
+      expect(chips[1].disabled).toBe(true); // Medium: 0 stock
+      expect(chips[2].disabled).toBe(false);
+    });
+
+    it('disables Add to Cart with a "Select a Size" prompt until a size is chosen', async () => {
+      await loadSizedProduct();
+      const el: HTMLElement = fixture.nativeElement;
+      const btn = el.querySelector('.pdp__add-to-cart-btn') as HTMLButtonElement;
+      expect(btn.disabled).toBe(true);
+      expect(btn.textContent).toContain('Select a Size');
+    });
+
+    it('selecting an in-stock size enables Add to Cart and restores the price label', async () => {
+      await loadSizedProduct();
+      component.selectSize('s1');
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      const btn = el.querySelector('.pdp__add-to-cart-btn') as HTMLButtonElement;
+      expect(btn.disabled).toBe(false);
+      expect(btn.textContent).toContain('Add to Cart');
+      expect(el.querySelector('.pdp__size-chip--selected')?.textContent?.trim()).toBe('Small');
+    });
+
+    it('clicking a disabled out-of-stock chip does not select it', async () => {
+      await loadSizedProduct();
+      const el: HTMLElement = fixture.nativeElement;
+      const chips = Array.from(el.querySelectorAll('.pdp__size-chip')) as HTMLButtonElement[];
+      chips[1].click(); // Medium, disabled
+      fixture.detectChanges();
+
+      expect(component.selectedSizeId()).toBeNull();
+      expect((el.querySelector('.pdp__add-to-cart-btn') as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    it('selectSize() itself refuses an out-of-stock size even called directly (defense-in-depth)', async () => {
+      await loadSizedProduct();
+      component.selectSize('s2'); // Medium, 0 stock
+
+      expect(component.selectedSizeId()).toBeNull();
+      expect(component.canAddToCart()).toBe(false);
+    });
+
+    it('onAddToCart passes the selected productSizeId through to CartService.addItem', async () => {
+      authStub.isLoggedIn.mockReturnValue(true);
+      await loadSizedProduct();
+      component.selectSize('s3');
+
+      component.onAddToCart();
+
+      expect(cartStub.addItem).toHaveBeenCalledWith('p4', 1, 's3');
+    });
+
+    it('onAddToCart is a no-op while no size is selected, even called directly', async () => {
+      authStub.isLoggedIn.mockReturnValue(true);
+      await loadSizedProduct();
+      cartStub.addItem.mockClear();
+
+      component.onAddToCart();
+
+      expect(cartStub.addItem).not.toHaveBeenCalled();
+    });
+
+    it('resets the size selection when navigating to a different product', async () => {
+      await loadSizedProduct();
+      component.selectSize('s1');
+      expect(component.selectedSizeId()).toBe('s1');
+
+      productsStub.getById.mockReturnValue(of(HONEY));
+      paramMap$.next(convertToParamMap({ id: 'p1' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(component.selectedSizeId()).toBeNull();
     });
   });
 });

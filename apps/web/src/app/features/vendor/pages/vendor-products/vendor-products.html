@@ -252,6 +252,80 @@
           }
         </div>
 
+        <!-- Sizes — opt-in per-size stock (Product Sizing) -->
+        <div class="field">
+          <div class="sizes-header">
+            <span class="field-label">Sizes (optional)</span>
+            <button class="size-add-btn" type="button" (click)="addSizeRow()">
+              <span class="material-symbols-outlined" aria-hidden="true">add</span>
+              Add Size
+            </button>
+          </div>
+
+          @if (sizeRows.length === 0) {
+            <p class="field-hint">No sizes — product uses the single stock quantity above.</p>
+          } @else {
+            <div class="size-rows" formArrayName="sizes">
+              @for (row of sizeRows.controls; track row; let i = $index; let first = $first; let last = $last) {
+                <div class="size-row" [formGroupName]="i">
+                  <div class="size-row-fields">
+                    <input
+                      class="field-input size-label-input"
+                      type="text"
+                      formControlName="label"
+                      autocomplete="off"
+                      placeholder="e.g. Small"
+                      [attr.aria-label]="'Size ' + (i + 1) + ' label'"
+                      [class.field-input--error]="row.get('label')?.invalid && row.get('label')?.touched"
+                    />
+                    <input
+                      class="field-input size-stock-input"
+                      type="number"
+                      min="0"
+                      step="1"
+                      formControlName="stockQuantity"
+                      [attr.aria-label]="'Size ' + (i + 1) + ' stock quantity'"
+                      [class.field-input--error]="row.get('stockQuantity')?.invalid && row.get('stockQuantity')?.touched"
+                    />
+                  </div>
+                  <div class="size-row-actions">
+                    <button
+                      class="row-btn"
+                      type="button"
+                      [disabled]="first"
+                      (click)="moveSizeRowUp(i)"
+                      [attr.aria-label]="'Move size ' + (i + 1) + ' up'"
+                    >
+                      <span class="material-symbols-outlined" aria-hidden="true">arrow_upward</span>
+                    </button>
+                    <button
+                      class="row-btn"
+                      type="button"
+                      [disabled]="last"
+                      (click)="moveSizeRowDown(i)"
+                      [attr.aria-label]="'Move size ' + (i + 1) + ' down'"
+                    >
+                      <span class="material-symbols-outlined" aria-hidden="true">arrow_downward</span>
+                    </button>
+                    <button
+                      class="row-btn row-btn--danger"
+                      type="button"
+                      (click)="removeSizeRow(i)"
+                      [attr.aria-label]="'Remove size ' + (i + 1)"
+                    >
+                      <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          @if (sizeRows.errors?.['duplicateLabel']) {
+            <p class="field-error">Duplicate size label: "{{ sizeRows.errors?.['duplicateLabel'] }}"</p>
+          }
+        </div>
+
         <!-- Image upload — create only -->
         @if (productFormMode() === 'create') {
           <div class="field">

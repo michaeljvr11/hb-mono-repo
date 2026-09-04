@@ -13,6 +13,7 @@ import {
 } from 'typeorm';
 import { CountryCode, CurrencyCode, ListingType } from '@hb/shared';
 import { ProductImage } from './product-image.entity';
+import { ProductSize } from './product-size.entity';
 import { Category } from '../../categories/entities/category.entity';
 import { Vendor } from '../../vendors/entities/vendor.entity';
 
@@ -87,6 +88,16 @@ export class Product {
     inverseJoinColumn: { name: 'categoryId', referencedColumnName: 'id' },
   })
   categories: Category[];
+
+  /**
+   * Opt-in per-size stock list (Product Sizing). Zero rows ⇒ unsized product,
+   * unchanged legacy behaviour driven by `stockQuantity` above. Not `eager` —
+   * loaded explicitly alongside `images`/`vendor`/`categories` wherever those
+   * are, matching the existing (non-eager) relation-loading style for
+   * `vendor`/`categories` rather than `images`.
+   */
+  @OneToMany(() => ProductSize, (size) => size.product, { cascade: true })
+  sizes?: ProductSize[];
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

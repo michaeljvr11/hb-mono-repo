@@ -45,6 +45,15 @@ const MY_PRODUCT: ProductDto = {
   updatedAt: '2026-06-01T10:00:00.000Z',
 };
 
+const MY_SIZED_PRODUCT: ProductDto = {
+  ...MY_PRODUCT,
+  id: 'prod-sized',
+  sizes: [
+    { id: 'sz-1', label: 'Small', stockQuantity: 5, displayOrder: 0 },
+    { id: 'sz-2', label: 'Large', stockQuantity: 3, displayOrder: 1 },
+  ],
+};
+
 const OTHER_VENDOR_PRODUCT: ProductDto = {
   id: 'prod-2',
   name: 'Other Vendor Widget',
@@ -213,6 +222,7 @@ describe('VendorProducts component', () => {
         stockQuantity: 5,
         originCountry: CountryCode.SOUTH_AFRICA,
         categoryIds: [],
+        sizes: [],
       });
 
       component.submitProductForm();
@@ -239,6 +249,7 @@ describe('VendorProducts component', () => {
         stockQuantity: 0,
         originCountry: CountryCode.SOUTH_AFRICA,
         categoryIds: [],
+        sizes: [],
       });
 
       component.submitProductForm();
@@ -261,6 +272,7 @@ describe('VendorProducts component', () => {
         stockQuantity: 0,
         originCountry: CountryCode.SOUTH_AFRICA,
         categoryIds: [],
+        sizes: [],
       });
 
       component.submitProductForm();
@@ -282,6 +294,7 @@ describe('VendorProducts component', () => {
         stockQuantity: 0,
         originCountry: CountryCode.SOUTH_AFRICA,
         categoryIds: [],
+        sizes: [],
       });
 
       component.submitProductForm();
@@ -325,6 +338,199 @@ describe('VendorProducts component', () => {
       const prod = component.allProducts().find(p => p.id === 'prod-1');
       expect(prod?.name).toBe('Updated Widget');
       expect(component.productFormOpen()).toBe(false);
+    });
+  });
+
+  // ── Sizes (Product Sizing) ─────────────────────────────────────────────────
+
+  describe('sizes rows', () => {
+    it('starts with zero size rows on create — product stays unsized by default', () => {
+      component.openCreateProduct();
+      expect(component.sizeRows.length).toBe(0);
+    });
+
+    it('addSizeRow appends an empty row', () => {
+      component.openCreateProduct();
+      component.addSizeRow();
+      expect(component.sizeRows.length).toBe(1);
+      expect(component.sizeRows.at(0).get('label')?.value).toBe('');
+      expect(component.sizeRows.at(0).get('stockQuantity')?.value).toBe(0);
+    });
+
+    it('removeSizeRow removes the row at the given index', () => {
+      component.openCreateProduct();
+      component.addSizeRow();
+      component.addSizeRow();
+      component.sizeRows.at(0).patchValue({ label: 'Small', stockQuantity: 1 });
+      component.sizeRows.at(1).patchValue({ label: 'Large', stockQuantity: 2 });
+
+      component.removeSizeRow(0);
+
+      expect(component.sizeRows.length).toBe(1);
+      expect(component.sizeRows.at(0).get('label')?.value).toBe('Large');
+    });
+
+    it('moveSizeRowDown / moveSizeRowUp reorder rows, and submit reflects the new displayOrder', async () => {
+      const created: ProductDto = { ...MY_PRODUCT, id: 'prod-new' };
+      productsStub.create.mockReturnValue(of(created));
+
+      component.openCreateProduct();
+      component.addSizeRow();
+      component.addSizeRow();
+      component.sizeRows.at(0).patchValue({ label: 'Small', stockQuantity: 1 });
+      component.sizeRows.at(1).patchValue({ label: 'Large', stockQuantity: 2 });
+
+      component.moveSizeRowDown(0); // Large, Small
+      expect(component.sizeRows.at(0).get('label')?.value).toBe('Large');
+      expect(component.sizeRows.at(1).get('label')?.value).toBe('Small');
+
+      component.moveSizeRowUp(1); // Small, Large
+      expect(component.sizeRows.at(0).get('label')?.value).toBe('Small');
+      expect(component.sizeRows.at(1).get('label')?.value).toBe('Large');
+
+      // Boundary no-ops
+      component.moveSizeRowUp(0);
+      component.moveSizeRowDown(1);
+      expect(component.sizeRows.at(0).get('label')?.value).toBe('Small');
+      expect(component.sizeRows.at(1).get('label')?.value).toBe('Large');
+
+      component.productForm.patchValue({
+        name: 'New Item',
+        description: 'desc',
+        price: 10,
+        currency: CurrencyCode.ZAR,
+        stockQuantity: 0,
+        originCountry: CountryCode.SOUTH_AFRICA,
+        categoryIds: [],
+      });
+
+      component.submitProductForm();
+      await fixture.whenStable();
+
+      const [payload] = productsStub.create.mock.calls[0] as [Record<string, unknown>, File[]];
+      expect(payload['sizes']).toEqual([
+        { label: 'Small', stockQuantity: 1, displayOrder: 0 },
+        { label: 'Large', stockQuantity: 2, displayOrder: 1 },
+      ]);
+    });
+
+    it('flags a duplicate label (trimmed, case-sensitive) and blocks submit', async () => {
+      component.openCreateProduct();
+      component.addSizeRow();
+      component.addSizeRow();
+      component.sizeRows.at(0).patchValue({ label: 'Small', stockQuantity: 1 });
+      component.sizeRows.at(1).patchValue({ label: '  Small  ', stockQuantity: 2 });
+
+      expect(component.sizeRows.errors?.['duplicateLabel']).toBe('Small');
+      expect(component.productForm.invalid).toBe(true);
+
+      component.productForm.patchValue({
+        name: 'New Item',
+        description: 'desc',
+        price: 10,
+        currency: CurrencyCode.ZAR,
+        stockQuantity: 0,
+        originCountry: CountryCode.SOUTH_AFRICA,
+        categoryIds: [],
+      });
+      component.submitProductForm();
+      await fixture.whenStable();
+
+      expect(productsStub.create).not.toHaveBeenCalled();
+    });
+
+    it('does not flag distinct labels differing only in case', () => {
+      component.openCreateProduct();
+      component.addSizeRow();
+      component.addSizeRow();
+      component.sizeRows.at(0).patchValue({ label: 'Small' });
+      component.sizeRows.at(1).patchValue({ label: 'small' });
+
+      expect(component.sizeRows.errors?.['duplicateLabel']).toBeUndefined();
+    });
+
+    it('rejects negative stock on a size row', () => {
+      component.openCreateProduct();
+      component.addSizeRow();
+      component.sizeRows.at(0).patchValue({ label: 'Small', stockQuantity: -1 });
+
+      expect(component.sizeRows.at(0).get('stockQuantity')?.invalid).toBe(true);
+      expect(component.productForm.invalid).toBe(true);
+    });
+
+    it('rejects an empty label on a size row', () => {
+      component.openCreateProduct();
+      component.addSizeRow();
+
+      expect(component.sizeRows.at(0).get('label')?.invalid).toBe(true);
+      expect(component.productForm.invalid).toBe(true);
+    });
+
+    it('omits the sizes key on create when there are zero rows', async () => {
+      const created: ProductDto = { ...MY_PRODUCT, id: 'prod-new' };
+      productsStub.create.mockReturnValue(of(created));
+
+      component.openCreateProduct();
+      component.productForm.patchValue({
+        name: 'New Item',
+        description: 'desc',
+        price: 10,
+        currency: CurrencyCode.ZAR,
+        stockQuantity: 0,
+        originCountry: CountryCode.SOUTH_AFRICA,
+        categoryIds: [],
+      });
+
+      component.submitProductForm();
+      await fixture.whenStable();
+
+      const [payload] = productsStub.create.mock.calls[0] as [Record<string, unknown>, File[]];
+      expect(payload['sizes']).toBeUndefined();
+    });
+
+    it('openEditProduct populates existing sizes into rows, ordered by displayOrder', () => {
+      component.openEditProduct(MY_SIZED_PRODUCT);
+
+      expect(component.sizeRows.length).toBe(2);
+      expect(component.sizeRows.at(0).get('label')?.value).toBe('Small');
+      expect(component.sizeRows.at(0).get('stockQuantity')?.value).toBe(5);
+      expect(component.sizeRows.at(1).get('label')?.value).toBe('Large');
+      expect(component.sizeRows.at(1).get('stockQuantity')?.value).toBe(3);
+    });
+
+    it('sends an explicit empty sizes array on update when every row was removed', async () => {
+      const updated: ProductDto = { ...MY_SIZED_PRODUCT, sizes: [] };
+      productsStub.update.mockReturnValue(of(updated));
+
+      component.openEditProduct(MY_SIZED_PRODUCT);
+      expect(component.sizeRows.length).toBe(2);
+
+      component.removeSizeRow(1);
+      component.removeSizeRow(0);
+      expect(component.sizeRows.length).toBe(0);
+
+      component.submitProductForm();
+      await fixture.whenStable();
+
+      const [, payload] = productsStub.update.mock.calls[0] as [string, Record<string, unknown>];
+      expect(payload['sizes']).toEqual([]);
+    });
+
+    it('sends the updated sizes array (trimmed labels) on a normal size edit', async () => {
+      const updated: ProductDto = { ...MY_SIZED_PRODUCT };
+      productsStub.update.mockReturnValue(of(updated));
+
+      component.openEditProduct(MY_SIZED_PRODUCT);
+      component.sizeRows.at(0).patchValue({ label: '  Small  ', stockQuantity: 9 });
+
+      component.submitProductForm();
+      await fixture.whenStable();
+
+      const [, payload] = productsStub.update.mock.calls[0] as [string, Record<string, unknown>];
+      expect(payload['sizes']).toEqual([
+        { label: 'Small', stockQuantity: 9, displayOrder: 0 },
+        { label: 'Large', stockQuantity: 3, displayOrder: 1 },
+      ]);
     });
   });
 

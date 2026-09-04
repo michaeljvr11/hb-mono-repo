@@ -52,12 +52,24 @@ export class ProductCard {
 
   readonly categoryLabel = computed(() => this.product().categories?.[0]?.name ?? null);
 
+  /** Drives the "Sizing available" hint badge — a property of the card itself,
+   *  shown everywhere it renders (discovery grid, PDP related grid, vendor storefront). */
+  readonly hasSizes = computed(() => (this.product().sizes?.length ?? 0) > 0);
+
   readonly price = computed(() => {
     const product = this.product();
     return formatPrice(product.price, product.currency);
   });
 
   onAddToCart(event: Event): void {
+    if (this.hasSizes()) {
+      // A card-level quick-add can't collect a size choice inline, and the
+      // API rejects an add-to-cart without one for a sized product — rather
+      // than dead-ending the customer, let the click fall through to the
+      // card's own routerLink and route to the PDP, where the size selector
+      // lives (see product-detail.ts).
+      return;
+    }
     // Prevent the click from bubbling into the card's own routerLink navigation.
     event.stopPropagation();
     event.preventDefault();

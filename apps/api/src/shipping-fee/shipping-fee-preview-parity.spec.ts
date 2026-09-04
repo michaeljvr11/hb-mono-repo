@@ -153,6 +153,10 @@ describe('checkout preview vs order-creation shipping-fee parity', () => {
       }),
       update: jest.fn(() => Promise.resolve()),
       delete: jest.fn(() => Promise.resolve()),
+      // Every cart line in this harness is unsized (no productSizeId) and no
+      // product here has any ProductSize rows — the deleted-size guard in
+      // OrdersService.create must never fire for this parity fixture.
+      count: jest.fn(() => Promise.resolve(0)),
     };
 
     // findOneForUser (called at the end of OrdersService.create) re-reads

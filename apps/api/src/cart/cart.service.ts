@@ -1,12 +1,28 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CartDto, CartItemDto, CartTotalDto, CurrencyCode } from '@hb/shared';
 import { Cart } from './entities/cart.entity';
 import { CartItem } from './entities/cart-item.entity';
 import { Product } from '../products/entities/product.entity';
+import { ProductSize } from '../products/entities/product-size.entity';
 import { AddCartItemDto } from './dto/add-cart-item.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
+
+/**
+ * Cart line identity is `(productId, productSizeId)` — `null`/`undefined` on
+ * both sides still counts as a match (unsized products). Kept as a named
+ * predicate rather than inlined so `addItem`'s merge check and any future
+ * caller can't drift on the null/undefined-equivalence rule.
+ */
+function sameSize(a: string | null | undefined, b: string | null | undefined): boolean {
+  return (a ?? null) === (b ?? null);
+}
 
 /**
  * Clamp a requested quantity to the live available stock.
@@ -45,25 +61,53 @@ export class CartService {
   }
 
   async addItem(userId: string, dto: AddCartItemDto): Promise<CartDto> {
-    const product = await this.productRepository.findOne({ where: { id: dto.productId } });
+    const product = await this.productRepository.findOne({
+      where: { id: dto.productId },
+      relations: ['sizes'],
+    });
     if (!product) {
       throw new NotFoundException('Product not found');
     }
-    if (product.stockQuantity < 1) {
-      throw new ConflictException(`'${product.name}' is out of stock`);
+
+    const hasSizes = !!product.sizes?.length;
+    let size: ProductSize | undefined;
+
+    if (hasSizes) {
+      if (!dto.productSizeId) {
+        throw new BadRequestException('productSizeId is required for this product');
+      }
+      const match = product.sizes.find((s) => s.id === dto.productSizeId);
+      if (!match) {
+        throw new NotFoundException('Size not found for this product');
+      }
+      size = match;
+    } else if (dto.productSizeId) {
+      throw new BadRequestException('This product does not have sizes');
+    }
+
+    const availableStock = size ? size.stockQuantity : product.stockQuantity;
+    if (availableStock < 1) {
+      throw new ConflictException(
+        size
+          ? `'${product.name}' (${size.label}) is out of stock`
+          : `'${product.name}' is out of stock`,
+      );
     }
 
     const cart = await this.getOrCreateCart(userId);
-    const existing = cart.items.find((item) => item.productId === dto.productId);
+    const existing = cart.items.find(
+      (item) => item.productId === dto.productId && sameSize(item.productSizeId, dto.productSizeId),
+    );
 
     if (existing) {
-      existing.quantity = clampQuantity(existing.quantity + dto.quantity, product.stockQuantity);
+      existing.quantity = clampQuantity(existing.quantity + dto.quantity, availableStock);
       await this.cartItemRepository.save(existing);
     } else {
       const item = this.cartItemRepository.create({
         cartId: cart.id,
         productId: dto.productId,
-        quantity: clampQuantity(dto.quantity, product.stockQuantity),
+        productSizeId: size?.id,
+        quantity: clampQuantity(dto.quantity, availableStock),
       });
       await this.cartItemRepository.save(item);
     }
@@ -73,12 +117,15 @@ export class CartService {
 
   async updateItem(userId: string, itemId: string, dto: UpdateCartItemDto): Promise<CartDto> {
     const item = await this.findOwnedItem(userId, itemId);
+    const availableStock = item.productSize
+      ? item.productSize.stockQuantity
+      : item.product.stockQuantity;
 
-    if (item.product.stockQuantity < 1) {
+    if (availableStock < 1) {
       throw new ConflictException(`'${item.product.name}' is out of stock`);
     }
 
-    item.quantity = clampQuantity(dto.quantity, item.product.stockQuantity);
+    item.quantity = clampQuantity(dto.quantity, availableStock);
     await this.cartItemRepository.save(item);
 
     return this.getCart(userId);
@@ -97,7 +144,7 @@ export class CartService {
   private async findOwnedItem(userId: string, itemId: string): Promise<CartItem> {
     const item = await this.cartItemRepository.findOne({
       where: { id: itemId, cart: { userId } },
-      relations: ['cart', 'product'],
+      relations: ['cart', 'product', 'productSize'],
     });
     if (!item) {
       throw new NotFoundException('Cart item not found');
@@ -108,7 +155,7 @@ export class CartService {
   private async getOrCreateCart(userId: string): Promise<Cart> {
     const existing = await this.cartRepository.findOne({
       where: { userId },
-      relations: ['items', 'items.product'],
+      relations: ['items', 'items.product', 'items.productSize'],
       order: { items: { createdAt: 'ASC' } },
     });
     if (existing) {
@@ -131,6 +178,12 @@ export class CartService {
         const unitCents = Math.round(unitPrice * 100);
         const primaryImage =
           item.product.images?.find((img) => img.isPrimary) ?? item.product.images?.[0];
+        // Sized lines read stock/label live off the currently-linked ProductSize
+        // (nulled by ON DELETE SET NULL if the size was since removed — the
+        // line then falls back to the unsized/Product path automatically).
+        const stockQuantity = item.productSize
+          ? item.productSize.stockQuantity
+          : item.product.stockQuantity;
         return {
           id: item.id,
           productId: item.productId,
@@ -138,9 +191,11 @@ export class CartService {
           productName: item.product.name,
           unitPrice,
           currency: item.product.currency,
-          stockQuantity: item.product.stockQuantity,
+          stockQuantity,
           imageUrl: primaryImage?.url,
           lineTotal: (unitCents * item.quantity) / 100,
+          productSizeId: item.productSizeId ?? undefined,
+          sizeLabel: item.productSize?.label,
         };
       });
 
