@@ -102,34 +102,61 @@ describe('NavBar', () => {
     expect(sell.getAttribute('href')).toBe('/vendor/apply');
   });
 
-  it('shows a Sign in link and no account/sign-out when anonymous', async () => {
+  it('shows a Sign in link and no account menu when anonymous', async () => {
     await hydrate();
     const el: HTMLElement = fixture.nativeElement;
     const signIn = el.querySelector('a.nav-bar__signin') as HTMLAnchorElement;
     expect(signIn).toBeTruthy();
     expect(signIn.getAttribute('href')).toBe('/login');
     expect(signIn.textContent).toContain('Sign in');
-    expect(el.querySelector('.nav-bar__signout')).toBeNull();
     expect(el.querySelector('.nav-bar__account')).toBeNull();
   });
 
-  it('shows the account name and a Sign out control when authenticated', async () => {
+  it('shows the account name and reveals a Sign out control on open when authenticated', async () => {
     userSubject.next(jane);
     await hydrate();
     const el: HTMLElement = fixture.nativeElement;
-    const account = el.querySelector('.nav-bar__account');
+    const account = el.querySelector('button.nav-bar__account') as HTMLButtonElement;
     expect(account).toBeTruthy();
-    expect(account?.textContent).toContain('Jane');
-    expect(el.querySelector('.nav-bar__signout')?.textContent).toContain('Sign out');
+    expect(account.textContent).toContain('Jane');
     expect(el.querySelector('a.nav-bar__signin')).toBeNull();
+
+    expect(el.querySelector('.nav-bar__account-menu')).toBeNull();
+    account.click();
+    fixture.detectChanges();
+    expect(el.querySelector('.nav-bar__account-menu-item--danger')?.textContent).toContain('Sign out');
   });
 
-  it('links the account icon to /profile when authenticated', async () => {
+  it('opens a dropdown with links to profile details, orders and addresses', async () => {
     userSubject.next(jane);
     await hydrate();
-    const account = fixture.nativeElement.querySelector('a.nav-bar__account') as HTMLAnchorElement;
-    expect(account).toBeTruthy();
-    expect(account.getAttribute('href')).toBe('/profile');
+    const el: HTMLElement = fixture.nativeElement;
+    const account = el.querySelector('button.nav-bar__account') as HTMLButtonElement;
+
+    account.click();
+    fixture.detectChanges();
+
+    const links = Array.from(el.querySelectorAll('.nav-bar__account-menu a.nav-bar__account-menu-item')) as HTMLAnchorElement[];
+    expect(links.map(l => l.getAttribute('href'))).toEqual([
+      '/profile/details',
+      '/profile/orders',
+      '/profile/addresses',
+    ]);
+  });
+
+  it('closes the account menu on Escape', async () => {
+    userSubject.next(jane);
+    await hydrate();
+    const el: HTMLElement = fixture.nativeElement;
+    const account = el.querySelector('button.nav-bar__account') as HTMLButtonElement;
+
+    account.click();
+    fixture.detectChanges();
+    expect(el.querySelector('.nav-bar__account-menu')).toBeTruthy();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+    expect(el.querySelector('.nav-bar__account-menu')).toBeNull();
   });
 
   it('falls back to the email when the user has no first name', async () => {
@@ -158,8 +185,12 @@ describe('NavBar', () => {
   it('signs out via AuthService.logout()', async () => {
     userSubject.next(jane);
     await hydrate();
-    const button = fixture.nativeElement.querySelector('.nav-bar__signout') as HTMLButtonElement;
-    button.click();
+    const el: HTMLElement = fixture.nativeElement;
+    (el.querySelector('button.nav-bar__account') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const signOutBtn = el.querySelector('.nav-bar__account-menu-item--danger') as HTMLButtonElement;
+    signOutBtn.click();
     expect(authStub.logout).toHaveBeenCalledTimes(1);
   });
 

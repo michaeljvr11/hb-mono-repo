@@ -86,33 +86,37 @@
   }
 }
 
-/* Intrinsic hb-logo.png is 144x144 (1:1) — headroom above the 44px render, for
-   DPR 3 screens. Sized explicitly (both the `width`/`height` attrs on the <img>
-   and here) so the image reserves its box before it loads — no layout shift. */
+/* Intrinsic hb-logo.png is 144x144 (1:1) — 2.25x headroom above the 64px render,
+   for high-DPI screens. Sized explicitly (both the `width`/`height` attrs on the
+   <img> and here) so the image reserves its box before it loads — no layout
+   shift. Matches the footer and auth-screen brand marks at every width (see
+   `.site-footer__logo` / `.brand-logo`) — one shared size, kept in sync by hand
+   since each lives in its own component stylesheet. */
 .nav-bar__logo {
   display: block;
   width: 44px;
   height: 44px;
+
+  @media (min-width: 400px) {
+    width: 64px;
+    height: 64px;
+  }
 }
 
-/* Desktop nav links — hidden on mobile. Gap/padding tighten between 768–1023px,
-   where the four links share the row with the brand and the action icons; full
-   spacing returns at 1024px+. Sell-on-H&B and the utilities only rejoin the row
-   at 1280px. */
-.nav-bar__links {
-  display: none;
+/* Trailing group — holds the Sell entry, utilities, and action icons together
+   as one flex item so `.nav-bar__inner`'s `space-between` only ever splits the
+   row into two sides (brand vs. everything else), not four scattered ones. */
+.nav-bar__trailing {
+  display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
-  row-gap: 4px;
 
   @media (min-width: 768px) {
-    display: flex;
+    gap: 16px;
   }
 
   @media (min-width: 1024px) {
     gap: 24px;
-    flex-wrap: nowrap;
   }
 }
 
@@ -376,19 +380,26 @@
   }
 }
 
-/* Account display (authenticated) */
+/* Account menu — trigger button + dropdown (authenticated) */
+.nav-bar__account-wrap {
+  position: relative;
+}
+
 .nav-bar__account {
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
+  border: none;
   border-radius: 4px;
-  color: var(--hb-on-surface-variant);
-  text-decoration: none;
+  background: none;
   cursor: pointer;
+  font-family: inherit;
+  color: var(--hb-on-surface-variant);
   transition: background 150ms ease, color 150ms ease;
 
-  &:hover {
+  &:hover,
+  &[aria-expanded='true'] {
     background: var(--hb-surface-container);
     color: var(--hb-on-surface);
   }
@@ -415,38 +426,78 @@
   }
 }
 
-/* Sign out button */
-.nav-bar__signout {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border: none;
-  border-radius: 4px;
-  background: none;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 20px;
-  color: var(--hb-on-surface-variant);
-  transition: background 150ms ease, color 150ms ease;
-
-  .material-symbols-outlined {
-    font-size: 20px;
-  }
-
-  &:hover {
-    background: var(--hb-surface-container);
-    color: var(--hb-on-surface);
-  }
-}
-
-.nav-bar__signout-label {
+.nav-bar__account-caret {
   display: none;
-  white-space: nowrap;
+  font-size: 18px;
+  flex-shrink: 0;
 
   @media (min-width: 768px) {
     display: inline;
   }
+}
+
+/* Full-viewport, invisible — click anywhere outside the menu to dismiss it,
+   same pattern as `.radial-nav__scrim`. */
+.nav-bar__account-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+}
+
+.nav-bar__account-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 8px;
+  background: var(--hb-surface);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.nav-bar__account-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--hb-on-surface);
+  text-decoration: none;
+  text-align: left;
+  white-space: nowrap;
+  transition: background 150ms ease;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--hb-on-surface-variant);
+  }
+
+  &:hover {
+    background: var(--hb-surface-container);
+  }
+
+  &--danger {
+    color: var(--hb-error);
+
+    .material-symbols-outlined {
+      color: var(--hb-error);
+    }
+  }
+}
+
+.nav-bar__account-menu-divider {
+  height: 1px;
+  margin: 4px 4px;
+  background: var(--hb-outline-variant);
 }

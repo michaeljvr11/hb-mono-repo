@@ -8,8 +8,8 @@
         <img
           class="nav-bar__logo"
           [src]="brandLogo"
-          width="44"
-          height="44"
+          width="64"
+          height="64"
           alt=""
           aria-hidden="true"
         />
@@ -17,116 +17,141 @@
       </a>
     </div>
 
-    <!-- Desktop nav links -->
-    <nav class="nav-bar__links" aria-label="Primary navigation">
+
+    <!-- Trailing group: sell entry, utilities, and action icons all move as one
+         block on the right now that the desktop links nav is gone — without this
+         wrapper, `justify-content: space-between` on `.nav-bar__inner` would
+         spread these three siblings apart instead of keeping them together. -->
+    <div class="nav-bar__trailing">
+      <!-- Sell on H&B entry -->
       <a
-        class="nav-bar__link"
-        routerLink="/shop"
+        class="nav-bar__link nav-bar__link--sell"
+        routerLink="/vendor/apply"
         routerLinkActive="nav-bar__link--active"
         ariaCurrentWhenActive="page"
-      >Home</a>
-      <a
-        class="nav-bar__link"
-        routerLink="/about"
-        routerLinkActive="nav-bar__link--active"
-        ariaCurrentWhenActive="page"
-      >About</a>
-      <a
-        class="nav-bar__link"
-        routerLink="/services"
-        routerLinkActive="nav-bar__link--active"
-        ariaCurrentWhenActive="page"
-      >Services</a>
-      <a
-        class="nav-bar__link"
-        routerLink="/contact"
-        routerLinkActive="nav-bar__link--active"
-        ariaCurrentWhenActive="page"
-      >Contact</a>
-    </nav>
+      >Sell on H&amp;B</a>
 
-    <!-- Sell on H&B entry -->
-    <a
-      class="nav-bar__link nav-bar__link--sell"
-      routerLink="/vendor/apply"
-      routerLinkActive="nav-bar__link--active"
-      ariaCurrentWhenActive="page"
-    >Sell on H&amp;B</a>
-
-    <!-- Desktop utilities -->
-    <div class="nav-bar__utils">
-      <div class="nav-bar__divider" aria-hidden="true"></div>
-      <button
-        type="button"
-        class="nav-bar__currency"
-        (click)="notifyComingSoon('Currency switcher')"
-        aria-label="Switch currency"
-      >
-        <span class="nav-bar__currency-label">ZAR/NAD</span>
-        <span class="material-symbols-outlined nav-bar__expand-icon" aria-hidden="true">expand_more</span>
-      </button>
-    </div>
-
-    <!-- Action icons -->
-    <div class="nav-bar__actions">
-      <button
-        type="button"
-        class="nav-bar__icon-btn"
-        aria-label="Search"
-        (click)="onSearchClick()"
-      >
-        <span class="material-symbols-outlined" aria-hidden="true">search</span>
-      </button>
-      <button
-        type="button"
-        class="nav-bar__wishlist-btn"
-        aria-label="View wishlist"
-        (click)="onWishlistClick()"
-      >
-        <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
-      </button>
-      <button
-        type="button"
-        class="nav-bar__cart-btn"
-        aria-label="View cart"
-        (click)="onCartClick()"
-      >
-        <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
-        <span class="nav-bar__cart-label">Cart</span>
-        @if (cartCount() > 0) {
-          <span class="nav-bar__cart-badge" aria-label="Items in cart">{{ cartCount() }}</span>
-        }
-      </button>
-
-      <!-- Auth controls: sign-in (anonymous) or account + sign-out (authenticated) -->
-      @if (isAuthenticated()) {
-        <a
-          class="nav-bar__account"
-          routerLink="/profile"
-          aria-label="View your profile"
-        >
-          <span class="material-symbols-outlined nav-bar__account-icon" aria-hidden="true">person</span>
-          <span class="nav-bar__account-name">{{ accountLabel() }}</span>
-        </a>
+      <!-- Desktop utilities -->
+      <div class="nav-bar__utils">
+        <div class="nav-bar__divider" aria-hidden="true"></div>
         <button
           type="button"
-          class="nav-bar__signout"
-          (click)="signOut()"
-          aria-label="Sign out"
+          class="nav-bar__currency"
+          (click)="notifyComingSoon('Currency switcher')"
+          aria-label="Switch currency"
         >
-          <span class="material-symbols-outlined" aria-hidden="true">logout</span>
-          <span class="nav-bar__signout-label">Sign out</span>
+          <span class="nav-bar__currency-label">ZAR/NAD</span>
+          <span class="material-symbols-outlined nav-bar__expand-icon" aria-hidden="true">expand_more</span>
         </button>
-      } @else {
-        <a
-          class="nav-bar__signin"
-          routerLink="/login"
-          aria-label="Sign in to your account"
+      </div>
+
+      <!-- Action icons -->
+      <div class="nav-bar__actions">
+        <button
+          type="button"
+          class="nav-bar__icon-btn"
+          aria-label="Search"
+          (click)="onSearchClick()"
         >
-          <span class="material-symbols-outlined nav-bar__signin-icon" aria-hidden="true">login</span>
-          <span class="nav-bar__signin-label">Sign in</span>
-        </a>
-      }
+          <span class="material-symbols-outlined" aria-hidden="true">search</span>
+        </button>
+        <button
+          type="button"
+          class="nav-bar__wishlist-btn"
+          aria-label="View wishlist"
+          (click)="onWishlistClick()"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+        </button>
+        <button
+          type="button"
+          class="nav-bar__cart-btn"
+          aria-label="View cart"
+          (click)="onCartClick()"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
+          <span class="nav-bar__cart-label">Cart</span>
+          @if (cartCount() > 0) {
+            <span class="nav-bar__cart-badge" aria-label="Items in cart">{{ cartCount() }}</span>
+          }
+        </button>
+
+        <!-- Auth controls: sign-in (anonymous) or account menu (authenticated) -->
+        @if (isAuthenticated()) {
+          <div class="nav-bar__account-wrap">
+            <button
+              type="button"
+              class="nav-bar__account"
+              aria-haspopup="menu"
+              [attr.aria-expanded]="accountMenuOpen()"
+              aria-controls="nav-bar-account-menu"
+              aria-label="Account menu"
+              (click)="toggleAccountMenu()"
+            >
+              <span class="material-symbols-outlined nav-bar__account-icon" aria-hidden="true">person</span>
+              <span class="nav-bar__account-name">{{ accountLabel() }}</span>
+              <span class="material-symbols-outlined nav-bar__account-caret" aria-hidden="true">expand_more</span>
+            </button>
+
+            @if (accountMenuOpen()) {
+              <div class="nav-bar__account-scrim" (click)="closeAccountMenu()"></div>
+              <div
+                class="nav-bar__account-menu"
+                id="nav-bar-account-menu"
+                role="menu"
+                aria-label="Account"
+              >
+                <a
+                  class="nav-bar__account-menu-item"
+                  role="menuitem"
+                  routerLink="/profile/details"
+                  (click)="closeAccountMenu()"
+                >
+                  <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                  Details
+                </a>
+                <a
+                  class="nav-bar__account-menu-item"
+                  role="menuitem"
+                  routerLink="/profile/orders"
+                  (click)="closeAccountMenu()"
+                >
+                  <span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span>
+                  Orders
+                </a>
+                <a
+                  class="nav-bar__account-menu-item"
+                  role="menuitem"
+                  routerLink="/profile/addresses"
+                  (click)="closeAccountMenu()"
+                >
+                  <span class="material-symbols-outlined" aria-hidden="true">home</span>
+                  Addresses
+                </a>
+                <div class="nav-bar__account-menu-divider" role="separator"></div>
+                <button
+                  type="button"
+                  class="nav-bar__account-menu-item nav-bar__account-menu-item--danger"
+                  role="menuitem"
+                  (click)="signOut()"
+                >
+                  <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                  Sign out
+                </button>
+              </div>
+            }
+          </div>
+        } @else {
+          <a
+            class="nav-bar__signin"
+            routerLink="/login"
+            aria-label="Sign in to your account"
+          >
+            <span class="material-symbols-outlined nav-bar__signin-icon" aria-hidden="true">login</span>
+            <span class="nav-bar__signin-label">Sign in</span>
+          </a>
+        }
+      </div>
     </div>
   </div>
 </header>

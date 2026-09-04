@@ -18,6 +18,9 @@ import { SITE_IMAGES } from '../../shared/constants/image.constants';
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './nav-bar.html',
   styleUrl: './nav-bar.scss',
+  host: {
+    '(document:keydown.escape)': 'closeAccountMenu()',
+  },
 })
 export class NavBar {
   protected readonly brandLogo = SITE_IMAGES.logo;
@@ -45,6 +48,8 @@ export class NavBar {
     const u = this.currentUser();
     return u ? (u.firstName?.trim() || u.email || '') : '';
   });
+
+  readonly accountMenuOpen = signal(false);
 
   // Real cart badge count — 0 until hydration + first cart load, so the
   // server render and initial client render always match.
@@ -96,6 +101,15 @@ export class NavBar {
   }
 
   signOut(): void {
+    this.accountMenuOpen.set(false);
     this.authService.logout();
+  }
+
+  toggleAccountMenu(): void {
+    this.accountMenuOpen.update(open => !open);
+  }
+
+  closeAccountMenu(): void {
+    this.accountMenuOpen.set(false);
   }
 }

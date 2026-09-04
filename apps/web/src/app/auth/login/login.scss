@@ -31,11 +31,17 @@
 
 /* Intrinsic hb-logo.png is 144x144 — reserved at its rendered size (both the
    `width`/`height` attrs on the <img> and here) so it doesn't shift layout
-   on load. Matches the register brand mark. */
+   on load. Matches the register brand mark, and the nav bar / footer brand
+   marks at every width (see `.nav-bar__logo` / `.site-footer__logo`). */
 .brand-logo {
   display: block;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
+
+  @media (min-width: 400px) {
+    width: 64px;
+    height: 64px;
+  }
 }
 
 /* 24px/600 is DESIGN.md's headline-md. Steps down below 400px so the wordmark

@@ -39,12 +39,18 @@
 
 /* Intrinsic hb-logo.png is 144x144 (1:1). Explicit width/height reserve the
    box before the image loads — no layout shift; the `width`/`height` attrs on
-   footer.html's <img> carry the same 40px. */
+   footer.html's <img> carry the same 64px. Matches the nav bar and auth-screen
+   brand marks at every width (see `.nav-bar__logo` / `.brand-logo`). */
 .site-footer__logo {
   display: block;
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+
+  @media (min-width: 400px) {
+    width: 64px;
+    height: 64px;
+  }
 }
 
 .site-footer__brand {
