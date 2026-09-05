@@ -6,6 +6,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { Router, provideRouter } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { vi } from 'vitest';
+import { CategoryNavStore } from '../../layout/category-nav/category-nav.store';
 import {
   AnalyticsEventType,
   AuthUser,
@@ -108,6 +109,12 @@ describe('Shop', () => {
         { provide: AnalyticsService, useValue: analyticsStub },
         { provide: GoogleAnalyticsService, useValue: gaStub },
         { provide: WishlistService, useValue: wishlistStub },
+        // Keep the header's category nav idle: this suite pins the page's own single
+        // GET /categories with expectOne, and the nav would otherwise issue a second.
+        {
+          provide: CategoryNavStore,
+          useValue: { categories: signal([]), state: signal('idle'), load: vi.fn() },
+        },
       ],
     }).compileComponents();
 
@@ -129,7 +136,8 @@ describe('Shop', () => {
   it('passes the storefront placeholder to the mobile search bar', () => {
     flushLoads();
     fixture.detectChanges();
-    const searchInput = fixture.nativeElement.querySelector('.search-bar__input') as HTMLInputElement;
+    // Scoped to the toolbar: the header now carries its own search input (Phase 2).
+    const searchInput = fixture.nativeElement.querySelector('.mobile-toolbar .search-bar__input') as HTMLInputElement;
     expect(searchInput.placeholder).toBe('Shop our latest products');
   });
 

@@ -233,7 +233,8 @@ describe('Discover', () => {
   });
 
   it('passes the storefront placeholder to the search bar', () => {
-    const searchInput = fixture.nativeElement.querySelector('.search-bar__input') as HTMLInputElement;
+    // Scoped to the page's controls: the header now carries its own search input (Phase 2).
+    const searchInput = fixture.nativeElement.querySelector('.discover__controls .search-bar__input') as HTMLInputElement;
     expect(searchInput.placeholder).toBe('Shop our latest products');
   });
 

@@ -259,6 +259,45 @@ the screenshot paths under `docs/design/redesign/evidence/phase-N/` and referenc
    delivery; if yes, canonical one-line copy for trust strip and checkout.
 6. **Second product image on hover.** Only needs `images[1]` which exists; card supports it
    from Phase 3. Card is a content task: ensure listings upload two images.
+7. **Header search suggestions + collapse `/discover`'s own controls.** (Phase 2 exposed.)
+   Give `<app-search-bar variant="header">` the same suggestion feed `/discover` uses
+   (`GET /search/suggest`), then hide `/discover`'s page-level search bar and chip row at
+   ≥768px so desktop has one search input and one category strip. AC: one `.search-bar__input`
+   in the DOM at 1280 on `/discover`; typing in the header shows grouped suggestions; the
+   header input is seeded with the current `q` on `/discover`.
+8. **Sub-categories in the flyout.** The flyout already groups under `parentId`; the seed and
+   admin UI only create top-level categories. Owner decision on whether the taxonomy gets a
+   second level; if yes, add `parentId` to the admin category form and seed a few children so
+   the grouped layout is exercised.
 
 ## Amendments
-_(none yet)_
+
+**2026-09-05, Phase 2**
+1. *"The icon button remains below 768px"* — it does not. The header never had a search icon
+   below 768px: the pre-launch polish hid it there on a measured row-width budget at 360px
+   (the wordmark would not fit next to the action row), and `/shop`'s toolbar plus the radial
+   nav already carry search on mobile. Phase 2 keeps that decision, so the header search is:
+   input at ≥768px, nothing below. The old icon button (≥768px only) is removed rather than
+   kept alongside the input.
+2. *"IntersectionObserver fallback"* stays, but the sentinel is a 1×80px absolutely positioned
+   element at the top of the document (not the header itself), because the header is sticky
+   and cannot be its own scroll reference. The observer only runs where
+   `CSS.supports('animation-timeline: scroll()')` is false.
+3. *Container mixin at the 13 sites* — 11 take the mixin. The PDP (`.pdp`, its sticky bar) and
+   the trust banner grid take only the `max-width` token because their gutters live on child
+   or parent elements; the PDP keeps its literal 16/40px gutters until Phase 5 so every PDP
+   section shares one edge. The landing page, `/discover` and the vendor profile went to
+   `wide` (they are grids); cart, checkout, wishlist, PDP stay `content`.
+4. The header's category state reads query params from `Router.routerState.root`, not an
+   injected `ActivatedRoute`: the header renders on every page and must not depend on the
+   routed component's route (or on what a page spec stubs it with).
+5. `<app-category-nav>` gets a tiny root-provided `CategoryNavStore` (one fetch per app
+   lifetime) instead of calling `CategoriesService.list()` directly — the header is
+   re-created on every route change, so a direct call would refetch on every navigation.
+   `CategoriesService` itself is untouched, as promised.
+6. The radial nav moves from `z-index: 60` to `--hb-z-scrim` (400): at 60 it would have sat
+   under the new `--hb-z-header` (200) header, and its open-state blur must cover the header.
+7. Not done, deferred to Phase 3/4: the `/discover` page still renders its own search bar and
+   chip row at ≥768px, so desktop now shows two search inputs there (header + page). Listed
+   in §5 as a card; the page's controls should collapse into the header's once the header
+   search grows suggestions.

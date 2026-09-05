@@ -1,8 +1,10 @@
 /* ── Layout ────────────────────────────────────────────────────────────── */
 
+/* `content` width only; the 16/40px gutters stay on `.pdp__section` and the sticky bar
+   until Phase 5 reworks the PDP, so every section here keeps one consistent edge. */
 .pdp {
   width: 100%;
-  max-width: 1280px;
+  max-width: var(--hb-container-content);
   margin: 0 auto;
   padding-bottom: 96px;
   background: var(--hb-background);
@@ -930,8 +932,8 @@
   align-items: stretch;
   gap: 12px;
   width: 100%;
-  max-width: 1280px;
-  z-index: 40;
+  max-width: var(--hb-container-content);
+  z-index: var(--hb-z-sticky);
   padding: 8px 16px calc(16px + env(safe-area-inset-bottom));
   background: linear-gradient(to top, var(--hb-background) 60%, transparent);
 

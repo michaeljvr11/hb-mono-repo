@@ -10,6 +10,7 @@ import { NavBar } from './nav-bar';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
 import { WishlistService } from '../../core/api/wishlist.service';
+import { CategoryNavStore } from '../category-nav/category-nav.store';
 
 describe('NavBar', () => {
   let component: NavBar;
@@ -77,6 +78,12 @@ describe('NavBar', () => {
         { provide: AuthService, useValue: authStub },
         { provide: CartService, useValue: cartStub },
         { provide: WishlistService, useValue: wishlistStub },
+        // The embedded <app-category-nav> reads the shared store; keep it idle here so
+        // the header renders without a categories request (covered in category-nav.spec).
+        {
+          provide: CategoryNavStore,
+          useValue: { categories: signal([]), state: signal('idle'), load: vi.fn() },
+        },
       ],
     }).compileComponents();
 
@@ -296,14 +303,86 @@ describe('NavBar', () => {
     expect(navigate).toHaveBeenCalledWith(['/wishlist']);
   });
 
-  it('navigates to /discover when the search icon is clicked', async () => {
+  // ── Header search ───────────────────────────────────────────────────────
+
+  it('renders the header search in its compact variant', async () => {
+    await hydrate();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.nav-bar__search .search-bar--header')).toBeTruthy();
+    expect(el.querySelector('.nav-bar__icon-btn')).toBeNull();
+  });
+
+  it('submits the header search to /discover?q=', async () => {
     await hydrate();
     const router = TestBed.inject(Router);
     const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
-    const searchBtn = fixture.nativeElement.querySelector('.nav-bar__icon-btn') as HTMLButtonElement;
-    searchBtn.click();
+    const input = fixture.nativeElement.querySelector('.nav-bar__search .search-bar__input') as HTMLInputElement;
+    input.value = '  rooibos ';
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
 
-    expect(navigate).toHaveBeenCalledWith(['/discover']);
+    expect(navigate).toHaveBeenCalledWith(['/discover'], { queryParams: { q: 'rooibos' } });
+  });
+
+  it('ignores an empty header search submit', async () => {
+    await hydrate();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.onHeaderSearch('   ');
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  // ── Shell ───────────────────────────────────────────────────────────────
+
+  it('mounts the category nav as the header\'s second row', async () => {
+    await hydrate();
+    expect(fixture.nativeElement.querySelector('header.nav-bar app-category-nav')).toBeTruthy();
+  });
+
+  it('toggles the compact class from the scroll sentinel when scroll-driven CSS is unavailable', async () => {
+    let callback: IntersectionObserverCallback | undefined;
+    const disconnect = vi.fn();
+    const observe = vi.fn();
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(cb: IntersectionObserverCallback) {
+          callback = cb;
+        }
+        observe = observe;
+        disconnect = disconnect;
+        unobserve = vi.fn();
+      },
+    );
+    // The DOM test environment has no `CSS` global; model a browser without
+    // scroll-driven animations so the observer path runs.
+    vi.stubGlobal('CSS', { supports: () => false });
+
+    try {
+      const local = TestBed.createComponent(NavBar);
+      local.detectChanges();
+      await local.whenStable();
+      local.detectChanges();
+
+      expect(observe).toHaveBeenCalledWith(local.nativeElement.querySelector('.nav-bar__sentinel'));
+      const header = local.nativeElement.querySelector('header.nav-bar') as HTMLElement;
+      expect(header.classList.contains('nav-bar--compact')).toBe(false);
+
+      callback!([{ isIntersecting: false } as IntersectionObserverEntry], {} as IntersectionObserver);
+      local.detectChanges();
+      expect(header.classList.contains('nav-bar--compact')).toBe(true);
+
+      callback!([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+      local.detectChanges();
+      expect(header.classList.contains('nav-bar--compact')).toBe(false);
+
+      local.destroy();
+      expect(disconnect).toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

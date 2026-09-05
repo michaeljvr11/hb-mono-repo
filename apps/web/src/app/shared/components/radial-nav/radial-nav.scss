@@ -7,7 +7,8 @@
 .radial-nav {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  /* Above the sticky header (`--hb-z-header`) so the open state's blurred scrim covers it. */
+  z-index: var(--hb-z-scrim);
   pointer-events: none;
 
   @include t.bp(md) {

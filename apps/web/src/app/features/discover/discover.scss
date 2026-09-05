@@ -1,19 +1,16 @@
+@use 'tokens' as t;
+
 /* ── Layout ────────────────────────────────────────────────────────────── */
 
+/* `wide` (1440): this page is a product grid. */
 .discover {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 24px 16px 48px;
+  @include t.container(wide);
+  padding-block: 24px 48px;
   display: flex;
   flex-direction: column;
   gap: 24px;
   background: var(--hb-background);
   color: var(--hb-on-surface);
-
-  @media (min-width: 768px) {
-    padding: 24px 40px 48px;
-  }
 }
 
 .discover__controls {

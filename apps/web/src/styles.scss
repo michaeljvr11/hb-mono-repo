@@ -1,4 +1,5 @@
 /* Global styles. Per-screen styling lives in scoped component SCSS. */
+@use 'tokens' as t;
 
 /* Box-model reset (UIC-3). No global box-sizing rule existed before this — only nine
    components opted into border-box locally (vendor-profile, vendor-products, six admin
@@ -288,6 +289,32 @@ body {
   background: var(--hb-background);
   color: var(--hb-on-surface);
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Focus ring (Phase 2) — the double ring from `--hb-focus-ring` on every keyboard-focused
+   control. `:where()` keeps the selector at pseudo-class specificity only, so any component
+   that styles its own `:focus-visible` still wins. The transparent outline is for forced-colours
+   mode (Windows High Contrast drops box-shadows but paints outlines). Text fields are left out
+   on purpose: their wrappers (`.search-bar__field`, `.auth-screen .input-wrap`) already show
+   focus via `:focus-within`, and a ring on the inner <input> would sit inside the wrapper's. */
+:where(a, button, [role='button'], [role='menuitem'], [role='option'], summary, [tabindex]:not([tabindex='-1'])):focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--hb-focus-ring);
+}
+
+/* Container utilities — the three layout widths as classes for templates that have no
+   stylesheet of their own. Components should prefer `@include t.container(...)`. */
+.hb-container {
+  @include t.container(content);
+}
+
+.hb-container--wide {
+  @include t.container(wide);
+}
+
+.hb-container--max {
+  @include t.container(max);
 }
 
 /* Material Symbols Outlined icon font (loaded in index.html) */

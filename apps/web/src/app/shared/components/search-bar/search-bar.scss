@@ -79,9 +79,29 @@
   }
 }
 
+/* Header variant (Phase 2): a low-contrast pill that only lights up on focus, so it reads
+   as part of the header rather than a form on the page. Height lands at 38px. */
+.search-bar--header {
+  .search-bar__field {
+    padding: var(--hb-space-2) var(--hb-space-3);
+    border-color: transparent;
+    border-radius: var(--hb-radius-pill);
+    background: var(--hb-surface-container-low);
+
+    &:focus-within {
+      border-color: var(--hb-primary);
+      background: var(--hb-surface-container-lowest);
+    }
+  }
+
+  .search-bar__input {
+    font-size: var(--hb-text-sm);
+  }
+}
+
 .search-bar__panel {
   position: absolute;
-  z-index: 30;
+  z-index: var(--hb-z-dropdown);
   top: calc(100% + 4px);
   left: 0;
   right: 0;

@@ -1,18 +1,16 @@
 .trust-banner {
   width: 100%;
   background: var(--hb-surface-container);
-  padding: 48px 16px;
-
-  @media (min-width: 768px) {
-    padding: 48px 40px;
-  }
+  padding: 48px var(--hb-gutter);
 }
 
+/* Bare token rather than the container mixin: the gutter is on the band above. `wide`
+   so the cards line up with the landing page's other sections. */
 .trust-banner__grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 24px;
-  max-width: 1280px;
+  max-width: var(--hb-container-wide);
   margin: 0 auto;
 
   @media (min-width: 768px) {

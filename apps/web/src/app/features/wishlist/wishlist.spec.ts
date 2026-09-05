@@ -7,9 +7,11 @@ import { BehaviorSubject } from 'rxjs';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { AuthUser, CurrencyCode, WishlistDto } from '@hb/shared';
 
+import { signal } from '@angular/core';
 import { Wishlist } from './wishlist';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartService } from '../../core/api/cart.service';
+import { CategoryNavStore } from '../../layout/category-nav/category-nav.store';
 import { environment } from '../../../environments/environment';
 
 const WISHLIST: WishlistDto = {
@@ -62,6 +64,12 @@ describe('Wishlist page', () => {
             isLoggedIn: vi.fn(() => false),
             currentUser$: new BehaviorSubject<AuthUser | null>(null),
           },
+        },
+        // Same reason: the header's category nav must not add a GET /categories
+        // that `httpMock.verify()` would then report as unhandled.
+        {
+          provide: CategoryNavStore,
+          useValue: { categories: signal([]), state: signal('idle'), load: vi.fn() },
         },
       ],
     }).compileComponents();

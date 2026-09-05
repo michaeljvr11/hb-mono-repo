@@ -1,4 +1,10 @@
-<header class="nav-bar" role="banner">
+<!-- Scroll sentinel for the compact header state. Absolutely positioned against the initial
+     containing block (the host and its ancestors are unpositioned), so it stays at the top of
+     the document while the header below sticks. Only observed where CSS scroll-driven
+     animations are unavailable — see nav-bar.ts. -->
+<div #sentinel class="nav-bar__sentinel" aria-hidden="true"></div>
+
+<header class="nav-bar" role="banner" [class.nav-bar--compact]="compact()">
   <div class="nav-bar__inner">
     <!-- Brand -->
     <div class="nav-bar__brand-group">
@@ -17,11 +23,21 @@
       </a>
     </div>
 
+    <!-- Header search (≥768px). Submits to /discover?q=; suggestions stay on /discover,
+         which owns the omnibox proper. Hidden below 768px, where /shop's own toolbar and
+         the radial nav carry search. -->
+    <div class="nav-bar__search">
+      <app-search-bar
+        variant="header"
+        placeholder="Search products"
+        (search)="onHeaderSearch($event)"
+      />
+    </div>
 
     <!-- Trailing group: sell entry, utilities, and action icons all move as one
-         block on the right now that the desktop links nav is gone — without this
-         wrapper, `justify-content: space-between` on `.nav-bar__inner` would
-         spread these three siblings apart instead of keeping them together. -->
+         block on the right — without this wrapper, `justify-content: space-between`
+         on `.nav-bar__inner` would spread these siblings apart instead of keeping
+         them together. -->
     <div class="nav-bar__trailing">
       <!-- Sell on H&B entry -->
       <a
@@ -47,14 +63,6 @@
 
       <!-- Action icons -->
       <div class="nav-bar__actions">
-        <button
-          type="button"
-          class="nav-bar__icon-btn"
-          aria-label="Search"
-          (click)="onSearchClick()"
-        >
-          <span class="material-symbols-outlined" aria-hidden="true">search</span>
-        </button>
         <button
           type="button"
           class="nav-bar__wishlist-btn"
@@ -154,4 +162,7 @@
       </div>
     </div>
   </div>
+
+  <!-- Second row: category bar + flyout (≥1024px), chip strip (768–1023px). -->
+  <app-category-nav />
 </header>

@@ -64,6 +64,8 @@ export class SearchBar {
 
   readonly placeholder = input<string>('Search…');
   readonly value = input<string>('');
+  /** `header`: the compact pill used in the site header at ≥768px (Phase 2). */
+  readonly variant = input<'default' | 'header'>('default');
   readonly suggestions = input<SuggestionGroup[] | null>(null);
   readonly loading = input<boolean>(false);
 

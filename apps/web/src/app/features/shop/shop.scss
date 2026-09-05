@@ -1,3 +1,5 @@
+@use 'tokens' as t;
+
 /* ── Storefront layout ─────────────────────────────────────────────────── */
 
 .storefront {
@@ -63,15 +65,11 @@
 
 /* ── Section shared ───────────────────────────────────────────────────── */
 
+/* Every band on the landing page shares the `wide` container (hero copy, sections,
+   newsletter, and the trust banner in its own stylesheet) so their left edges line up. */
 .section {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 48px 16px;
-
-  @media (min-width: 768px) {
-    padding: 48px 40px;
-  }
+  @include t.container(wide);
+  padding-block: 48px;
 }
 
 .section__header {
@@ -179,17 +177,11 @@
 }
 
 .hero__content {
+  @include t.container(wide);
   position: relative;
   z-index: 1;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 48px 16px;
+  padding-block: 48px;
   color: #fff;
-
-  @media (min-width: 768px) {
-    padding: 48px 40px;
-  }
 }
 
 .hero__kicker {
@@ -334,18 +326,19 @@
      exactly one margin (16px on mobile). `auto` lets the block size itself to
      the space the margins leave. */
   width: auto;
-  /* Override section padding to include the rounded container */
-  margin: 0 16px 48px;
+  /* Override section padding to include the rounded container: the gutter becomes the
+     side margin, and the cap is the wide container minus both gutters so the rounded box
+     sits exactly inside the other sections' content edges. Auto margins take over once
+     the viewport clears the cap (1440 + 2 × 48). */
+  margin: 0 var(--hb-gutter) 48px;
   padding: 48px 24px;
-  max-width: calc(1280px - 32px);
+  max-width: calc(var(--hb-container-wide) - 2 * var(--hb-gutter));
 
-  @media (min-width: 768px) {
-    margin: 0 40px 48px;
+  @include t.bp(md) {
     padding: 48px 40px;
-    max-width: calc(1280px - 80px);
   }
 
-  @media (min-width: 1280px) {
+  @media (min-width: 1536px) {
     margin: 0 auto 48px;
   }
 }
@@ -368,15 +361,8 @@
 }
 
 .newsletter__inner {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 16px;
+  @include t.container(wide);
   text-align: center;
-
-  @media (min-width: 768px) {
-    padding: 0 40px;
-  }
 }
 
 .newsletter__title {

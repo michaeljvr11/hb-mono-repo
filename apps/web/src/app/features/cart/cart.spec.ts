@@ -7,8 +7,10 @@ import { BehaviorSubject } from 'rxjs';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { AuthUser, CartDto, CurrencyCode } from '@hb/shared';
 
+import { signal } from '@angular/core';
 import { Cart } from './cart';
 import { AuthService } from '../../core/auth/auth.service';
+import { CategoryNavStore } from '../../layout/category-nav/category-nav.store';
 import { environment } from '../../../environments/environment';
 
 const CART: CartDto = {
@@ -66,6 +68,12 @@ describe('Cart page', () => {
             isLoggedIn: vi.fn(() => false),
             currentUser$: new BehaviorSubject<AuthUser | null>(null),
           },
+        },
+        // Same reason: the header's category nav must not add a GET /categories
+        // that `httpMock.verify()` would then report as unhandled.
+        {
+          provide: CategoryNavStore,
+          useValue: { categories: signal([]), state: signal('idle'), load: vi.fn() },
         },
       ],
     }).compileComponents();

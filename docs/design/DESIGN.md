@@ -219,6 +219,49 @@ Breakpoints (SCSS only, mobile-first `min-width`, `t.bp(name)`): `sm` 480 · `md
 `lg` 1024 · `xl` 1280 · `2xl` 1440 · `3xl` 1680. `t.bp(name, down)` and `t.bp(name, only)`
 are available for the rare max-width case.
 
+Which container a surface uses (Phase 2): the header inner, footer grid, the landing page's
+bands (hero copy, sections, trust strip, newsletter), `/discover` and the vendor profile are
+`wide`; cart, checkout, wishlist and the PDP are `content`. Components reach it with
+`@include t.container(wide|content)`; a template with no stylesheet can use `.hb-container`,
+`.hb-container--wide`, `.hb-container--max`.
+
+## Shell (Phase 2)
+
+**Header.** Sticky at `--hb-z-header`, two rows, `wide` container.
+- Row one: brand · search · trailing actions. The search is `<app-search-bar variant="header">`
+  (a low-contrast pill that lights up on focus) at ≥768px and submits to `/discover?q=`; it is
+  hidden below 768px, where `/shop`'s own toolbar and the radial nav carry search. The brand
+  wordmark is 18px until 1024px and 24px from there.
+- Row two (`<app-category-nav>`): the information architecture. ≥1024px shows the first eight
+  top-level categories in `displayOrder` as links, then an **All categories** trigger; the
+  flyout lists every category, grouped under parents when `parentId` is set and as a flat
+  grid otherwise. 768–1023px shows the same taxonomy as a scrolling chip strip. Below 768px
+  the row is absent.
+- Flyout: click toggles; hover opens after a 400ms intent delay; leaving the nav closes after
+  200ms; Escape closes and returns focus to the trigger; Tab wraps inside the panel. Reveal is
+  a `clip-path: circle()` from the trigger's centre on `--hb-ease-spring` over
+  `--hb-duration-slower`; reduced motion is a 0.2s fade. The panel sits at `--hb-z-dropdown`;
+  its scrim is `z-index: -1` inside the header's stacking context so the bar stays clickable
+  while the page beneath is covered. Group titles carry the waypoint dot.
+- Compact state: after 80px of scroll the row's block padding drops 16→8px and the logo
+  64→44px. Browsers with scroll-driven animations get this as a gradual change over the
+  first 80px (`animation-timeline: scroll(root)`); elsewhere an IntersectionObserver on a
+  sentinel at the top of the document toggles `.nav-bar--compact`. Both land on the same
+  values, held in two SCSS variables in `nav-bar.scss`.
+- Active category: primary text plus a 2px primary rule on the row's bottom edge (orange stays
+  reserved for buyer-helpful attention, so the active nav link is green).
+
+**Footer.** `wide` container; one column → two at 768 → four at 1024 → at 1440 the brand
+column takes 1.6 shares and the gaps and block padding open up.
+
+**Focus.** `--hb-focus-ring` is applied globally on `:focus-visible` for links, buttons and
+anything with a tabindex, through `:where()` so component rules can still override it, with a
+transparent outline for forced-colours mode. Text fields are excluded: their wrappers show
+focus through `:focus-within`.
+
+**Z-order in practice.** Header 200 · search suggestions and menus 300 · radial nav (mobile
+FAB + its blurred scrim) 400 · consent banner keeps its own 1000 for now.
+
 ## Dark theme
 
 Same hues, surfaces derived. Delivered under `<html data-theme="dark">` (opt-in). The

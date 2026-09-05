@@ -1,9 +1,14 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   Component,
+  DestroyRef,
+  ElementRef,
+  PLATFORM_ID,
   afterNextRender,
   computed,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -12,10 +17,12 @@ import { CartService } from '../../core/api/cart.service';
 import { WishlistService } from '../../core/api/wishlist.service';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { SITE_IMAGES } from '../../shared/constants/image.constants';
+import { SearchBar } from '../../shared/components/search-bar/search-bar';
+import { CategoryNav } from '../category-nav/category-nav';
 
 @Component({
   selector: 'app-nav-bar',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, SearchBar, CategoryNav],
   templateUrl: './nav-bar.html',
   styleUrl: './nav-bar.scss',
   host: {
@@ -30,6 +37,10 @@ export class NavBar {
   private readonly cartService = inject(CartService);
   private readonly wishlistService = inject(WishlistService);
   private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly destroyRef = inject(DestroyRef);
+
+  private readonly sentinel = viewChild<ElementRef<HTMLElement>>('sentinel');
 
   // Raw signal from the auth observable — always starts null (safe for SSR).
   private readonly user = toSignal(this.authService.currentUser$, {
@@ -51,6 +62,13 @@ export class NavBar {
 
   readonly accountMenuOpen = signal(false);
 
+  /**
+   * Compact header after 80px of scroll. Only ever set by the IntersectionObserver
+   * fallback; browsers with CSS scroll-driven animations get the same end state from
+   * the stylesheet and never see this class (see nav-bar.scss).
+   */
+  readonly compact = signal(false);
+
   // Real cart badge count — 0 until hydration + first cart load, so the
   // server render and initial client render always match.
   readonly cartCount = computed(() => (this.hydrated() ? this.cartService.itemCount() : 0));
@@ -69,6 +87,7 @@ export class NavBar {
       if (this.authService.isLoggedIn() && this.wishlistService.wishlist() === null) {
         this.wishlistService.load().subscribe({ error: () => undefined });
       }
+      this.observeScrollSentinel();
     });
   }
 
@@ -76,8 +95,11 @@ export class NavBar {
     this.notificationService.info(`${feature} is coming soon.`);
   }
 
-  onSearchClick(): void {
-    void this.router.navigate(['/discover']);
+  /** Header search submit → the discovery page owns the query from there. */
+  onHeaderSearch(term: string): void {
+    const q = term.trim();
+    if (!q) return;
+    void this.router.navigate(['/discover'], { queryParams: { q } });
   }
 
   onCartClick(): void {
@@ -111,5 +133,23 @@ export class NavBar {
 
   closeAccountMenu(): void {
     this.accountMenuOpen.set(false);
+  }
+
+  /**
+   * IntersectionObserver fallback for the compact state. Skipped where the browser
+   * supports scroll-driven animations (the stylesheet handles it there) and where
+   * IntersectionObserver itself is missing. Runs inside `afterNextRender`, so browser-only.
+   */
+  private observeScrollSentinel(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (typeof CSS !== 'undefined' && CSS.supports?.('animation-timeline: scroll()')) return;
+    const target = this.sentinel()?.nativeElement;
+    if (!target || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => this.compact.set(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(target);
+    this.destroyRef.onDestroy(() => observer.disconnect());
   }
 }

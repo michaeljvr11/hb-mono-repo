@@ -8,7 +8,7 @@
 |---|---|
 | 0 Orient, research, plan | DONE |
 | 1 Token foundation | DONE |
-| 2 Desktop nav + shell | TODO |
+| 2 Desktop nav + shell | DONE |
 | 3 Storefront + product card | TODO |
 | 4 Trust, states, perceived performance | TODO |
 | 5 PDP, cart, checkout | TODO |
@@ -106,16 +106,103 @@
   - `obsidian` and `trello` MCPs both failed to connect this session; neither was needed.
   - Node 24 is installed (global `WebSocket`, so the CDP script needs no dependency).
 
-## Phase 2 — Desktop nav + shell — TODO
-- **Next action:** bring the stack up (`preview_start` → `db (postgres)`, then
-  `api (NestJS, watch mode)`, then `web`) and hit `GET /categories` to see whether any
-  category has a `parentId`; if Docker is still down, read the categories entity + seed in
-  `apps/api` instead. Then follow PLAN Phase 2. Also apply `--hb-focus-ring` on
-  `:focus-visible` as part of the shell work (deferred from Phase 1, see above).
+## Phase 2 — Desktop nav + shell — DONE (2026-09-05)
+- **Phase 1 commit:** `aeba0b5`. **Phase 2 commit:** recorded at the top of the Phase 3 entry.
+- **Taxonomy check:** `GET /api/categories` returns the four seed categories, all without
+  `parentId` (the entity supports it; nothing sets it). The flyout groups under parents when
+  present and renders a flat four-column grid otherwise — the flat path is what ships.
+- **Files:**
+  - `apps/web/src/app/layout/category-nav/{category-nav.ts,.html,.scss,.spec.ts,
+    category-nav.store.ts}` — new. Bar + trigger (≥1024), chip strip via `<app-category-chips>`
+    (768–1023), flyout with hover intent (400ms), leave grace (200ms), Escape → focus back to
+    trigger, Tab trap, arc `clip-path` reveal on `--hb-ease-spring` (fade under reduced
+    motion), scrim at `z-index: -1` inside the header's stacking context. Root-provided store =
+    one `GET /categories` per app lifetime; SSR response rides the hydration transfer cache
+    (client made 0 category fetches on load). Renders nothing until the list is non-empty.
+  - `apps/web/src/app/layout/nav-bar/{nav-bar.html,.scss,.ts,.spec.ts}` — header search
+    (`<app-search-bar variant="header">`, ≥768, → `/discover?q=`), the old search icon button
+    removed, `<app-category-nav />` as row two, sticky at `--hb-z-header`, `container(wide)`,
+    compact state (scroll-driven CSS over 0–80px, IntersectionObserver sentinel fallback
+    toggling `.nav-bar--compact`), wordmark 24px moved from 768 → 1024, every literal
+    colour/size/duration in the file on tokens, account scrim/menu on the `-1` / dropdown
+    z-index pattern.
+  - `apps/web/src/app/shared/components/search-bar/{search-bar.ts,.html,.scss}` — `variant`
+    input (`default | header`), header pill styles, panel z-index → `--hb-z-dropdown`.
+  - `apps/web/src/app/layout/footer/footer.scss` — `container(wide)`, 768/1024/1440 tiers
+    (1440: `1.6fr 1fr 1fr 1fr`, wider gaps and block padding).
+  - `apps/web/src/styles.scss` — `@use 'tokens'`; global `:focus-visible` ring via `:where()`
+    (transparent outline for forced colours; text fields excluded — their wrappers use
+    `:focus-within`); `.hb-container`, `--wide`, `--max` utilities.
+  - `apps/web/src/app/shared/components/radial-nav/radial-nav.scss` — `z-index: 60` →
+    `--hb-z-scrim` so its open-state blur covers the new 200-level header.
+  - Container migration (13 `max-width: 1280px` sites): `cart`, `checkout`, `wishlist` →
+    `container(content)`; `discover`, `vendor-profile`, shop `.section` / `.hero__content` /
+    `.newsletter__inner` → `container(wide)`; shop `.vendors-section` → gutter margins with
+    `calc(wide − 2·gutter)` cap and auto margins from 1536px; `trust-banner` grid and the PDP
+    (`.pdp`, sticky bar) → bare `var(--hb-container-…)` because their gutters live elsewhere.
+    Measured at 1920: header, category row, hero copy, sections, trust grid, newsletter and
+    footer all sit at 232–1672px; the vendors box at 280–1624px (the cap, centred).
+  - Specs: `nav-bar.spec.ts` (search submit/trim/empty, category-nav mounted, compact toggle
+    through a stubbed IntersectionObserver with `CSS` stubbed absent); `category-nav.spec.ts`
+    (15 cases: ordering, `BAR_LIMIT`, chips → router, aria, flat panel, grouping + orphan
+    promotion, Escape/focus, scrim, link click, Tab wrap, hover intent, leave grace);
+    `shop`/`cart`/`wishlist` specs stub `CategoryNavStore` (they pin their page's single
+    request with `expectOne`/`verify()`); `shop`/`discover` placeholder tests scoped to the
+    page's own search input.
+  - `docs/design/DESIGN.md` — container usage per surface + new "Shell (Phase 2)" section.
+    `docs/design/redesign/PLAN.md` — Amendments 1–7 (2026-09-05) and cards 7–8 in §5.
+  - `docs/design/redesign/evidence/capture.mjs` — routes accept a `!flyout` modifier
+    (`discover!flyout`) that clicks the trigger before capture; the slug gains `-flyout`.
+  - `docs/design/redesign/evidence/phase-2/` — curated six of 50: `home-1280-light`
+    (header IA), `home-768-light` (search + chip tier), `home-1920-light` (1440 containers,
+    footer tier), `discover-flyout-1280-{light,dark}`, `discover-768-light` (documents the
+    pre-existing grid overflow below).
+- **Verification:** `npm run build -w @hb/web` clean (the six pre-existing budget warnings plus
+  `nav-bar.scss` now 8.43 kB against the 8 kB *warn* line — comments; harmless).
+  `npm run test -w @hb/web`: 81 files, all passing (1152 tests). Live at 1280: bar links,
+  trigger `aria-expanded`, focus lands on the first panel link, animation
+  `category-nav-reveal 0.52s cubic-bezier(0.34,1.56,0.64,1)`, panel z 300 / header z 200,
+  Escape closes and refocuses the trigger, `scrollWidth <= innerWidth`. Dark: header
+  `#111412`, link `#bfcab7`, primary `#66bb6a`. Headless-Chrome probe (real viewport, see
+  environment notes): scroll-driven path gives padding 12px / logo 54px at 40px of scroll and
+  8px / 44px past 80px, back to 16 / 64 at 0; with `CSS.supports` stubbed false the observer
+  toggles `.nav-bar--compact` on/off. Captures: 46 of 50 clean; the four `discover-768-*`
+  overflow at 1223 > 768.
+- **Known defect, pre-existing, fixed in Phase 3:** `/discover` overflows at 768px because
+  `.discover__grid` goes to `repeat(4, 1fr)` at ≥768 while `product-card.scss` keeps a fixed
+  `width: 280px` — neither file's grid/width rules changed here (`git diff` on the card is
+  empty), and Phase 1 only captured `/discover` at 1280. PLAN Phase 3's fluid card
+  (`width: 100%`, grid owns the columns) is the fix; do it there, not as a Phase 2 patch.
+- **Decisions not obvious from the diff:** see PLAN Amendments 1–7. In short: no search icon
+  below 768 (pre-launch row-width decision stands); sentinel outside the sticky header;
+  PDP keeps literal gutters until Phase 5; query params from `Router.routerState.root`;
+  `CategoryNavStore` rather than a `CategoriesService` change; radial nav lifted to the scrim
+  level; active nav link is green, not orange (orange stays buyer-attention only).
+  Two more: `BAR_LIMIT` is 8 (PLAN said 6–8; with four seed categories it is moot, the cap
+  protects the row when the taxonomy grows); the "Browse all products" pill in the panel uses
+  `--hb-primary-50/700` so it reads as a quiet secondary action, not a CTA.
+- **Environment notes:**
+  - Rancher Desktop was off; `rdctl start` (not on PATH — full path in memory) brought the
+    daemon up in ~1 min and the `db` + `meilisearch` containers restarted on their own.
+    `preview_start db (postgres)` then reports port 5432 "in use" by `host-switch.exe` —
+    that is the healthy state. API routes are under `/api` (`curl :3000/api/categories`).
+  - The Browser pane's viewport emulation is unreliable for scroll-driven animations (the
+    ScrollTimeline reported 0 progress at scrollY 500, and with emulation cleared the tab
+    reported a 0×0 viewport). Verify such things with a headless-Chrome CDP probe (same
+    plumbing as `capture.mjs`); the pane is fine for structure, clicks and computed colours.
+  - The DOM test environment has no `CSS` global — stub it (`vi.stubGlobal`) rather than
+    spying on it. Git Bash rewrites a leading-slash script argument (`/discover`) — pass
+    routes without the slash, as `capture.mjs` documents.
+  - `obsidian` MCP failed to connect again; not needed. `trello` connected but unused.
 
 ## Phase 3 — Storefront + product card — TODO
 - **Next action:** check `VendorDto` for a verified flag and `images.length` on seed data,
-  then follow PLAN Phase 3.
+  then follow PLAN Phase 3. Make the product card fluid *first* — it also closes the
+  pre-existing `/discover` overflow at 768 recorded above (re-run
+  `node docs/design/redesign/evidence/capture.mjs phase-3 discover` and expect `no` at 768).
+  Stack: `rdctl start` if `docker ps` fails, then `preview_start` `api (NestJS, watch mode)`
+  and `web (Angular SSR dev server)`; a product id for PDP captures comes from
+  `curl localhost:3000/api/products?limit=1`.
 
 ## Phase 4 — Trust, states, perceived performance — TODO
 - **Next action:** `grep -rl hourglass_top apps/web/src --include=*.html` for the remaining

@@ -13,6 +13,10 @@
 // bare `/discover` argument into `C:/Program Files/Git/discover` before Node sees it; if you
 // must pass leading slashes, prefix the command with `MSYS_NO_PATHCONV=1`.
 //
+// A route may carry a `!flyout` modifier (`discover!flyout`): after load, the header's
+// "All categories" trigger is clicked (where present, i.e. ≥1024px) before the capture, so
+// the open flyout is recorded. Phase 2 added it; other modifiers can follow the same shape.
+//
 // Screenshots land in docs/design/redesign/evidence/<phase>/<route>-<width>-<theme>.png.
 // Requires Node ≥ 22 (global WebSocket) and Chrome or Edge installed.
 
@@ -31,11 +35,23 @@ const PORT = 9333;
 const [phase = 'phase-x', ...routeArgs] = process.argv.slice(2);
 const normaliseRoute = (arg) => {
   // Undo MSYS path conversion (`C:/Program Files/Git/discover` → `discover`) and accept
-  // either `home`/`` or a path with or without its leading slash.
-  const tail = arg.replace(/^[A-Za-z]:\/.*?\/Git\//, '').replace(/^\/+/, '');
-  return tail === '' || tail === 'home' ? '/' : `/${tail}`;
+  // either `home`/`` or a path with or without its leading slash. A trailing `!modifier`
+  // is split off and kept alongside the route.
+  const [rawPath, ...modifiers] = arg.split('!');
+  const tail = rawPath.replace(/^[A-Za-z]:\/.*?\/Git\//, '').replace(/^\/+/, '');
+  return { path: tail === '' || tail === 'home' ? '/' : `/${tail}`, modifiers };
 };
-const routes = routeArgs.length ? routeArgs.map(normaliseRoute) : ['/'];
+const routes = routeArgs.length ? routeArgs.map(normaliseRoute) : [{ path: '/', modifiers: [] }];
+
+const MODIFIER_SCRIPTS = {
+  flyout: `(async () => {
+    const trigger = document.querySelector('.category-nav__trigger');
+    if (!trigger) return 'no-trigger';
+    trigger.click();
+    await new Promise((r) => setTimeout(r, 700));
+    return 'open';
+  })()`,
+};
 const outDir = join(HERE, phase);
 mkdirSync(outDir, { recursive: true });
 
@@ -148,8 +164,9 @@ try {
   await cdp.send('Page.enable');
   await cdp.send('Runtime.enable');
 
-  for (const route of routes) {
-    const slug = route === '/' ? 'home' : route.replace(/^\//, '').replace(/[^a-z0-9]+/gi, '-');
+  for (const { path: route, modifiers } of routes) {
+    const base = route === '/' ? 'home' : route.replace(/^\//, '').replace(/[^a-z0-9]+/gi, '-');
+    const slug = [base, ...modifiers].join('-');
     for (const width of WIDTHS) {
       await cdp.send('Emulation.setDeviceMetricsOverride', {
         width,
@@ -170,6 +187,11 @@ try {
             ? "document.documentElement.dataset.theme = 'dark'"
             : 'delete document.documentElement.dataset.theme',
         );
+        for (const modifier of modifiers) {
+          const script = MODIFIER_SCRIPTS[modifier];
+          if (!script) throw new Error(`Unknown route modifier "!${modifier}". Known: ${Object.keys(MODIFIER_SCRIPTS)}`);
+          await evaluate(cdp, script);
+        }
         await sleep(150);
         const metrics = await evaluate(
           cdp,

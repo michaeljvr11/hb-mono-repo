@@ -1,0 +1,272 @@
+/* Second header row — see category-nav.ts for the tiering. Lives inside the sticky
+   `.nav-bar`, so every z-index here is relative to the header's stacking context. */
+@use 'tokens' as t;
+
+.category-nav {
+  position: relative;
+  display: none;
+  border-top: 1px solid var(--hb-outline-variant);
+
+  @include t.bp(md) {
+    display: block;
+  }
+}
+
+.category-nav__inner {
+  @include t.container(wide);
+}
+
+/* ── 768–1023px: chip strip ────────────────────────────────────────────── */
+
+.category-nav__chips {
+  padding-block: var(--hb-space-2);
+
+  @include t.bp(lg) {
+    display: none;
+  }
+}
+
+/* ── ≥1024px: bar ──────────────────────────────────────────────────────── */
+
+.category-nav__bar {
+  display: none;
+  align-items: center;
+  gap: var(--hb-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include t.bp(lg) {
+    display: flex;
+  }
+}
+
+.category-nav__link,
+.category-nav__trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hb-space-1);
+  height: 40px;
+  padding: 0 var(--hb-space-3);
+  border: none;
+  border-radius: var(--hb-radius-sm);
+  background: none;
+  color: var(--hb-on-surface-variant);
+  font-family: inherit;
+  font-size: var(--hb-text-sm);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--hb-duration-base) var(--hb-ease-standard),
+    color var(--hb-duration-base) var(--hb-ease-standard);
+
+  &:hover {
+    background: var(--hb-surface-container);
+    color: var(--hb-on-surface);
+  }
+}
+
+/* Active category: primary text and a 2px rule sitting on the row's bottom border. */
+.category-nav__link--active {
+  color: var(--hb-primary);
+  font-weight: 600;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: var(--hb-space-3);
+    right: var(--hb-space-3);
+    bottom: -1px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--hb-primary);
+  }
+}
+
+/* The trigger sits after the links behind a hairline, so "All categories" reads as the
+   end of the list rather than one more category. */
+.category-nav__all {
+  display: flex;
+  align-items: center;
+  margin-left: var(--hb-space-1);
+  padding-left: var(--hb-space-2);
+  border-left: 1px solid var(--hb-outline-variant);
+}
+
+.category-nav__trigger {
+  &[aria-expanded='true'] {
+    background: var(--hb-surface-container);
+    color: var(--hb-on-surface);
+  }
+}
+
+.category-nav__trigger-icon {
+  font-size: 20px;
+  transition: transform var(--hb-duration-base) var(--hb-ease-standard);
+
+  [aria-expanded='true'] & {
+    transform: rotate(180deg);
+  }
+}
+
+/* ── Flyout ────────────────────────────────────────────────────────────── */
+
+.category-nav__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
+/* Arc reveal: a circle clipped from the trigger's centre on the row's bottom edge, on the
+   one spring curve. The overshoot pushes the radius past the panel, which is fine — it is
+   already fully visible at 150%. */
+.category-nav__panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: var(--hb-z-dropdown);
+  background: var(--hb-surface);
+  border-bottom: 1px solid var(--hb-outline-variant);
+  box-shadow: var(--hb-elevation-3);
+  animation: category-nav-reveal var(--hb-duration-slower) var(--hb-ease-spring) both;
+}
+
+@keyframes category-nav-reveal {
+  from {
+    clip-path: circle(0 at var(--category-nav-origin, 50%) 0);
+    opacity: 0.4;
+  }
+  to {
+    clip-path: circle(150% at var(--category-nav-origin, 50%) 0);
+    opacity: 1;
+  }
+}
+
+.category-nav__panel-inner {
+  @include t.container(wide);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--hb-space-6) var(--hb-space-8);
+  padding-block: var(--hb-space-6);
+
+  @include t.bp(xl) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.category-nav__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hb-space-2);
+  min-width: 0;
+}
+
+/* Waypoint dot before every group title — the route motif, at its smallest. */
+.category-nav__group-title {
+  position: relative;
+  display: inline-block;
+  padding-left: var(--hb-space-4);
+  font-size: var(--hb-text-md);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--hb-on-surface);
+  text-decoration: none;
+  transition: color var(--hb-duration-base) var(--hb-ease-standard);
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--hb-primary);
+  }
+
+  &:hover {
+    color: var(--hb-primary);
+  }
+}
+
+.category-nav__group-desc {
+  margin: 0;
+  padding-left: var(--hb-space-4);
+  font-size: var(--hb-text-sm);
+  line-height: 1.45;
+  color: var(--hb-on-surface-variant);
+}
+
+.category-nav__group-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hb-space-1);
+  margin: 0;
+  padding: 0 0 0 var(--hb-space-4);
+  list-style: none;
+}
+
+.category-nav__child {
+  display: inline-block;
+  padding: var(--hb-space-1) 0;
+  font-size: var(--hb-text-sm);
+  line-height: 1.45;
+  color: var(--hb-on-surface-variant);
+  text-decoration: none;
+  transition: color var(--hb-duration-base) var(--hb-ease-standard);
+
+  &:hover {
+    color: var(--hb-primary);
+  }
+}
+
+.category-nav__browse-all {
+  grid-column: 1 / -1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hb-space-1);
+  margin-top: var(--hb-space-2);
+  padding: var(--hb-space-2) var(--hb-space-4);
+  border-radius: var(--hb-radius-pill);
+  background: var(--hb-primary-50);
+  color: var(--hb-primary-700);
+  font-size: var(--hb-text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--hb-duration-base) var(--hb-ease-standard);
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover {
+    background: var(--hb-primary-100);
+  }
+}
+
+/* Reduced motion: the reveal becomes a fade. Literal duration on purpose — the global rule
+   zeroes every `--hb-duration-*` token, and this fade should survive (same as radial-nav). */
+@media (prefers-reduced-motion: reduce) {
+  .category-nav__panel {
+    animation: category-nav-fade 0.2s ease both;
+  }
+
+  .category-nav__trigger-icon {
+    transition: none;
+  }
+}
+
+@keyframes category-nav-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

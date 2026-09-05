@@ -1,26 +1,35 @@
+@use 'tokens' as t;
+
 .site-footer {
   width: 100%;
-  margin-top: 48px;
+  margin-top: var(--hb-space-9);
   border-top: 1px solid var(--hb-outline-variant);
   background: var(--hb-surface-container-lowest);
 }
 
+/* Same `wide` container as the header inner, so the shell's two edges line up. Tiers:
+   one column · two at 768 · four at 1024 · at 1440 the brand column takes 1.6 shares and
+   the gaps open up, so the grid does not read as four thin strips across a wide screen. */
 .site-footer__grid {
+  @include t.container(wide);
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 48px 16px;
+  gap: var(--hb-space-6);
+  padding-block: var(--hb-space-9);
 
-  @media (min-width: 768px) {
+  @include t.bp(md) {
     grid-template-columns: repeat(2, 1fr);
-    padding: 48px 40px;
   }
 
-  @media (min-width: 1024px) {
+  @include t.bp(lg) {
     grid-template-columns: repeat(4, 1fr);
+    gap: var(--hb-space-7);
+  }
+
+  @include t.bp('2xl') {
+    grid-template-columns: 1.6fr repeat(3, 1fr);
+    gap: var(--hb-space-9);
+    padding-block: var(--hb-space-10);
   }
 }
 
@@ -136,7 +145,7 @@
 
 .site-footer__copyright {
   width: 100%;
-  padding: 16px;
+  padding: var(--hb-space-4) var(--hb-gutter);
   border-top: 1px solid var(--hb-outline-variant);
   text-align: center;
 

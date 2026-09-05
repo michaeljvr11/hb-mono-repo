@@ -1,0 +1,101 @@
+@if (ready()) {
+  <nav
+    class="category-nav"
+    aria-label="Product categories"
+    (mouseenter)="onNavEnter()"
+    (mouseleave)="onNavLeave()"
+  >
+    <div class="category-nav__inner">
+      <!-- 768–1023px: the taxonomy as a scrolling chip strip. -->
+      <div class="category-nav__chips">
+        <app-category-chips
+          [categories]="chipCategories()"
+          [selectedId]="activeCategoryId()"
+          (selectedIdChange)="onChipSelect($event)"
+        />
+      </div>
+
+      <!-- ≥1024px: visible top-level links, then the flyout trigger. -->
+      <ul class="category-nav__bar" role="list">
+        @for (category of barItems(); track category.id) {
+          <li>
+            <a
+              class="category-nav__link"
+              routerLink="/discover"
+              [queryParams]="{ categoryId: category.id }"
+              routerLinkActive="category-nav__link--active"
+              [routerLinkActiveOptions]="activeOptions"
+              ariaCurrentWhenActive="page"
+            >{{ category.name }}</a>
+          </li>
+        }
+        <li class="category-nav__all">
+          <button
+            #trigger
+            type="button"
+            class="category-nav__trigger"
+            aria-haspopup="true"
+            [attr.aria-expanded]="open()"
+            aria-controls="category-nav-panel"
+            (click)="toggle()"
+            (mouseenter)="onTriggerEnter()"
+            (mouseleave)="onTriggerLeave()"
+          >
+            <span>All categories</span>
+            <span class="material-symbols-outlined category-nav__trigger-icon" aria-hidden="true">expand_more</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    @if (open()) {
+      <!-- Sits *beneath* the header's own content (negative z-index inside the sticky
+           header's stacking context) so the bar stays clickable while the page is covered. -->
+      <div class="category-nav__scrim" (click)="close()"></div>
+      <div
+        #panel
+        id="category-nav-panel"
+        class="category-nav__panel"
+        [class.category-nav__panel--flat]="isFlat()"
+        [style.--category-nav-origin.px]="originPx()"
+        role="region"
+        aria-label="All categories"
+        (keydown)="onPanelKeydown($event)"
+      >
+        <div class="category-nav__panel-inner">
+          @for (group of groups(); track group.parent.id) {
+            <div class="category-nav__group">
+              <a
+                class="category-nav__group-title"
+                routerLink="/discover"
+                [queryParams]="{ categoryId: group.parent.id }"
+                (click)="close()"
+              >{{ group.parent.name }}</a>
+              @if (isFlat() && group.parent.description) {
+                <p class="category-nav__group-desc">{{ group.parent.description }}</p>
+              }
+              @if (group.children.length > 0) {
+                <ul class="category-nav__group-list" role="list">
+                  @for (child of group.children; track child.id) {
+                    <li>
+                      <a
+                        class="category-nav__child"
+                        routerLink="/discover"
+                        [queryParams]="{ categoryId: child.id }"
+                        (click)="close()"
+                      >{{ child.name }}</a>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+          <a class="category-nav__browse-all" routerLink="/discover" (click)="close()">
+            Browse all products
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    }
+  </nav>
+}
