@@ -183,7 +183,7 @@
   border-radius: 9999px;
   background: color-mix(in srgb, var(--hb-primary) 12%, transparent);
   color: var(--hb-primary);
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
 }
 
@@ -192,7 +192,7 @@
 /* ─── Row actions ─────────────────────────────────────────────── */
 .td-actions { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 
-.confirm-text { font-size: 13px; font-weight: 600; color: var(--hb-error); }
+.confirm-text { font-size: var(--hb-text-sm); font-weight: 600; color: var(--hb-error); }
 
 .row-btn {
   display: inline-flex;
@@ -204,7 +204,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface-variant);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 500;
   cursor: pointer;
   transition: background 130ms ease, border-color 130ms ease;
@@ -289,7 +289,7 @@
   transition: background 130ms ease;
 
   &:hover { background: var(--hb-surface-container); }
-  .material-symbols-outlined { font-size: 22px; }
+  .material-symbols-outlined { font-size: var(--hb-text-xl); }
 }
 
 /* ─── Form ────────────────────────────────────────────────────── */
@@ -312,7 +312,7 @@
 .field-row { display: flex; gap: 16px; }
 
 .field-label {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   color: var(--hb-on-surface-variant);
   text-transform: uppercase;
@@ -382,7 +382,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-primary);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   cursor: pointer;
   transition: background 130ms ease;

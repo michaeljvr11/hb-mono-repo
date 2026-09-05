@@ -107,14 +107,14 @@
 }
 
 .headline-meta {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface-variant);
 }
 
 /* ─── Form card ───────────────────────────────────────────────── */
 .helper-text {
   margin: 0 0 16px;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   line-height: 1.5;
   color: var(--hb-on-surface-variant);
 }
@@ -249,7 +249,7 @@
   padding: 2px 9px;
   margin-left: 6px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   letter-spacing: 0.03em;
   background: color-mix(in srgb, var(--hb-primary) 14%, transparent);
@@ -270,7 +270,7 @@
   }
 
   .material-symbols-outlined {
-    font-size: 36px;
+    font-size: var(--hb-text-4xl);
     opacity: 0.45;
   }
 }

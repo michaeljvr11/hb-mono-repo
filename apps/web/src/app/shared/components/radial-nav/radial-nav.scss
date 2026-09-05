@@ -1,4 +1,8 @@
-/* Mobile-only corner radial nav. Auto-hidden at >=768px (desktop uses the top nav bar). */
+/* Mobile-only corner radial nav. Auto-hidden at >=768px (desktop uses the top nav bar).
+   This component is where The Corridor's motion language came from: its overshoot curve is
+   now `--hb-ease-spring` and its settle curve `--hb-ease-decelerate` (styles.scss). Durations
+   snap to the token scale (0.45–0.55s → slower, 0.3–0.35s → slow, 0.2s → base). */
+@use 'tokens' as t;
 
 .radial-nav {
   position: fixed;
@@ -6,7 +10,7 @@
   z-index: 60;
   pointer-events: none;
 
-  @media (min-width: 768px) {
+  @include t.bp(md) {
     display: none;
   }
 }
@@ -18,7 +22,7 @@
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   opacity: 0;
-  transition: opacity 0.45s ease;
+  transition: opacity var(--hb-duration-slower) var(--hb-ease-standard);
   pointer-events: none;
 
   .radial-nav--open & {
@@ -37,7 +41,9 @@
   background: radial-gradient(circle at center, rgba(46, 125, 50, 0) 60%, rgba(46, 125, 50, 0.06) 100%);
   opacity: 0;
   transform: translate(50%, 50%) scale(0.4);
-  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+  transition:
+    transform var(--hb-duration-slower) var(--hb-ease-decelerate),
+    opacity var(--hb-duration-slow) var(--hb-ease-standard);
 
   .radial-nav--open & {
     transform: translate(50%, 50%) scale(1);
@@ -63,10 +69,14 @@
   opacity: 0;
   pointer-events: none;
   cursor: pointer;
-  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease, background 0.2s, color 0.2s;
+  transition:
+    transform var(--hb-duration-slower) var(--hb-ease-spring),
+    opacity var(--hb-duration-slow) var(--hb-ease-standard),
+    background var(--hb-duration-base),
+    color var(--hb-duration-base);
 
   .material-symbols-outlined {
-    font-size: 26px;
+    font-size: var(--hb-text-2xl);
   }
 
   .radial-nav--open & {
@@ -92,12 +102,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 9999px;
+  border-radius: var(--hb-radius-pill);
   background: var(--hb-secondary);
   /* LSM-1 contrast fix: white-on-secondary was 2.70:1 (fails AA) against the
      new brighter #f57c00. --hb-on-surface on --hb-secondary is ~6.35:1. */
   color: var(--hb-on-surface);
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 700;
   line-height: 1;
 }
@@ -111,12 +121,12 @@
   white-space: nowrap;
   background: var(--hb-on-surface);
   color: var(--hb-on-primary);
-  font-size: 12px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   padding: 5px 10px;
-  border-radius: 8px;
+  border-radius: var(--hb-radius-sm);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--hb-duration-slow) var(--hb-ease-standard);
   pointer-events: none;
 
   &::after {
@@ -149,7 +159,7 @@
   pointer-events: auto;
   cursor: pointer;
   z-index: 5;
-  transition: filter 0.2s;
+  transition: filter var(--hb-duration-base);
 
   &:active {
     filter: brightness(1.1);
@@ -161,8 +171,8 @@
   right: 20px;
   bottom: 20px;
   color: var(--hb-on-primary);
-  font-size: 30px;
-  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-size: var(--hb-text-3xl);
+  transition: transform var(--hb-duration-slower) var(--hb-ease-spring);
 
   .radial-nav--open & {
     transform: rotate(135deg);
@@ -198,6 +208,8 @@
   }
 }
 
+/* Reduced motion collapses the spring to a fade. The duration is a literal on purpose: the
+   global rule in styles.scss zeroes every `--hb-duration-*`, and this fade should survive. */
 @media (prefers-reduced-motion: reduce) {
   .radial-nav__band,
   .radial-nav__item,

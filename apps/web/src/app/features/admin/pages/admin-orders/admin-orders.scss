@@ -69,7 +69,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface-variant);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 500;
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
@@ -192,7 +192,7 @@
   p {
     margin: 0;
     font-weight: 600;
-    font-size: 15px;
+    font-size: var(--hb-text-md);
     color: var(--hb-on-surface);
   }
 
@@ -287,7 +287,7 @@
   align-items: center;
   padding: 2px 9px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   text-transform: capitalize;
   letter-spacing: 0.03em;
@@ -342,7 +342,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface-variant);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 500;
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
@@ -364,7 +364,7 @@
 }
 
 .page-info {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface-variant);
   display: flex;
   align-items: center;
@@ -403,7 +403,7 @@
 
 .detail-sub {
   margin: 0 0 20px;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface-variant);
 }
 
@@ -539,7 +539,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface);
   cursor: pointer;
 
@@ -560,7 +560,7 @@
 
   p {
     margin: 0 0 8px;
-    font-size: 13px;
+    font-size: var(--hb-text-sm);
     color: var(--hb-on-surface);
 
     &:last-of-type {
@@ -660,20 +660,20 @@
 }
 
 .audit-transition {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   color: var(--hb-on-surface);
 }
 
 .audit-date {
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   color: var(--hb-on-surface-variant);
   white-space: nowrap;
 }
 
 .audit-reason {
   margin: 4px 0 6px;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface);
   word-break: break-word;
 }
@@ -682,7 +682,7 @@
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   color: var(--hb-on-surface-variant);
 }
 

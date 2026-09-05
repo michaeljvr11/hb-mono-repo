@@ -70,7 +70,7 @@
 
 .status-error {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-error);
 }
 
@@ -80,7 +80,7 @@
   border-radius: 12px;
   background: var(--hb-primary);
   color: var(--hb-on-primary);
-  font-size: 15px;
+  font-size: var(--hb-text-md);
   font-weight: 600;
   cursor: pointer;
 }
@@ -95,7 +95,7 @@
   border: none;
   background: none;
   color: var(--hb-on-surface-variant);
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   text-decoration: underline;
   cursor: pointer;
 }

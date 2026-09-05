@@ -20,8 +20,24 @@ html {
   box-sizing: inherit;
 }
 
+/* ==========================================================================================
+   HB design tokens — see docs/design/DESIGN.md (canonical) and docs/design/redesign/PLAN.md
+   Phase 1 for the rationale. SCSS-side helpers (breakpoints, container/elevation/type
+   mixins) live in src/styles/_tokens.scss and are reachable from any component stylesheet
+   as `@use 'tokens' as t;`.
+
+   Rules of the road:
+   - Green (primary) is the land and "go". Orange (secondary) is reserved for attention that
+     helps the buyer — sale price, low stock, the active waypoint — never decoration.
+   - `--hb-ease-spring` is the only expressive easing on the site. Everything else is
+     `--hb-ease-decelerate` or `--hb-ease-standard`.
+   - The dark theme is opt-in via `<html data-theme="dark">` until Phase 4 flips the
+     `prefers-color-scheme` block on (see the flag at the bottom of the token section).
+   ========================================================================================== */
 :root {
-  /* HB design tokens — see docs/design/DESIGN.md (canonical) */
+  color-scheme: light;
+
+  /* --- Colour: brand -------------------------------------------------------------------- */
   /* LSM-1: primary/secondary/primary-container migrated to the hb-landing brand
      palette (owner-confirmed 2026-08-13/15). --hb-primary-container is
      hand-picked (#43a047), not Material-generated — at the old #026e00 it was
@@ -30,22 +46,240 @@ html {
   --hb-primary: #2e7d32;
   --hb-primary-container: #43a047;
   --hb-on-primary: #ffffff;
+  --hb-primary-50: #eef6ee;
+  --hb-primary-100: #d9ecda;
+  --hb-primary-200: #b3d9b5;
+  --hb-primary-700: #256428;
+  --hb-primary-800: #1b4d1e;
+
   --hb-secondary: #f57c00;
   --hb-secondary-fixed: #ffdcc7;
   --hb-on-secondary-container: #703500;
+  --hb-secondary-50: #fff4ea;
+  --hb-secondary-100: #ffe6d1;
+  /* The AA-safe orange for *text* on light surfaces (5.5:1 on white). `--hb-secondary`
+     itself is a fill colour only — it fails AA as a foreground (2.70:1). */
+  --hb-secondary-700: #b34700;
+
+  /* --- Colour: surfaces ----------------------------------------------------------------- */
   --hb-background: #fcf9f8;
   --hb-surface: #fcf9f8;
   --hb-surface-container-lowest: #ffffff;
   --hb-surface-container-low: #f6f3f2;
   --hb-surface-container: #f0eded;
+  --hb-surface-container-high: #eae7e6;
+  --hb-surface-container-highest: #e4e1e0;
   --hb-on-surface: #1c1b1b;
   --hb-on-surface-variant: #404a3b;
   --hb-outline: #707a6a;
   --hb-outline-variant: #bfcab7;
-  --hb-error: #ba1a1a;
   --hb-scrim: rgba(0, 0, 0, 0.35);
+
+  /* --- Colour: semantic ----------------------------------------------------------------- */
+  --hb-error: #ba1a1a;
+  --hb-on-error: #ffffff;
+  --hb-error-container: #ffdad6;
+  --hb-on-error-container: #93000a;
+
+  --hb-success: var(--hb-primary);
+  --hb-on-success: var(--hb-on-primary);
+  --hb-success-container: #e6f4e1;
+  --hb-on-success-container: #0c4a00;
+
+  --hb-warning: var(--hb-secondary-700);
+  --hb-on-warning: #ffffff;
+  --hb-warning-container: var(--hb-secondary-fixed);
+  --hb-on-warning-container: var(--hb-on-secondary-container);
+
+  --hb-info: #0b57a5;
+  --hb-on-info: #ffffff;
+  --hb-info-container: #dbe9ff;
+  --hb-on-info-container: #0a2f5c;
+
+  /* Buyer-helpful attention (PLAN §1 "land and sun"): sale price and low stock are the two
+     places orange is allowed as a foreground. Both alias the AA-safe shade. */
+  --hb-sale: var(--hb-secondary-700);
+  --hb-on-sale: #ffffff;
+  --hb-sale-container: var(--hb-secondary-fixed);
+  --hb-on-sale-container: var(--hb-on-secondary-container);
+
+  --hb-low-stock: var(--hb-secondary-700);
+  --hb-on-low-stock: #ffffff;
+  --hb-low-stock-container: var(--hb-secondary-fixed);
+  --hb-on-low-stock-container: var(--hb-on-secondary-container);
+
+  /* Double ring: a surface-coloured gap then the primary, so it reads on any fill. Apply
+     as `box-shadow: var(--hb-focus-ring)` on `:focus-visible`. */
+  --hb-focus-ring: 0 0 0 2px var(--hb-surface), 0 0 0 4px var(--hb-primary);
+
+  /* --- Spacing: 4px base ---------------------------------------------------------------- */
+  --hb-space-1: 4px;
+  --hb-space-2: 8px;
+  --hb-space-3: 12px;
+  --hb-space-4: 16px;
+  --hb-space-5: 20px;
+  --hb-space-6: 24px;
+  --hb-space-7: 32px;
+  --hb-space-8: 40px;
+  --hb-space-9: 48px;
+  --hb-space-10: 64px;
+  --hb-space-11: 80px;
+  --hb-space-12: 96px;
+
+  /* --- Radius --------------------------------------------------------------------------- */
+  --hb-radius-xs: 4px;
+  --hb-radius-sm: 8px;
+  --hb-radius-md: 12px;
+  --hb-radius-lg: 16px;
+  --hb-radius-xl: 24px;
   --hb-radius-pill: 9999px;
+
+  /* --- Elevation: two-layer shadows tinted from --hb-shadow-color ----------------------- */
+  /* The tint is the on-surface colour in light mode and true black in dark mode (set in the
+     theme block below), so a card lifted in dark mode still casts a shadow rather than a
+     pale halo. */
+  --hb-shadow-color: var(--hb-on-surface);
+  --hb-elevation-0: none;
+  --hb-elevation-1:
+    0 1px 2px color-mix(in srgb, var(--hb-shadow-color) 6%, transparent),
+    0 1px 3px color-mix(in srgb, var(--hb-shadow-color) 10%, transparent);
+  --hb-elevation-2:
+    0 2px 4px color-mix(in srgb, var(--hb-shadow-color) 6%, transparent),
+    0 4px 12px -2px color-mix(in srgb, var(--hb-shadow-color) 12%, transparent);
+  --hb-elevation-3:
+    0 4px 8px color-mix(in srgb, var(--hb-shadow-color) 6%, transparent),
+    0 12px 28px -6px color-mix(in srgb, var(--hb-shadow-color) 16%, transparent);
+  --hb-elevation-4:
+    0 8px 16px color-mix(in srgb, var(--hb-shadow-color) 8%, transparent),
+    0 24px 48px -12px color-mix(in srgb, var(--hb-shadow-color) 20%, transparent);
+
+  /* --- Motion --------------------------------------------------------------------------- */
+  --hb-duration-fast: 120ms;
+  --hb-duration-base: 200ms;
+  --hb-duration-slow: 320ms;
+  --hb-duration-slower: 520ms;
+  --hb-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --hb-ease-decelerate: cubic-bezier(0.22, 1, 0.36, 1);
+  /* The Corridor's single expressive curve (lifted from the radial nav's overshoot). Use
+     only at high-intent moments: add-to-cart, wishlist, filter apply, step advance,
+     flyout reveal. */
+  --hb-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* --- Z-index -------------------------------------------------------------------------- */
+  --hb-z-raised: 1;
+  --hb-z-sticky: 100;
+  --hb-z-header: 200;
+  --hb-z-dropdown: 300;
+  --hb-z-scrim: 400;
+  --hb-z-modal: 500;
+  --hb-z-toast: 600;
+
+  /* --- Layout --------------------------------------------------------------------------- */
+  /* Breakpoints are SCSS-only (`src/styles/_tokens.scss`): sm 480 · md 768 · lg 1024 ·
+     xl 1280 · 2xl 1440 · 3xl 1680. */
+  --hb-container-content: 1280px;
+  --hb-container-wide: 1440px;
+  --hb-container-max: 1680px;
+  --hb-gutter: clamp(16px, 4vw, 48px);
+
+  /* --- Type: nine steps, fluid at the top ----------------------------------------------- */
+  /* Migration map for legacy sizes: 10/11→xs · 13→sm · 15→md · 22→xl · 26→2xl · 28/30→3xl ·
+     36/40→4xl · 56/72→display. */
+  --hb-text-xs: 12px;
+  --hb-text-sm: 14px;
+  --hb-text-md: 16px;
+  --hb-text-lg: 18px;
+  --hb-text-xl: 20px;
+  --hb-text-2xl: 24px;
+  --hb-text-3xl: clamp(28px, 1.5rem + 0.5vw, 32px);
+  --hb-text-4xl: clamp(36px, 2rem + 1vw, 48px);
+  --hb-text-display: clamp(44px, 2rem + 2.5vw, 72px);
 }
+
+/* Reduced motion: zero every duration token so any transition/animation built on the tokens
+   collapses to an instant state change. Components that want a fade to survive (e.g. the
+   radial nav) declare a literal duration for it instead. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --hb-duration-fast: 0ms;
+    --hb-duration-base: 0ms;
+    --hb-duration-slow: 0ms;
+    --hb-duration-slower: 0ms;
+  }
+}
+
+/* --- Dark theme --------------------------------------------------------------------------
+   Same hues, surfaces derived. Primary is lifted to #66bb6a and secondary to #ffa040 so both
+   hold AA as text on the dark ground; `--hb-primary-container` drops to the light-mode
+   primary so it still reads as "a shade of the primary that fills". The tint/shade ladders
+   are re-ordered so `-50` stays the *subtlest* tint against the page in either theme.
+   Applied by `<html data-theme="dark">` only — see the `prefers-color-scheme` flag below. */
+@mixin hb-dark-tokens {
+  color-scheme: dark;
+
+  --hb-primary: #66bb6a;
+  --hb-primary-container: #2e7d32;
+  --hb-on-primary: #0b2e0f;
+  --hb-primary-50: #16301a;
+  --hb-primary-100: #1b3f20;
+  --hb-primary-200: #245229;
+  --hb-primary-700: #81c784;
+  --hb-primary-800: #a5d6a7;
+
+  --hb-secondary: #ffa040;
+  --hb-secondary-fixed: #5a2a00;
+  --hb-on-secondary-container: #ffdcc7;
+  --hb-secondary-50: #3a1c00;
+  --hb-secondary-100: #4d2500;
+  --hb-secondary-700: #ffb86b;
+
+  --hb-background: #111412;
+  --hb-surface: #111412;
+  --hb-surface-container-lowest: #0c0f0d;
+  --hb-surface-container-low: #191d1a;
+  --hb-surface-container: #1e2320;
+  --hb-surface-container-high: #242926;
+  --hb-surface-container-highest: #2a2e2b;
+  --hb-on-surface: #e6e3e1;
+  --hb-on-surface-variant: #bfcab7;
+  --hb-outline: #8a9484;
+  --hb-outline-variant: #404a3b;
+  --hb-scrim: rgba(0, 0, 0, 0.6);
+
+  --hb-error: #ffb4ab;
+  --hb-on-error: #690005;
+  --hb-error-container: #93000a;
+  --hb-on-error-container: #ffdad6;
+
+  --hb-success-container: #1b3f20;
+  --hb-on-success-container: #c8e6c9;
+
+  --hb-on-warning: #3a1c00;
+
+  --hb-info: #7fb8ff;
+  --hb-on-info: #002f5c;
+  --hb-info-container: #0b3b6b;
+  --hb-on-info-container: #dbe9ff;
+
+  --hb-on-sale: #3a1c00;
+  --hb-on-low-stock: #3a1c00;
+
+  /* Shadows go true black on dark surfaces; an on-surface tint would read as a halo. */
+  --hb-shadow-color: #000000;
+}
+
+:root[data-theme='dark'] {
+  @include hb-dark-tokens;
+}
+
+/* PHASE-4 FLAG — automatic dark theme. Disabled until the storefront funnel (shop, discover,
+   product card, PDP, cart, checkout) carries no hard-coded colours (PLAN §2.1). To enable,
+   uncomment the block. The `:not([data-theme='light'])` guard lets a user pin light mode. */
+// @media (prefers-color-scheme: dark) {
+//   :root:not([data-theme='light']) {
+//     @include hb-dark-tokens;
+//   }
+// }
 
 html,
 body {
@@ -596,7 +830,7 @@ body {
   width: 100%;
   margin: 0 0 24px;
   border-collapse: collapse;
-  font-size: 15px;
+  font-size: var(--hb-text-md);
   line-height: 22px;
 }
 

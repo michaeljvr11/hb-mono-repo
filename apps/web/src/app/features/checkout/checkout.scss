@@ -53,7 +53,7 @@
 }
 
 .checkout__success-icon {
-  font-size: 56px;
+  font-size: var(--hb-text-display);
   color: var(--hb-primary);
   font-variation-settings: 'FILL' 1;
 }
@@ -137,7 +137,7 @@
   background: #e8f5e9;
   border: 1px solid rgba(46, 125, 50, 0.2);
   color: var(--hb-primary);
-  font-size: 10px;
+  font-size: var(--hb-text-xs);
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 9999px;
@@ -200,7 +200,7 @@
   background: var(--hb-primary);
   color: var(--hb-on-primary);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   cursor: pointer;
 
@@ -443,7 +443,7 @@
   padding: 0;
   color: var(--hb-primary);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;

@@ -102,7 +102,7 @@
   }
 
   .material-symbols-outlined {
-    font-size: 36px;
+    font-size: var(--hb-text-4xl);
     opacity: 0.45;
   }
 }
@@ -140,7 +140,7 @@
 }
 
 .synonym-term {
-  font-size: 15px;
+  font-size: var(--hb-text-md);
   font-weight: 600;
   color: var(--hb-on-surface);
 }
@@ -168,7 +168,7 @@
   gap: 3px;
   padding: 2px 9px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   letter-spacing: 0.03em;
   background: color-mix(in srgb, var(--hb-primary) 14%, transparent);
@@ -184,7 +184,7 @@
   align-items: center;
   padding: 2px 8px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   text-transform: capitalize;
   letter-spacing: 0.03em;
@@ -322,7 +322,7 @@
   background: transparent;
   color: var(--hb-primary);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   cursor: pointer;
 

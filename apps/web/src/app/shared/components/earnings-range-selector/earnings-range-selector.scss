@@ -28,7 +28,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface-variant);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 500;
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease;

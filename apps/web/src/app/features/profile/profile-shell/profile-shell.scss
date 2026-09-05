@@ -206,7 +206,7 @@ nav {
 }
 
 .nav-icon {
-  font-size: 22px;
+  font-size: var(--hb-text-xl);
   color: var(--hb-on-surface-variant);
   transition: color 150ms ease;
   flex-shrink: 0;

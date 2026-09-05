@@ -106,7 +106,7 @@
 
 .helper-text {
   margin: 0 0 16px;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   line-height: 1.5;
   color: var(--hb-on-surface-variant);
 }
@@ -295,7 +295,7 @@
   }
 
   .material-symbols-outlined {
-    font-size: 36px;
+    font-size: var(--hb-text-4xl);
     opacity: 0.45;
   }
 }

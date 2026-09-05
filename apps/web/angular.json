@@ -29,6 +29,9 @@
             },
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": ["src/styles"]
+            },
             "security": {
               "allowedHosts": ["localhost", "127.0.0.1"]
             },

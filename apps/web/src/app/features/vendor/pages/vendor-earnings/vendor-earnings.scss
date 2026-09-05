@@ -45,7 +45,7 @@
 
   p {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--hb-text-sm);
     line-height: 1.5;
   }
 }
@@ -92,7 +92,7 @@
 /* ─── Window range ────────────────────────────────────────────── */
 .range-sub {
   margin: 0 0 16px;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface-variant);
 }
 
@@ -143,7 +143,7 @@
   p {
     margin: 0;
     font-weight: 600;
-    font-size: 15px;
+    font-size: var(--hb-text-md);
     color: var(--hb-on-surface);
   }
 
@@ -319,7 +319,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease;
@@ -337,6 +337,6 @@
 }
 
 .pagination-status {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface-variant);
 }

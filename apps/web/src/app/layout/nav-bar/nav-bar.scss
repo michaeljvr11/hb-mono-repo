@@ -324,7 +324,7 @@
   border-radius: 9999px;
   background: var(--hb-primary);
   color: var(--hb-on-primary);
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 700;
   line-height: 1;
 }

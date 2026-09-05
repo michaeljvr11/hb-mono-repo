@@ -125,7 +125,7 @@
   margin-bottom: 8px;
 
   &--revenue {
-    font-size: 36px;
+    font-size: var(--hb-text-4xl);
     line-height: 44px;
     color: var(--hb-primary);
   }
@@ -237,7 +237,7 @@
   border-radius: 12px;
   text-decoration: none;
   color: var(--hb-on-surface);
-  font-size: 15px;
+  font-size: var(--hb-text-md);
   font-weight: 600;
   transition: background 150ms ease, border-color 150ms ease;
 
@@ -248,7 +248,7 @@
 }
 
 .quick-link__icon {
-  font-size: 22px;
+  font-size: var(--hb-text-xl);
   color: var(--hb-primary);
   flex-shrink: 0;
 }
@@ -310,7 +310,7 @@
 }
 
 .funnel-row__label {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface);
   white-space: nowrap;
   overflow: hidden;
@@ -333,7 +333,7 @@
 }
 
 .funnel-row__count {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   color: var(--hb-on-surface);
   text-align: right;
@@ -356,13 +356,13 @@
 }
 
 .currency-row__label {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   color: var(--hb-on-surface-variant);
 }
 
 .currency-row__value {
-  font-size: 15px;
+  font-size: var(--hb-text-md);
   font-weight: 700;
   color: var(--hb-primary);
 }
@@ -381,7 +381,7 @@
   grid-template-columns: 1fr 80px 2fr;
   gap: 12px;
   padding: 10px 14px;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface);
 
   &:not(:last-child) { border-bottom: 1px solid var(--hb-outline-variant); }
@@ -391,7 +391,7 @@
     font-weight: 600;
     color: var(--hb-on-surface-variant);
     text-transform: uppercase;
-    font-size: 11px;
+    font-size: var(--hb-text-xs);
     letter-spacing: 0.02em;
   }
 }

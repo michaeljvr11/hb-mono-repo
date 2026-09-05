@@ -115,7 +115,7 @@
 }
 
 .field-label {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   color: var(--hb-on-surface-variant);
   text-transform: uppercase;
@@ -278,7 +278,7 @@
   border-radius: 9999px;
   background: color-mix(in srgb, var(--hb-primary) 12%, transparent);
   color: var(--hb-primary);
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -311,7 +311,7 @@
   background: var(--hb-surface-container);
 }
 
-.picked-product-name { font-size: 13px; font-weight: 500; color: var(--hb-on-surface); }
+.picked-product-name { font-size: var(--hb-text-sm); font-weight: 500; color: var(--hb-on-surface); }
 .picked-product-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
 .available-products {

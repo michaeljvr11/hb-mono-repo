@@ -249,7 +249,7 @@ form {
 }
 
 .confirm-text {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   color: var(--hb-error);
 }
@@ -264,7 +264,7 @@ form {
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface-variant);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;

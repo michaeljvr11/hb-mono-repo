@@ -86,7 +86,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface-variant);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 500;
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
@@ -114,7 +114,7 @@
   padding: 0 5px;
   border-radius: 9999px;
   background: var(--hb-surface-container);
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   color: var(--hb-on-surface-variant);
 
@@ -199,7 +199,7 @@
   }
 
   .material-symbols-outlined {
-    font-size: 36px;
+    font-size: var(--hb-text-4xl);
     opacity: 0.45;
   }
 }
@@ -272,7 +272,7 @@
   align-items: center;
   padding: 2px 9px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   text-transform: capitalize;
   letter-spacing: 0.03em;
@@ -299,7 +299,7 @@
   align-items: center;
   padding: 2px 8px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   text-transform: capitalize;
   letter-spacing: 0.03em;
@@ -329,7 +329,7 @@
 
 .detail-email {
   margin: 0 0 20px;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface-variant);
 }
 
@@ -384,7 +384,7 @@
   align-items: center;
   padding: 2px 9px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   letter-spacing: 0.03em;
   background: color-mix(in srgb, var(--hb-primary) 14%, transparent);

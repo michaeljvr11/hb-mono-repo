@@ -1,0 +1,133 @@
+// HB design tokens — SCSS side.
+//
+// CSS custom properties (the `--hb-*` set in `src/styles.scss`) cover everything that can
+// vary at runtime (theme, reduced motion). This file holds what *cannot* be a custom
+// property: breakpoints (custom properties are not allowed inside `@media`), and a few
+// mixins that bundle several tokens into one declaration set.
+//
+// Usage from any component stylesheet (resolved via `stylePreprocessorOptions.includePaths`
+// in `angular.json`, so no relative path is needed):
+//
+//   @use 'tokens' as t;
+//
+//   .grid { @include t.bp(lg) { grid-template-columns: repeat(4, 1fr); } }
+//   .page { @include t.container(wide); }
+//   .card { @include t.elevation(2); }
+//   .title { @include t.type('3xl'); }
+//
+// Keys that start with a digit (`2xl`, `3xl`) must be quoted, otherwise Sass parses `2xl`
+// as the number 2 with unit "xl".
+
+@use 'sass:map';
+@use 'sass:meta';
+
+// ---------------------------------------------------------------------------
+// Breakpoints — mobile-first, `min-width`.
+// 480 phone-large · 768 tablet · 1024 desktop · 1280 content max · 1440 wide · 1680 page max
+// ---------------------------------------------------------------------------
+$breakpoints: (
+  'sm': 480px,
+  'md': 768px,
+  'lg': 1024px,
+  'xl': 1280px,
+  '2xl': 1440px,
+  '3xl': 1680px,
+);
+
+@function bp-value($name) {
+  @if not map.has-key($breakpoints, $name) {
+    @error "Unknown breakpoint `#{$name}`. Known: #{map.keys($breakpoints)}.";
+  }
+  @return map.get($breakpoints, $name);
+}
+
+/// `@include bp(md) { … }`        → `@media (min-width: 768px)`
+/// `@include bp(md, down) { … }`  → `@media (max-width: 767.98px)`
+/// `@include bp(md, only) { … }`  → `@media (min-width: 768px) and (max-width: 1023.98px)`
+@mixin bp($name, $dir: up) {
+  $min: bp-value($name);
+
+  @if $dir == up {
+    @media (min-width: $min) {
+      @content;
+    }
+  } @else if $dir == down {
+    @media (max-width: ($min - 0.02px)) {
+      @content;
+    }
+  } @else if $dir == only {
+    $keys: map.keys($breakpoints);
+    $idx: index($keys, $name);
+    @if $idx == length($keys) {
+      @media (min-width: $min) {
+        @content;
+      }
+    } @else {
+      $next: map.get($breakpoints, nth($keys, $idx + 1));
+      @media (min-width: $min) and (max-width: ($next - 0.02px)) {
+        @content;
+      }
+    }
+  } @else {
+    @error "bp(): `$dir` must be `up`, `down` or `only`, got `#{$dir}`.";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Container — centred, capped at one of the three layout widths, gutter on both sides.
+// `content` (1280) for reading surfaces; `wide` (1440) for product grids and the header
+// inner; `max` (1680) is the point at which the page stops growing altogether.
+// ---------------------------------------------------------------------------
+@mixin container($size: content) {
+  @if not index((content, wide, max), $size) {
+    @error "container(): `$size` must be `content`, `wide` or `max`, got `#{$size}`.";
+  }
+  width: 100%;
+  max-width: var(--hb-container-#{$size});
+  margin-inline: auto;
+  padding-inline: var(--hb-gutter);
+}
+
+// ---------------------------------------------------------------------------
+// Elevation — the five-step ladder from `styles.scss` (`--hb-elevation-0..4`).
+// ---------------------------------------------------------------------------
+@function elevation($level) {
+  @if meta.type-of($level) != number or $level < 0 or $level > 4 {
+    @error "elevation(): level must be 0–4, got `#{$level}`.";
+  }
+  @return var(--hb-elevation-#{$level});
+}
+
+@mixin elevation($level) {
+  box-shadow: elevation($level);
+}
+
+// ---------------------------------------------------------------------------
+// Type scale — nine steps. Size comes from the custom property (so it stays fluid at the
+// top of the scale); line-height, weight and tracking are the per-step defaults that go
+// with it. Override any of them after the include when a component needs to.
+// ---------------------------------------------------------------------------
+$type-steps: (
+  'xs':      (line-height: 1.4,  weight: 500, tracking: 0.01em),
+  'sm':      (line-height: 1.45, weight: 400, tracking: 0),
+  'md':      (line-height: 1.5,  weight: 400, tracking: 0),
+  'lg':      (line-height: 1.5,  weight: 400, tracking: 0),
+  'xl':      (line-height: 1.4,  weight: 500, tracking: 0),
+  '2xl':     (line-height: 1.3,  weight: 600, tracking: -0.01em),
+  '3xl':     (line-height: 1.2,  weight: 700, tracking: -0.01em),
+  '4xl':     (line-height: 1.1,  weight: 700, tracking: -0.02em),
+  'display': (line-height: 1.05, weight: 800, tracking: -0.025em),
+);
+
+/// `@include type('2xl');` sets font-size, line-height, font-weight and letter-spacing.
+/// Pass `$weight` to override the default weight for that step.
+@mixin type($step, $weight: null) {
+  @if not map.has-key($type-steps, $step) {
+    @error "type(): unknown step `#{$step}`. Known: #{map.keys($type-steps)}.";
+  }
+  $s: map.get($type-steps, $step);
+  font-size: var(--hb-text-#{$step});
+  line-height: map.get($s, line-height);
+  font-weight: if($weight == null, map.get($s, weight), $weight);
+  letter-spacing: map.get($s, tracking);
+}

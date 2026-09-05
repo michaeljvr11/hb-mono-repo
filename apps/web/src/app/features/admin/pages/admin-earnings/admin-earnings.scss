@@ -67,7 +67,7 @@
 /* ─── Window range ────────────────────────────────────────────── */
 .range-sub {
   margin: 0 0 16px;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface-variant);
 }
 
@@ -183,7 +183,7 @@
   p {
     margin: 0;
     font-weight: 600;
-    font-size: 15px;
+    font-size: var(--hb-text-md);
     color: var(--hb-on-surface);
   }
 

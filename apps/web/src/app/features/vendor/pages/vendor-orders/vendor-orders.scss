@@ -96,13 +96,13 @@
 }
 
 .order-product {
-  font-size: 15px;
+  font-size: var(--hb-text-md);
   font-weight: 600;
   color: var(--hb-on-surface);
 }
 
 .order-meta {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface-variant);
 }
 
@@ -124,7 +124,7 @@
   align-items: center;
   padding: 2px 9px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   text-transform: capitalize;
   letter-spacing: 0.03em;
@@ -179,7 +179,7 @@
   background: var(--hb-primary);
   color: var(--hb-on-primary);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;

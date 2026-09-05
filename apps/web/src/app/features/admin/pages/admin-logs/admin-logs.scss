@@ -64,7 +64,7 @@
 }
 
 .filter-label {
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -96,7 +96,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   box-sizing: border-box;
   transition: border-color 150ms ease, box-shadow 150ms ease;
 
@@ -121,7 +121,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   transition: border-color 150ms ease, box-shadow 150ms ease;
 
   &:focus {
@@ -156,7 +156,7 @@
   padding: 7px 16px;
   border-radius: 8px;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
@@ -227,7 +227,7 @@
   p {
     margin: 0;
     font-weight: 600;
-    font-size: 15px;
+    font-size: var(--hb-text-md);
     color: var(--hb-on-surface);
   }
 
@@ -253,7 +253,7 @@
 .log-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface);
 
   thead {
@@ -263,7 +263,7 @@
   th {
     padding: 10px 14px;
     text-align: left;
-    font-size: 11px;
+    font-size: var(--hb-text-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -350,7 +350,7 @@
   border-radius: 9999px;
   background: color-mix(in srgb, var(--hb-primary) 10%, transparent);
   color: var(--hb-primary);
-  font-size: 11px;
+  font-size: var(--hb-text-xs);
   font-weight: 600;
   text-transform: capitalize;
 }
@@ -427,7 +427,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface-variant);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 500;
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
@@ -449,7 +449,7 @@
 }
 
 .page-info {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface-variant);
   display: flex;
   align-items: center;

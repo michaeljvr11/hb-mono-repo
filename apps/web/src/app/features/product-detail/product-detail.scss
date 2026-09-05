@@ -90,7 +90,7 @@
   color: var(--hb-outline-variant);
 
   .material-symbols-outlined {
-    font-size: 72px;
+    font-size: var(--hb-text-display);
   }
 }
 
@@ -163,7 +163,7 @@
 
 .pdp__size-selector-label,
 .pdp__size-selector-hint {
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   color: var(--hb-on-surface-variant);
 }
 
@@ -715,7 +715,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-on-surface);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   cursor: pointer;
 
@@ -736,7 +736,7 @@
   background: var(--hb-surface-container-lowest);
   color: var(--hb-error);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--hb-text-sm);
   font-weight: 600;
   cursor: pointer;
 
