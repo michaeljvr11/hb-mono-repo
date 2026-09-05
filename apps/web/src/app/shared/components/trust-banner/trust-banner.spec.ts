@@ -17,14 +17,25 @@ describe('TrustBanner', () => {
     expect(component).toBeTruthy();
   });
 
-  it('renders the three default trust cards from the storefront design', () => {
+  it('renders the four storefront waypoints in route order as the strip by default', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('Secure Regional Payments');
-    expect(el.textContent).toContain('Express ZA-NA Logistics');
-    expect(el.textContent).toContain('Simplified Customs');
+    expect(el.querySelector('.trust-banner')?.classList.contains('trust-banner--strip')).toBe(true);
 
+    const titles = Array.from(el.querySelectorAll('.trust-card__title')).map((t) => t.textContent);
+    expect(titles).toEqual([
+      'Ships from South Africa',
+      'No customs duties (SACU)',
+      'Pay in ZAR or NAD, 1:1',
+      'Delivered to your door in Namibia',
+    ]);
+  });
+
+  it('marks only the last waypoint as the destination', () => {
+    const el: HTMLElement = fixture.nativeElement;
     const cards = el.querySelectorAll('.trust-card');
-    expect(cards.length).toBe(3);
+    expect(cards.length).toBe(4);
+    expect(cards[3].classList.contains('trust-card--destination')).toBe(true);
+    expect(el.querySelectorAll('.trust-card--destination').length).toBe(1);
   });
 
   it('renders custom items when provided', () => {
@@ -37,6 +48,17 @@ describe('TrustBanner', () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain('Custom One');
     expect(el.querySelectorAll('.trust-card').length).toBe(1);
+  });
+
+  it('switches to the card grid with no destination marker for the cards variant', () => {
+    fixture.componentRef.setInput('variant', 'cards');
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const banner = el.querySelector('.trust-banner');
+    expect(banner?.classList.contains('trust-banner--cards')).toBe(true);
+    expect(banner?.classList.contains('trust-banner--strip')).toBe(false);
+    expect(el.querySelectorAll('.trust-card--destination').length).toBe(0);
   });
 
   it('defaults the aria-label to the storefront copy', () => {

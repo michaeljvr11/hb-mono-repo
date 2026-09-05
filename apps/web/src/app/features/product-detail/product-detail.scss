@@ -915,11 +915,9 @@
 
 /* ── Related products ──────────────────────────────────────────────────── */
 
-.pdp__related-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-}
+/* `.pdp__related-grid` takes its columns from the global `.hb-product-grid` (Phase 3):
+   the fluid card would otherwise fill a 2-column track at 1280px. Everything else on the
+   PDP waits for Phase 5. */
 
 /* ── Sticky add-to-cart bar ───────────────────────────────────────────── */
 

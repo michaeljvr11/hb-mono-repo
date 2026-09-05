@@ -1,9 +1,11 @@
 <a
   class="product-card"
   [class.product-card--carousel]="variant() === 'carousel'"
+  [class.product-card--sold-out]="soldOut()"
+  [class.product-card--has-alt]="secondaryImage() !== null"
   [routerLink]="['/products', product().id]"
 >
-  <div class="product-card__image-wrap">
+  <div class="product-card__media">
     @if (primaryImage(); as img) {
       <img
         class="product-card__image"
@@ -15,16 +17,36 @@
         [alt]="imageAlt()"
         loading="lazy"
       />
+      @if (secondaryImage(); as alt) {
+        <img
+          class="product-card__image product-card__image--alt"
+          [src]="alt.src"
+          [attr.srcset]="alt.srcset"
+          [attr.sizes]="alt.srcset ? imageSizes() : null"
+          [attr.width]="alt.width"
+          [attr.height]="alt.height"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+        />
+      }
     } @else {
       <div class="product-card__placeholder" aria-hidden="true">
         <span class="material-symbols-outlined product-card__placeholder-icon">inventory_2</span>
       </div>
     }
 
+    @if (onSale()) {
+      <span class="product-card__badge product-card__badge--sale">−{{ discountPercent() }}%</span>
+    } @else if (soldOut()) {
+      <span class="product-card__badge product-card__badge--muted">Sold out</span>
+    }
+
     <button
       type="button"
       class="product-card__wishlist-btn"
       [class.product-card__wishlist-btn--active]="wishlisted()"
+      [class.product-card__wishlist-btn--pop]="wishlistPopping()"
       [attr.aria-pressed]="wishlisted()"
       [attr.aria-label]="wishlisted() ? 'Remove from wishlist' : 'Add to wishlist'"
       (click)="onWishlistToggle($event)"
@@ -34,37 +56,72 @@
   </div>
 
   <div class="product-card__body">
-    @if (categoryLabel(); as category) {
-      <p class="product-card__category">{{ category }}</p>
+    @if (categoryLabel() || rating()) {
+      <p class="product-card__meta">
+        @if (categoryLabel(); as category) {
+          <span class="product-card__category">{{ category }}</span>
+        }
+        @if (rating(); as r) {
+          <span
+            class="product-card__rating"
+            [attr.aria-label]="'Rated ' + r.value + ' out of 5' + (r.count !== null ? ' from ' + r.count + ' reviews' : '')"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">star</span>
+            <span aria-hidden="true">{{ r.value }}@if (r.count !== null) { <span class="product-card__rating-count">({{ r.count }})</span>}</span>
+          </span>
+        }
+      </p>
     }
+
     <h3 class="product-card__name">{{ product().name }}</h3>
-    @if (hasSizes()) {
-      <span class="product-card__size-hint">
-        <span class="material-symbols-outlined" aria-hidden="true">straighten</span>
-        Sizing available
+
+    <p class="product-card__seller">
+      <span class="material-symbols-outlined product-card__seller-icon" aria-hidden="true">{{
+        isPlatformListing() ? 'verified' : 'storefront'
+      }}</span>
+      <span class="product-card__seller-name">{{ sellerName() }}</span>
+      <span class="product-card__origin" [attr.aria-label]="originLabel()" [title]="originLabel()">{{
+        originCode()
+      }}</span>
+    </p>
+
+    <p class="product-card__availability">
+      <span
+        class="product-card__stock"
+        [class.product-card__stock--low]="stockState() === 'low'"
+        [class.product-card__stock--out]="stockState() === 'sold-out'"
+      >
+        <span class="product-card__stock-dot" aria-hidden="true"></span>
+        {{ stockLabel() }}
       </span>
-    }
-    <div class="product-card__footer">
-      <span class="product-card__price">{{ price() }}</span>
-      @if (variant() === 'carousel') {
-        <button
-          type="button"
-          class="product-card__cart-btn product-card__cart-btn--icon"
-          [attr.aria-label]="hasSizes() ? 'Select a size for ' + product().name : 'Add ' + product().name + ' to cart'"
-          (click)="onAddToCart($event)"
-        >
-          <span class="material-symbols-outlined" aria-hidden="true">{{ hasSizes() ? 'straighten' : 'add' }}</span>
-        </button>
-      } @else {
-        <button
-          type="button"
-          class="product-card__cart-btn"
-          [attr.aria-label]="hasSizes() ? 'Select a size for ' + product().name : 'Add ' + product().name + ' to cart'"
-          (click)="onAddToCart($event)"
-        >
-          <span class="material-symbols-outlined" aria-hidden="true">{{ hasSizes() ? 'straighten' : 'add_shopping_cart' }}</span>
-        </button>
+      @if (hasSizes()) {
+        <span class="product-card__size-hint">
+          <span class="material-symbols-outlined" aria-hidden="true">straighten</span>
+          Sizing available
+        </span>
       }
+    </p>
+
+    <div class="product-card__footer">
+      <p class="product-card__pricing">
+        @if (compareAtPrice(); as was) {
+          <s class="product-card__compare-at"><span class="visually-hidden">Was </span>{{ was }}</s>
+        }
+        <span class="product-card__price" [class.product-card__price--sale]="onSale()">
+          @if (onSale()) {<span class="visually-hidden">Now </span>}{{ price() }}
+        </span>
+      </p>
+      <button
+        type="button"
+        class="product-card__cart-btn"
+        [class.product-card__cart-btn--icon]="variant() === 'carousel'"
+        [class.product-card__cart-btn--added]="justAdded()"
+        [disabled]="soldOut()"
+        [attr.aria-label]="cartButtonLabel()"
+        (click)="onAddToCart($event)"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">{{ cartButtonIcon() }}</span>
+      </button>
     </div>
   </div>
 </a>

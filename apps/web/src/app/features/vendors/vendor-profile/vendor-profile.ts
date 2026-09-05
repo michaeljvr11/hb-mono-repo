@@ -26,6 +26,8 @@ import { NotificationService } from '../../../core/notifications/notification.se
 import { Footer } from '../../../layout/footer/footer';
 import { NavBar } from '../../../layout/nav-bar/nav-bar';
 import { ProductCard } from '../../../shared/components/product-card/product-card';
+import { ProductCardSkeleton } from '../../../shared/components/product-card/product-card-skeleton';
+import { Skeleton } from '../../../shared/components/skeleton/skeleton';
 import { RadialNav } from '../../../shared/components/radial-nav/radial-nav';
 import { ResponsiveImageAttrs, buildResponsiveImage } from '../../../shared/responsive-image';
 
@@ -52,7 +54,7 @@ const PRODUCT_LIST_MAX = 100;
  */
 @Component({
   selector: 'app-vendor-profile',
-  imports: [NavBar, Footer, ProductCard, RadialNav, RouterLink],
+  imports: [NavBar, Footer, ProductCard, ProductCardSkeleton, Skeleton, RadialNav, RouterLink],
   templateUrl: './vendor-profile.html',
   styleUrl: './vendor-profile.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -90,6 +92,8 @@ export class PublicVendorProfile {
 
   readonly products = signal<ProductDto[]>([]);
   readonly productsState = signal<ProductsState>('loading');
+  /** Skeleton cards while the vendor or its products load — a first row at 1280 (5 columns). */
+  readonly gridSkeletons = [0, 1, 2, 3, 4];
 
   readonly countryLabel = computed(() => {
     const vendor = this.vendor();

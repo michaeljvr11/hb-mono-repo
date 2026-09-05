@@ -1,37 +1,34 @@
+@use 'tokens' as t;
+
 .trust-banner {
   width: 100%;
-  background: var(--hb-surface-container);
-  padding: 48px var(--hb-gutter);
+  background: var(--hb-surface-container-low);
+  padding: var(--hb-space-8) var(--hb-gutter);
 }
 
 /* Bare token rather than the container mixin: the gutter is on the band above. `wide`
-   so the cards line up with the landing page's other sections. */
+   so the items line up with the landing page's other sections. */
 .trust-banner__grid {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: var(--hb-space-6);
   max-width: var(--hb-container-wide);
   margin: 0 auto;
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  padding: 0;
+  list-style: none;
 }
 
 .trust-card {
+  position: relative;
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  padding: 24px;
-  background: var(--hb-surface-container-lowest);
-  border: 1px solid var(--hb-outline-variant);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(28, 27, 27, 0.06);
-  transition: transform 200ms ease;
+  gap: var(--hb-space-4);
+}
 
-  &:hover {
-    transform: translateY(-2px);
-  }
+/* Hidden in the cards variant; the strip turns it into the dot on the route line. */
+.trust-card__waypoint {
+  display: none;
 }
 
 .trust-card__icon-wrap {
@@ -39,43 +36,179 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 8px;
-  background: rgba(46, 125, 50, 0.1);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--hb-radius-sm);
+  background: var(--hb-primary-50);
   color: var(--hb-primary);
 
   &--secondary {
-    background: rgba(245, 124, 0, 0.1);
-    color: var(--hb-on-secondary-container);
+    background: var(--hb-secondary-50);
+    color: var(--hb-secondary-700);
   }
 
   &--tertiary {
-    background: rgba(67, 160, 71, 0.15);
-    color: var(--hb-primary);
+    background: var(--hb-primary-100);
+    color: var(--hb-primary-700);
   }
 }
 
 .trust-card__icon {
-  font-size: 32px;
+  font-size: 26px;
 }
 
 .trust-card__body {
   flex: 1;
+  min-width: 0;
 }
 
 .trust-card__title {
-  margin: 0 0 4px;
-  font-size: 20px;
-  font-weight: 500;
-  line-height: 28px;
+  margin: 0 0 2px;
+  @include t.type('md', 600);
+  line-height: 1.35;
   color: var(--hb-on-surface);
 }
 
 .trust-card__desc {
   margin: 0;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
+  @include t.type('sm');
   color: var(--hb-on-surface-variant);
+}
+
+/* ── Cards variant (Procurement Service page) ───────────────────────── */
+
+.trust-banner--cards {
+  background: var(--hb-surface-container);
+
+  .trust-banner__grid {
+    @include t.bp(md) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .trust-card {
+    padding: var(--hb-space-6);
+    background: var(--hb-surface-container-lowest);
+    border: 1px solid var(--hb-outline-variant);
+    border-radius: var(--hb-radius-md);
+    @include t.elevation(1);
+    transition: transform var(--hb-duration-base) var(--hb-ease-decelerate);
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  .trust-card__icon-wrap {
+    width: 52px;
+    height: 52px;
+  }
+
+  .trust-card__icon {
+    font-size: 32px;
+  }
+
+  .trust-card__title {
+    @include t.type('xl', 500);
+  }
+}
+
+/* ── Strip variant (storefront): the route ──────────────────────────────
+   Mobile: a vertical route line down the left with a dot per stop. ≥768: two
+   columns, line hidden. ≥1024: one row of four, the line runs horizontally
+   behind the dots. The last stop (the buyer's door) is the active waypoint —
+   the one place orange appears here. */
+
+.trust-banner--strip {
+  --trust-line: var(--hb-primary-200);
+  --trust-dot: var(--hb-primary);
+
+  .trust-banner__grid {
+    padding-left: var(--hb-space-6);
+
+    /* Vertical route line, phones only. */
+    &::before {
+      content: '';
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      left: 5px;
+      width: 2px;
+      border-radius: var(--hb-radius-pill);
+      background: var(--trust-line);
+    }
+
+    @include t.bp(md) {
+      grid-template-columns: repeat(2, 1fr);
+      padding-left: 0;
+
+      &::before {
+        display: none;
+      }
+    }
+
+    @include t.bp(lg) {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--hb-space-7);
+      padding-top: var(--hb-space-5);
+
+      /* Horizontal route line, desktop only: from the first dot to the last. */
+      &::before {
+        display: block;
+        top: 5px;
+        bottom: auto;
+        left: calc(12.5% - 6px);
+        right: calc(12.5% - 6px);
+        width: auto;
+        height: 2px;
+      }
+    }
+  }
+
+  .trust-card__waypoint {
+    display: block;
+    position: absolute;
+    top: 8px;
+    left: calc(-1 * var(--hb-space-6) + 1px);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--trust-dot);
+    box-shadow: 0 0 0 3px var(--hb-surface-container-low);
+
+    @include t.bp(md) {
+      display: none;
+    }
+
+    @include t.bp(lg) {
+      display: block;
+      top: calc(-1 * var(--hb-space-5));
+      left: calc(50% - 5px);
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  .trust-card {
+    @include t.bp(lg) {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: var(--hb-space-3);
+    }
+  }
+
+  .trust-card__desc {
+    @include t.bp(lg) {
+      max-width: 26ch;
+    }
+  }
+
+  /* Destination: the buyer's door. Orange dot = the active waypoint. */
+  .trust-card--destination .trust-card__waypoint {
+    background: var(--hb-secondary);
+    box-shadow:
+      0 0 0 3px var(--hb-surface-container-low),
+      0 0 0 5px var(--hb-secondary-100);
+  }
 }

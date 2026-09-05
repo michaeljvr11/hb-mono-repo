@@ -17,7 +17,7 @@ import {
   VendorStatus,
 } from '@hb/shared';
 
-import { Shop, deriveCategoryCounts, CategoryWithCount } from './shop';
+import { Shop, deriveCategoryCounts, deriveVendorListingCounts, CategoryWithCount } from './shop';
 import { AuthService } from '../../core/auth/auth.service';
 import { AnalyticsService } from '../../core/api/analytics.service';
 import { GoogleAnalyticsService } from '../../core/analytics/google-analytics.service';
@@ -152,14 +152,14 @@ describe('Shop', () => {
     flushLoads();
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('Explore Categories');
+    expect(el.textContent).toContain('Explore categories');
   });
 
   it('renders the "Featured SME Vendors" section heading', () => {
     flushLoads();
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('Featured SME Vendors');
+    expect(el.textContent).toContain('Featured SME vendors');
   });
 
   it('renders a product-card per loaded product in the carousel', () => {
@@ -434,5 +434,22 @@ describe('deriveCategoryCounts', () => {
   it('returns zero counts when there are no products', () => {
     const result = deriveCategoryCounts(categories, []);
     expect(result.every((c) => c.productCount === 0)).toBe(true);
+  });
+});
+
+describe('deriveVendorListingCounts', () => {
+  it('counts listings per vendor and skips platform listings', () => {
+    const products = [
+      { id: 'p1', vendor: { id: 'v1', businessName: 'A' } },
+      { id: 'p2', vendor: { id: 'v1', businessName: 'A' } },
+      { id: 'p3', vendor: { id: 'v2', businessName: 'B' } },
+      { id: 'p4' },
+    ] as unknown as ProductDto[];
+
+    expect(deriveVendorListingCounts(products)).toEqual({ v1: 2, v2: 1 });
+  });
+
+  it('returns an empty map for no products', () => {
+    expect(deriveVendorListingCounts([])).toEqual({});
   });
 });

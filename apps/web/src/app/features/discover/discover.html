@@ -60,9 +60,11 @@
     }
 
     @if (productsState() === 'loading') {
-      <div class="state-message" role="status" aria-live="polite">
-        <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
-        <p>Loading products…</p>
+      <div class="discover__grid hb-product-grid" role="status" aria-live="polite" aria-busy="true">
+        <span class="visually-hidden">Loading products…</span>
+        @for (i of gridSkeletons; track i) {
+          <app-product-card-skeleton />
+        }
       </div>
     } @else if (productsState() === 'error') {
       <div class="state-message state-message--error" role="alert">
@@ -78,7 +80,7 @@
         }
       </div>
     } @else {
-      <div class="discover__grid">
+      <div class="discover__grid hb-product-grid">
         @for (product of products(); track product.id) {
           <app-product-card
             [product]="product"

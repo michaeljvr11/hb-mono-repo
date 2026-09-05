@@ -109,6 +109,14 @@ html {
   --hb-low-stock-container: var(--hb-secondary-fixed);
   --hb-on-low-stock-container: var(--hb-on-secondary-container);
 
+  /* Hero ground (Phase 3): the storefront hero sits on a fixed deep green in *both* themes
+     (the tint ladders re-order in dark mode, so no ladder step is safe for it). Copy on it
+     is always light; the accent is the light-mode `primary-200` frozen. */
+  --hb-hero-surface: #1b4d1e;
+  --hb-on-hero: #ffffff;
+  --hb-on-hero-muted: rgba(255, 255, 255, 0.82);
+  --hb-hero-accent: #b3d9b5;
+
   /* Double ring: a surface-coloured gap then the primary, so it reads on any fill. Apply
      as `box-shadow: var(--hb-focus-ring)` on `:focus-visible`. */
   --hb-focus-ring: 0 0 0 2px var(--hb-surface), 0 0 0 4px var(--hb-primary);
@@ -267,6 +275,9 @@ html {
 
   /* Shadows go true black on dark surfaces; an on-surface tint would read as a halo. */
   --hb-shadow-color: #000000;
+
+  /* The hero ground drops one step so it still reads as a band against the dark page. */
+  --hb-hero-surface: #10301a;
 }
 
 :root[data-theme='dark'] {
@@ -315,6 +326,37 @@ body {
 
 .hb-container--max {
   @include t.container(max);
+}
+
+/* Product grid — the one layout every listing surface shares (Phase 3): /discover, the
+   vendor storefront, the PDP's related row and the loading skeletons that stand in for them.
+   `<app-product-card>` is fluid (`width: 100%`), so the grid owns the columns:
+   two fixed columns below 768px (a 200px minimum would collapse a 360px viewport to one),
+   then as many 200px-minimum tracks as fit — 3 at 768, 5 at 1280, 6 from 1440 inside the
+   `wide` container. Gap steps up with the breakpoint. */
+.hb-product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--hb-space-4);
+
+  @include t.bp(md) {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+    gap: var(--hb-space-6);
+  }
+}
+
+/* Waypoint — the Corridor's section marker (PLAN §1): a primary dot with a halo, placed
+   inline before a section title. The PDP route strip and the checkout stepper (Phase 5)
+   reuse it. */
+.hb-waypoint {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--hb-primary);
+  box-shadow: 0 0 0 3px var(--hb-primary-50);
+  vertical-align: middle;
 }
 
 /* Material Symbols Outlined icon font (loaded in index.html) */

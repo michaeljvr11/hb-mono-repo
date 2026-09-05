@@ -7,6 +7,7 @@ import { formatPrice } from '../../shared/format-price';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
 import { NotificationService } from '../../core/notifications/notification.service';
+import { Skeleton } from '../../shared/components/skeleton/skeleton';
 
 type LoadState = 'loading' | 'loaded' | 'error';
 
@@ -18,7 +19,7 @@ type LoadState = 'loading' | 'loaded' | 'error';
  */
 @Component({
   selector: 'app-wishlist',
-  imports: [NavBar, Footer, RouterLink],
+  imports: [NavBar, Footer, RouterLink, Skeleton],
   templateUrl: './wishlist.html',
   styleUrl: './wishlist.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,6 +31,8 @@ export class Wishlist implements OnInit {
   private readonly router = inject(Router);
 
   readonly state = signal<LoadState>('loading');
+  /** Skeleton rows while the wishlist loads. */
+  readonly rowSkeletons = [0, 1, 2];
   /** Product id currently being mutated (disables its row controls while in flight). */
   readonly busyProductId = signal<string | null>(null);
 

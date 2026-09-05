@@ -22,16 +22,25 @@ import { NotificationService } from '../../core/notifications/notification.servi
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
 import { ProductCard } from '../../shared/components/product-card/product-card';
+import { ProductCardSkeleton } from '../../shared/components/product-card/product-card-skeleton';
+import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { CategoryChips } from '../../shared/components/category-chips/category-chips';
 import { SearchBar } from '../../shared/components/search-bar/search-bar';
 import { TrustBanner } from '../../shared/components/trust-banner/trust-banner';
 import { VendorShowcase } from '../../shared/components/vendor-showcase/vendor-showcase';
 import { RadialNav, RadialNavItemId } from '../../shared/components/radial-nav/radial-nav';
+import { SITE_IMAGES } from '../../shared/constants/image.constants';
 
 type LoadState = 'loading' | 'loaded' | 'empty' | 'error';
 
 /** Number of products shown in the "New in Namibia" carousel. */
 const CAROUSEL_LIMIT = 8;
+
+/**
+ * Rendered width of the hero photograph (`shop.scss`): the full viewport below 1280px,
+ * then the 5/12 column of the `wide` container (capped at 1440 − gutters ≈ 560px).
+ */
+const HERO_IMAGE_SIZES = '(min-width: 1440px) 560px, (min-width: 1280px) 40vw, 100vw';
 
 /** Server-side max page size — used to avoid truncating the storefront's product list. */
 const PRODUCT_LIST_MAX = 100;
@@ -58,6 +67,21 @@ export function deriveCategoryCounts(
   return categories.map((c) => ({ ...c, productCount: counts.get(c.id) ?? 0 }));
 }
 
+/**
+ * Listing count per vendor id from the loaded product list — the "N listings" line on
+ * the vendor showcase (Phase 3). Platform listings have no vendor and are skipped.
+ * Pure, so it is unit-tested directly like `deriveCategoryCounts`.
+ */
+export function deriveVendorListingCounts(products: ProductDto[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const product of products) {
+    const vendorId = product.vendor?.id;
+    if (!vendorId) continue;
+    counts[vendorId] = (counts[vendorId] ?? 0) + 1;
+  }
+  return counts;
+}
+
 @Component({
   selector: 'app-shop',
   imports: [
@@ -65,6 +89,8 @@ export function deriveCategoryCounts(
     Footer,
     RouterLink,
     ProductCard,
+    ProductCardSkeleton,
+    Skeleton,
     CategoryChips,
     SearchBar,
     TrustBanner,
@@ -117,6 +143,18 @@ export class Shop implements OnInit {
 
   /** First page of "New in Namibia" carousel products. */
   readonly carouselProducts = computed(() => this.products().slice(0, CAROUSEL_LIMIT));
+
+  /** "N listings" per vendor on the showcase, from the products already loaded. */
+  readonly vendorListingCounts = computed(() => deriveVendorListingCounts(this.products()));
+
+  // Hero photograph: WebP-first `<picture>`, eager + high priority (it is the LCP element).
+  readonly heroImage = SITE_IMAGES.hero;
+  readonly heroSizes = HERO_IMAGE_SIZES;
+
+  // Skeleton counts while each section loads — sized to a typical first row.
+  readonly carouselSkeletons = [0, 1, 2, 3, 4, 5];
+  readonly categorySkeletons = [0, 1, 2, 3];
+  readonly vendorSkeletons = [0, 1, 2];
 
   constructor() {
     afterNextRender(() => {

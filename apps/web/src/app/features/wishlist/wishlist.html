@@ -5,7 +5,24 @@
 
   @switch (state()) {
     @case ('loading') {
-      <p class="wishlist__hint">Loading your wishlist…</p>
+      <div role="status" aria-live="polite" aria-busy="true">
+        <span class="visually-hidden">Loading your wishlist…</span>
+        <ul class="wishlist__items wishlist__items--skeleton" aria-hidden="true">
+          @for (i of rowSkeletons; track i) {
+            <li class="wishlist__item">
+              <app-skeleton width="80px" height="80px" />
+              <div class="wishlist__item-body">
+                <app-skeleton shape="text" width="55%" height="16px" />
+                <app-skeleton shape="text" width="25%" height="16px" />
+                <div class="wishlist__item-controls">
+                  <app-skeleton width="132px" height="36px" />
+                  <app-skeleton width="92px" height="32px" />
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
     }
     @case ('error') {
       <p class="wishlist__hint wishlist__hint--error">

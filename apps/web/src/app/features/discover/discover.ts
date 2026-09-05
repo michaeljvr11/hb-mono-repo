@@ -24,6 +24,7 @@ import { formatPrice } from '../../shared/format-price';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
 import { ProductCard } from '../../shared/components/product-card/product-card';
+import { ProductCardSkeleton } from '../../shared/components/product-card/product-card-skeleton';
 import { CategoryChips } from '../../shared/components/category-chips/category-chips';
 import { SearchBar, SuggestionGroup, SuggestionSelectedEvent } from '../../shared/components/search-bar/search-bar';
 import { RadialNav } from '../../shared/components/radial-nav/radial-nav';
@@ -52,7 +53,7 @@ const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
  */
 @Component({
   selector: 'app-discover',
-  imports: [NavBar, Footer, ProductCard, CategoryChips, SearchBar, RadialNav],
+  imports: [NavBar, Footer, ProductCard, ProductCardSkeleton, CategoryChips, SearchBar, RadialNav],
   templateUrl: './discover.html',
   styleUrl: './discover.scss',
 })
@@ -113,6 +114,8 @@ export class Discover {
   // ── Products (server fetch reacts to any param change) ─────────────────
   readonly products = signal<ProductDto[]>([]);
   readonly productsState = signal<LoadState>('loading');
+  /** Skeleton cards while a page loads — a typical first two rows at 1280 (5 columns). */
+  readonly gridSkeletons = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   readonly total = signal(0);
   readonly pageSize = signal(24);
 

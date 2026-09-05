@@ -1,0 +1,40 @@
+/* Mirrors `.product-card` box metrics (product-card.scss) so the swap is reflow-free. */
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.product-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--hb-surface-container-lowest);
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: var(--hb-radius-md);
+  overflow: hidden;
+}
+
+.product-card-skeleton__image {
+  aspect-ratio: 1 / 1;
+  border-radius: 0;
+}
+
+.product-card-skeleton__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hb-space-2);
+  padding: var(--hb-space-3);
+
+  .product-card-skeleton--carousel & {
+    gap: var(--hb-space-1);
+    padding: var(--hb-space-2);
+  }
+}
+
+.product-card-skeleton__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--hb-space-1);
+}

@@ -3,10 +3,24 @@
 <main class="vendor-profile" aria-label="Vendor profile">
 
   @if (state() === 'loading') {
-    <div class="state-message" role="status" aria-live="polite">
-      <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
-      <p>Loading vendor…</p>
+    <div role="status" aria-live="polite" aria-busy="true">
+      <span class="visually-hidden">Loading vendor…</span>
+      <section class="vendor-profile__hero-skeleton" aria-hidden="true">
+        <div class="vendor-profile__hero-skeleton-heading">
+          <app-skeleton shape="circle" width="64px" height="64px" />
+          <app-skeleton shape="text" width="40%" height="28px" />
+        </div>
+        <app-skeleton shape="text" width="30%" height="16px" />
+        <app-skeleton shape="text" width="20%" height="14px" />
+      </section>
     </div>
+    <section class="vendor-profile__grid-section" aria-hidden="true">
+      <div class="vendor-profile__grid hb-product-grid">
+        @for (i of gridSkeletons; track i) {
+          <app-product-card-skeleton />
+        }
+      </div>
+    </section>
   } @else if (state() === 'not-found') {
     <div class="state-message" role="status">
       <span class="material-symbols-outlined state-message__icon">storefront</span>
@@ -62,9 +76,11 @@
       <!-- ── Product loading / error / empty states ────────────────────── -->
       <section class="vendor-profile__grid-section">
         @if (productsState() === 'loading') {
-          <div class="state-message" role="status" aria-live="polite">
-            <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
-            <p>Loading products…</p>
+          <div class="vendor-profile__grid hb-product-grid" role="status" aria-live="polite" aria-busy="true">
+            <span class="visually-hidden">Loading products…</span>
+            @for (i of gridSkeletons; track i) {
+              <app-product-card-skeleton />
+            }
           </div>
         } @else if (productsState() === 'error') {
           <div class="state-message state-message--error" role="alert">
@@ -83,7 +99,7 @@
       @for (section of resolvedSections(); track section.id) {
         <section class="vendor-profile__section" [attr.aria-labelledby]="'section-title-' + section.id">
           <h2 class="vendor-profile__section-title" [id]="'section-title-' + section.id">{{ section.title }}</h2>
-          <div class="vendor-profile__grid">
+          <div class="vendor-profile__grid hb-product-grid">
             @for (product of section.products; track product.id) {
               <app-product-card
                 [product]="product"
@@ -103,7 +119,7 @@
           <h2 class="vendor-profile__section-title" id="section-title-unsectioned">
             More from {{ vendor.businessName }}
           </h2>
-          <div class="vendor-profile__grid">
+          <div class="vendor-profile__grid hb-product-grid">
             @for (product of unsectionedProducts(); track product.id) {
               <app-product-card
                 [product]="product"
@@ -130,7 +146,7 @@
 
       <!-- ── Product grid ────────────────────────────────────────────────── -->
       <section class="vendor-profile__grid-section">
-        <div class="vendor-profile__grid">
+        <div class="vendor-profile__grid hb-product-grid">
           @for (product of products(); track product.id) {
             <app-product-card
               [product]="product"

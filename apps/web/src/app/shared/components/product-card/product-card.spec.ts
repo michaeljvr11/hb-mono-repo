@@ -91,12 +91,12 @@ describe('ProductCard', () => {
     expect(img.getAttribute('srcset')).toBe(
       'http://a.com/honey-thumb.webp 300w, http://a.com/honey-card.webp 800w, http://a.com/honey-full.webp 2000w',
     );
-    expect(img.getAttribute('sizes')).toBe('(min-width: 768px) 280px, 260px');
+    expect(img.getAttribute('sizes')).toBe('(min-width: 768px) 220px, 50vw');
     expect(img.getAttribute('width')).toBe('2000');
     expect(img.getAttribute('height')).toBe('2000');
   });
 
-  it('uses the fixed 160px sizes string for the carousel variant', async () => {
+  it('uses the carousel track sizes string for the carousel variant', async () => {
     await setup({
       ...baseProduct,
       images: [
@@ -114,7 +114,7 @@ describe('ProductCard', () => {
     fixture.componentRef.setInput('variant', 'carousel');
     fixture.detectChanges();
     const img = fixture.nativeElement.querySelector('.product-card__image') as HTMLImageElement;
-    expect(img.getAttribute('sizes')).toBe('160px');
+    expect(img.getAttribute('sizes')).toBe('(min-width: 768px) 220px, 170px');
   });
 
   it('renders a placeholder block when the product has no images', async () => {
@@ -267,5 +267,180 @@ describe('ProductCard', () => {
     const button = fixture.nativeElement.querySelector('.product-card__cart-btn') as HTMLButtonElement;
     expect(button.getAttribute('aria-label')).toBe(`Select a size for ${sizedProduct.name}`);
     expect(button.querySelector('.material-symbols-outlined')?.textContent).toBe('straighten');
+  });
+  // ── Phase 3: seller identity, origin, stock, rating and sale slots ─────
+
+  it('names the vendor with the origin chip for a marketplace listing', async () => {
+    await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.product-card__seller-name')?.textContent).toBe('Leko Organics');
+    const origin = el.querySelector('.product-card__origin') as HTMLElement;
+    expect(origin.textContent?.trim()).toBe('ZA');
+    expect(origin.getAttribute('aria-label')).toBe('Ships from South Africa');
+  });
+
+  it('says "Sold by H&B" for a platform listing with no vendor', async () => {
+    await setup({ ...baseProduct, vendor: undefined, listingType: ListingType.PLATFORM });
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.product-card__seller-name')?.textContent).toBe('Sold by H&B');
+    expect(el.querySelector('.product-card__seller-icon')?.textContent).toBe('verified');
+  });
+
+  it('labels a Namibian origin', async () => {
+    await setup({ ...baseProduct, originCountry: CountryCode.NAMIBIA });
+    const origin = fixture.nativeElement.querySelector('.product-card__origin') as HTMLElement;
+    expect(origin.textContent?.trim()).toBe('NA');
+    expect(origin.getAttribute('aria-label')).toBe('Ships from Namibia');
+  });
+
+  it('shows "In stock" above the low-stock threshold', async () => {
+    await setup();
+    const stock = fixture.nativeElement.querySelector('.product-card__stock') as HTMLElement;
+    expect(stock.textContent).toContain('In stock');
+    expect(stock.classList.contains('product-card__stock--low')).toBe(false);
+  });
+
+  it('shows "Only N left" at or below five units', async () => {
+    await setup({ ...baseProduct, stockQuantity: 3 });
+    const stock = fixture.nativeElement.querySelector('.product-card__stock') as HTMLElement;
+    expect(stock.textContent).toContain('Only 3 left');
+    expect(stock.classList.contains('product-card__stock--low')).toBe(true);
+  });
+
+  it('sums stock across sizes for a sized product', async () => {
+    await setup({
+      ...sizedProduct,
+      stockQuantity: 0,
+      sizes: [
+        { id: 's1', label: 'S', stockQuantity: 2, displayOrder: 0 },
+        { id: 's2', label: 'M', stockQuantity: 2, displayOrder: 1 },
+      ],
+    });
+    expect(component.stockTotal()).toBe(4);
+    expect(fixture.nativeElement.querySelector('.product-card__stock')?.textContent).toContain('Only 4 left');
+  });
+
+  it('marks a sold-out product: badge, disabled quick-add and no addToCart emit', async () => {
+    await setup({ ...baseProduct, stockQuantity: 0 });
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.product-card')?.classList.contains('product-card--sold-out')).toBe(true);
+    expect(el.querySelector('.product-card__badge--muted')?.textContent).toBe('Sold out');
+    expect(el.querySelector('.product-card__stock')?.textContent).toContain('Sold out');
+
+    const button = el.querySelector('.product-card__cart-btn') as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute('aria-label')).toBe(`${baseProduct.name} is sold out`);
+
+    const spy = vi.fn();
+    component.addToCart.subscribe(spy);
+    component.onAddToCart(new Event('click'));
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('renders no rating slot when the product carries no rating fields (today)', async () => {
+    await setup();
+    expect(fixture.nativeElement.querySelector('.product-card__rating')).toBeNull();
+  });
+
+  it('renders the rating slot when averageRating and reviewCount are present', async () => {
+    await setup({ ...baseProduct, averageRating: 4.63, reviewCount: 128 } as ProductDto);
+    const rating = fixture.nativeElement.querySelector('.product-card__rating') as HTMLElement;
+    expect(rating).toBeTruthy();
+    expect(rating.textContent).toContain('4.6');
+    expect(rating.textContent).toContain('(128)');
+    expect(rating.getAttribute('aria-label')).toBe('Rated 4.6 out of 5 from 128 reviews');
+  });
+
+  it('hides the rating when reviewCount is zero', async () => {
+    await setup({ ...baseProduct, averageRating: 5, reviewCount: 0 } as ProductDto);
+    expect(fixture.nativeElement.querySelector('.product-card__rating')).toBeNull();
+  });
+
+  it('renders no sale slot without a compareAtPrice (today)', async () => {
+    await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.product-card__compare-at')).toBeNull();
+    expect(el.querySelector('.product-card__badge--sale')).toBeNull();
+    expect(el.querySelector('.product-card__price')?.classList.contains('product-card__price--sale')).toBe(false);
+  });
+
+  it('renders the sale slot when compareAtPrice exceeds price', async () => {
+    await setup({ ...baseProduct, price: 120, compareAtPrice: 160 } as ProductDto);
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.product-card__compare-at')?.textContent).toContain('R 160');
+    expect(el.querySelector('.product-card__badge--sale')?.textContent).toContain('25%');
+    expect(el.querySelector('.product-card__price')?.classList.contains('product-card__price--sale')).toBe(true);
+  });
+
+  it('ignores a compareAtPrice that is not above the price', async () => {
+    await setup({ ...baseProduct, price: 160, compareAtPrice: 160 } as ProductDto);
+    expect(fixture.nativeElement.querySelector('.product-card__compare-at')).toBeNull();
+  });
+
+  // ── Phase 3: hover image + press states ───────────────────────────────
+
+  it('renders no secondary image for a single-image product', async () => {
+    await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.product-card__image--alt')).toBeNull();
+    expect(el.querySelector('.product-card')?.classList.contains('product-card--has-alt')).toBe(false);
+  });
+
+  it('renders the first non-primary image as the hover alternate', async () => {
+    await setup({
+      ...baseProduct,
+      images: [
+        { id: 'b', url: 'http://a.com/b.jpg', isPrimary: false, displayOrder: 1 },
+        { id: 'a', url: 'http://a.com/a.jpg', isPrimary: true, displayOrder: 0 },
+        { id: 'c', url: 'http://a.com/c.jpg', isPrimary: false, displayOrder: 2 },
+      ],
+    });
+    const el: HTMLElement = fixture.nativeElement;
+    const primary = el.querySelector('.product-card__image:not(.product-card__image--alt)') as HTMLImageElement;
+    const alt = el.querySelector('.product-card__image--alt') as HTMLImageElement;
+    expect(primary.src).toBe('http://a.com/a.jpg');
+    expect(alt.src).toBe('http://a.com/b.jpg');
+    expect(alt.getAttribute('aria-hidden')).toBe('true');
+    expect(el.querySelector('.product-card')?.classList.contains('product-card--has-alt')).toBe(true);
+  });
+
+  it('holds the "added" state with a check icon for 900ms after a quick-add', async () => {
+    vi.useFakeTimers();
+    try {
+      await setup();
+      const button = fixture.nativeElement.querySelector('.product-card__cart-btn') as HTMLButtonElement;
+      button.click();
+      fixture.detectChanges();
+      expect(button.classList.contains('product-card__cart-btn--added')).toBe(true);
+      expect(button.querySelector('.material-symbols-outlined')?.textContent).toBe('check');
+
+      vi.advanceTimersByTime(899);
+      fixture.detectChanges();
+      expect(button.classList.contains('product-card__cart-btn--added')).toBe(true);
+
+      vi.advanceTimersByTime(1);
+      fixture.detectChanges();
+      expect(button.classList.contains('product-card__cart-btn--added')).toBe(false);
+      expect(button.querySelector('.material-symbols-outlined')?.textContent).toBe('add_shopping_cart');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('pops the wishlist heart briefly on toggle', async () => {
+    vi.useFakeTimers();
+    try {
+      await setup();
+      const btn = fixture.nativeElement.querySelector('.product-card__wishlist-btn') as HTMLButtonElement;
+      btn.click();
+      fixture.detectChanges();
+      expect(btn.classList.contains('product-card__wishlist-btn--pop')).toBe(true);
+
+      vi.advanceTimersByTime(400);
+      fixture.detectChanges();
+      expect(btn.classList.contains('product-card__wishlist-btn--pop')).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -9,7 +9,7 @@
 | 0 Orient, research, plan | DONE |
 | 1 Token foundation | DONE |
 | 2 Desktop nav + shell | DONE |
-| 3 Storefront + product card | TODO |
+| 3 Storefront + product card | DONE |
 | 4 Trust, states, perceived performance | TODO |
 | 5 PDP, cart, checkout | TODO |
 | 6 Follow-up cards | TODO (kept current in `PLAN.md` §5 as phases run) |
@@ -195,19 +195,98 @@
     routes without the slash, as `capture.mjs` documents.
   - `obsidian` MCP failed to connect again; not needed. `trello` connected but unused.
 
-## Phase 3 — Storefront + product card — TODO
-- **Next action:** check `VendorDto` for a verified flag and `images.length` on seed data,
-  then follow PLAN Phase 3. Make the product card fluid *first* — it also closes the
-  pre-existing `/discover` overflow at 768 recorded above (re-run
-  `node docs/design/redesign/evidence/capture.mjs phase-3 discover` and expect `no` at 768).
-  Stack: `rdctl start` if `docker ps` fails, then `preview_start` `api (NestJS, watch mode)`
-  and `web (Angular SSR dev server)`; a product id for PDP captures comes from
-  `curl localhost:3000/api/products?limit=1`.
+## Phase 3 — Storefront + product card — DONE (2026-09-05)
+- **Phase 2 commit:** `51a87df`. **Phase 3 commit:** recorded at the top of the Phase 4 entry.
+- **Data check (the phase's first question):** `VendorDto` has **no** verified flag — `status`
+  (`approved`) is the only trust signal, so the showcase badge reads "Approved" and card 3 in
+  PLAN §5 stands. All ten seed products return `images: []`, every one is in stock, none is
+  sized, and four of the six directory vendors have listings. So the card's image, hover
+  cross-fade, low-stock, sold-out, rating and sale paths are all **unexercised by seed data** —
+  they are covered by unit tests instead (see below), and photography is now PLAN §5 card 9.
+- **Files:**
+  - `apps/web/src/app/shared/components/skeleton/{skeleton.ts,.scss,.spec.ts}` — new. The
+    primitive: `rect|text|circle`, host-bound class/width/height, `aria-hidden`, token-only
+    shimmer on `--hb-duration-slower × 3` (still under reduced motion, since a 0s animation
+    paints its first frame).
+  - `apps/web/src/app/shared/components/product-card/{product-card-skeleton.ts,.scss}` — new.
+    Inline template composing `<app-skeleton>` into the card's exact box.
+  - `apps/web/src/app/shared/components/product-card/{product-card.ts,.html,.scss,.spec.ts}` —
+    fluid (`width: 100%`, `height: 100%`, `:host { display: block }`); seller line + origin
+    chip; stock state; rating and sale slots; `images[1]` hover cross-fade; hover elevation
+    lift; quick-add revealed on hover/focus only under `(hover: hover) and (pointer: fine)`;
+    900ms spring + check on add, spring pop on wishlist; both timers cleared via `DestroyRef`.
+    `ProductCardProduct = ProductDto & Partial<ProductListingExtras>` is the local widening.
+  - `apps/web/src/styles.scss` — `.hb-product-grid` and `.hb-waypoint` utilities; four hero
+    tokens in `:root` plus `--hb-hero-surface` under the dark mixin.
+  - `apps/web/src/app/features/shop/{shop.html,.scss,.ts}` — hero (`<picture>`, WebP-first,
+    `fetchpriority="high"`, 7/5 split from 1280), waypoint section titles, carousel as a
+    column-flow grid with snap, category route tiles, vendor + carousel skeletons, newsletter
+    rebuilt as a bordered band. `deriveVendorListingCounts` added next to `deriveCategoryCounts`.
+  - `apps/web/src/app/shared/components/trust-banner/*` — `variant="strip|cards"`; the strip is
+    the four waypoints on a route line; `<ol>` because the waypoints are ordered.
+  - `apps/web/src/app/shared/components/vendor-showcase/*` — seller identity; stars removed;
+    `listingCounts` input; logo support; initials skip punctuation.
+  - `apps/web/src/app/features/services/services.html` — pinned to `variant="cards"`.
+  - `discover`, `vendor-profile`, `product-detail`, `wishlist` — grids take `.hb-product-grid`,
+    `hourglass_top` states swapped for skeletons behind `role="status"` + `aria-busy`.
+  - `docs/design/DESIGN.md` — new "Storefront and product presentation (Phase 3)" section.
+    `docs/design/redesign/PLAN.md` — Amendments 1–9 (Phase 3) and §5 cards 9–11.
+  - `docs/design/redesign/evidence/capture.mjs` — `!loading` modifier (see environment notes).
+  - `docs/design/redesign/evidence/phase-3/` — curated eight of 80.
+- **Verification:** `npm run build -w @hb/web` clean (nine pre-existing budget *warnings*;
+  `product-card.scss` joins them at 8.43 kB and `shop.scss` at 11.98 kB — comments, harmless).
+  `npm run test -w @hb/web`: 82 files, 1179 tests, all passing — up from Phase 2's 81 / 1152
+  (product-card 37, of which 19 are new; skeleton 2; trust-banner 7; vendor-showcase 8;
+  shop 28, +2 for `deriveVendorListingCounts`).
+  Live at 1280: `.hb-product-grid` resolves to five 214.6px columns; card 215px wide; the
+  quick-add is `opacity: 0` at rest with `(hover: hover)` matching, and the hovered card alone
+  shows it (screenshot); hero copy 48–707px and picture 747–1217px with the scrim `display:
+  none` — the 7/5 split; the hero loads `hero-import-shopping-640.webp`, not the 1536. Dark at
+  1280: hero `#10301a`, card `#0c0f0d`, strip `#191d1a`, name `#e6e3e1`. Captures: **all 60
+  route captures plus all 20 loading captures free of horizontal overflow**, which closes the
+  `/discover` 768px defect Phase 2 recorded (was 1223 > 768).
+- **Decisions not obvious from the diff:** see PLAN Amendments 1–9 (Phase 3). In short: the
+  grid minimum is 200px and only applies from 768 (a 220px minimum collapses a 360px phone to
+  one column); the trust strip and vendor showcase became *variants* rather than new
+  components so the Procurement Service page keeps the copy it was written for; the fake
+  five-star vendor rating was deleted rather than restyled; four hero tokens exist because the
+  tint ladders re-order in dark mode; card stock sums `sizes[].stockQuantity`, since
+  `stockQuantity` is meaningless on sized rows and reading it alone would show "Sold out" on
+  every sized product; category counts fall back to "Browse" at zero.
+- **Environment notes:**
+  - **The Angular dev server served a stale client bundle after these edits.** The SSR HTML at
+    `/shop` had the new template while the browser rendered the old hero *with* the new trust
+    strip — a half-applied HMR state that also poisoned the headless captures. Neither a
+    cache-busting query nor a fresh Chrome profile helped. `preview_stop` + `preview_start` on
+    `web (Angular SSR dev server)` fixed it. **Restart the dev server before trusting any
+    capture that looks stale**, and check `preview_logs` for the compile errors that preceded
+    it (a template referencing a field that does not exist yet leaves the server serving the
+    last good client bundle while SSR moves on).
+  - `capture.mjs`'s `!loading` cannot work by blocking the API and reloading — SSR fetches
+    server-side, so the HTML arrives populated. It seeds `/discover`, holds
+    `*/api/products*` and `*/api/vendors/directory*` open with CDP `Fetch` (never continued),
+    then enters the target route by *client-side* navigation (`a.nav-bar__brand` for `/`, a
+    category chip for `/discover`) and refuses to capture unless a skeleton is on the page.
+  - Reading `getComputedStyle(...).opacity` over CDP on a `:hover`-revealed element reported
+    the *unhovered* value while the screenshot showed it revealed. Trust the screenshot;
+    computed style over CDP is unreliable for hover-dependent properties.
+  - `npx vitest run <path>` from `apps/web` fails to collect ("no tests"); use
+    `npm run test -w @hb/web -- --include='**/<name>.spec.ts'` from the repo root instead.
+  - Bash heredocs into `python -` still fail under this shell (Phase 0's note); `cat >> file
+    << 'EOF'` works fine, and a script written to the scratchpad then executed works for Python.
+  - The API takes ~90s to become reachable after `preview_start` even when it reports
+    "reused"; poll `curl localhost:3000/api/categories` rather than assuming it is up.
+  - `obsidian` MCP failed to connect again; `trello` timed out this session. Neither was needed.
 
 ## Phase 4 — Trust, states, perceived performance — TODO
 - **Next action:** `grep -rl hourglass_top apps/web/src --include=*.html` for the remaining
-  templates; follow PLAN Phase 4. Before flipping the dark flag, grep the funnel files for raw
-  hex/rgba (Phase 1 left them all in place).
+  templates and roll `<app-skeleton>` / `<app-product-card-skeleton>` out to them — the
+  primitive, the `role="status"` + `aria-busy` + visually-hidden-label pattern and four
+  worked examples (shop, discover, vendor-profile, wishlist) all landed in Phase 3. Before
+  flipping the dark flag, grep the funnel files for raw hex/rgba: Phase 3 cleared the product
+  card, storefront, trust strip and vendor showcase, so what remains is the PDP, cart,
+  checkout and `discover.scss`'s logistics banner (`rgba(255,255,255,…)` on a fixed fill).
+  Start the dev server *fresh* (see the Phase 3 environment note on stale HMR bundles).
 
 ## Phase 5 — PDP, cart, checkout — TODO
 - **Next action:** follow PLAN Phase 5.

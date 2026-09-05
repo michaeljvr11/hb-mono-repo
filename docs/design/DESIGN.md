@@ -262,6 +262,67 @@ focus through `:focus-within`.
 **Z-order in practice.** Header 200 · search suggestions and menus 300 · radial nav (mobile
 FAB + its blurred scrim) 400 · consent banner keeps its own 1000 for now.
 
+## Storefront and product presentation (Phase 3)
+
+**Product grid.** One global utility, `.hb-product-grid` (`styles.scss`), owns the columns on
+every listing surface: `/discover`, the vendor storefront, the PDP's related row and the
+skeletons that stand in for them. Two fixed columns below 768px, then
+`repeat(auto-fill, minmax(min(100%, 200px), 1fr))` — 3 at 768, 5 at 1280, 6 from 1440 inside
+the `wide` container. Gap is `space-4` below 768 and `space-6` above. Pages keep their own
+class only as a name; none of them set columns any more.
+
+**Product card.** Fluid — `width: 100%`, the grid or carousel track sets the width, so one
+card serves every surface. Two variants: `grid` and `carousel` (the storefront track's
+`grid-auto-columns`: 170px, 220px from 768px). Content, top to bottom:
+
+| Slot | Source | Notes |
+|---|---|---|
+| Image | `images[]` primary, else first | 1:1, `object-fit: cover`; second image cross-fades on desktop hover when `images[1]` exists |
+| Sale badge | `compareAtPrice` | `−N%` on `--hb-sale`; falls back to a muted "Sold out" badge |
+| Wishlist heart | `wishlisted` input | Spring pop on toggle; FILL axis change, never a glyph swap |
+| Category · rating | `categories[0]`, `averageRating`/`reviewCount` | Rating renders only when present and `reviewCount > 0` |
+| Name | `name` | Two-line clamp |
+| Seller | `vendor.businessName`, else "Sold by H&B" | `storefront` icon for vendors, `verified` for platform listings |
+| Origin chip | `originCountry` | Two-letter code, full country on the accessible label and tooltip |
+| Stock | `stockQuantity`, or the sum over `sizes[]` | In stock (green dot) · **Only N left** at ≤ 5 (orange) · Sold out (muted) |
+| Sizing hint | `sizes[]` | Grid variant only |
+| Price | `price`, `compareAtPrice` | Largest type on the card after the name; struck compare-at above it when on sale |
+| Quick add | — | Hidden until hover/focus on fine-pointer devices, always visible on touch; disabled when sold out; 900ms spring + check on press |
+
+Rating and sale are designed slots that render nothing today — the API has neither field
+(PLAN §5 cards 1 and 2). `ProductCardProduct` widens `ProductDto` with them locally, so no
+shared type changes and every existing caller still type-checks.
+
+**Skeletons.** `<app-skeleton>` is the primitive (`rect` | `text` | `circle`, tokens only,
+shimmer on `--hb-duration-slower × 3`, still under reduced motion). `<app-product-card-skeleton>`
+composes it into the card's exact box so the swap is reflow-free. Every listing surface that
+used the `hourglass_top` state message now renders skeletons instead; the container carries
+`role="status"` + `aria-busy` and a visually-hidden "Loading…", and the skeletons are
+`aria-hidden`. The remaining ~19 templates follow in Phase 4.
+
+**Trust strip.** `<app-trust-banner>` has two variants. `strip` (default, storefront) is the
+Corridor's four waypoints in route order — ships from South Africa · no customs duties (SACU) ·
+pay in ZAR or NAD 1:1 · delivered to your door — joined by a route line: vertical on phones,
+hidden in the 2-up tier at 768, horizontal behind a 4-up row from 1024. The last waypoint (the
+buyer's door) is the destination and carries the one orange dot. `cards` is the previous 3-up
+card grid, kept for the Procurement Service page.
+
+**Vendor showcase.** Seller identity, not stars: logo or initials, name, an "Approved" mark
+driven by `vendor.status`, "Ships from <country>", and a live listing count derived from the
+products the storefront already loaded. The static five-star placeholder is gone — there is no
+rating API, and an invented score is the opposite of trust as content.
+
+**Hero.** Below 1280 the photograph fills the band under a scrim that rises from the
+bottom-left; from 1280 it is a 7/5 split — copy on `--hb-hero-surface`, image in its own column
+with the Corridor arc cut into its bottom-left corner — so the file never stretches to 1920 and
+the LCP candidate stays small (the 640px WebP is what loads at 1280). The hero ground is a
+fixed pair of tokens (`--hb-hero-surface`, `--hb-on-hero`, `--hb-on-hero-muted`,
+`--hb-hero-accent`) rather than a ladder step, because the tint ladders re-order in dark mode.
+
+**Waypoint.** `.hb-waypoint` is the section marker: a primary dot with a halo, set before a
+section title. The category tiles hang off a route line by the same dot from 1024px. The PDP
+route strip and the checkout stepper reuse it in Phase 5.
+
 ## Dark theme
 
 Same hues, surfaces derived. Delivered under `<html data-theme="dark">` (opt-in). The

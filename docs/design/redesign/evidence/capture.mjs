@@ -17,6 +17,13 @@
 // "All categories" trigger is clicked (where present, i.e. ≥1024px) before the capture, so
 // the open flyout is recorded. Phase 2 added it; other modifiers can follow the same shape.
 //
+// `!loading` (Phase 3) captures a route's skeletons. Blocking the API and reloading does
+// NOT work: the SSR pass fetches server-side, so the HTML already contains the products and
+// the client has nothing left to request. Instead the capture seeds a real page, then holds
+// every listing request open (CDP `Fetch`, never continued) and enters the target route by
+// *client-side* navigation, which is what actually issues the blocked fetch. See
+// LOADING_SEED / LOADING_ENTRY below.
+//
 // Screenshots land in docs/design/redesign/evidence/<phase>/<route>-<width>-<theme>.png.
 // Requires Node ≥ 22 (global WebSocket) and Chrome or Edge installed.
 
@@ -51,7 +58,51 @@ const MODIFIER_SCRIPTS = {
     await new Promise((r) => setTimeout(r, 700));
     return 'open';
   })()`,
+  // Nothing to run per theme: `!loading` is set up once per width (see LOADING_ENTRY).
+  loading: `'held'`,
 };
+
+/** The route a `!loading` capture loads for real before entering the target route in-app. */
+const LOADING_SEED = '/discover';
+
+/**
+ * How to reach each `!loading` target by client-side navigation from LOADING_SEED. Each
+ * script clicks a control that exists at every width, waits for the route to settle and
+ * returns `'ok'` only once a skeleton is actually on the page — so a capture can never
+ * silently record a loaded screen.
+ */
+const LOADING_ENTRY = {
+  '/': `(async () => {
+    const brand = document.querySelector('a.nav-bar__brand');
+    if (!brand) return 'no-brand-link';
+    brand.click();
+    await new Promise((r) => setTimeout(r, 1500));
+    // The storefront's skeletons are below the hero, so bring them into the capture.
+    document.getElementById('new-in-namibia')?.scrollIntoView({ block: 'start' });
+    await new Promise((r) => setTimeout(r, 300));
+    return document.querySelector('app-product-card-skeleton') ? 'ok' : 'no-skeleton at ' + location.pathname;
+  })()`,
+  '/discover': `(async () => {
+    const chips = [...document.querySelectorAll('.discover__controls .category-chips__chip')];
+    const chip = chips.find((c) => !c.classList.contains('category-chips__chip--active'));
+    if (!chip) return 'no-chip';
+    chip.click();
+    await new Promise((r) => setTimeout(r, 1500));
+    return document.querySelector('app-product-card-skeleton') ? 'ok' : 'no-skeleton at ' + location.pathname;
+  })()`,
+};
+
+/** Holds every listing request open so the page stays in its loading state. */
+async function holdListingRequests(cdp) {
+  await cdp.send('Fetch.enable', {
+    patterns: [
+      { urlPattern: '*/api/products*', requestStage: 'Request' },
+      { urlPattern: '*/api/vendors/directory*', requestStage: 'Request' },
+    ],
+  });
+  // Paused requests are never continued or failed — they simply never resolve.
+  return () => cdp.send('Fetch.disable');
+}
 const outDir = join(HERE, phase);
 mkdirSync(outDir, { recursive: true });
 
@@ -174,11 +225,21 @@ try {
         deviceScaleFactor: 1,
         mobile: width < 768,
       });
+      const isLoading = modifiers.includes('loading');
       const loaded = cdp.once('Page.loadEventFired');
-      await cdp.send('Page.navigate', { url: BASE + route });
+      await cdp.send('Page.navigate', { url: BASE + (isLoading ? LOADING_SEED : route) });
       await loaded;
       // Let hydration, fonts and any first fetches settle.
       await evaluate(cdp, 'document.fonts.ready.then(() => new Promise(r => setTimeout(r, 900)))');
+
+      const cleanups = [];
+      if (isLoading) {
+        cleanups.push(await holdListingRequests(cdp));
+        const entry = LOADING_ENTRY[route];
+        if (!entry) throw new Error(`No !loading entry defined for route "${route}". Known: ${Object.keys(LOADING_ENTRY)}`);
+        const outcome = await evaluate(cdp, entry);
+        if (outcome !== 'ok') throw new Error(`!loading entry for "${route}" failed: ${outcome}`);
+      }
 
       for (const theme of THEMES) {
         await evaluate(
@@ -212,6 +273,7 @@ try {
           file: file.replace(/\\/g, '/').split('/evidence/')[1],
         });
       }
+      for (const cleanup of cleanups) await cleanup();
     }
   }
   cdp.close();

@@ -1,0 +1,35 @@
+/* ── Skeleton primitive ──────────────────────────────────────────────────
+   A neutral block on the `surface-container` step with a lighter band sweeping
+   across it. Colours are tokens only, so the dark theme gets a dark skeleton.
+   The band is a background-position animation (no layout, compositor-friendly). */
+
+:host {
+  display: block;
+  flex-shrink: 0;
+  background-color: var(--hb-surface-container);
+  background-image: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in srgb, var(--hb-surface-container-lowest) 60%, transparent) 50%,
+    transparent 70%
+  );
+  background-size: 240% 100%;
+  background-position: 120% 0;
+  border-radius: var(--hb-radius-sm);
+  animation: skeleton-shimmer calc(var(--hb-duration-slower) * 3) var(--hb-ease-standard) infinite;
+}
+
+:host(.skeleton--text) {
+  height: 1em;
+  border-radius: var(--hb-radius-xs);
+}
+
+:host(.skeleton--circle) {
+  border-radius: 50%;
+}
+
+@keyframes skeleton-shimmer {
+  to {
+    background-position: -120% 0;
+  }
+}

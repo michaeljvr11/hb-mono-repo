@@ -1,7 +1,13 @@
-<section class="trust-banner" [attr.aria-label]="label()">
-  <div class="trust-banner__grid">
-    @for (item of items(); track item.title) {
-      <div class="trust-card">
+<section
+  class="trust-banner"
+  [class.trust-banner--strip]="variant() === 'strip'"
+  [class.trust-banner--cards]="variant() === 'cards'"
+  [attr.aria-label]="label()"
+>
+  <ol class="trust-banner__grid">
+    @for (item of items(); track item.title; let last = $last) {
+      <li class="trust-card" [class.trust-card--destination]="variant() === 'strip' && last">
+        <span class="trust-card__waypoint" aria-hidden="true"></span>
         <div
           class="trust-card__icon-wrap"
           [class.trust-card__icon-wrap--secondary]="item.tone === 'secondary'"
@@ -14,7 +20,7 @@
           <h3 class="trust-card__title">{{ item.title }}</h3>
           <p class="trust-card__desc">{{ item.description }}</p>
         </div>
-      </div>
+      </li>
     }
-  </div>
+  </ol>
 </section>

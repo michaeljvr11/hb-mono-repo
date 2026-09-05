@@ -1,76 +1,136 @@
-/* ── Product card ────────────────────────────────────────────────────── */
+@use 'tokens' as t;
+
+/* ── Product card ────────────────────────────────────────────────────────
+   Fluid: the parent grid (`.hb-product-grid`) or carousel track owns the width.
+   Everything below is tokens; the only literal numbers are icon glyph sizes and
+   the two hover transforms. Hover-only behaviour (image cross-fade, add-to-cart
+   reveal) is gated on `(hover: hover) and (pointer: fine)` so touch devices keep
+   every control visible. */
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 .product-card {
-  display: block;
-  flex-shrink: 0;
-  width: 260px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
   background: var(--hb-surface-container-lowest);
   border: 1px solid var(--hb-outline-variant);
-  border-radius: 12px;
+  border-radius: var(--hb-radius-md);
   overflow: hidden;
   cursor: pointer;
   text-decoration: none;
   color: inherit;
-  transition: box-shadow 200ms ease, transform 200ms ease;
+  transition:
+    box-shadow var(--hb-duration-base) var(--hb-ease-decelerate),
+    transform var(--hb-duration-base) var(--hb-ease-decelerate),
+    border-color var(--hb-duration-base) var(--hb-ease-decelerate);
 
-  @media (min-width: 768px) {
-    width: 280px;
-  }
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba(28, 27, 27, 0.12);
+  &:hover,
+  &:focus-within {
+    @include t.elevation(3);
+    border-color: transparent;
     transform: translateY(-2px);
   }
 
-  &--carousel {
-    width: 160px;
-
-    @media (min-width: 768px) {
-      width: 160px;
+  &--sold-out {
+    .product-card__image,
+    .product-card__placeholder {
+      opacity: 0.55;
     }
   }
 }
 
-.product-card__image-wrap {
+/* ── Media ───────────────────────────────────────────────────────────── */
+
+.product-card__media {
   position: relative;
   aspect-ratio: 1 / 1;
   overflow: hidden;
-  border-radius: 12px 12px 0 0;
+  background: var(--hb-surface-container-low);
 }
 
 .product-card__image {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 300ms ease;
+  transition:
+    transform var(--hb-duration-slow) var(--hb-ease-decelerate),
+    opacity var(--hb-duration-slow) var(--hb-ease-decelerate);
 
-  .product-card:hover & {
-    transform: scale(1.05);
+  &--alt {
+    opacity: 0;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover .product-card__image {
+    transform: scale(1.04);
+  }
+
+  /* Second image cross-fades over the first; the primary stays put underneath. */
+  .product-card--has-alt:hover .product-card__image--alt {
+    opacity: 1;
   }
 }
 
 .product-card__placeholder {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg,
-    var(--hb-surface-container-low) 0%,
-    var(--hb-surface-container) 100%
-  );
+  background: linear-gradient(160deg, var(--hb-surface-container-low) 0%, var(--hb-primary-50) 100%);
 }
 
 .product-card__placeholder-icon {
-  font-size: var(--hb-text-display);
-  color: var(--hb-outline-variant);
+  font-size: var(--hb-text-4xl);
+  color: var(--hb-primary-200);
+}
+
+/* Corner badge: sale (orange, buyer-helpful) or sold out (muted). */
+.product-card__badge {
+  position: absolute;
+  top: var(--hb-space-2);
+  left: var(--hb-space-2);
+  padding: 2px var(--hb-space-2);
+  border-radius: var(--hb-radius-pill);
+  @include t.type('xs', 700);
+  letter-spacing: 0.02em;
+
+  &--sale {
+    background: var(--hb-sale);
+    color: var(--hb-on-sale);
+  }
+
+  &--muted {
+    background: var(--hb-surface-container-highest);
+    color: var(--hb-on-surface-variant);
+  }
 }
 
 .product-card__wishlist-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: var(--hb-space-2);
+  right: var(--hb-space-2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,12 +138,14 @@
   height: 32px;
   padding: 0;
   border: none;
-  border-radius: 9999px;
+  border-radius: var(--hb-radius-pill);
   background: color-mix(in srgb, var(--hb-surface-container-lowest) 85%, transparent);
   color: var(--hb-on-surface-variant);
-  box-shadow: 0 1px 2px rgba(28, 27, 27, 0.08);
+  @include t.elevation(1);
   cursor: pointer;
-  transition: background 150ms ease, color 150ms ease;
+  transition:
+    background var(--hb-duration-fast) var(--hb-ease-standard),
+    color var(--hb-duration-fast) var(--hb-ease-standard);
 
   .material-symbols-outlined {
     font-size: 18px;
@@ -103,69 +165,224 @@
       font-variation-settings: 'FILL' 1;
     }
   }
+
+  // The spring pop on toggle: the glyph overshoots and settles.
+  &--pop .material-symbols-outlined {
+    animation: product-card-pop var(--hb-duration-slow) var(--hb-ease-spring);
+  }
 }
 
+/* ── Body ────────────────────────────────────────────────────────────── */
+
 .product-card__body {
-  padding: 16px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--hb-space-1);
+  padding: var(--hb-space-3);
+  min-width: 0;
+
+  .product-card--carousel & {
+    padding: var(--hb-space-2);
+  }
+}
+
+.product-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hb-space-2);
+  margin: 0;
+  min-width: 0;
 }
 
 .product-card__category {
-  margin: 0 0 4px;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  color: var(--hb-on-secondary-container);
+  @include t.type('xs', 600);
+  color: var(--hb-primary-700);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-card__rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  @include t.type('xs', 600);
+  color: var(--hb-on-surface);
+
+  .material-symbols-outlined {
+    font-size: 14px;
+    font-variation-settings: 'FILL' 1;
+    color: var(--hb-secondary-700);
+  }
+}
+
+.product-card__rating-count {
+  font-weight: 400;
+  color: var(--hb-on-surface-variant);
 }
 
 .product-card__name {
-  margin: 0 0 8px;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 24px;
+  margin: 0;
+  @include t.type('md', 500);
+  line-height: 1.35;
   color: var(--hb-on-surface);
   /* Two-line clamp */
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
+
+  .product-card--carousel & {
+    @include t.type('sm', 500);
+    line-height: 1.35;
+  }
+}
+
+/* Seller identity: who sells it and where it ships from. */
+.product-card__seller {
+  display: flex;
+  align-items: center;
+  gap: var(--hb-space-1);
+  margin: 0;
+  min-width: 0;
+  @include t.type('xs', 500);
+  color: var(--hb-on-surface-variant);
+}
+
+.product-card__seller-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--hb-primary);
+}
+
+.product-card__seller-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Origin chip: two-letter code, full name on the tooltip / accessible label. */
+.product-card__origin {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 0 6px;
+  border: 1px solid var(--hb-outline-variant);
+  border-radius: var(--hb-radius-xs);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.08em;
+  color: var(--hb-on-surface-variant);
+}
+
+.product-card__availability {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--hb-space-1) var(--hb-space-2);
+  margin: 0;
+  min-width: 0;
+}
+
+/* Stock line: a dot plus the state. Green = go, orange = low (buyer-helpful), muted = out. */
+.product-card__stock {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hb-space-1);
+  @include t.type('xs', 500);
+  color: var(--hb-on-surface-variant);
+
+  &--low {
+    color: var(--hb-low-stock);
+    font-weight: 600;
+  }
+
+  &--out {
+    color: var(--hb-on-surface-variant);
+  }
+
+  .product-card--carousel &:not(.product-card__stock--low):not(.product-card__stock--out) {
+    display: none;
+  }
+}
+
+.product-card__stock-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--hb-success);
+
+  .product-card__stock--low & {
+    background: var(--hb-low-stock);
+  }
+
+  .product-card__stock--out & {
+    background: var(--hb-outline);
+  }
 }
 
 .product-card__size-hint {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin: 0 0 8px;
-  padding: 2px 8px;
+  gap: 2px;
+  padding: 1px var(--hb-space-2);
   border-radius: var(--hb-radius-pill);
-  background: var(--hb-secondary-fixed);
-  color: var(--hb-on-secondary-container);
-  font-size: var(--hb-text-xs);
-  font-weight: 600;
+  background: var(--hb-primary-50);
+  color: var(--hb-primary-700);
+  @include t.type('xs', 600);
 
   .material-symbols-outlined {
     font-size: 14px;
   }
+
+  .product-card--carousel & {
+    display: none;
+  }
 }
+
+/* ── Footer: price + quick add ───────────────────────────────────────── */
 
 .product-card__footer {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-end;
+  gap: var(--hb-space-2);
+  margin-top: auto;
+  padding-top: var(--hb-space-1);
 }
 
+.product-card__pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.product-card__compare-at {
+  @include t.type('xs', 400);
+  color: var(--hb-on-surface-variant);
+}
+
+/* Price is the loudest type on the card after the name. */
 .product-card__price {
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 32px;
+  @include t.type('xl', 700);
+  line-height: 1.2;
   color: var(--hb-on-surface);
+  white-space: nowrap;
+
+  &--sale {
+    color: var(--hb-sale);
+  }
 
   .product-card--carousel & {
-    font-size: 16px;
-    line-height: 24px;
-    font-weight: 700;
+    @include t.type('md', 700);
+    line-height: 1.2;
   }
 }
 
@@ -178,34 +395,70 @@
   height: 36px;
   padding: 0;
   border: none;
-  border-radius: 9999px;
-  background: var(--hb-surface-container);
-  color: var(--hb-on-surface);
+  border-radius: var(--hb-radius-pill);
+  background: var(--hb-primary);
+  color: var(--hb-on-primary);
   cursor: pointer;
-  transition: background 150ms ease, color 150ms ease;
+  transition:
+    background var(--hb-duration-fast) var(--hb-ease-standard),
+    color var(--hb-duration-fast) var(--hb-ease-standard),
+    opacity var(--hb-duration-base) var(--hb-ease-decelerate),
+    transform var(--hb-duration-base) var(--hb-ease-decelerate);
 
   .material-symbols-outlined {
     font-size: 20px;
   }
 
-  &:hover {
-    background: var(--hb-primary);
-    color: var(--hb-on-primary);
+  &:hover:not(:disabled) {
+    background: var(--hb-primary-700);
+  }
+
+  &:disabled {
+    background: var(--hb-surface-container-high);
+    color: var(--hb-outline);
+    cursor: not-allowed;
   }
 
   &--icon {
     width: 28px;
     height: 28px;
-    background: var(--hb-primary);
-    color: var(--hb-on-primary);
 
     .material-symbols-outlined {
       font-size: 18px;
     }
+  }
 
-    &:hover {
-      filter: brightness(1.1);
-      background: var(--hb-primary);
-    }
+  // The press: one spring overshoot while the glyph is a check mark.
+  &--added {
+    background: var(--hb-primary-700);
+    animation: product-card-pop var(--hb-duration-slow) var(--hb-ease-spring);
+  }
+}
+
+/* Desktop reveal: the quick-add hides until the card is hovered or holds focus. Touch
+   devices never match this query, so the button stays visible there. `--added` and
+   `:disabled` (sold out) always show so the state is never invisible. */
+@media (hover: hover) and (pointer: fine) {
+  .product-card__cart-btn:not(.product-card__cart-btn--added):not(:disabled) {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  .product-card:hover .product-card__cart-btn,
+  .product-card:focus-within .product-card__cart-btn {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes product-card-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
   }
 }

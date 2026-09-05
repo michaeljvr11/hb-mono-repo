@@ -19,46 +19,76 @@
     }
   </section>
 
-  <!-- ── Hero ──────────────────────────────────────────────────────────── -->
+  <!-- ── Hero: the SACU advantage ──────────────────────────────────────── -->
   <section class="hero" aria-labelledby="hero-heading">
-    <div class="hero__overlay" aria-hidden="true"></div>
-    <div class="hero__content">
-      <span class="hero__kicker">Cross-Border Excellence</span>
-      <h1 id="hero-heading" class="hero__headline">
-        Seamless Trade:<br>
-        <span class="hero__headline-accent">ZA to NA</span>
-      </h1>
-      <p class="hero__body">
-        Connecting South African SMEs with discerning Namibian consumers
-        through reliable logistics and secure regional payments.
-      </p>
-      <div class="hero__cta-group">
-        <button
-          type="button"
-          class="btn btn--primary"
-          (click)="onHeroShopNow()"
-        >Shop New Arrivals</button>
+    <div class="hero__inner">
+      <div class="hero__copy">
+        <span class="hero__kicker">
+          <span class="hero__kicker-dot" aria-hidden="true"></span>
+          South Africa to Namibia, door to door
+        </span>
+        <h1 id="hero-heading" class="hero__headline">
+          No duties. No exchange-rate surprises.
+          <span class="hero__headline-accent">One price, delivered to Namibia.</span>
+        </h1>
+        <p class="hero__body">
+          Shop South African brands and SME makers. SACU means nothing is added at the
+          border, and ZAR and NAD trade one to one.
+        </p>
+        <div class="hero__cta-group">
+          <button
+            type="button"
+            class="btn btn--primary"
+            (click)="onHeroShopNow()"
+          >Shop new arrivals</button>
+          <a class="btn btn--ghost" routerLink="/discover">Browse all products</a>
+        </div>
       </div>
+
+      <picture class="hero__picture">
+        <source type="image/webp" [srcset]="heroImage.webpSrcset" [sizes]="heroSizes" />
+        <img
+          class="hero__image"
+          [src]="heroImage.src"
+          [srcset]="heroImage.jpegSrcset"
+          [sizes]="heroSizes"
+          [width]="heroImage.width"
+          [height]="heroImage.height"
+          alt=""
+          fetchpriority="high"
+          loading="eager"
+          decoding="async"
+        />
+      </picture>
+      <div class="hero__scrim" aria-hidden="true"></div>
     </div>
   </section>
+
+  <!-- ── Trust: the four waypoints ─────────────────────────────────────── -->
+  <app-trust-banner />
 
   <!-- ── New in Namibia ─────────────────────────────────────────────────── -->
   <section id="new-in-namibia" class="section section--products" aria-labelledby="products-heading">
     <div class="section__header">
       <div>
-        <h2 id="products-heading" class="section__title">New in Namibia</h2>
+        <h2 id="products-heading" class="section__title">
+          <span class="hb-waypoint" aria-hidden="true"></span>
+          New in Namibia
+        </h2>
         <p class="section__sub">Fresh arrivals from South African SME partners</p>
       </div>
       <a class="section__view-all" routerLink="/discover" aria-label="View all products">
-        View All
+        View all
         <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
       </a>
     </div>
 
     @if (productsState() === 'loading') {
-      <div class="state-message" role="status" aria-live="polite">
-        <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
-        <p>Loading products…</p>
+      <div class="products-carousel" role="status" aria-live="polite" aria-busy="true">
+        <span class="visually-hidden">Loading products…</span>
+        @for (i of carouselSkeletons; track i) {
+          <app-product-card-skeleton variant="carousel" />
+        }
       </div>
     } @else if (productsState() === 'error') {
       <div class="state-message state-message--error" role="alert">
@@ -86,19 +116,27 @@
     }
   </section>
 
-  <!-- ── Trust banner ──────────────────────────────────────────────────── -->
-  <app-trust-banner />
-
-  <!-- ── Explore Categories ─────────────────────────────────────────────── -->
+  <!-- ── Explore Categories: a route of waypoint tiles ──────────────────── -->
   <section class="section" aria-labelledby="categories-heading">
     <div class="section__header section__header--flush">
-      <h2 id="categories-heading" class="section__title">Explore Categories</h2>
+      <h2 id="categories-heading" class="section__title">
+        <span class="hb-waypoint" aria-hidden="true"></span>
+        Explore categories
+      </h2>
     </div>
 
     @if (categoriesState() === 'loading') {
-      <div class="state-message" role="status" aria-live="polite">
-        <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
-        <p>Loading categories…</p>
+      <div class="categories-grid categories-grid--loading" role="status" aria-live="polite" aria-busy="true">
+        <span class="visually-hidden">Loading categories…</span>
+        @for (i of categorySkeletons; track i) {
+          <div class="category-card category-card--skeleton">
+            <app-skeleton width="48px" height="48px" />
+            <div class="category-card__body">
+              <app-skeleton shape="text" width="60%" height="18px" />
+              <app-skeleton shape="text" width="40%" height="12px" />
+            </div>
+          </div>
+        }
       </div>
     } @else if (categoriesState() === 'error') {
       <div class="state-message state-message--error" role="alert">
@@ -119,13 +157,21 @@
             role="listitem"
             (click)="onCategorySelect(cat.id)"
           >
+            <span class="category-card__waypoint" aria-hidden="true"></span>
             <div class="category-card__icon-wrap" aria-hidden="true">
               <span class="material-symbols-outlined category-card__icon">{{ getCategoryIcon(cat.name) }}</span>
             </div>
             <div class="category-card__body">
               <h3 class="category-card__name">{{ cat.name }}</h3>
-              <p class="category-card__count">{{ cat.productCount }} product{{ cat.productCount !== 1 ? 's' : '' }}</p>
+              <p class="category-card__count">
+                @if (cat.productCount > 0) {
+                  {{ cat.productCount }} product{{ cat.productCount !== 1 ? 's' : '' }}
+                } @else {
+                  Browse
+                }
+              </p>
             </div>
+            <span class="material-symbols-outlined category-card__chevron" aria-hidden="true">arrow_forward</span>
           </button>
         }
       </div>
@@ -135,14 +181,26 @@
   <!-- ── Featured SME Vendors ──────────────────────────────────────────── -->
   <section class="section vendors-section" aria-labelledby="vendors-heading">
     <div class="vendors-section__header">
-      <h2 id="vendors-heading" class="section__title">Featured SME Vendors</h2>
-      <p class="section__sub">Empowering local South African businesses through regional export opportunities.</p>
+      <h2 id="vendors-heading" class="section__title">
+        <span class="hb-waypoint" aria-hidden="true"></span>
+        Featured SME vendors
+      </h2>
+      <p class="section__sub">South African makers and businesses, selling to Namibia through H&amp;B.</p>
     </div>
 
     @if (vendorsState() === 'loading') {
-      <div class="state-message" role="status" aria-live="polite">
-        <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
-        <p>Loading vendors…</p>
+      <div class="vendors-skeleton" role="status" aria-live="polite" aria-busy="true">
+        <span class="visually-hidden">Loading vendors…</span>
+        @for (i of vendorSkeletons; track i) {
+          <div class="vendors-skeleton__card">
+            <app-skeleton shape="circle" width="56px" height="56px" />
+            <div class="vendors-skeleton__body">
+              <app-skeleton shape="text" width="55%" height="18px" />
+              <app-skeleton shape="text" width="45%" height="14px" />
+              <app-skeleton shape="text" width="30%" height="14px" />
+            </div>
+          </div>
+        }
       </div>
     } @else if (vendorsState() === 'error') {
       <div class="state-message state-message--error" role="alert">
@@ -157,6 +215,7 @@
     } @else {
       <app-vendor-showcase
         [vendors]="vendors()"
+        [listingCounts]="vendorListingCounts()"
         (vendorSelected)="onVendorSelect($event)"
       />
     }
@@ -165,24 +224,27 @@
   <!-- ── Newsletter ────────────────────────────────────────────────────── -->
   <section class="newsletter" aria-labelledby="newsletter-heading">
     <div class="newsletter__inner">
-      <h2 id="newsletter-heading" class="newsletter__title">Stay Updated on Trade</h2>
-      <p class="newsletter__sub">
-        Get the latest on regional SME arrivals, logistics updates, and cross-border trade tips directly in your inbox.
-      </p>
+      <div class="newsletter__copy">
+        <h2 id="newsletter-heading" class="newsletter__title">New arrivals, once a week</h2>
+        <p class="newsletter__sub">
+          What landed from South Africa this week, plus route updates and the occasional deal.
+          No spam.
+        </p>
+      </div>
       <div class="newsletter__form" role="form" aria-label="Newsletter sign-up">
         <label for="newsletter-email" class="visually-hidden">Email address</label>
         <input
           id="newsletter-email"
           type="email"
           class="newsletter__input"
-          placeholder="Enter your email address"
+          placeholder="Your email address"
           autocomplete="email"
         />
         <button
           type="button"
           class="btn btn--primary newsletter__btn"
           (click)="onNewsletterJoin()"
-        >Join Community</button>
+        >Join</button>
       </div>
     </div>
   </section>

@@ -269,6 +269,17 @@ the screenshot paths under `docs/design/redesign/evidence/phase-N/` and referenc
    admin UI only create top-level categories. Owner decision on whether the taxonomy gets a
    second level; if yes, add `parentId` to the admin category form and seed a few children so
    the grouped layout is exercised.
+9. **Product photography.** (Phase 3 exposed.) All ten seed products have `images: []`, so
+   every card, the PDP gallery and the hover cross-fade render the placeholder. The card's
+   image plumbing (srcset/sizes/variants, `images[1]` hover) is finished but untested against
+   real assets. Content task: upload at least two images per listing, then re-capture.
+10. **Newsletter sign-up is a stub.** (Phase 3 exposed.) The storefront form collects an email
+    and answers with a "coming soon" notice. Either wire it to a provider or drop the section
+    before launch — a form that discards input is a trust cost on the page arguing for trust.
+11. **Vendor listing counts are page-scoped.** (Phase 3 exposed.) `deriveVendorListingCounts`
+    counts the storefront's own first 100 products, so a vendor whose listings fall outside
+    that page shows no count line. A `productCount` on the vendor directory response would
+    make it exact and drop the derivation.
 
 ## Amendments
 
@@ -301,3 +312,38 @@ the screenshot paths under `docs/design/redesign/evidence/phase-N/` and referenc
    chip row at ≥768px, so desktop now shows two search inputs there (header + page). Listed
    in §5 as a card; the page's controls should collapse into the header's once the header
    search grows suggestions.
+
+**2026-09-05, Phase 3**
+1. *Grid `minmax(min(100%, 220px), 1fr)`* — shipped at **200px**, and only from 768px up.
+   Below 768 the grid is two fixed columns: at 360 the gutters leave 328px of content, so a
+   220px minimum yields one column per row and the phone storefront becomes a single tall
+   stack. 200px from 768 also gives the intended 3 / 5 / 6 columns at 768 / 1280 / 1440.
+2. *"Grids: … wide container"* — the grid utility is width-agnostic; the containers were
+   already set in Phase 2 and were not touched.
+3. The trust strip and the vendor showcase became **variants of the existing components**
+   rather than new ones. `<app-trust-banner variant="strip|cards">` keeps the Procurement
+   Service page (its only other consumer) on the old 3-up card grid, which its own copy was
+   written for; `strip` is the storefront default. Same reasoning for the showcase, which
+   simply lost its fake stars.
+4. The vendor showcase gained a `listingCounts` input fed by a new pure
+   `deriveVendorListingCounts` in `shop.ts` — "N listings" is real data, unlike the five stars
+   it replaces. Listed as follow-up card 11 because it only sees the storefront's own page.
+5. Hero: the copy is the SACU claim from §1 verbatim, and the photograph
+   (`hero-import-shopping`, already in `public/images` and until now unreferenced) is a road
+   through desert — the Corridor, literally. `SITE_IMAGES.hero`'s doc comment said "not yet
+   referenced by any page"; it is now.
+6. Four hero tokens were added (`--hb-hero-surface`, `--hb-on-hero`, `--hb-on-hero-muted`,
+   `--hb-hero-accent`) instead of reusing a ladder step. The dark theme re-orders the tint
+   ladders, so no step is a safe hero ground in both themes; only `--hb-hero-surface` changes
+   under dark.
+7. The category section became waypoint tiles on a route line (icon · name · count · chevron)
+   rather than the old centred icon cards, and the count falls back to "Browse" at zero so a
+   fresh catalogue never advertises "0 products".
+8. Card stock state sums `sizes[].stockQuantity` for sized products. `stockQuantity` is not
+   meaningful on those rows (see `wishlist.ts`), so reading it alone would have shown "Sold
+   out" on every sized product.
+9. `capture.mjs`'s `!loading` modifier does **not** work by blocking the API and reloading:
+   SSR fetches server-side, so the HTML arrives populated and the client requests nothing.
+   It seeds `/discover`, holds the listing requests open, then enters the target route by
+   client-side navigation (brand link / category chip) and asserts a skeleton is on the page
+   before capturing.

@@ -537,7 +537,7 @@
     @if (relatedProducts().length) {
       <section class="pdp__section">
         <h2 class="pdp__section-title">You May Also Like</h2>
-        <div class="pdp__related-grid">
+        <div class="pdp__related-grid hb-product-grid">
           @for (related of relatedProducts(); track related.id) {
             <app-product-card
               [product]="related"
