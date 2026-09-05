@@ -193,4 +193,53 @@ describe('Cart page', () => {
 
     expect(navigate).toHaveBeenCalledWith(['/checkout']);
   });
+
+  // ── Landed cost + trust (Phase 4) ──────────────────────────────────────
+
+  it('states the customs-duty line explicitly, in the cart currency', () => {
+    flushCart({ ...CART, items: [CART.items[0]], totals: [{ currency: CurrencyCode.NAD, subtotal: 370 }] });
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Customs duties');
+    // Formatted from the cart's own currency, not hard-coded to rand.
+    expect(component.dutyLabel()).toMatch(/^N\$\s?0[.,]00 \(SACU\)$/);
+    expect(el.textContent).toContain('Calculated at checkout');
+  });
+
+  it('falls back to a wordy duty line when the cart mixes currencies', () => {
+    flushCart(); // CART has both ZAR and NAD totals
+    expect(component.dutyLabel()).toBe('None (SACU)');
+  });
+
+  it('shows the trust ribbon above the checkout CTA', () => {
+    flushCart();
+
+    const ribbon = fixture.nativeElement.querySelector('.cart__summary app-trust-banner');
+    expect(ribbon).toBeTruthy();
+    expect(ribbon.querySelector('.trust-banner--inline')).toBeTruthy();
+  });
+
+  it('offers a retry rather than a dead end when the cart fails to load', () => {
+    httpMock.expectOne(`${environment.apiBaseUrl}/cart`).error(new ProgressEvent('error'));
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Could not load your cart right now.');
+    const retry = el.querySelector('app-state-message .state-message__btn') as HTMLButtonElement;
+    expect(retry.textContent?.trim()).toBe('Try again');
+
+    retry.click();
+    fixture.detectChanges();
+    httpMock.expectOne(`${environment.apiBaseUrl}/cart`).flush(CART);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Fynbos Honey');
+  });
+
+  it('shows skeleton rows, not a bare line of text, while the cart loads', () => {
+    expect(fixture.nativeElement.querySelectorAll('.cart__items--skeleton app-skeleton').length)
+      .toBeGreaterThan(0);
+    flushCart();
+    expect(fixture.nativeElement.querySelectorAll('.cart__items--skeleton').length).toBe(0);
+  });
 });

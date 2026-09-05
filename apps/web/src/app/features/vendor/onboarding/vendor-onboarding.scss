@@ -24,7 +24,7 @@
   border: 1px solid var(--hb-outline-variant);
   border-radius: 12px;
   padding: 40px 32px 48px;
-  box-shadow: 0 1px 3px rgba(28, 27, 27, 0.06), 0 4px 16px rgba(28, 27, 27, 0.04);
+  box-shadow: var(--hb-elevation-1);
 }
 
 /* ── Header ────────────────────────────────────────────────────────────────── */
@@ -119,14 +119,14 @@ form {
 
   &:focus-within {
     border-color: var(--hb-primary);
-    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--hb-primary) 10%, transparent);
   }
 
   &.invalid {
     border-color: var(--hb-error);
 
     &:focus-within {
-      box-shadow: 0 0 0 2px rgba(186, 26, 26, 0.1);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--hb-error) 10%, transparent);
     }
   }
 
@@ -151,7 +151,7 @@ form {
     min-width: 0;
 
     &::placeholder {
-      color: rgba(64, 74, 59, 0.45);
+      color: color-mix(in srgb, var(--hb-on-surface-variant) 45%, transparent);
     }
   }
 }
@@ -182,8 +182,8 @@ form {
   margin: 0;
   padding: 12px 14px;
   border-radius: 8px;
-  background: rgba(186, 26, 26, 0.06);
-  border: 1px solid rgba(186, 26, 26, 0.2);
+  background: color-mix(in srgb, var(--hb-error) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hb-error) 20%, transparent);
   color: var(--hb-error);
   font-size: 14px;
   line-height: 20px;
@@ -281,6 +281,11 @@ form {
     color: var(--hb-on-surface-variant);
   }
 
+  /* The `.hb-spinner` element inside the same 64px wrap as the glyph. */
+  &__spinner {
+    --hb-spinner-size: 32px;
+  }
+
   &__title {
     margin: 0;
     font-size: var(--hb-text-xl);
@@ -311,7 +316,7 @@ form {
 
   &--approved {
     .status-panel__icon-wrap {
-      background: rgba(46, 125, 50, 0.08);
+      background: color-mix(in srgb, var(--hb-primary) 8%, transparent);
     }
 
     .status-panel__icon {
@@ -323,7 +328,7 @@ form {
   &--rejected,
   &--suspended {
     .status-panel__icon-wrap {
-      background: rgba(186, 26, 26, 0.06);
+      background: color-mix(in srgb, var(--hb-error) 6%, transparent);
     }
 
     .status-panel__icon {
@@ -333,7 +338,7 @@ form {
 
   &--error {
     .status-panel__icon-wrap {
-      background: rgba(186, 26, 26, 0.06);
+      background: color-mix(in srgb, var(--hb-error) 6%, transparent);
     }
 
     .status-panel__icon {
@@ -378,13 +383,13 @@ form {
   }
 
   &--approved {
-    background: rgba(46, 125, 50, 0.08);
+    background: color-mix(in srgb, var(--hb-primary) 8%, transparent);
     color: var(--hb-primary);
   }
 
   &--rejected,
   &--suspended {
-    background: rgba(186, 26, 26, 0.06);
+    background: color-mix(in srgb, var(--hb-error) 6%, transparent);
     color: var(--hb-error);
   }
 }

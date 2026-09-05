@@ -19,17 +19,6 @@
   }
 }
 
-.pdp__back-link {
-  margin-top: 8px;
-  color: var(--hb-primary);
-  font-weight: 600;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
 /* ── Back header (mobile-style top bar, sits under NavBar) ───────────── */
 
 .pdp__header {
@@ -107,7 +96,8 @@
   height: 40px;
   border: none;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.85);
+  /* Reads over the photograph in either theme: the page surface at 85%, not white. */
+  background: color-mix(in srgb, var(--hb-surface) 85%, transparent);
   color: var(--hb-on-surface);
   cursor: pointer;
 
@@ -295,9 +285,15 @@
     color: var(--hb-primary);
   }
 
+  /* Real text on the shipping card's tinted surface, so the AA-safe green
+     (`-700`), not `--hb-primary` — which measures 4.41:1 there. */
   &--highlight {
     font-weight: 500;
-    color: var(--hb-primary);
+    color: var(--hb-primary-700);
+
+    .material-symbols-outlined {
+      color: var(--hb-primary-700);
+    }
   }
 }
 
@@ -454,26 +450,6 @@
   }
 }
 
-.pdp__reviews-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 32px 16px;
-  text-align: center;
-  color: var(--hb-on-surface-variant);
-
-  p {
-    margin: 0;
-    font-size: 16px;
-  }
-}
-
-.pdp__reviews-state-icon {
-  font-size: 40px;
-  opacity: 0.5;
-}
-
 .pdp__reviews-pagination {
   display: flex;
   align-items: center;
@@ -588,7 +564,7 @@
   &:focus {
     outline: none;
     border-color: var(--hb-primary);
-    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--hb-primary) 10%, transparent);
   }
 }
 
@@ -957,7 +933,7 @@
   color: var(--hb-on-primary);
   font-size: 14px;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(28, 27, 27, 0.16);
+  box-shadow: var(--hb-elevation-2);
   cursor: pointer;
   transition: transform 150ms ease, filter 150ms ease;
 
@@ -1028,28 +1004,74 @@
   }
 }
 
-/* ── State messages ───────────────────────────────────────────────────── */
 
-.state-message {
+/* ── Loading skeletons (Phase 4) ────────────────────────────────────────
+   The PDP used to load behind a centred hourglass on an otherwise blank page,
+   which tells the buyer nothing about what is coming. These mirror the real
+   layout instead: the square hero, then title / price / size chips / shipping
+   card / add-to-cart in the same order and at roughly the same heights, so the
+   page does not jump when the data lands. Gutters match `.pdp__section`. */
+
+.pdp__skeleton {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 48px 24px;
-  text-align: center;
-  color: var(--hb-on-surface-variant);
+  gap: var(--hb-space-6);
+  padding: var(--hb-space-4) var(--hb-space-4) 0;
 
-  p {
-    margin: 0;
-    font-size: 16px;
-  }
-
-  &--error {
-    color: var(--hb-error);
+  @media (min-width: 768px) {
+    padding: var(--hb-space-4) var(--hb-space-10) 0;
   }
 }
 
-.state-message__icon {
-  font-size: 48px;
-  opacity: 0.5;
+.pdp__skeleton-hero {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+
+  @media (min-width: 768px) {
+    max-height: 560px;
+  }
+}
+
+.pdp__skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hb-space-4);
+}
+
+.pdp__skeleton-chips {
+  display: flex;
+  gap: var(--hb-space-2);
+}
+
+.pdp__reviews-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hb-space-6);
+  padding: var(--hb-space-6) 0;
+}
+
+.pdp__reviews-skeleton-row {
+  display: flex;
+  gap: var(--hb-space-3);
+}
+
+.pdp__reviews-skeleton-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--hb-space-2);
+  min-width: 0;
+}
+
+/* ── Trust ribbon under the price (Phase 4) ─────────────────────────────
+   The buyer's doubt peaks the moment they read the price, so the four promises
+   sit directly beneath it — as the low `inline` variant, not the full strip,
+   because the add-to-cart must stay in reach. */
+
+.pdp__trust {
+  display: block;
+  margin-top: var(--hb-space-4);
+  padding-top: var(--hb-space-4);
+  border-top: 1px solid var(--hb-outline-variant);
 }

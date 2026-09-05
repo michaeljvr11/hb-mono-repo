@@ -69,7 +69,7 @@
   background: var(--hb-surface-container-lowest);
   border: 1px solid var(--hb-outline-variant);
   border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(28, 27, 27, 0.06);
+  box-shadow: var(--hb-elevation-1);
 
   @media (max-width: 600px) {
     padding: 24px 20px;
@@ -115,7 +115,7 @@
 
   &:focus-within {
     border-color: var(--hb-primary);
-    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--hb-primary) 10%, transparent);
   }
 
   &.invalid {

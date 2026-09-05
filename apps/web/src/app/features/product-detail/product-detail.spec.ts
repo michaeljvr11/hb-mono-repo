@@ -583,7 +583,7 @@ describe('ProductDetail', () => {
 
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain("We couldn't find that product.");
-    expect(el.querySelector('a.pdp__back-link')).toBeTruthy();
+    expect(el.querySelector('app-state-message a.state-message__link')).toBeTruthy();
   });
 
   it('renders a generic error state on a non-404 failure', async () => {
@@ -1518,5 +1518,55 @@ describe('ProductDetail', () => {
 
       expect(component.selectedSizeId()).toBeNull();
     });
+  });
+
+  // ── Perceived performance + trust (Phase 4) ─────────────────────────────
+
+  it('shows a layout-shaped skeleton, not a spinner on a blank page, while the product loads', () => {
+    productsStub.getById.mockReturnValue(new Subject());
+    paramMap$.next(convertToParamMap({ id: 'p1' }));
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.pdp__skeleton-hero')).toBeTruthy();
+    expect(el.querySelectorAll('.pdp__skeleton app-skeleton').length).toBeGreaterThan(3);
+    expect(el.querySelector('[aria-busy="true"]')).toBeTruthy();
+    expect(el.textContent).toContain('Loading product…');
+  });
+
+  it('renders the trust ribbon directly under the price', async () => {
+    paramMap$.next(convertToParamMap({ id: 'p1' }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const ribbon = el.querySelector('app-trust-banner.pdp__trust');
+    expect(ribbon).toBeTruthy();
+    expect(ribbon!.querySelector('.trust-banner--inline')).toBeTruthy();
+    // Order matters: the promise answers the doubt the price raises.
+    const price = el.querySelector('.pdp__price')!;
+    expect(price.compareDocumentPosition(ribbon!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('retries the product load from the error state', async () => {
+    productsStub.getById.mockReturnValue(throwError(() => ({ status: 500 })));
+    paramMap$.next(convertToParamMap({ id: 'boom' }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const retry = fixture.nativeElement.querySelector(
+      'app-state-message .state-message__btn',
+    ) as HTMLButtonElement;
+    expect(retry.textContent?.trim()).toBe('Try again');
+
+    productsStub.getById.mockReturnValue(of(HONEY));
+    retry.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(HONEY.name);
   });
 });

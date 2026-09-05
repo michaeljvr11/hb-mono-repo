@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { Router, provideRouter } from '@angular/router';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   AnalyticsEventType,
@@ -443,8 +443,9 @@ describe('Discover', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('No products match your search/filters');
-    expect(el.querySelector('.discover__clear-btn')).toBeTruthy();
+    expect(el.textContent).toContain('No products match your search or filters');
+    const clear = el.querySelector('app-state-message .state-message__btn') as HTMLButtonElement;
+    expect(clear?.textContent?.trim()).toBe('Clear all filters');
   });
 
   describe('suggestion mapping + selection', () => {
@@ -649,5 +650,92 @@ describe('Discover', () => {
         queryParamsHandling: 'merge',
       }));
     });
+  });
+
+  // ── Perceived performance: skeletons then fade-through (Phase 4) ─────────
+
+  describe('loading presentation', () => {
+    it('shows skeletons on the first load and no dimmed grid', async () => {
+      const gate = new Subject<{ items: ProductDto[]; total: number; page: number; limit: number }>();
+      const { productsStub: gatedProducts, categoriesStub: c, vendorsStub: v, searchStub: se,
+        authStub: a, analyticsStub: an, gaStub: g, wishlistStub: w } = makeStubs();
+      gatedProducts.list = vi.fn(() => gate.asObservable());
+      TestBed.resetTestingModule();
+      await setupTestBed(gatedProducts, c, v, se, a, an, g, w);
+
+      const gated = TestBed.createComponent(Discover);
+      gated.detectChanges();
+
+      expect(gated.componentInstance.productsState()).toBe('loading');
+      expect(gated.componentInstance.refreshing()).toBe(false);
+      expect(gated.nativeElement.querySelectorAll('app-product-card-skeleton').length).toBeGreaterThan(0);
+
+      gate.next({ items: [PLATFORM_LISTING], total: 1, page: 1, limit: 24 });
+      gate.complete();
+      gated.detectChanges();
+
+      expect(gated.nativeElement.querySelectorAll('app-product-card-skeleton').length).toBe(0);
+    });
+
+    it('dims the existing grid instead of collapsing it when a filter changes', async () => {
+      // Loaded from the beforeEach; now gate the *next* fetch.
+      expect(component.productsState()).toBe('loaded');
+      const gate = new Subject<{ items: ProductDto[]; total: number; page: number; limit: number }>();
+      productsStub.list.mockReturnValue(gate.asObservable());
+
+      await router.navigate([], { queryParams: { q: 'honey' } });
+      fixture.detectChanges();
+
+      expect(component.refreshing()).toBe(true);
+      expect(component.productsState()).toBe('loaded');
+      const grid = fixture.nativeElement.querySelector('.discover__grid') as HTMLElement;
+      expect(grid.classList.contains('discover__grid--refreshing')).toBe(true);
+      expect(grid.getAttribute('aria-busy')).toBe('true');
+      expect(fixture.nativeElement.querySelectorAll('app-product-card-skeleton').length).toBe(0);
+
+      gate.next({ items: [PLATFORM_LISTING], total: 1, page: 1, limit: 24 });
+      gate.complete();
+      fixture.detectChanges();
+
+      expect(component.refreshing()).toBe(false);
+      expect(
+        (fixture.nativeElement.querySelector('.discover__grid') as HTMLElement).classList.contains(
+          'discover__grid--refreshing',
+        ),
+      ).toBe(false);
+    });
+
+    it('falls back to skeletons after an error, and retries the same query', async () => {
+      productsStub.list.mockReturnValue(throwError(() => new Error('boom')));
+      await router.navigate([], { queryParams: { q: 'honey' } });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(component.productsState()).toBe('error');
+      expect(component.refreshing()).toBe(false);
+
+      const retry = fixture.nativeElement.querySelector(
+        'app-state-message .state-message__btn',
+      ) as HTMLButtonElement;
+      expect(retry.textContent?.trim()).toBe('Try again');
+
+      productsStub.list.mockReturnValue(
+        of({ items: [PLATFORM_LISTING], total: 1, page: 1, limit: 24 }),
+      );
+      retry.click();
+      fixture.detectChanges();
+
+      expect(productsStub.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: 'honey', page: 1, sort: 'newest' }),
+      );
+      expect(component.productsState()).toBe('loaded');
+    });
+  });
+
+  it('shows the trust ribbon under the filters', () => {
+    const ribbon = fixture.nativeElement.querySelector('.discover__controls app-trust-banner');
+    expect(ribbon).toBeTruthy();
+    expect(ribbon.querySelector('.trust-banner--inline')).toBeTruthy();
   });
 });

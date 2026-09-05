@@ -32,8 +32,9 @@ html {
      helps the buyer — sale price, low stock, the active waypoint — never decoration.
    - `--hb-ease-spring` is the only expressive easing on the site. Everything else is
      `--hb-ease-decelerate` or `--hb-ease-standard`.
-   - The dark theme is opt-in via `<html data-theme="dark">` until Phase 4 flips the
-     `prefers-color-scheme` block on (see the flag at the bottom of the token section).
+   - The dark theme follows `prefers-color-scheme` (enabled in Phase 4). `<html
+     data-theme="dark">` and `data-theme="light"` still pin a theme explicitly, and
+     `light` wins over the media query — see the block at the end of the token section.
    ========================================================================================== */
 :root {
   color-scheme: light;
@@ -50,6 +51,11 @@ html {
   --hb-primary-50: #eef6ee;
   --hb-primary-100: #d9ecda;
   --hb-primary-200: #b3d9b5;
+  /* The AA-safe green for *text on a tinted surface*, the mirror of `--hb-secondary-700`
+     (Phase 4). `--hb-primary` itself is 5.13:1 on white but only 4.41:1 on
+     `--hb-surface-container` — it passes as a fill and as text on the page ground, and
+     fails as text on a card. `-700` clears 6:1 on every light surface, and the dark
+     ladder lifts it to #81c784, so it is safe in both themes. */
   --hb-primary-700: #256428;
   --hb-primary-800: #1b4d1e;
 
@@ -222,7 +228,8 @@ html {
    hold AA as text on the dark ground; `--hb-primary-container` drops to the light-mode
    primary so it still reads as "a shade of the primary that fills". The tint/shade ladders
    are re-ordered so `-50` stays the *subtlest* tint against the page in either theme.
-   Applied by `<html data-theme="dark">` only — see the `prefers-color-scheme` flag below. */
+   Applied by `prefers-color-scheme: dark` and by `<html data-theme="dark">` — see the
+   block below the light tokens. */
 @mixin hb-dark-tokens {
   color-scheme: dark;
 
@@ -284,14 +291,16 @@ html {
   @include hb-dark-tokens;
 }
 
-/* PHASE-4 FLAG — automatic dark theme. Disabled until the storefront funnel (shop, discover,
-   product card, PDP, cart, checkout) carries no hard-coded colours (PLAN §2.1). To enable,
-   uncomment the block. The `:not([data-theme='light'])` guard lets a user pin light mode. */
-// @media (prefers-color-scheme: dark) {
-//   :root:not([data-theme='light']) {
-//     @include hb-dark-tokens;
-//   }
-// }
+/* Automatic dark theme — enabled in Phase 4 once the funnel (shop, discover, product card,
+   PDP, cart, checkout) carried no hard-coded colours (PLAN §2.1). Two colours are still
+   literal on purpose and must stay that way: WhatsApp's brand green on /contact, and the
+   radial nav's own glass palette, which draws its own scrim. The
+   `:not([data-theme='light'])` guard lets a user pin light mode. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include hb-dark-tokens;
+  }
+}
 
 html,
 body {
@@ -357,6 +366,84 @@ body {
   background: var(--hb-primary);
   box-shadow: 0 0 0 3px var(--hb-primary-50);
   vertical-align: middle;
+}
+
+/* Screen-reader-only text. Hoisted here in Phase 4 — five component stylesheets carried
+   byte-identical copies of this, and `<app-state-message>`'s consumers need it too. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Actions projected into `<app-state-message>` (Phase 4). These live globally, not in
+   `state-message.scss`, because projected content carries the *consumer's* view-encapsulation
+   attribute and so is unreachable from the component's own stylesheet. `__btn` is the quiet
+   outlined action ("Try again", "Clear all filters"); `__link` is the tertiary way out. */
+.state-message__btn {
+  padding: var(--hb-space-3) var(--hb-space-6);
+  border: 1px solid var(--hb-primary);
+  border-radius: var(--hb-radius-sm);
+  background: none;
+  color: var(--hb-primary);
+  font-family: inherit;
+  font-size: var(--hb-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--hb-duration-base) var(--hb-ease-standard);
+
+  &:hover {
+    background: var(--hb-primary-50);
+  }
+}
+
+.state-message__link {
+  color: var(--hb-primary);
+  font-size: var(--hb-text-sm);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Indeterminate spinner (Phase 4). Global because four surfaces need it —
+   `<app-state-message kind="loading">`, the two auth panels and the vendor status
+   panel — and each of those is a different component. Size it per site with
+   `--hb-spinner-size`.
+
+   The duration is a literal, not a token, on the same reasoning as the radial
+   nav's reduced-motion fade: the global reduced-motion rule zeroes the duration
+   tokens, and a 0s spinner is exactly the frozen `hourglass_top` glyph this
+   replaces. Reduced motion slows it instead of stopping it — the spin is
+   feedback that the page is still working, not decoration. */
+.hb-spinner {
+  display: inline-block;
+  width: var(--hb-spinner-size, 40px);
+  height: var(--hb-spinner-size, 40px);
+  border: 3px solid var(--hb-outline-variant);
+  border-top-color: var(--hb-primary);
+  border-radius: 50%;
+  animation: hb-spin 0.9s linear infinite;
+}
+
+@keyframes hb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hb-spinner {
+    animation-duration: 2.4s;
+  }
 }
 
 /* Material Symbols Outlined icon font (loaded in index.html) */
@@ -648,6 +735,13 @@ body {
 
 .auth-panel .state-icon.bad {
   color: var(--hb-error);
+}
+
+/* The busy variant is the `.hb-spinner` element, not a glyph: it has no font
+   size to set, and it needs the icon's bottom margin only. */
+.auth-panel .state-icon--busy {
+  --hb-spinner-size: 44px;
+  font-size: 0;
 }
 
 /* Snackbar themes (rendered at the overlay root, so they must be global).

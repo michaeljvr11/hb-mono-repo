@@ -280,6 +280,25 @@ the screenshot paths under `docs/design/redesign/evidence/phase-N/` and referenc
     counts the storefront's own first 100 products, so a vendor whose listings fall outside
     that page shows no count line. A `productCount` on the vendor directory response would
     make it exact and drop the derivation.
+12. **Payment provider name and marks in the checkout security block.** (Phase 4 exposed.)
+    PLAN Phase 4 asked for "provider names from settings"; there is no such setting and no
+    such provider — `PaymentDto.provider` is the string `'stub'` and `PlatformSettingsDto`
+    carries only `notificationEmails`. When a real regional gateway is chosen, add its name
+    (and, if licensing allows, its marks) to `PlatformSettingsDto`, expose it on a public
+    settings endpoint, and render it in `.checkout__security`. AC: the block names the
+    provider from data, not copy; nothing hard-codes a brand.
+13. **Back-office loading states still use a static `hourglass_empty`.** (Phase 4 exposed.)
+    Fourteen admin and vendor-portal templates render `<span class="state-icon">hourglass_empty
+    </span>` while a request is in flight. Phase 4 deliberately scoped itself to the buyer
+    funnel, so these were left alone. Roll `.hb-spinner` (or table-row skeletons) out to
+    them, and give their empty/error states the `<app-state-message>` action treatment.
+    AC: no static hourglass glyph marks an in-flight request anywhere in the app.
+14. **`<app-state-message kind="loading">` has no consumer.** (Phase 4 exposed.) Every content
+    wait in the funnel got a *skeleton* instead, which is the better answer, so the component's
+    `loading` branch ships tested but unused; the spinner it renders is used directly by the
+    two auth panels and the vendor status panel via `.hb-spinner`. Either give it its first
+    consumer in Phase 5 (the checkout's `submitting` state is the obvious candidate) or drop
+    the branch and keep the component to `empty | error`.
 
 ## Amendments
 
@@ -347,3 +366,53 @@ the screenshot paths under `docs/design/redesign/evidence/phase-N/` and referenc
    It seeds `/discover`, holds the listing requests open, then enters the target route by
    client-side navigation (brand link / category chip) and asserts a skeleton is on the page
    before capturing.
+
+**2026-09-06, Phase 4**
+1. *"`<app-trust-strip>` placed on discover, PDP, cart, checkout"* — as a new **`inline`
+   variant of `<app-trust-banner>`**, not the full four-waypoint strip. At those four points
+   the real content is the product, the price or the totals; a full band would push all of it
+   below the fold, which is the opposite of what the placement is for. The inline variant is
+   one low row of short labels, transparent ground, no route line.
+2. *"payment-security block (lock icon, provider names from settings)"* — there are no
+   provider names. `PaymentDto.provider` is `'stub'` and `PlatformSettingsDto` carries only
+   `notificationEmails`. The block ships with the three things that *are* true today (H&B
+   never sees or stores card details; payment is taken in the currency shown; the address is
+   used only to deliver the order). Provider naming is §5 card 12.
+3. *"landed-cost line items labelled explicitly (\"Customs duties: R0.00 (SACU)\")"* — the
+   amount is formatted from the cart's own currency via a `dutyLabel()` computed, not
+   hard-coded to rand: a NAD cart would otherwise be told its duties are in rand. A
+   mixed-currency cart has no single currency to format, so it reads "None (SACU)".
+   On checkout the lines sit *between* the subtotal and the shipping/total block, so the
+   total stays the last line of the arithmetic.
+4. *"checkout step advance (waypoint fills along the route strip)"* — **deferred to Phase 5**,
+   which is where the route-strip stepper is introduced. Checkout is a single-page form today;
+   there is no step to advance. Building a stepper here only to rebuild it in Phase 5 is churn.
+   The discover fade-through is the Phase 4 micro-interaction that had a home.
+5. *"`<app-skeleton>` rolled out to the remaining hourglass templates"* — three of the four
+   `hourglass_top` templates took a **spinner**, not a skeleton, because they are indeterminate
+   processes with no content shape to preview (the two auth panels, the vendor status fetch).
+   Two of `vendor-onboarding`'s three hourglasses were deliberately left alone: they mark an
+   application that is genuinely *pending*, a terminal state where a static glyph is honest.
+   The 14 back-office `hourglass_empty` templates are out of the storefront's scope — §5 card 13.
+6. The PDP, cart and checkout each gained a **layout-shaped skeleton** rather than only losing
+   their spinner. The PDP in particular used to load behind a centred hourglass on a blank
+   page — at the exact moment the buyer is deciding whether to trust the site.
+7. `.visually-hidden` was hoisted from five byte-identical component copies into `styles.scss`,
+   and the spinner from `state-message.scss` into a global `.hb-spinner` (four consumers across
+   four components). `.state-message__btn` / `__link` also had to be global: projected content
+   carries the *consumer's* encapsulation attribute, so a component cannot style its own slot.
+8. **`--hb-primary-700` is now documented as the AA-safe green for text**, the mirror of
+   `--hb-secondary-700`. The contrast audit (below) found `--hb-primary` at 4.41:1 on
+   `--hb-surface-container` — it passes on white (5.13) and on the page ground (4.89) and fails
+   on a card. The checkout total, the checkout line totals and the PDP's "Simplified Customs
+   Included" fact moved to `-700`.
+9. The wishlist's *empty* state kept its bespoke bordered card with a filled CTA rather than
+   becoming an `<app-state-message>`: it is a page-level empty state whose whole job is the
+   CTA, and the shared component's tertiary link would have weakened it. Its *error* state,
+   a bare `<p>` with no way forward, did convert.
+10. `capture.mjs` gained `!auth` (sign in + seed the cart, for `/cart` and `/checkout`),
+    `!refreshing` (asserts the dimmed grid and *no* skeletons) and `!security`, and its
+    `!loading` entry for `/discover` had to change — clicking a chip in-page now takes the
+    fade-through path, so reaching the skeletons means leaving the route and coming back.
+    Both themes are now **pinned** via `data-theme`: with the media query live, deleting the
+    attribute means "whatever the host OS is", which silently made every light capture dark.

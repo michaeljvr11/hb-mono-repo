@@ -128,7 +128,7 @@ form {
 }
 
 .input-wrap input::placeholder {
-  color: rgba(64, 74, 59, 0.4);
+  color: color-mix(in srgb, var(--hb-on-surface-variant) 40%, transparent);
 }
 
 .toggle-visibility {
@@ -196,7 +196,7 @@ form {
 .primary-action {
   margin-top: 8px;
   border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(28, 27, 27, 0.08);
+  box-shadow: var(--hb-elevation-1);
 }
 
 .social-action {
@@ -221,7 +221,7 @@ form {
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(191, 202, 183, 0.5);
+  background: color-mix(in srgb, var(--hb-outline-variant) 50%, transparent);
 }
 
 .divider span {
@@ -254,7 +254,7 @@ form {
   gap: 8px;
   padding: 16px;
   background: var(--hb-surface-container);
-  border: 1px solid rgba(191, 202, 183, 0.3);
+  border: 1px solid color-mix(in srgb, var(--hb-outline-variant) 30%, transparent);
   border-radius: 16px;
 }
 

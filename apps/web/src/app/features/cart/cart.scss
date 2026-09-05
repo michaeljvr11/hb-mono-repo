@@ -24,15 +24,6 @@
   }
 }
 
-.cart__hint {
-  font-size: 16px;
-  color: var(--hb-on-surface-variant);
-
-  &--error {
-    color: var(--hb-error);
-  }
-}
-
 /* ── Empty state ─────────────────────────────────────────────────────────── */
 
 .cart__empty {
@@ -280,6 +271,30 @@
   font-size: 16px;
   color: var(--hb-on-surface-variant);
   padding: 6px 0;
+}
+
+/* Landed-cost lines: present but quieter than the subtotal they qualify. */
+.cart__summary-row--muted {
+  @include t.type('sm');
+
+  .cart__summary-amount {
+    font-weight: 500;
+    color: var(--hb-on-surface-variant);
+  }
+}
+
+/* The skeleton list keeps the loaded list's frame so the page does not jump. */
+.cart__items--skeleton .cart__item-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hb-space-2);
+}
+
+.cart__trust {
+  display: block;
+  margin-top: var(--hb-space-4);
+  padding-top: var(--hb-space-4);
+  border-top: 1px solid var(--hb-outline-variant);
 }
 
 .cart__summary-amount {

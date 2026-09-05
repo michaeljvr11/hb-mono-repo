@@ -3,22 +3,32 @@
 <main class="pdp" aria-label="Product detail">
 
   @if (state() === 'loading') {
-    <div class="state-message" role="status" aria-live="polite">
-      <span class="material-symbols-outlined state-message__icon">hourglass_top</span>
-      <p>Loading product…</p>
+    <div role="status" aria-live="polite" aria-busy="true">
+      <span class="visually-hidden">Loading product…</span>
+      <div class="pdp__skeleton" aria-hidden="true">
+        <app-skeleton class="pdp__skeleton-hero" />
+        <div class="pdp__skeleton-body">
+          <app-skeleton shape="text" width="80%" height="28px" />
+          <app-skeleton shape="text" width="40%" height="24px" />
+          <div class="pdp__skeleton-chips">
+            <app-skeleton width="56px" height="40px" />
+            <app-skeleton width="56px" height="40px" />
+            <app-skeleton width="56px" height="40px" />
+          </div>
+          <app-skeleton height="132px" />
+          <app-skeleton height="48px" />
+        </div>
+      </div>
     </div>
   } @else if (state() === 'not-found') {
-    <div class="state-message" role="status">
-      <span class="material-symbols-outlined state-message__icon">search_off</span>
-      <p>We couldn't find that product.</p>
-      <a class="pdp__back-link" routerLink="/discover">Back to shop</a>
-    </div>
+    <app-state-message kind="empty" icon="search_off" message="We couldn't find that product.">
+      <a stateAction class="state-message__link" routerLink="/discover">Back to shop</a>
+    </app-state-message>
   } @else if (state() === 'error') {
-    <div class="state-message state-message--error" role="alert">
-      <span class="material-symbols-outlined state-message__icon">error_outline</span>
-      <p>Could not load this product right now. Please try again later.</p>
-      <a class="pdp__back-link" routerLink="/discover">Back to shop</a>
-    </div>
+    <app-state-message kind="error" message="Could not load this product right now.">
+      <button stateAction type="button" class="state-message__btn" (click)="retryProduct()">Try again</button>
+      <a stateAction class="state-message__link" routerLink="/discover">Back to shop</a>
+    </app-state-message>
   } @else if (product(); as product) {
     <!-- ── Back header ─────────────────────────────────────────────────── -->
     <div class="pdp__header">
@@ -61,6 +71,12 @@
     <section class="pdp__section">
       <h1 class="pdp__title">{{ product.name }}</h1>
       <p class="pdp__price">{{ priceLabel() }}</p>
+
+      <app-trust-banner
+        class="pdp__trust"
+        variant="inline"
+        label="What this price includes"
+      />
 
       @if (product.sizes?.length) {
         <div class="pdp__size-selector">
@@ -155,20 +171,36 @@
         aria-labelledby="pdp-tab-reviews"
       >
         @if (reviewsState() === 'loading') {
-          <div class="pdp__reviews-state" role="status" aria-live="polite">
-            <span class="material-symbols-outlined pdp__reviews-state-icon">hourglass_top</span>
-            <p>Loading reviews…</p>
+          <div class="pdp__reviews-skeleton" role="status" aria-live="polite" aria-busy="true">
+            <span class="visually-hidden">Loading reviews…</span>
+            @for (i of reviewSkeletons; track i) {
+              <div class="pdp__reviews-skeleton-row" aria-hidden="true">
+                <app-skeleton shape="circle" width="40px" height="40px" />
+                <div class="pdp__reviews-skeleton-lines">
+                  <app-skeleton shape="text" width="30%" height="14px" />
+                  <app-skeleton shape="text" width="90%" height="14px" />
+                  <app-skeleton shape="text" width="70%" height="14px" />
+                </div>
+              </div>
+            }
           </div>
         } @else if (reviewsState() === 'error') {
-          <div class="pdp__reviews-state" role="alert">
-            <span class="material-symbols-outlined pdp__reviews-state-icon">error_outline</span>
-            <p>Could not load reviews right now. Please try again later.</p>
-          </div>
+          <app-state-message kind="error" message="Could not load reviews right now.">
+            <button stateAction type="button" class="state-message__btn" (click)="retryReviews()">Try again</button>
+          </app-state-message>
         } @else if (reviewsState() === 'empty') {
-          <div class="pdp__reviews-state" role="status">
-            <span class="material-symbols-outlined pdp__reviews-state-icon">rate_review</span>
-            <p>No reviews yet.</p>
-          </div>
+          <!-- `requireAction` off: the write-a-review form only exists for a buyer who
+               is eligible, and the rest of the product page is still on screen either way. -->
+          <app-state-message
+            kind="empty"
+            icon="rate_review"
+            [requireAction]="false"
+            [message]="eligibility()?.canReview ? 'No reviews yet — be the first to write one.' : 'No reviews yet.'"
+          >
+            @if (eligibility()?.canReview) {
+              <a stateAction class="state-message__link" href="#pdp-review-form">Write a review</a>
+            }
+          </app-state-message>
         } @else if (reviewsList(); as reviews) {
           <!-- ── Summary header ── -->
           <div class="pdp__reviews-summary">
@@ -276,7 +308,7 @@
             }
             @if (eligibility(); as elig) {
               @if (elig.canReview) {
-                <div class="pdp__review-form-card">
+                <div class="pdp__review-form-card" id="pdp-review-form">
                   <h3 class="pdp__review-form-title">Write a Review</h3>
 
                   @if (reviewSubmitError(); as submitError) {

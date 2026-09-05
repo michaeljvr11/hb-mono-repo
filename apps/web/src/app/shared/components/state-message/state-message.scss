@@ -1,0 +1,56 @@
+@use 'tokens' as t;
+
+/* The geometry the four hand-rolled `.state-message` blocks agreed on (centred
+   column, 48px glyph at half opacity, generous vertical padding), now in one
+   place and on tokens.
+
+   Note: the *action* is projected content, so it carries the consumer's
+   encapsulation attribute and cannot be styled from here. The button/link look
+   lives in `styles.scss` as `.state-message__btn` / `.state-message__link`. */
+.state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--hb-space-2);
+  padding: var(--hb-space-9) var(--hb-space-6);
+  text-align: center;
+  color: var(--hb-on-surface-variant);
+}
+
+.state-message__icon {
+  font-size: var(--hb-text-4xl);
+  opacity: 0.5;
+}
+
+.state-message__heading {
+  margin: 0;
+  @include t.type('xl', 600);
+  color: var(--hb-on-surface);
+}
+
+.state-message__body {
+  margin: 0;
+  max-width: 48ch;
+  @include t.type('md');
+}
+
+/* Collapses for `loading`, which has no action. */
+.state-message__action {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--hb-space-3);
+  margin-top: var(--hb-space-3);
+
+  &:empty {
+    display: none;
+  }
+}
+
+.state-message--error {
+  color: var(--hb-error);
+
+  .state-message__heading {
+    color: var(--hb-error);
+  }
+}

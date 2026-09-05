@@ -73,4 +73,38 @@ describe('TrustBanner', () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.trust-banner')?.getAttribute('aria-label')).toBe('Why use the Procurement Service');
   });
+
+  it('renders short labels and no descriptions in the inline variant', () => {
+    fixture.componentRef.setInput('variant', 'inline');
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.trust-banner')?.classList.contains('trust-banner--inline')).toBe(true);
+    expect(el.querySelectorAll('.trust-card__desc').length).toBe(0);
+    expect(el.querySelectorAll('.trust-card__title').length).toBe(0);
+    expect(Array.from(el.querySelectorAll('.trust-card__label')).map((l) => l.textContent)).toEqual([
+      'Ships from SA',
+      'No customs duties',
+      'ZAR or NAD, 1:1',
+      'Delivered to your door',
+    ]);
+  });
+
+  it('falls back to the full title when an inline item has no short form', () => {
+    fixture.componentRef.setInput('variant', 'inline');
+    fixture.componentRef.setInput('items', [
+      { icon: 'star', title: 'Custom One', description: 'Desc one' },
+    ] satisfies TrustBannerItem[]);
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.trust-card__label')?.textContent).toBe('Custom One');
+  });
+
+  it('marks no destination waypoint in the inline variant — it has no route line', () => {
+    fixture.componentRef.setInput('variant', 'inline');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.trust-card--destination').length).toBe(0);
+  });
 });

@@ -8,6 +8,7 @@ import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
+import { StateMessage } from '../../shared/components/state-message/state-message';
 
 type LoadState = 'loading' | 'loaded' | 'error';
 
@@ -19,7 +20,7 @@ type LoadState = 'loading' | 'loaded' | 'error';
  */
 @Component({
   selector: 'app-wishlist',
-  imports: [NavBar, Footer, RouterLink, Skeleton],
+  imports: [NavBar, Footer, RouterLink, Skeleton, StateMessage],
   templateUrl: './wishlist.html',
   styleUrl: './wishlist.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,6 +42,12 @@ export class Wishlist implements OnInit {
   readonly isEmpty = computed(() => this.state() === 'loaded' && this.items().length === 0);
 
   ngOnInit(): void {
+    this.load();
+  }
+
+  /** Also the error state's "Try again" — nothing else re-triggers the load. */
+  load(): void {
+    this.state.set('loading');
     this.wishlistService.load().subscribe({
       next: () => this.state.set('loaded'),
       error: () => this.state.set('error'),

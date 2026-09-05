@@ -197,7 +197,7 @@ describe('Shop', () => {
   it('shows the empty state when there are no vendors', () => {
     flushLoads({ vendors: [] });
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('No vendors available yet');
+    expect(fixture.nativeElement.textContent).toContain('No sellers listed yet');
   });
 
   // ── Navigation handlers ────────────────────────────────────────────────

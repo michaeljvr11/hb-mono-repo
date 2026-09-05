@@ -362,7 +362,7 @@ describe('PublicVendorProfile', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain("We couldn't find that vendor.");
+    expect(el.textContent).toContain("We couldn't find that seller.");
     expect(el.querySelectorAll('app-product-card').length).toBe(0);
   });
 
@@ -374,7 +374,29 @@ describe('PublicVendorProfile', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('Could not load this vendor right now');
+    expect(el.textContent).toContain('Could not load this seller right now');
+  });
+
+  it('retries the same seller from the error state rather than dead-ending', async () => {
+    vendorsStub.getById.mockReturnValue(throwError(() => ({ status: 500 })));
+    paramMap$.next(convertToParamMap({ id: 'v1' }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const retry = fixture.nativeElement.querySelector(
+      'app-state-message .state-message__btn',
+    ) as HTMLButtonElement;
+    expect(retry.textContent?.trim()).toBe('Try again');
+
+    vendorsStub.getById.mockReturnValue(of(MOCK_VENDOR));
+    retry.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(vendorsStub.getById).toHaveBeenLastCalledWith('v1');
+    expect(component.state()).toBe('loaded');
   });
 
   it('sets not-found state when there is no :id route param', async () => {
@@ -394,7 +416,7 @@ describe('PublicVendorProfile', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain("doesn't have any listings yet");
+    expect(el.textContent).toContain('does not have any listings yet');
     expect(el.querySelectorAll('app-product-card').length).toBe(0);
   });
 

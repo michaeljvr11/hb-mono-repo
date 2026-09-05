@@ -212,3 +212,47 @@
       0 0 0 5px var(--hb-secondary-100);
   }
 }
+
+/* ── Inline variant (funnel ribbon) ─────────────────────────────────────
+   Under the discover filters, under the PDP price, above the cart totals and
+   beside the checkout payment block. The promise has to be present at every
+   moment of doubt, but at those four points the real content is the product,
+   the price or the totals — so this is one low row of short labels: no band
+   background, no descriptions, no route line, and it wraps rather than
+   scrolls. Transparent ground so it inherits whatever surface it lands on. */
+
+.trust-banner--inline {
+  padding: 0;
+  background: none;
+
+  .trust-banner__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hb-space-2) var(--hb-space-5);
+    max-width: none;
+    margin: 0;
+  }
+
+  .trust-card {
+    align-items: center;
+    gap: var(--hb-space-2);
+  }
+
+  .trust-card__icon-wrap {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--hb-radius-xs);
+    background: none;
+  }
+
+  .trust-card__icon {
+    font-size: 18px;
+  }
+
+  .trust-card__label {
+    margin: 0;
+    @include t.type('sm', 500);
+    color: var(--hb-on-surface-variant);
+    white-space: nowrap;
+  }
+}

@@ -3,10 +3,31 @@
 <main class="checkout">
   @switch (state()) {
     @case ('loading') {
-      <p class="checkout__hint">Preparing your checkout…</p>
+      <div role="status" aria-live="polite" aria-busy="true">
+        <span class="visually-hidden">Preparing your checkout…</span>
+        <div class="checkout__skeleton" aria-hidden="true">
+          <app-skeleton shape="text" width="40%" height="32px" />
+          <app-skeleton height="96px" />
+          <div class="checkout__skeleton-cols">
+            <div class="checkout__skeleton-col">
+              <app-skeleton height="52px" />
+              <app-skeleton height="52px" />
+              <app-skeleton height="52px" />
+              <app-skeleton height="52px" />
+            </div>
+            <div class="checkout__skeleton-col">
+              <app-skeleton height="180px" />
+              <app-skeleton height="140px" />
+            </div>
+          </div>
+        </div>
+      </div>
     }
     @case ('error') {
-      <p class="checkout__hint checkout__hint--error">Could not load your cart right now. Please try again.</p>
+      <app-state-message kind="error" message="Could not load your cart right now.">
+        <button stateAction type="button" class="state-message__btn" (click)="loadCart()">Try again</button>
+        <a stateAction class="state-message__link" routerLink="/cart">Back to cart</a>
+      </app-state-message>
     }
     @case ('empty') {
       <div class="checkout__empty">
@@ -197,6 +218,26 @@
                 </span>
               </div>
             </div>
+
+            <!-- Payment-security block. Every line is true of the platform as it
+                 stands today: no card details are collected at all, so "we never
+                 store your card" is a statement of fact, not a policy promise. -->
+            <div class="checkout__security">
+              <p class="checkout__security-head">
+                <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                Your payment is secure
+              </p>
+              <ul class="checkout__security-list">
+                <li>H&amp;B never sees or stores your card details.</li>
+                <li>Payment is taken in the currency shown — ZAR and NAD are 1:1, never converted.</li>
+                <li>Your address is used only to deliver this order.</li>
+              </ul>
+              <app-trust-banner
+                class="checkout__trust"
+                variant="inline"
+                label="What this order includes"
+              />
+            </div>
           </section>
         </div>
 
@@ -234,6 +275,18 @@
                 <span>{{ format(total.subtotal, total.currency) }}</span>
               </div>
             }
+            <!-- Landed cost, stated line by line: the duty line is shown even though
+                 it is always zero, because "what gets added at the border?" is the
+                 question the buyer is actually asking. -->
+            <div class="checkout__summary-row checkout__summary-row--muted">
+              <span>Customs duties</span>
+              <span>{{ dutyLabel() }}</span>
+            </div>
+            <div class="checkout__summary-row checkout__summary-row--muted">
+              <span>Currency conversion</span>
+              <span>None (ZAR/NAD 1:1)</span>
+            </div>
+
             @if (!hasMixedCurrencies() && totals().length === 1) {
               @switch (shippingFeeState()) {
                 @case ('loading') {

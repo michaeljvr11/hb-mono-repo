@@ -5,10 +5,29 @@
 
   @switch (state()) {
     @case ('loading') {
-      <p class="cart__hint">Loading your cart…</p>
+      <div role="status" aria-live="polite" aria-busy="true">
+        <span class="visually-hidden">Loading your cart…</span>
+        <ul class="cart__items cart__items--skeleton" aria-hidden="true">
+          @for (i of rowSkeletons; track i) {
+            <li class="cart__item">
+              <app-skeleton width="88px" height="88px" />
+              <div class="cart__item-body">
+                <app-skeleton shape="text" width="55%" height="16px" />
+                <app-skeleton shape="text" width="25%" height="14px" />
+                <div class="cart__item-controls">
+                  <app-skeleton width="120px" height="36px" />
+                  <app-skeleton width="92px" height="32px" />
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
     }
     @case ('error') {
-      <p class="cart__hint cart__hint--error">Could not load your cart right now. Please try again.</p>
+      <app-state-message kind="error" message="Could not load your cart right now.">
+        <button stateAction type="button" class="state-message__btn" (click)="load()">Try again</button>
+      </app-state-message>
     }
     @case ('loaded') {
       @if (isEmpty()) {
@@ -91,8 +110,26 @@
                 <span class="cart__summary-amount">{{ format(total.subtotal, total.currency) }}</span>
               </div>
             }
+            <!-- Landed cost, stated line by line. The single biggest cross-border
+                 doubt is "what gets added at the border?" — so the duty line is
+                 shown even though it is always zero, rather than left unsaid. -->
+            <div class="cart__summary-row cart__summary-row--muted">
+              <span>Customs duties</span>
+              <span class="cart__summary-amount">{{ dutyLabel() }}</span>
+            </div>
+            <div class="cart__summary-row cart__summary-row--muted">
+              <span>Shipping</span>
+              <span class="cart__summary-amount">Calculated at checkout</span>
+            </div>
+
+            <app-trust-banner
+              class="cart__trust"
+              variant="inline"
+              label="What this order includes"
+            />
+
             <p class="cart__summary-note">
-              Shipping and the final total are confirmed at checkout. 1:1 regional parity guaranteed (ZAR/NAD).
+              The final total is confirmed at checkout. 1:1 regional parity guaranteed (ZAR/NAD).
             </p>
             <button type="button" class="cart__checkout-btn" (click)="goToCheckout()">
               Proceed to Checkout

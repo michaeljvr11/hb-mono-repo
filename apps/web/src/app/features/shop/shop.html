@@ -91,15 +91,13 @@
         }
       </div>
     } @else if (productsState() === 'error') {
-      <div class="state-message state-message--error" role="alert">
-        <span class="material-symbols-outlined state-message__icon">error_outline</span>
-        <p>Could not load products right now. Please try again later.</p>
-      </div>
+      <app-state-message kind="error" message="Could not load products right now.">
+        <button stateAction type="button" class="state-message__btn" (click)="retryProducts()">Try again</button>
+      </app-state-message>
     } @else if (productsState() === 'empty') {
-      <div class="state-message" role="status">
-        <span class="material-symbols-outlined state-message__icon">inventory_2</span>
-        <p>No products available yet. Check back soon.</p>
-      </div>
+      <app-state-message kind="empty" message="No products available yet. Check back soon.">
+        <a stateAction class="state-message__link" routerLink="/discover">Browse everything</a>
+      </app-state-message>
     } @else {
       <div class="products-carousel" role="list">
         @for (product of carouselProducts(); track product.id) {
@@ -139,15 +137,13 @@
         }
       </div>
     } @else if (categoriesState() === 'error') {
-      <div class="state-message state-message--error" role="alert">
-        <span class="material-symbols-outlined state-message__icon">error_outline</span>
-        <p>Could not load categories right now. Please try again later.</p>
-      </div>
+      <app-state-message kind="error" message="Could not load categories right now.">
+        <button stateAction type="button" class="state-message__btn" (click)="retryCategories()">Try again</button>
+      </app-state-message>
     } @else if (categoriesState() === 'empty') {
-      <div class="state-message" role="status">
-        <span class="material-symbols-outlined state-message__icon">category</span>
-        <p>No categories available yet.</p>
-      </div>
+      <app-state-message kind="empty" icon="category" message="No categories available yet.">
+        <a stateAction class="state-message__link" routerLink="/discover">Browse all products</a>
+      </app-state-message>
     } @else {
       <div class="categories-grid" role="list">
         @for (cat of categories(); track cat.id) {
@@ -203,15 +199,13 @@
         }
       </div>
     } @else if (vendorsState() === 'error') {
-      <div class="state-message state-message--error" role="alert">
-        <span class="material-symbols-outlined state-message__icon">error_outline</span>
-        <p>Could not load vendors right now. Please try again later.</p>
-      </div>
+      <app-state-message kind="error" message="Could not load sellers right now.">
+        <button stateAction type="button" class="state-message__btn" (click)="retryVendors()">Try again</button>
+      </app-state-message>
     } @else if (vendorsState() === 'empty') {
-      <div class="state-message" role="status">
-        <span class="material-symbols-outlined state-message__icon">storefront</span>
-        <p>No vendors available yet.</p>
-      </div>
+      <app-state-message kind="empty" icon="storefront" message="No sellers listed yet.">
+        <a stateAction class="state-message__link" routerLink="/discover">Browse products instead</a>
+      </app-state-message>
     } @else {
       <app-vendor-showcase
         [vendors]="vendors()"

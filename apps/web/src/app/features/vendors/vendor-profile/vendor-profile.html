@@ -22,17 +22,14 @@
       </div>
     </section>
   } @else if (state() === 'not-found') {
-    <div class="state-message" role="status">
-      <span class="material-symbols-outlined state-message__icon">storefront</span>
-      <p>We couldn't find that vendor.</p>
-      <a class="vendor-profile__back-link" routerLink="/discover">Back to shop</a>
-    </div>
+    <app-state-message kind="empty" icon="storefront" message="We couldn't find that seller.">
+      <a stateAction class="state-message__link" routerLink="/discover">Back to shop</a>
+    </app-state-message>
   } @else if (state() === 'error') {
-    <div class="state-message state-message--error" role="alert">
-      <span class="material-symbols-outlined state-message__icon">error_outline</span>
-      <p>Could not load this vendor right now. Please try again later.</p>
-      <a class="vendor-profile__back-link" routerLink="/discover">Back to shop</a>
-    </div>
+    <app-state-message kind="error" message="Could not load this seller right now.">
+      <button stateAction type="button" class="state-message__btn" (click)="retryLoad()">Try again</button>
+      <a stateAction class="state-message__link" routerLink="/discover">Back to shop</a>
+    </app-state-message>
   } @else if (vendor(); as vendor) {
     <!-- ── Vendor hero ─────────────────────────────────────────────────── -->
     @if (bannerImage(); as banner) {
@@ -83,15 +80,16 @@
             }
           </div>
         } @else if (productsState() === 'error') {
-          <div class="state-message state-message--error" role="alert">
-            <span class="material-symbols-outlined state-message__icon">error_outline</span>
-            <p>Could not load this vendor's products right now. Please try again later.</p>
-          </div>
+          <app-state-message kind="error" message="Could not load this seller's products right now.">
+            <button stateAction type="button" class="state-message__btn" (click)="retryLoad()">Try again</button>
+          </app-state-message>
         } @else {
-          <div class="state-message" role="status">
-            <span class="material-symbols-outlined state-message__icon">inventory_2</span>
-            <p>{{ vendor.businessName }} doesn't have any listings yet.</p>
-          </div>
+          <app-state-message
+            kind="empty"
+            [message]="vendor.businessName + ' does not have any listings yet.'"
+          >
+            <a stateAction class="state-message__link" routerLink="/discover">Browse other sellers</a>
+          </app-state-message>
         }
       </section>
     } @else if (hasCustomSections()) {

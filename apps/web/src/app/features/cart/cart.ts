@@ -4,6 +4,9 @@ import { CartItemDto } from '@hb/shared';
 import { CartService } from '../../core/api/cart.service';
 import { formatPrice } from '../../shared/format-price';
 import { Footer } from '../../layout/footer/footer';
+import { Skeleton } from '../../shared/components/skeleton/skeleton';
+import { StateMessage } from '../../shared/components/state-message/state-message';
+import { TrustBanner } from '../../shared/components/trust-banner/trust-banner';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
 import { NotificationService } from '../../core/notifications/notification.service';
 
@@ -16,7 +19,7 @@ type LoadState = 'loading' | 'loaded' | 'error';
  */
 @Component({
   selector: 'app-cart',
-  imports: [NavBar, Footer, RouterLink],
+  imports: [NavBar, Footer, RouterLink, Skeleton, StateMessage, TrustBanner],
   templateUrl: './cart.html',
   styleUrl: './cart.scss',
 })
@@ -28,13 +31,31 @@ export class Cart implements OnInit {
   readonly state = signal<LoadState>('loading');
   /** Item currently being mutated (disables its controls while in flight). */
   readonly busyItemId = signal<string | null>(null);
+  /** Skeleton rows while the cart loads. */
+  readonly rowSkeletons = [0, 1];
 
   readonly cart = this.cartService.cart;
   readonly items = computed(() => this.cart()?.items ?? []);
   readonly totals = computed(() => this.cart()?.totals ?? []);
   readonly isEmpty = computed(() => this.state() === 'loaded' && this.items().length === 0);
 
+  /**
+   * The landed-cost duty line. Formatted in the cart's own currency rather than
+   * hard-coded to "R0.00" — a NAD cart would be told its duties are in rand.
+   * A mixed-currency cart has no single currency to format, so it says so in words.
+   */
+  readonly dutyLabel = computed(() => {
+    const totals = this.totals();
+    return totals.length === 1 ? `${formatPrice(0, totals[0].currency)} (SACU)` : 'None (SACU)';
+  });
+
   ngOnInit(): void {
+    this.load();
+  }
+
+  /** Also the error state's "Try again" — nothing else re-triggers the load. */
+  load(): void {
+    this.state.set('loading');
     this.cartService.load().subscribe({
       next: () => this.state.set('loaded'),
       error: () => this.state.set('error'),

@@ -82,8 +82,8 @@ Light values. Dark values in the [Dark theme](#dark-theme) section.
 | `--hb-primary-50` | `#eef6ee` | Subtlest primary tint (selected row, soft chip) |
 | `--hb-primary-100` | `#d9ecda` | Primary tint (chip fill, success wash) |
 | `--hb-primary-200` | `#b3d9b5` | Primary tint (borders on tinted surfaces) |
-| `--hb-primary-700` | `#256428` | Primary hover/pressed |
-| `--hb-primary-800` | `#1b4d1e` | Primary text on tinted surfaces |
+| `--hb-primary-700` | `#256428` | **The AA-safe green for text on a tinted surface** (6.1:1+ on every light surface), and primary hover/pressed. `--hb-primary` is 5.13:1 on white but only 4.41:1 on `--hb-surface-container`, so it passes as a fill and as text on the page ground, and fails as text on a card. Mirror of `--hb-secondary-700`. |
+| `--hb-primary-800` | `#1b4d1e` | Primary text needing more weight still on tinted surfaces |
 | `--hb-secondary` | `#f57c00` | Accent fills, bars, badge backgrounds — **fills only**, fails AA as a foreground (2.70:1 on light surfaces) |
 | `--hb-secondary-fixed` | `#ffdcc7` | Soft accent fill (badges, status pills) |
 | `--hb-on-secondary-container` | `#703500` | Text/icons on secondary-fixed (9.5:1 on white) |
@@ -323,12 +323,95 @@ fixed pair of tokens (`--hb-hero-surface`, `--hb-on-hero`, `--hb-on-hero-muted`,
 section title. The category tiles hang off a route line by the same dot from 1024px. The PDP
 route strip and the checkout stepper reuse it in Phase 5.
 
+## States, trust and perceived performance (Phase 4)
+
+### `<app-state-message>` — the one way a screen says "nothing here"
+`app/shared/components/state-message/`. Replaced four hand-rolled `.state-message` blocks
+(shop, discover, vendor profile, PDP) so the icon, tone, spacing and ARIA are decided once.
+
+| Input | Values | Effect |
+|---|---|---|
+| `kind` | `loading` \| `empty` \| `error` | `loading` → spinner + `role="status" aria-live="polite" aria-busy="true"`; `empty` → `role="status"`; `error` → `role="alert"` and error tone |
+| `icon` | glyph name | Overrides the per-kind default (`inventory_2` / `error_outline`). Ignored for `loading`. |
+| `heading` | string | Optional line above the message |
+| `message` | string, required | The state itself |
+| `requireAction` | boolean, default `true` | See below |
+
+**Every empty and error state carries an action.** Project it with the `stateAction`
+attribute; in dev mode an empty slot logs a warning naming the message, because a dead-end
+state is the failure this component exists to prevent.
+
+```html
+<app-state-message kind="error" message="Could not load products right now.">
+  <button stateAction type="button" class="state-message__btn" (click)="retry()">Try again</button>
+</app-state-message>
+```
+
+`.state-message__btn` (quiet outlined) and `.state-message__link` (tertiary) live in
+`styles.scss`, not in the component's stylesheet: projected content carries the *consumer's*
+view-encapsulation attribute, so the component cannot style it. `requireAction="false"` is
+the deliberate opt-out, and only for a state nested inside content the user can already act
+on — the PDP's reviews panel is the single case.
+
+### Skeleton or spinner
+- **Content with a known shape** → `<app-skeleton>` composed into that shape. The PDP, cart,
+  checkout, discover, the storefront, the vendor profile and the wishlist all preview their
+  own layout while loading, so the page does not jump when data lands.
+- **An indeterminate process** → `.hb-spinner` (global; size with `--hb-spinner-size`). Used
+  by `<app-state-message kind="loading">`, the two auth panels and the vendor status panel.
+  Its duration is a literal `0.9s`, not a motion token: the global reduced-motion rule zeroes
+  the duration tokens, and a 0s spinner is the frozen `hourglass_top` glyph this replaced.
+  Reduced motion slows it to `2.4s` instead of stopping it — the spin is feedback, not
+  decoration.
+- A static `hourglass_top` is still correct for a genuinely *pending* terminal state (a vendor
+  application under review). It is wrong for anything in flight.
+
+### Fade-through (`.discover__grid--refreshing`)
+A filter, sort or page change on a grid that already has results keeps the grid mounted and
+drops it to `opacity: 0.45` with `pointer-events: none`, rather than collapsing it into
+skeletons: the page keeps its height and the user keeps their place. Skeletons still cover
+the first load and any load after an error or an empty result.
+
+### The trust ribbon — `<app-trust-banner variant="inline">`
+A third variant beside `strip` (the storefront's four waypoints on a route line) and `cards`
+(the Procurement Service page). One low row of short labels — no band, no descriptions, no
+route line — for the four points inside the funnel where the promise must be *present* but
+must not push the real content down:
+
+| Surface | Placement |
+|---|---|
+| `/discover` | under the filters, above the results |
+| PDP | directly under the price, on a hairline rule |
+| Cart | in the summary rail, above the checkout CTA |
+| Checkout | inside the payment-security block |
+
+Items gain an optional `short` field for this variant, falling back to `title`.
+
+### Landed cost, stated line by line
+The cross-border question is "what gets added at the border?", so the answer is a line item
+even though it is always zero. Cart: *Customs duties* and *Shipping — calculated at
+checkout*. Checkout: *Customs duties* and *Currency conversion — None (ZAR/NAD 1:1)*, placed
+between the subtotal and the shipping/total block so the total stays the last line of the
+arithmetic. The duty amount is formatted in the cart's own currency (`dutyLabel()`), never
+hard-coded to rand — a NAD cart must not be told its duties are in rand.
+
+### Payment-security block (`.checkout__security`)
+Under the payment method: a lock, three factual lines (H&B never sees or stores card
+details; payment is taken in the currency shown; the address is used only to deliver this
+order) and the inline trust ribbon. A quiet surface, not an alert — this is reassurance.
+Every line is true of the platform as it stands; there are no provider names yet because
+there is no provider (PLAN §5 card 12).
+
 ## Dark theme
 
-Same hues, surfaces derived. Delivered under `<html data-theme="dark">` (opt-in). The
-`prefers-color-scheme: dark` block exists in `styles.scss` but is commented out behind a
-single flag until the storefront funnel carries no hard-coded colours (PLAN §2.1, flipped in
-Phase 4). `data-theme="light"` will pin light mode once the flag is on.
+Same hues, surfaces derived. **Automatic since Phase 4**: `prefers-color-scheme: dark`
+applies the dark tokens, and `<html data-theme="dark">` / `data-theme="light"` pin a theme
+explicitly — `light` wins over the media query (`:root:not([data-theme='light'])`).
+
+Two colours stay literal on purpose and must not be tokenised: WhatsApp's brand green on
+`/contact` (a third party's brand does not re-theme), and the radial nav's own glass
+palette, which paints its own scrim. Everything else in the app is on tokens; a
+`grep` for raw hex/`rgba(` in `apps/web/src/**/*.scss` should return only those two.
 
 | Token | Dark | Note |
 |---|---|---|

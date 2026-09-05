@@ -2,6 +2,7 @@
   class="trust-banner"
   [class.trust-banner--strip]="variant() === 'strip'"
   [class.trust-banner--cards]="variant() === 'cards'"
+  [class.trust-banner--inline]="variant() === 'inline'"
   [attr.aria-label]="label()"
 >
   <ol class="trust-banner__grid">
@@ -17,8 +18,12 @@
           <span class="material-symbols-outlined trust-card__icon">{{ item.icon }}</span>
         </div>
         <div class="trust-card__body">
-          <h3 class="trust-card__title">{{ item.title }}</h3>
-          <p class="trust-card__desc">{{ item.description }}</p>
+          @if (variant() === 'inline') {
+            <p class="trust-card__label">{{ item.short ?? item.title }}</p>
+          } @else {
+            <h3 class="trust-card__title">{{ item.title }}</h3>
+            <p class="trust-card__desc">{{ item.description }}</p>
+          }
         </div>
       </li>
     }

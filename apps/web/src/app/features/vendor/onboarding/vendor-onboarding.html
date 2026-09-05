@@ -159,9 +159,12 @@
     <!-- ── Vendor: status screen ─────────────────────────────────────────── -->
     @if (screenState() === 'vendor-status') {
       @if (statusLoading()) {
-        <div class="status-panel" role="status" aria-live="polite">
+        <!-- Spinner, not the hourglass glyph: this one really is in flight. The other
+             two hourglasses on this screen mark a genuinely *pending* application —
+             a terminal state, where a static glyph is the honest picture. -->
+        <div class="status-panel" role="status" aria-live="polite" aria-busy="true">
           <div class="status-panel__icon-wrap" aria-hidden="true">
-            <span class="material-symbols-outlined status-panel__icon">hourglass_top</span>
+            <span class="hb-spinner status-panel__spinner"></span>
           </div>
           <p class="loading-text">Loading your vendor status…</p>
         </div>

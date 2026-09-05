@@ -3,7 +3,8 @@
 //
 // Drives a headless Chrome over the DevTools Protocol — no Playwright/Puppeteer dependency —
 // and captures each route at 360/768/1280/1440/1920 in light and in dark
-// (`document.documentElement.dataset.theme = 'dark'`). Also asserts there is no horizontal
+// (both pinned via `document.documentElement.dataset.theme`, so the host OS's
+// `prefers-color-scheme` cannot leak in). Also asserts there is no horizontal
 // overflow (`scrollWidth <= innerWidth`) at every width and prints a summary table.
 //
 // Usage (from repo root, web dev server already running on :4200):
@@ -12,6 +13,9 @@
 // Routes are given WITHOUT a leading slash (`home` = `/`). Git Bash on Windows rewrites a
 // bare `/discover` argument into `C:/Program Files/Git/discover` before Node sees it; if you
 // must pass leading slashes, prefix the command with `MSYS_NO_PATHCONV=1`.
+//
+// Guarded routes take `!auth` (`cart!auth checkout!auth`), which signs in with
+// HB_CAPTURE_EMAIL / HB_CAPTURE_PASSWORD and puts one product in the cart first.
 //
 // A route may carry a `!flyout` modifier (`discover!flyout`): after load, the header's
 // "All categories" trigger is clicked (where present, i.e. ≥1024px) before the capture, so
@@ -60,6 +64,17 @@ const MODIFIER_SCRIPTS = {
   })()`,
   // Nothing to run per theme: `!loading` is set up once per width (see LOADING_ENTRY).
   loading: `'held'`,
+  refreshing: `'held'`,
+  // Nothing per theme: `!auth` is set up once per width, before the route loads.
+  auth: `'signed-in'`,
+  // Brings the checkout's payment-security block into frame (it sits below the
+  // address form, so a top-of-page capture never shows it).
+  security: `(() => {
+    const el = document.querySelector('.checkout__security');
+    if (!el) return 'no-security-block';
+    el.scrollIntoView({ block: 'center' });
+    return 'scrolled';
+  })()`,
 };
 
 /** The route a `!loading` capture loads for real before entering the target route in-app. */
@@ -82,15 +97,88 @@ const LOADING_ENTRY = {
     await new Promise((r) => setTimeout(r, 300));
     return document.querySelector('app-product-card-skeleton') ? 'ok' : 'no-skeleton at ' + location.pathname;
   })()`,
+  // Phase 4 note: this used to click a category chip *within* /discover, which no
+  // longer produces skeletons — a filter change on a populated grid now takes the
+  // fade-through path (see `!refreshing` below). Reaching discover's skeletons means
+  // entering the route fresh, so the entry leaves via the brand link and comes back
+  // through a storefront category tile.
   '/discover': `(async () => {
-    const chips = [...document.querySelectorAll('.discover__controls .category-chips__chip')];
-    const chip = chips.find((c) => !c.classList.contains('category-chips__chip--active'));
-    if (!chip) return 'no-chip';
-    chip.click();
+    const brand = document.querySelector('a.nav-bar__brand');
+    if (!brand) return 'no-brand-link';
+    brand.click();
+    await new Promise((r) => setTimeout(r, 1200));
+    const tile = document.querySelector('.category-card');
+    if (!tile) return 'no-category-tile at ' + location.pathname;
+    tile.click();
     await new Promise((r) => setTimeout(r, 1500));
     return document.querySelector('app-product-card-skeleton') ? 'ok' : 'no-skeleton at ' + location.pathname;
   })()`,
 };
+
+/**
+ * `!refreshing` (Phase 4): the fade-through. A filter change on a grid that already
+ * has results keeps the grid mounted and dims it rather than collapsing it into
+ * skeletons. Same request-holding plumbing as `!loading`, but it asserts the *opposite*
+ * — a dimmed grid and no skeletons.
+ */
+const REFRESHING_ENTRY = `(async () => {
+  const chips = [...document.querySelectorAll('.discover__controls .category-chips__chip')];
+  const chip = chips.find((c) => !c.classList.contains('category-chips__chip--active'));
+  if (!chip) return 'no-chip';
+  chip.click();
+  await new Promise((r) => setTimeout(r, 800));
+  const grid = document.querySelector('.discover__grid');
+  if (!grid) return 'no-grid at ' + location.pathname;
+  if (document.querySelector('app-product-card-skeleton')) return 'unexpected-skeleton';
+  return grid.classList.contains('discover__grid--refreshing') ? 'ok' : 'not-dimmed';
+})()`;
+
+/**
+ * `!auth` (Phase 4): `/cart` and `/checkout` are behind the auth guard, so without this
+ * they capture the login screen (Phase 1 hit exactly that). The web app keeps a bearer
+ * token in `localStorage.access_token`, so signing in is: POST the API's login endpoint,
+ * seed that key on the :4200 origin, reload.
+ *
+ * Credentials come from `HB_CAPTURE_EMAIL` / `HB_CAPTURE_PASSWORD` — never hard-coded
+ * here. For a local database seeded by `apps/api/src/database/seed.ts`, use the dev
+ * credential that file prints when it runs.
+ */
+const API = process.env.HB_API_URL ?? 'http://localhost:3000/api';
+
+async function signIn() {
+  const email = process.env.HB_CAPTURE_EMAIL;
+  const password = process.env.HB_CAPTURE_PASSWORD;
+  if (!email || !password) {
+    throw new Error(
+      'The !auth modifier needs HB_CAPTURE_EMAIL and HB_CAPTURE_PASSWORD in the environment.',
+    );
+  }
+  const res = await fetch(`${API}/auth/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) throw new Error(`!auth login failed: ${res.status} ${await res.text()}`);
+  const { access_token: token } = await res.json();
+  if (!token) throw new Error('!auth login returned no access_token');
+  return token;
+}
+
+/** Puts one product in the signed-in user's cart so /cart and /checkout have content. */
+async function seedCart(token) {
+  const list = await (await fetch(`${API}/products?limit=20`)).json();
+  const product = list.items.find((p) => !p.sizes?.length && p.stockQuantity > 0);
+  if (!product) throw new Error('!auth: no unsized in-stock product to seed the cart with');
+  const res = await fetch(`${API}/cart/items`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ productId: product.id, quantity: 1 }),
+  });
+  // 409/400 usually means "already in the cart" — fine, the cart just needs to be non-empty.
+  if (!res.ok && res.status !== 409 && res.status !== 400) {
+    throw new Error(`!auth cart seed failed: ${res.status} ${await res.text()}`);
+  }
+}
 
 /** Holds every listing request open so the page stays in its loading state. */
 async function holdListingRequests(cdp) {
@@ -207,6 +295,10 @@ async function evaluate(cdp, expression) {
 
 const results = [];
 
+// One sign-in for the whole run, and only when something actually asks for it.
+const authToken = routes.some((r) => r.modifiers.includes('auth')) ? await signIn() : null;
+if (authToken) await seedCart(authToken);
+
 try {
   await waitForDevtools();
   const targets = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
@@ -214,6 +306,11 @@ try {
   const cdp = await Cdp.connect(page.webSocketDebuggerUrl);
   await cdp.send('Page.enable');
   await cdp.send('Runtime.enable');
+  // Chrome caches the dev server's hashed chunks across runs, so a re-capture after a
+  // style change can silently record the *previous* build (Phase 4 chased exactly that
+  // for twenty minutes). Evidence must come from the code as it stands.
+  await cdp.send('Network.enable');
+  await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
 
   for (const { path: route, modifiers } of routes) {
     const base = route === '/' ? 'home' : route.replace(/^\//, '').replace(/[^a-z0-9]+/gi, '-');
@@ -226,8 +323,19 @@ try {
         mobile: width < 768,
       });
       const isLoading = modifiers.includes('loading');
+      const isRefreshing = modifiers.includes('refreshing');
+      if (modifiers.includes('auth')) {
+        // Land on the origin first so localStorage is writable for it, then reload
+        // into the guarded route with the token in place.
+        const blank = cdp.once('Page.loadEventFired');
+        await cdp.send('Page.navigate', { url: `${BASE}/login` });
+        await blank;
+        await evaluate(cdp, `localStorage.setItem('access_token', ${JSON.stringify(authToken)})`);
+      }
       const loaded = cdp.once('Page.loadEventFired');
-      await cdp.send('Page.navigate', { url: BASE + (isLoading ? LOADING_SEED : route) });
+      await cdp.send('Page.navigate', {
+        url: BASE + (isLoading || isRefreshing ? LOADING_SEED : route),
+      });
       await loaded;
       // Let hydration, fonts and any first fetches settle.
       await evaluate(cdp, 'document.fonts.ready.then(() => new Promise(r => setTimeout(r, 900)))');
@@ -240,13 +348,22 @@ try {
         const outcome = await evaluate(cdp, entry);
         if (outcome !== 'ok') throw new Error(`!loading entry for "${route}" failed: ${outcome}`);
       }
+      if (isRefreshing) {
+        cleanups.push(await holdListingRequests(cdp));
+        const outcome = await evaluate(cdp, REFRESHING_ENTRY);
+        if (outcome !== 'ok') throw new Error(`!refreshing entry for "${route}" failed: ${outcome}`);
+      }
 
       for (const theme of THEMES) {
         await evaluate(
           cdp,
-          theme === 'dark'
-            ? "document.documentElement.dataset.theme = 'dark'"
-            : 'delete document.documentElement.dataset.theme',
+          // Both themes are *pinned* via `data-theme`. Since Phase 4 flipped the
+          // `prefers-color-scheme` block on, deleting the attribute no longer means
+          // "light" — it means "whatever the host OS is set to", which made every
+          // light capture come out dark on a dark-mode machine. `data-theme="light"`
+          // wins over the media query by design (the `:not([data-theme='light'])`
+          // guard), so pinning both directions is deterministic.
+          `document.documentElement.dataset.theme = '${theme}'`,
         );
         for (const modifier of modifiers) {
           const script = MODIFIER_SCRIPTS[modifier];

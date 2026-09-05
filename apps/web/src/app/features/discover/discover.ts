@@ -1,6 +1,6 @@
-import { Component, afterNextRender, computed, effect, inject, signal } from '@angular/core';
+import { Component, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
 import {
   AnalyticsEventType,
   CategoryDto,
@@ -28,6 +28,8 @@ import { ProductCardSkeleton } from '../../shared/components/product-card/produc
 import { CategoryChips } from '../../shared/components/category-chips/category-chips';
 import { SearchBar, SuggestionGroup, SuggestionSelectedEvent } from '../../shared/components/search-bar/search-bar';
 import { RadialNav } from '../../shared/components/radial-nav/radial-nav';
+import { StateMessage } from '../../shared/components/state-message/state-message';
+import { TrustBanner } from '../../shared/components/trust-banner/trust-banner';
 
 type LoadState = 'loading' | 'loaded' | 'empty' | 'error';
 
@@ -53,7 +55,18 @@ const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
  */
 @Component({
   selector: 'app-discover',
-  imports: [NavBar, Footer, ProductCard, ProductCardSkeleton, CategoryChips, SearchBar, RadialNav],
+  imports: [
+    NavBar,
+    Footer,
+    ProductCard,
+    ProductCardSkeleton,
+    CategoryChips,
+    SearchBar,
+    RadialNav,
+    RouterLink,
+    StateMessage,
+    TrustBanner,
+  ],
   templateUrl: './discover.html',
   styleUrl: './discover.scss',
 })
@@ -116,6 +129,14 @@ export class Discover {
   readonly productsState = signal<LoadState>('loading');
   /** Skeleton cards while a page loads — a typical first two rows at 1280 (5 columns). */
   readonly gridSkeletons = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  /**
+   * True while a *subsequent* fetch is in flight — a filter, sort or page change
+   * on a grid that already has results. The grid stays mounted and dims
+   * (`.discover__grid--refreshing`) instead of collapsing into skeletons, so
+   * changing one filter does not reflow the whole page. Only the first load,
+   * and any load after an error or an empty result, shows skeletons.
+   */
+  readonly refreshing = signal(false);
   readonly total = signal(0);
   readonly pageSize = signal(24);
 
@@ -159,13 +180,7 @@ export class Discover {
     // replace rather than accumulate (no `limit` sent — the server default and
     // its returned `limit` drive pager math via `pageSize`).
     effect(() => {
-      const query: ProductQuery = {
-        q: this.q() || undefined,
-        categoryId: this.categoryId() ?? undefined,
-        vendorId: this.vendorId() ?? undefined,
-        page: this.page(),
-        sort: this.sort(),
-      };
+      const query = this.buildQuery();
 
       this.fetchProducts(query);
       this.fetchVendorName(query.vendorId ?? null);
@@ -174,10 +189,39 @@ export class Discover {
 
   // ── Data loading ─────────────────────────────────────────────────────────
 
+  /** Reads every signal the effect above depends on; also used by the error state's retry. */
+  private buildQuery(): ProductQuery {
+    return {
+      q: this.q() || undefined,
+      categoryId: this.categoryId() ?? undefined,
+      vendorId: this.vendorId() ?? undefined,
+      page: this.page(),
+      sort: this.sort(),
+    };
+  }
+
+  /**
+   * "Try again" from the error state. The effect only re-runs when the query
+   * signals change, and a failed load leaves them untouched, so the retry has
+   * to re-issue the same request itself.
+   */
+  retryProducts(): void {
+    this.fetchProducts(this.buildQuery());
+  }
+
   private fetchProducts(query: ProductQuery): void {
-    this.productsState.set('loading');
+    // Fade-through: keep a populated grid on screen and dim it; only fall back to
+    // skeletons when there is nothing to keep. `untracked` because this runs inside
+    // the query effect, which must not take a dependency on the state it writes.
+    if (untracked(this.productsState) === 'loaded') {
+      this.refreshing.set(true);
+    } else {
+      this.productsState.set('loading');
+    }
+
     this.productsService.list(query).subscribe({
       next: (res) => {
+        this.refreshing.set(false);
         // Self-heal an out-of-range ?page= (e.g. a shared/stale deep link past
         // the last page): redirect to the last valid page rather than stranding
         // the user on an empty grid with no pager to navigate back.
@@ -192,6 +236,7 @@ export class Discover {
         this.productsState.set(res.items.length ? 'loaded' : 'empty');
       },
       error: () => {
+        this.refreshing.set(false);
         this.products.set([]);
         this.total.set(0);
         this.productsState.set('error');

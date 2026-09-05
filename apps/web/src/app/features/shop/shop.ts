@@ -28,6 +28,7 @@ import { CategoryChips } from '../../shared/components/category-chips/category-c
 import { SearchBar } from '../../shared/components/search-bar/search-bar';
 import { TrustBanner } from '../../shared/components/trust-banner/trust-banner';
 import { VendorShowcase } from '../../shared/components/vendor-showcase/vendor-showcase';
+import { StateMessage } from '../../shared/components/state-message/state-message';
 import { RadialNav, RadialNavItemId } from '../../shared/components/radial-nav/radial-nav';
 import { SITE_IMAGES } from '../../shared/constants/image.constants';
 
@@ -96,6 +97,7 @@ export function deriveVendorListingCounts(products: ProductDto[]): Record<string
     TrustBanner,
     VendorShowcase,
     RadialNav,
+    StateMessage,
   ],
   templateUrl: './shop.html',
   styleUrl: './shop.scss',
@@ -293,6 +295,22 @@ export class Shop implements OnInit {
     if (name.includes('home') || name.includes('furniture')) return 'chair';
     if (name.includes('sport') || name.includes('outdoor')) return 'sports';
     return 'category';
+  }
+
+  // ── Retries (the error states' action) ────────────────────────────────────
+  // Each section loads independently, so each error state retries only its own
+  // request rather than reloading the whole storefront.
+
+  retryProducts(): void {
+    this.loadProducts();
+  }
+
+  retryCategories(): void {
+    this.loadCategories();
+  }
+
+  retryVendors(): void {
+    this.loadVendors();
   }
 
   // ── Private data loaders ──────────────────────────────────────────────────

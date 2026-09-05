@@ -35,6 +35,8 @@
         {{ resultCount() }} result{{ resultCount() === 1 ? '' : 's' }} for "{{ q() }}"
       </p>
     }
+
+    <app-trust-banner variant="inline" label="What every H&B order includes" />
   </section>
 
   <!-- ── Product grid ─────────────────────────────────────────────────── -->
@@ -67,20 +69,25 @@
         }
       </div>
     } @else if (productsState() === 'error') {
-      <div class="state-message state-message--error" role="alert">
-        <span class="material-symbols-outlined state-message__icon">error_outline</span>
-        <p>Could not load products right now. Please try again later.</p>
-      </div>
+      <app-state-message kind="error" message="Could not load products right now.">
+        <button stateAction type="button" class="state-message__btn" (click)="retryProducts()">Try again</button>
+      </app-state-message>
     } @else if (products().length === 0) {
-      <div class="state-message" role="status">
-        <span class="material-symbols-outlined state-message__icon">search_off</span>
-        <p>No products match your search/filters.</p>
+      <app-state-message kind="empty" icon="search_off" message="No products match your search or filters.">
         @if (hasActiveFilters()) {
-          <button type="button" class="discover__clear-btn" (click)="clearAllFilters()">Clear all filters</button>
+          <button stateAction type="button" class="state-message__btn" (click)="clearAllFilters()">
+            Clear all filters
+          </button>
+        } @else {
+          <a stateAction class="state-message__link" routerLink="/shop">Back to the storefront</a>
         }
-      </div>
+      </app-state-message>
     } @else {
-      <div class="discover__grid hb-product-grid">
+      <div
+        class="discover__grid hb-product-grid"
+        [class.discover__grid--refreshing]="refreshing()"
+        [attr.aria-busy]="refreshing() ? 'true' : null"
+      >
         @for (product of products(); track product.id) {
           <app-product-card
             [product]="product"

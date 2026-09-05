@@ -10,7 +10,7 @@
 | 1 Token foundation | DONE |
 | 2 Desktop nav + shell | DONE |
 | 3 Storefront + product card | DONE |
-| 4 Trust, states, perceived performance | TODO |
+| 4 Trust, states, perceived performance | DONE |
 | 5 PDP, cart, checkout | TODO |
 | 6 Follow-up cards | TODO (kept current in `PLAN.md` §5 as phases run) |
 
@@ -278,18 +278,118 @@
     "reused"; poll `curl localhost:3000/api/categories` rather than assuming it is up.
   - `obsidian` MCP failed to connect again; `trello` timed out this session. Neither was needed.
 
-## Phase 4 — Trust, states, perceived performance — TODO
-- **Next action:** `grep -rl hourglass_top apps/web/src --include=*.html` for the remaining
-  templates and roll `<app-skeleton>` / `<app-product-card-skeleton>` out to them — the
-  primitive, the `role="status"` + `aria-busy` + visually-hidden-label pattern and four
-  worked examples (shop, discover, vendor-profile, wishlist) all landed in Phase 3. Before
-  flipping the dark flag, grep the funnel files for raw hex/rgba: Phase 3 cleared the product
-  card, storefront, trust strip and vendor showcase, so what remains is the PDP, cart,
-  checkout and `discover.scss`'s logistics banner (`rgba(255,255,255,…)` on a fixed fill).
-  Start the dev server *fresh* (see the Phase 3 environment note on stale HMR bundles).
+## Phase 4 — Trust, states, perceived performance — DONE (2026-09-06)
+- **Phase 3 commit:** `c4e5b2f` (`2f459fe` was the code; `c4e5b2f` the guardrail-log entry).
+  **Phase 4 commit:** recorded at the top of the Phase 5 entry.
+- **Files:**
+  - `apps/web/src/app/shared/components/state-message/{state-message.ts,.html,.scss,.spec.ts}`
+    — new. `kind="loading|empty|error"` decides glyph-vs-spinner, `role`, `aria-live` and
+    `aria-busy` once. **The action slot is mandatory for empty and error**: project with the
+    `stateAction` attribute, and in dev mode an empty slot logs a warning naming the message.
+    `requireAction="false"` is the one deliberate opt-out (the PDP reviews panel).
+  - `apps/web/src/styles.scss` — global `.visually-hidden` (hoisted from five byte-identical
+    component copies), `.hb-spinner` + `hb-spin` (hoisted out of `state-message.scss`; four
+    consumers), `.state-message__btn` / `__link`, `.auth-panel .state-icon--busy`,
+    `--hb-primary-700` documented as the AA-safe green for text, and **the
+    `prefers-color-scheme: dark` block uncommented** — the phase's headline change.
+  - `shared/components/trust-banner/*` — third variant `inline` (short labels, transparent
+    ground, no route line) plus an optional `short` field on `TrustBannerItem`. Placed on
+    `/discover` (under the filters), the PDP (under the price), the cart summary and the
+    checkout security block.
+  - `features/discover/*` — states → `<app-state-message>` with retry / clear-filters;
+    `refreshing` signal + `.discover__grid--refreshing` fade-through; `buildQuery()` extracted
+    so `retryProducts()` re-issues the same query; inline trust ribbon; logistics-banner
+    colours tokenised.
+  - `features/shop/*` — three state pairs → `<app-state-message>`; `retryProducts/Categories/
+    Vendors` (each section retries only its own request); local `.state-message` and
+    `.visually-hidden` blocks deleted.
+  - `features/product-detail/*` — loading → a layout-shaped skeleton (square hero, title,
+    price, size chips, shipping card, CTA); reviews loading → three skeleton rows; not-found /
+    error / reviews states → `<app-state-message>` with `retryProduct()` / `retryReviews()`;
+    inline trust ribbon under the price; `#pdp-review-form` anchor; three raw colours tokenised.
+  - `features/cart/*` — skeleton rows while loading, error → state message with retry,
+    landed-cost rows (`dutyLabel()` + "Calculated at checkout"), trust ribbon above the CTA.
+  - `features/checkout/*` — two-column skeleton, error → state message with retry + back-to-cart,
+    `.checkout__security` payment-security block, landed-cost rows between the subtotal and the
+    shipping/total block, ten raw colours tokenised.
+  - `features/wishlist/*` — error → state message with retry (the empty state kept its bespoke
+    card, see decisions).
+  - `auth/callback`, `auth/verify-email`, `vendor/onboarding` — the three genuinely in-flight
+    `hourglass_top` glyphs became `.hb-spinner`; vendor-onboarding's other two stayed (see
+    decisions). `vendor-onboarding.scss`'s eleven raw colours tokenised.
+  - Mechanical token sweep across 12 more stylesheets (`0 1px 2px rgba(28,27,27,…)` →
+    `--hb-elevation-1`, `0 0 0 2px rgba(46,125,50,.1)` → `color-mix` on `--hb-primary`, etc.).
+  - `docs/design/redesign/evidence/capture.mjs` — `!auth` (login + seed a cart item, so
+    `/cart` and `/checkout` capture the real screens instead of `/login`), `!refreshing`,
+    `!security`; both themes now pinned via `data-theme`; `Network.setCacheDisabled`;
+    the `!loading` entry for `/discover` rewritten (see environment notes).
+  - `docs/design/DESIGN.md` — new "States, trust and perceived performance (Phase 4)" section;
+    `--hb-primary-700` and the dark-theme section rewritten.
+    `docs/design/redesign/PLAN.md` — Amendments 1–10 (Phase 4) and §5 cards 12–14.
+  - `docs/design/redesign/evidence/phase-4/` — curated nine of 80.
+- **Verification:** `npm run build -w @hb/web` clean (the nine pre-existing budget *warnings*;
+  `shop.scss` fell 11.98 → 11.45 kB and `product-card.scss` 8.43 → 8.29 kB as the duplicated
+  blocks left). `npm run test -w @hb/web`: **83 files, 1204 tests, all passing** — up from
+  Phase 3's 82 / 1179 (state-message 6 new, trust-banner +3, discover +4, cart +5, checkout +3,
+  PDP +3, vendor-profile +1).
+  **Contrast audit** (headless CDP, every text node on `/`, `/discover`, the PDP, `/cart`,
+  `/checkout`, `/wishlist` × light and dark, decorative `aria-hidden` glyphs and disabled
+  controls excluded per WCAG 1.4.3): three genuine failures found and fixed (see decisions),
+  then **all twelve route/theme combinations clean**. Captures: **all 80 free of horizontal
+  overflow** (70 route captures + 10 `!security`), and `!refreshing` asserted a dimmed grid
+  with *no* skeletons on the page at every width, which is the fade-through proved live.
+  `.hb-spinner` measured on a live page: 40px, `hb-spin` 0.9s linear, primary top border.
+- **Decisions not obvious from the diff:** see PLAN Amendments 1–10 (Phase 4). In short:
+  the trust strip landed as an `inline` **variant**, not the full band, because at those four
+  points it would push the product/price/totals below the fold; there are no payment provider
+  names to show (`PaymentDto.provider` is `'stub'`), so the security block states only what is
+  true today; the duty amount is formatted from the cart's own currency, never hard-coded to
+  rand; the checkout stepper micro-interaction is deferred to Phase 5, which is where the
+  stepper is introduced; three of the four `hourglass_top` templates took a *spinner*, not a
+  skeleton, because they have no content shape to preview, and two of vendor-onboarding's
+  hourglasses stayed because they mark a genuinely *pending* application; the wishlist's empty
+  state kept its bespoke filled CTA. Two more:
+  - **`--hb-primary` fails AA as text on a card.** The audit measured 4.41:1 on
+    `--hb-surface-container` (it is 5.13 on white and 4.89 on the page ground). The checkout
+    total, the checkout line totals and the PDP's "Simplified Customs Included" fact moved to
+    `--hb-primary-700`, now documented as the AA-safe green — the mirror of `--hb-secondary-700`.
+  - **Two colours stay literal on purpose** and must not be tokenised: WhatsApp's brand green
+    on `/contact` (a third party's brand does not re-theme) and the radial nav's glass palette,
+    which paints its own scrim. A raw-hex grep over `apps/web/src/**/*.scss` should return
+    only those two; that is the check before touching the dark theme again.
+- **Environment notes:**
+  - **The dev server serves stale *component styles* after an edit, and CDP cache-disabling
+    does not cure it.** A SCSS change compiled correctly into the served chunk (verified by
+    `curl`ing the chunk), yet both the Browser pane and a fresh headless Chrome kept computing
+    the *old* colour — through a hard reload and with `Network.setCacheDisabled`. Only
+    `preview_stop` + `preview_start` fixed it. This cost ~20 minutes: **restart the dev server
+    before trusting any style verification**, and confirm a fix by computed style, not by
+    grepping the source.
+  - `capture.mjs`'s light pass silently went dark the moment the media query was live: deleting
+    `data-theme` no longer means "light", it means "whatever the host OS is set to". Both
+    themes are now pinned. Anything else that toggles themes needs the same treatment.
+  - The `!loading` entry for `/discover` used to click a category chip in-page; with the
+    fade-through that no longer produces skeletons (correctly). It now leaves via the brand
+    link and returns through a storefront category tile.
+  - Guarded routes need `!auth`, which reads `HB_CAPTURE_EMAIL` / `HB_CAPTURE_PASSWORD` from
+    the environment — deliberately not hard-coded. For a locally seeded database the dev
+    credential is the one `apps/api/src/database/seed.ts` prints when it runs.
+  - The API runs in watch mode and restarts on its own (a `File change detected` in
+    `preview_logs`); `curl localhost:3000/api/categories` returns `000` for ~30s while it does.
+  - `.chrome-profile/` inside each `evidence/phase-N/` is ~95 MB and is gitignored — do not be
+    alarmed by `du` on that directory.
+  - `obsidian` MCP failed to connect again; `trello` connected but was not needed.
 
 ## Phase 5 — PDP, cart, checkout — TODO
-- **Next action:** follow PLAN Phase 5.
+- **Next action:** follow PLAN Phase 5, starting with the PDP gallery + sticky buy box at
+  `≥1280`. Read PLAN Amendment 3 (Phase 2) first: the PDP still carries its own literal
+  16/40px gutters instead of the container mixin, and Phase 5 is where that is meant to be
+  reworked. Two Phase 4 threads land here too: the **route-strip stepper** carries the
+  "waypoint fills as the step advances" micro-interaction that Phase 4 deferred (PLAN
+  Amendment 4), and the checkout's `submitting` state is the natural first consumer for
+  `<app-state-message kind="loading">`, which currently ships tested but unused (§5 card 14).
+  Start the dev server *fresh*, and re-run the contrast audit after any colour change —
+  the recipe is in the Phase 4 verification note above.
 
 ## Phase 6 — Follow-up cards — TODO
 - **Next action:** review PLAN §5, add anything exposed in Phases 1–5, and (if Trello MCP is

@@ -29,6 +29,7 @@ import { ProductCard } from '../../../shared/components/product-card/product-car
 import { ProductCardSkeleton } from '../../../shared/components/product-card/product-card-skeleton';
 import { Skeleton } from '../../../shared/components/skeleton/skeleton';
 import { RadialNav } from '../../../shared/components/radial-nav/radial-nav';
+import { StateMessage } from '../../../shared/components/state-message/state-message';
 import { ResponsiveImageAttrs, buildResponsiveImage } from '../../../shared/responsive-image';
 
 type VendorState = 'loading' | 'loaded' | 'not-found' | 'error';
@@ -54,7 +55,16 @@ const PRODUCT_LIST_MAX = 100;
  */
 @Component({
   selector: 'app-vendor-profile',
-  imports: [NavBar, Footer, ProductCard, ProductCardSkeleton, Skeleton, RadialNav, RouterLink],
+  imports: [
+    NavBar,
+    Footer,
+    ProductCard,
+    ProductCardSkeleton,
+    Skeleton,
+    RadialNav,
+    RouterLink,
+    StateMessage,
+  ],
   templateUrl: './vendor-profile.html',
   styleUrl: './vendor-profile.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -89,6 +99,8 @@ export class PublicVendorProfile {
 
   readonly vendor = signal<VendorDto | null>(null);
   readonly state = signal<VendorState>('loading');
+  /** The id currently on screen — the retry's subject; see `retryLoad`. */
+  private readonly currentVendorId = signal<string | null>(null);
 
   readonly products = signal<ProductDto[]>([]);
   readonly productsState = signal<ProductsState>('loading');
@@ -210,7 +222,20 @@ export class PublicVendorProfile {
     });
   }
 
+  /**
+   * "Try again" from either error state. The page's only trigger is the route
+   * param, which does not change when a request fails, so the retry re-issues
+   * the load for the id already on screen. The id is captured from the same
+   * `paramMap` subscription that drives the page rather than read off
+   * `route.snapshot`, which does not necessarily track a param stream.
+   */
+  retryLoad(): void {
+    const id = this.currentVendorId();
+    if (id) this.loadVendor(id);
+  }
+
   private loadVendor(id: string): void {
+    this.currentVendorId.set(id);
     this.state.set('loading');
     this.vendor.set(null);
     this.products.set([]);

@@ -18,6 +18,9 @@ import { ShippingFeeService } from '../../core/api/shipping-fee.service';
 import { formatPrice } from '../../shared/format-price';
 import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
+import { Skeleton } from '../../shared/components/skeleton/skeleton';
+import { StateMessage } from '../../shared/components/state-message/state-message';
+import { TrustBanner } from '../../shared/components/trust-banner/trust-banner';
 
 /** Preview-fetch state for the checkout shipping-fee line item (SF-4). */
 export type ShippingFeeState = 'idle' | 'loading' | 'ready' | 'error';
@@ -52,7 +55,15 @@ const COUNTRY_NAMES: Record<CountryCode, string> = {
  */
 @Component({
   selector: 'app-checkout',
-  imports: [NavBar, Footer, ReactiveFormsModule, RouterLink],
+  imports: [
+    NavBar,
+    Footer,
+    ReactiveFormsModule,
+    RouterLink,
+    Skeleton,
+    StateMessage,
+    TrustBanner,
+  ],
   templateUrl: './checkout.html',
   styleUrl: './checkout.scss',
 })
@@ -205,12 +216,27 @@ export class Checkout implements OnInit {
     });
   }
 
+  /**
+   * The landed-cost duty line. Formatted in the cart's own currency rather than
+   * hard-coded to "R0.00" — a NAD cart would be told its duties are in rand.
+   */
+  readonly dutyLabel = computed(() => {
+    const totals = this.totals();
+    return totals.length === 1 ? `${formatPrice(0, totals[0].currency)} (SACU)` : 'None (SACU)';
+  });
+
   /** Retries a failed shipping-fee preview fetch. */
   retryShippingFee(): void {
     this.shippingFeeRetryTrigger.update((value) => value + 1);
   }
 
   ngOnInit(): void {
+    this.loadCart();
+  }
+
+  /** Also the error state's "Try again" — nothing else re-triggers the load. */
+  loadCart(): void {
+    this.state.set('loading');
     this.cartService.load().subscribe({
       next: (cart) => {
         const ready = cart.items.length > 0;

@@ -25,9 +25,9 @@
       </div>
     }
     @case ('error') {
-      <p class="wishlist__hint wishlist__hint--error">
-        Could not load your wishlist right now. Please try again.
-      </p>
+      <app-state-message kind="error" message="Could not load your wishlist right now.">
+        <button stateAction type="button" class="state-message__btn" (click)="load()">Try again</button>
+      </app-state-message>
     }
     @case ('loaded') {
       @if (isEmpty()) {

@@ -288,7 +288,15 @@ describe('Checkout', () => {
 
     const el: HTMLElement = fixture.nativeElement;
     expect(component.grandTotal()).toBeNull();
-    expect(el.textContent).not.toMatch(/R\s?0[.,]00/);
+    // Scoped to the priced rows: Phase 4 added an explicitly-labelled landed-cost
+    // line that legitimately reads "R0.00 (SACU)". The bug this guards against is a
+    // *silent* zero in the shipping or total line, so those are what it checks.
+    const pricedRows = Array.from(
+      el.querySelectorAll('.checkout__summary-row:not(.checkout__summary-row--muted)'),
+    )
+      .map((row) => row.textContent ?? '')
+      .join(' ');
+    expect(pricedRows).not.toMatch(/R\s?0[.,]00/);
     expect(el.textContent).toContain('Unavailable');
     const retry = el.querySelector('.checkout__summary-retry') as HTMLButtonElement;
     expect(retry).toBeTruthy();
@@ -600,5 +608,39 @@ describe('Checkout', () => {
     expect(component.checkoutError()?.kind).toBe('generic');
     expect(fixture.nativeElement.textContent).toContain('Could not place your order');
     expect(analyticsStub.track).toHaveBeenCalledWith(AnalyticsEventType.PAYMENT_FAILED);
+  });
+
+  // ── Trust, security and landed cost (Phase 4) ──────────────────────────
+
+  it('states the landed-cost lines explicitly, in the cart currency', async () => {
+    await setup();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Customs duties');
+    expect(component.dutyLabel()).toMatch(/^R\s?0[.,]00 \(SACU\)$/);
+    expect(el.textContent).toContain('Currency conversion');
+    expect(el.textContent).toContain('None (ZAR/NAD 1:1)');
+  });
+
+  it('renders the payment-security block beside the payment method', async () => {
+    await setup();
+
+    const security = fixture.nativeElement.querySelector('.checkout__security') as HTMLElement;
+    expect(security).toBeTruthy();
+    expect(security.textContent).toContain('Your payment is secure');
+    expect(security.textContent).toContain('never sees or stores your card details');
+    expect(security.querySelector('app-trust-banner .trust-banner--inline')).toBeTruthy();
+  });
+
+  it('offers a retry and a way back rather than a dead end when the cart fails to load', async () => {
+    await setup();
+    cartStub.load.mockReturnValue(throwError(() => new Error('boom')));
+    component.loadCart();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Could not load your cart right now.');
+    const actions = el.querySelectorAll('app-state-message .state-message__action > *');
+    expect(Array.from(actions).map((a) => a.textContent?.trim())).toEqual(['Try again', 'Back to cart']);
   });
 });

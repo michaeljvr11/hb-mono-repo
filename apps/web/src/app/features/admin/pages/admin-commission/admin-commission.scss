@@ -152,7 +152,7 @@
     &:focus {
       outline: none;
       border-color: var(--hb-primary);
-      box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--hb-primary) 10%, transparent);
     }
 
     &:disabled {

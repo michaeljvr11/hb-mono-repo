@@ -1,0 +1,25 @@
+<div
+  class="state-message"
+  [class.state-message--loading]="kind() === 'loading'"
+  [class.state-message--empty]="kind() === 'empty'"
+  [class.state-message--error]="kind() === 'error'"
+  [attr.role]="role()"
+  [attr.aria-live]="kind() === 'loading' ? 'polite' : null"
+  [attr.aria-busy]="kind() === 'loading' ? 'true' : null"
+>
+  @if (kind() === 'loading') {
+    <span class="hb-spinner state-message__spinner" aria-hidden="true"></span>
+  } @else {
+    <span class="material-symbols-outlined state-message__icon" aria-hidden="true">{{ resolvedIcon() }}</span>
+  }
+
+  @if (heading(); as heading) {
+    <h2 class="state-message__heading">{{ heading }}</h2>
+  }
+
+  <p class="state-message__body">{{ message() }}</p>
+
+  <div class="state-message__action" #actionSlot>
+    <ng-content select="[stateAction]" />
+  </div>
+</div>

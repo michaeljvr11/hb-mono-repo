@@ -35,6 +35,9 @@ import { Footer } from '../../layout/footer/footer';
 import { NavBar } from '../../layout/nav-bar/nav-bar';
 import { ProductCard } from '../../shared/components/product-card/product-card';
 import { RadialNav } from '../../shared/components/radial-nav/radial-nav';
+import { Skeleton } from '../../shared/components/skeleton/skeleton';
+import { StateMessage } from '../../shared/components/state-message/state-message';
+import { TrustBanner } from '../../shared/components/trust-banner/trust-banner';
 
 /** Distinct submit-error kinds so 409/403 never read as a generic failure. */
 type ReviewSubmitErrorKind = 'duplicate' | 'ineligible' | 'generic';
@@ -81,7 +84,18 @@ const REVIEWS_PAGE_SIZE = 10;
  */
 @Component({
   selector: 'app-product-detail',
-  imports: [NavBar, Footer, ProductCard, RadialNav, RouterLink, DatePipe, ReactiveFormsModule],
+  imports: [
+    NavBar,
+    Footer,
+    ProductCard,
+    RadialNav,
+    RouterLink,
+    DatePipe,
+    ReactiveFormsModule,
+    Skeleton,
+    StateMessage,
+    TrustBanner,
+  ],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
 })
@@ -155,6 +169,8 @@ export class ProductDetail {
   // hydration) so the first page is present in the SSR payload — reviews are
   // SEO-relevant content and this slice has no auth-dependent rendering.
   readonly reviewsState = signal<ReviewsState>('loading');
+  /** Skeleton rows while the reviews tab loads — one page's worth is overkill; three reads as a list. */
+  readonly reviewSkeletons = [0, 1, 2];
   readonly reviewsPage = signal(1);
   readonly reviewsList = signal<ProductReviewListDto | null>(null);
 
@@ -303,6 +319,24 @@ export class ProductDetail {
         this.eligibility.set(null);
       }
     });
+  }
+
+  /**
+   * "Try again" from the product error state. The page's only trigger is the
+   * route param, which does not change when a request fails, so the retry
+   * re-issues the load itself. Reads the `productId` signal rather than
+   * `route.snapshot` — the whole component is driven off `paramMap`, and the
+   * snapshot is not guaranteed to track a param stream.
+   */
+  retryProduct(): void {
+    const id = this.productId();
+    if (id) this.loadProduct(id);
+  }
+
+  /** "Try again" inside the reviews tab — retries the page the user was on. */
+  retryReviews(): void {
+    const id = this.productId();
+    if (id) this.loadReviews(id, this.reviewsPage());
   }
 
   private loadProduct(id: string): void {

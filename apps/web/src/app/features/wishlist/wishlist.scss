@@ -24,27 +24,6 @@
   }
 }
 
-.wishlist__hint {
-  font-size: 16px;
-  color: var(--hb-on-surface-variant);
-
-  &--error {
-    color: var(--hb-error);
-  }
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 /* ── Empty state ─────────────────────────────────────────────────────────── */
 
 .wishlist__empty {
