@@ -280,7 +280,7 @@
 
 ## Phase 4 — Trust, states, perceived performance — DONE (2026-09-06)
 - **Phase 3 commit:** `c4e5b2f` (`2f459fe` was the code; `c4e5b2f` the guardrail-log entry).
-  **Phase 4 commit:** recorded at the top of the Phase 5 entry.
+  **Phase 4 commit:** `542e7c6`.
 - **Files:**
   - `apps/web/src/app/shared/components/state-message/{state-message.ts,.html,.scss,.spec.ts}`
     — new. `kind="loading|empty|error"` decides glyph-vs-spinner, `role`, `aria-live` and

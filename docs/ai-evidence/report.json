@@ -1,40 +1,22 @@
 {
-  "generatedAt": "2026-08-31T18:55:20.609Z",
+  "generatedAt": "2026-09-05T22:47:00.543Z",
   "git": {
-    "totalCommits": 282,
-    "aiCommits": 271,
+    "totalCommits": 303,
+    "aiCommits": 291,
     "aiPct": 96,
-    "appCommits": 205,
-    "ins": 111081,
-    "del": 11832,
-    "net": 99249,
-    "aiIns": 97567,
-    "aiDel": 11658,
-    "filesTouched": 842,
+    "appCommits": 222,
+    "ins": 122629,
+    "del": 13740,
+    "net": 108889,
+    "aiIns": 108816,
+    "aiDel": 13406,
+    "filesTouched": 899,
     "areaRows": [
       {
         "name": "Web (Angular)",
-        "commits": 127,
-        "ins": 55173,
-        "del": 3417
-  "generatedAt": "2026-09-01T20:29:36.118Z",
-  "git": {
-    "totalCommits": 295,
-    "aiCommits": 284,
-    "aiPct": 96,
-    "appCommits": 217,
-    "ins": 114446,
-    "del": 12080,
-    "net": 102366,
-    "aiIns": 100932,
-    "aiDel": 11906,
-    "filesTouched": 848,
-    "areaRows": [
-      {
-        "name": "Web (Angular)",
-        "commits": 135,
-        "ins": 56948,
-        "del": 3512
+        "commits": 140,
+        "ins": 62619,
+        "del": 4941
       },
       {
         "name": "API (NestJS)",
@@ -44,22 +26,14 @@
       },
       {
         "name": "Docs",
-        "commits": 78,
-        "ins": 16786,
-        "del": 6238
+        "commits": 85,
+        "ins": 19413,
+        "del": 6578
       },
       {
         "name": "AI Factory config",
-        "commits": 84,
-        "ins": 2509,
-        "commits": 79,
-        "ins": 16908,
-        "del": 6347
-      },
-      {
-        "name": "AI Factory config",
-        "commits": 86,
-        "ins": 2596,
+        "commits": 91,
+        "ins": 2603,
         "del": 104
       },
       {
@@ -82,53 +56,48 @@
       }
     ],
     "firstDate": "2026-06-11",
-    "lastDate": "2026-08-31",
+    "lastDate": "2026-09-06",
     "recent": [
       {
-        "hash": "7992e10",
-        "subject": "fix(web): address code review on the pre-launch polish batch",
+        "hash": "542e7c6",
+        "subject": "feat(web): phase 4 shared state component, trust ribbon and the dark theme",
         "ai": true
       },
       {
-        "hash": "b0f2e81",
-        "subject": "test(web): cover the brand links, footer social links and placeholder copy",
+        "hash": "c4e5b2f",
+        "subject": "chore: record phase 3 guardrail hook entry",
         "ai": true
       },
       {
-        "hash": "a2173dc",
-        "subject": "fix(web): remove the mobile horizontal overflow and enlarge footer links",
+        "hash": "2f459fe",
+        "subject": "feat(web): phase 3 fluid product card, storefront hero and skeletons",
         "ai": true
       },
       {
-        "hash": "76e00c1",
-        "subject": "feat(web): replace the dead footer icons with real social links",
+        "hash": "51a87df",
+        "subject": "feat(web): phase 2 desktop nav, header search and shell containers",
         "ai": true
       },
       {
-        "hash": "bf6074e",
-        "subject": "fix(web): correct the search placeholders and broaden the contact copy",
+        "hash": "aeba0b5",
+        "subject": "feat(web): phase 1 token foundation for storefront overhaul",
         "ai": true
       },
       {
-        "hash": "bbf8105",
-        "subject": "feat(web): point brand links at the storefront and enlarge the logo",
+        "hash": "fe95949",
+        "subject": "docs(redesign): phase 0 research, plan and progress for storefront overhaul",
         "ai": true
       },
       {
-        "hash": "e2cc8b6",
-        "subject": "feat(web): fill in the legal-page placeholders with facts confirmed by the owner",
-        "ai": true
+        "hash": "faaeed0",
+        "subject": "styling updates to nav bar and footer",
+        "ai": false
       },
       {
-        "hash": "c84f555",
-        "subject": "chore(evidence): recompile AI-authorship report for the LC-6..LC-10 batch",
+        "hash": "2005e03",
+        "subject": "chore(evidence): recompile AI-authorship report for the product sizing batch",
         "ai": true
       },
-      {
-        "hash": "00a1fff",
-        "subject": "feat: capture terms acceptance on the Google OAuth signup path",
-    "lastDate": "2026-09-01",
-    "recent": [
       {
         "hash": "c5d81e1",
         "subject": "refactor: apply code-review advisory cleanups",
@@ -147,46 +116,6 @@
       {
         "hash": "1aa4c9b",
         "subject": "fix(web): trim size-selector CSS and raise component-style error budget",
-        "ai": true
-      },
-      {
-        "hash": "53d6c20",
-        "subject": "feat(web): PDP size selector and \"sizing available\" card hint",
-        "ai": true
-      },
-      {
-        "hash": "b86ed2b",
-        "subject": "feat(web): show ordered size on customer, vendor, and admin order views",
-        "ai": true
-      },
-      {
-        "hash": "64dd7aa",
-        "subject": "feat(api): surface size snapshot on vendor order lines",
-        "ai": true
-      },
-      {
-        "hash": "436c76b",
-        "subject": "feat(api): wire product sizing through cart selection and inventory-safe checkout",
-        "ai": true
-      },
-      {
-        "hash": "10baa05",
-        "subject": "feat(web): add Sizes section to vendor/admin product forms",
-        "ai": true
-      },
-      {
-        "hash": "ec6254f",
-        "subject": "feat(api): add product sizing schema + API foundation (contract, entity, migration)",
-        "ai": true
-      },
-      {
-        "hash": "ac818ec",
-        "subject": "fix(web): link the radial nav's My Orders item to /profile/orders",
-        "ai": true
-      },
-      {
-        "hash": "7423e3a",
-        "subject": "fix(web): repair the product-detail encoding and align the profile wordmark",
         "ai": true
       }
     ]
@@ -413,6 +342,11 @@
       "slug": "vendor-orders-fulfilment"
     },
     {
+      "branch": "feat/storefront-visual-overhaul",
+      "cardId": "storefront",
+      "slug": "visual-overhaul"
+    },
+    {
       "branch": "feat/sw8qYBV1-admin-orders-dashboard",
       "cardId": "sw8qYBV1",
       "slug": "admin-orders-dashboard"
@@ -474,18 +408,19 @@
     }
   ],
   "tests": {
-    "total": 154,
+    "total": 157,
     "api": 74,
-    "web": 80
+    "web": 83
   },
   "design": {
-    "files": 34,
+    "files": 70,
     "screens": [
       "checkout",
       "claude-design",
       "login",
       "product-detail",
       "product-discovery",
+      "redesign",
       "register",
       "storefront",
       "vendor-dashboard",
@@ -505,18 +440,16 @@
     },
     "gatePass": 36,
     "gateFail": 2,
-    "edits": 933,
+    "edits": 932,
     "editsUnfixable": 306,
     "firstTs": "2026-06-18T12:14:47.925Z",
-    "lastTs": "2026-08-31T18:46:50.074Z",
-    "lastTs": "2026-09-01T20:27:08.615Z",
+    "lastTs": "2026-09-05T22:00:47.616Z",
     "agentTokens": {
       "present": true,
       "byAgent": [
         {
           "agentType": "unknown",
-          "invocations": 71,
-          "invocations": 78,
+          "invocations": 85,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -525,7 +458,7 @@
         },
         {
           "agentType": "backend-engineer",
-          "invocations": 35,
+          "invocations": 34,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -534,8 +467,7 @@
         },
         {
           "agentType": "frontend-engineer",
-          "invocations": 47,
-          "invocations": 49,
+          "invocations": 51,
           "inputTokens": 0,
           "outputTokens": 0,
           "cacheReadTokens": 0,
@@ -553,7 +485,6 @@
         },
         {
           "agentType": "code-reviewer",
-          "invocations": 30,
           "invocations": 31,
           "inputTokens": 0,
           "outputTokens": 0,
@@ -609,88 +540,6 @@
       ],
       "recent": [
         {
-          "ts": "2026-08-24T14:46:12.997Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:46:59.518Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T14:57:25.289Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T18:45:01.635Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T18:46:52.185Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T18:52:21.754Z",
-          "agentType": "docs-writer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-24T18:56:39.867Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-25T16:00:19.150Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-26T16:49:36.527Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-26T16:55:55.644Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-26T17:01:23.072Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-26T17:07:59.032Z",
-          "agentType": "backend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-26T17:10:36.436Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-26T17:20:40.125Z",
-          "agentType": "code-reviewer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-26T17:26:50.049Z",
-          "agentType": "frontend-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-31T18:11:41.272Z",
-          "ts": "2026-09-01T18:02:59.006Z",
-          "agentType": "unknown",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-31T18:14:19.548Z",
           "ts": "2026-09-01T18:21:52.282Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -711,7 +560,6 @@
           "totalTokens": 0
         },
         {
-          "ts": "2026-08-31T18:14:24.632Z",
           "ts": "2026-09-01T19:31:24.243Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -732,12 +580,6 @@
           "totalTokens": 0
         },
         {
-          "ts": "2026-08-31T18:36:28.649Z",
-          "agentType": "test-engineer",
-          "totalTokens": 0
-        },
-        {
-          "ts": "2026-08-31T18:46:50.074Z",
           "ts": "2026-09-01T19:50:21.274Z",
           "agentType": "unknown",
           "totalTokens": 0
@@ -763,18 +605,38 @@
           "totalTokens": 0
         },
         {
-          "ts": "2026-09-01T20:19:21.392Z",
+          "ts": "2026-09-05T20:10:46.896Z",
           "agentType": "unknown",
           "totalTokens": 0
         },
         {
-          "ts": "2026-09-01T20:19:31.631Z",
-          "agentType": "backend-engineer",
+          "ts": "2026-09-05T20:20:35.591Z",
+          "agentType": "unknown",
           "totalTokens": 0
         },
         {
-          "ts": "2026-09-01T20:26:22.718Z",
-          "agentType": "code-reviewer",
+          "ts": "2026-09-05T20:37:14.052Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-05T20:37:35.195Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-05T21:07:44.506Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-05T21:59:26.963Z",
+          "agentType": "unknown",
+          "totalTokens": 0
+        },
+        {
+          "ts": "2026-09-05T22:00:47.616Z",
+          "agentType": "unknown",
           "totalTokens": 0
         }
       ]
@@ -784,9 +646,16 @@
   "extractionCandidates": null,
   "prs": [
     {
+      "headRefName": "feat/SZihvfYb-product-sizing",
+      "number": 66,
+      "state": "MERGED",
+      "title": "feat: product sizing — per-product size list with per-size stock tracking",
+      "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/66"
+    },
+    {
       "headRefName": "feat/3QJYmybN-storefront-prelaunch-polish",
       "number": 65,
-      "state": "OPEN",
+      "state": "MERGED",
       "title": "feat(web): storefront pre-launch polish (6-card batch)",
       "url": "https://github.com/michaeljvr11/hb-mono-repo/pull/65"
     },
@@ -1246,20 +1115,19 @@
     },
     {
       "name": "To Do",
-      "cards": 11
       "cards": 16
     },
     {
       "name": "In Progress",
-      "cards": 6
+      "cards": 0
     },
     {
       "name": "In Review",
-      "cards": 6
+      "cards": 0
     },
     {
       "name": "Done",
-      "cards": 107
+      "cards": 118
     },
     {
       "name": "Fable Documentation",
